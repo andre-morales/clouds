@@ -1,0 +1,7 @@
+{
+	"id": "systemlog",
+	"builder": "SystemLogApp",
+	"scripts": [
+		"/app/systemlog/res/script.js"	
+	]
+}

@@ -1,0 +1,7 @@
+{
+	"id": "configs",
+	"builder": "ConfigsApp",
+	"scripts": [
+		"/app/configs/res/script.js"	
+	]
+}

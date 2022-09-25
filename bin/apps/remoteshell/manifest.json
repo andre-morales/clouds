@@ -1,0 +1,7 @@
+{
+	"id": "remoteshell",
+	"builder": "RemoteShellApp",
+	"scripts": [
+		"/app/remoteshell/res/script.js"	
+	]
+}

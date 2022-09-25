@@ -1,0 +1,13 @@
+.app-configs .body {
+	padding: 0.5rem;
+}
+
+.app-configs .input {
+	display: flex;
+}
+
+.app-configs .input .field {
+	flex: 1;
+	margin-left: 1rem;
+	font-size: 12pt;
+}

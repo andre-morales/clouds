@@ -1,0 +1,42 @@
+<link rel="stylesheet" type="text/css" href="/res/css/desktop.css">
+
+<div class='desktop noselect'>
+	<div class='backplane'>
+		<div class='app-icon' onclick="webSys.runApp('explorer');">
+			<img src='/res/img/ftypes/folder128.png'>
+			<label>Explorer</label>
+		</div>
+		<div class='app-icon' onclick="webSys.runApp('systemlog');">
+			<img src='/res/img/apps/log128.png'>
+			<label>System Log</label>
+		</div>
+		<div class='app-icon' onclick="webSys.runApp('configs');">
+			<img src='/res/img/apps/config128.png'>
+			<label>System Configuration</label>
+		</div>
+		<div class='app-icon' onclick="webSys.runApp('remoteshell');">
+			<img src='/res/img/apps/terminal128.png'>
+			<label>Remote Shell</label>
+		</div>
+		<div class='text'>WebSys</div>
+	</div>
+	<div class='taskbar'>
+		<div class='tasks'></div>
+		<button class='btn fullscreen-btn'></button>
+	</div>
+	<div class='windows'></div>
+	<div class='context-menu'></div>
+</div>
+
+<template id='t_window'>
+	<div class='window noselect'>
+		<div class='head'>
+			<button class='btn options-btn'></button>
+			<span class='title'>Window</span>
+			<button class='btn iconify-btn'></button>
+			<button class='btn maximize-btn'></button>
+			<button class='btn close-btn'></button>
+		</div>
+		<div class='body'></div>
+	</div>
+</template>

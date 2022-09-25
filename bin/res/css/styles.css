@@ -1,0 +1,39 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	background: rgba(12, 12, 18);
+}
+
+#loading-screen {
+	display: flex;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	justify-content: center;
+	align-items: center;
+	background: rgba(20, 20, 20, 0.4);	
+}
+
+#loading-icon {
+	width: 60px;
+	height: 60px;
+	background: url('/res/favicon.png');
+	background-repeat: no-repeat;
+	background-size: contain;
+	animation: rotation 2s infinite ease-in-out;
+}
+
+@keyframes rotation {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(359.9deg);
+	}
+}

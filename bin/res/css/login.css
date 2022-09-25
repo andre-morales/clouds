@@ -1,0 +1,57 @@
+#body {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	font: 18pt sans-serif;
+	color: white;
+}
+
+#login-screen .body {
+	text-align: center;
+}
+
+.window {
+	display: flex;
+	flex-direction: column;
+	border: solid 2px rgb(30, 30, 128);
+}
+
+.window .title {
+	padding: 8px;
+	background: rgba(30, 30, 34);
+	border-bottom: solid 2px rgb(30, 30, 128);
+}
+
+.window .body {
+	padding: 8px;
+	flex-grow: 1;
+}
+
+.window button {
+	border: solid 2px rgb(30, 30, 128);
+	padding: 4px;
+	font: 14pt sans-serif;
+	background: none;
+	color: white;
+}
+
+.window button:hover {
+	background: rgba(60, 60, 60);
+}
+
+.window input {
+	border: solid 2px rgb(30, 30, 128);
+	padding: 4px;
+	font: 14pt sans-serif;
+	background: none;
+	color: white;
+	outline: none;
+}
+
+form {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-gap: .5rem;
+	margin-bottom: .5rem;
+}
