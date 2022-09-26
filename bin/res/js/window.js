@@ -8,6 +8,8 @@ class Window {
 		this.title = 'Window';
 		this.posX  = 8,   this.posY = 8;
 		this.width = 600, this.height = 400;
+		this.minWidth = 116;
+		this.minHeight = 28;
 		this.restoredBounds = [8, 8, 600, 400];
 		this.onCloseRequest = () => { };
 		this.backButton = () => {};
@@ -19,23 +21,27 @@ class Window {
 		// Instantiation
 		let win = $(cloneTemplate('window')).find('.window');
 		this._desktop.$windows.append(win);
+		this.optionsMenu = this.makeOptionsMenu();
 
 		// Queries
 		this.$window = win;
 		this.$windowHeader = win.find('.head');
 
 		// Behavior
-		let menu = this.makeOptionsMenu();
-		this.optionsMenu = menu;
+		this.$window.on("mousedown", () => this.focus() );
+		this.$window.on("touchstart", () => this.focus() );
+
 		win.find('.close-btn').click(() => this.onCloseRequest());
-		win.find('.iconify-btn').click(() => this.minimize());
-		win.find('.maximize-btn').click(() => {
+		win.find('.minimize-btn').click(() => this.minimize());
+		this.$maxrestoreBtn = win.find('.maxrestore-btn');
+		this.$maxrestoreBtn.click(() => {
 			if (this.maximized) this.restore();
 			else this.maximize()
 		});
 		win.find('.options-btn').click((ev) => {
-			this._desktop.openContextMenuAt(menu, ev.clientX, ev.clientY);
+			this._desktop.openContextMenuAt(this.optionsMenu, ev.clientX, ev.clientY);
 		});
+		this._desktop.addContextMenuOn(win.find('.title'), this.optionsMenu)
 		this.setupDragListeners();
 
 		// Styling
@@ -57,17 +63,11 @@ class Window {
 	}
 
 	setupDragListeners() {
-		this.$window.on("mousedown", () => {
-			if (!this._desktop.resizingWindow) this.focus();
-		});
-		
 		let dragging = false;
 		let startX, startY;
 		let startMX, startMY;
 
 		let dragStart = (mx, my) => {
-			if (this.maximized) return;
-
 			dragging = true;
 
 			startMX = mx,        startMY = my;
@@ -77,27 +77,42 @@ class Window {
 		let dragMove = (mx, my) => {
 			if (!dragging) return;
 
-			let px = startX + mx - startMX;
-			let py = startY + my - startMY;
-			this.setPosition(px, py);
+			let dx = mx - startMX;
+			let dy = my - startMY;
+
+			if (this.maximized) {
+				if (dy > 8) {
+					let wb = this.restoredBounds;
+					let nx = mx - wb[2] * startMX / this.width;
+					let ny = my - wb[3] * startMY / this.height;
+					
+					this.restoredBounds[0] = nx;
+					this.restoredBounds[1] = ny;
+					this.restore();
+
+					startX  = nx, startY  = ny;
+					startMX = mx, startMY = my;
+				}
+				return;
+			}
+
+			this.setPosition(startX + dx, startY + dy);
 		};
 
-		let dragEnd = () => {
-			dragging = false;
-		};
+		let dragEnd = () => { dragging = false; };
 
 		let $doc = $(document);
 		let $wh = this.$windowHeader;
 
-		$wh.on("mousedown", (e) => {
+		let $title = $wh.find('.title');
+		$title.on("mousedown", (e) => {
 			dragStart(e.pageX, e.pageY);
 		});
-		$wh.on("touchstart", (e) => {
+		$title.on("touchstart", (e) => {
 			let mx = e.changedTouches[0].pageX;
 			let my = e.changedTouches[0].pageY;
 			dragStart(mx, my);
 		});
-
 		
 		$doc.on("mousemove", (e) => {
 			dragMove(e.pageX, e.pageY);
@@ -135,8 +150,8 @@ class Window {
 	}
 
 	setSize(w, h) {
-		if (w < 100) w = 100;
-		if (h < 24) h = 24;
+		if (w < this.minWidth) w = this.minWidth;
+		if (h < this.minHeight) h = this.minHeight;
 		this.width = w;
 		this.height = h;
 
@@ -148,6 +163,11 @@ class Window {
 
 	setHeight(h) {
 		this.setSize(this.width, h);
+	}
+
+	setBounds(x, y, w, h) {
+		this.setPosition(x, y);
+		this.setSize(w, h);
 	}
 
 	setBoundsA(arr) {
@@ -184,10 +204,16 @@ class Window {
 			&& (y <= this.posY + this.height));
 	}
 
+	unfocus() {
+		if (this._desktop.focusedWindow != this) return;
+
+		this._desktop.focusedWindow = null;
+		if (this.$window) this.$window.removeClass('focused');
+	}
+
 	focus() {
-		let fw = this._desktop.focusedWindow;
-		if (fw && fw.$window) {
-			fw.$window.removeClass('focused');
+		if (this._desktop.focusedWindow) {
+			this._desktop.focusedWindow.unfocus();		
 		}
 
 		this._desktop.focusedWindow = this;
@@ -216,6 +242,8 @@ class Window {
 		this.setPosition(0, 0);
 		this.setSize(rect.width, rect.height);
 
+		this.$window.addClass('maximized');
+		this.$maxrestoreBtn.addClass('restore');
 		this.maximized = true;
 	}
 
@@ -234,6 +262,8 @@ class Window {
 		if (this.maximized) {
 			this.setBoundsA(this.restoredBounds);
 			this.maximized = false;
+			this.$window.removeClass('maximized');
+			this.$maxrestoreBtn.removeClass('restore');
 		}
 	}
 
@@ -247,9 +277,10 @@ class Window {
 		this.minimized = true;
 		this.setVisible(false);
 
-		let $task = $(`<div><img src=${icon}>${title}</div>`);
+		let $task = $(`<div><img src=${icon}><span>${title}</span></div>`);
 		$task.click(() => {
 			this.restore();
+			this.focus();
 		});	
 
 		this._desktop.iconifiedWindows.set(this, $task);

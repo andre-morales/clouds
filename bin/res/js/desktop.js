@@ -26,7 +26,7 @@ class Desktop {
 				webSys.runApp('configs');
 			}]
 		]
-		this.addContextMenuOn(this.$desktop, menu);
+		this.addContextMenuOn(this.$desktop.find('.backplane'), menu);
 
 		this._installWindowResizeHandlers();
 
@@ -94,11 +94,13 @@ class Desktop {
 		} else {
 			return [32, 32, 640, 600];
 		}
-		
 	}
 
-	setBackground(url) {
+	setBackground(url, save) {
 		this.$desktop.css('background-image', 'url("' + url + '")');
+		if (save) {
+			setCookie('bg', url);
+		}
 	}
 
 	addContextMenuOn(element, menu) {
@@ -106,6 +108,16 @@ class Desktop {
 			let mx = ev.clientX, my = ev.clientY;
 
 			this.openContextMenuAt(menu, mx, my);
+			ev.preventDefault();
+			return false;
+		});
+	}
+
+	addContextMenuFnOn(element, menuFn) {
+		$(element).on('contextmenu', (ev) => {
+			let mx = ev.clientX, my = ev.clientY;
+
+			this.openContextMenuAt(menuFn(), mx, my);
 			ev.preventDefault();
 			return false;
 		});
@@ -185,6 +197,10 @@ class Desktop {
 					if (win.isPointInside(mx, my)) return;
 				}
 			};
+
+			if (this.focusedWindow) {
+				this.focusedWindow.unfocus();
+			}
 		}
 
 		let dragMove = (mx, my) => {
@@ -212,14 +228,25 @@ class Desktop {
 			let dx = mx - startMX;
 			let dy = my - startMY;
 
-			let b = startB.slice();
-			if (dragDir[0] < 0) { b[0] += dx; }
-			if (dragDir[1] < 0) { b[1] += dy; }
+			let wx = startB[0], wy = startB[1];
+			let ww = startB[2], wh = startB[3];
 
-			b[2] += dx * dragDir[0];
-			b[3] += dy * dragDir[1];
+			ww += dx * dragDir[0];
+			wh += dy * dragDir[1];
 
-			resWin.setBoundsA(b);
+			if (ww < resWin.minWidth) {
+				dx -= resWin.minWidth - ww;
+				ww = resWin.minWidth;
+			}
+
+			if (wh < resWin.minHeight) {
+				dy -= resWin.minHeight - wh;
+				wh = resWin.minHeight;
+			}
+
+			if (dragDir[0] < 0) { wx += dx; }
+			if (dragDir[1] < 0) { wy += dy; }
+			resWin.setBounds(wx, wy, ww, wh);
 		};
 
 		this.$desktop[0].addEventListener("mousedown", (ev) => {
@@ -261,21 +288,24 @@ class Desktop {
 	_getResizeDirection(w, mx, my) {
 		if (!w.visible || !w.decorated) return null;
 
-		let h = 0, v = 0;
-		let m = 8;
+		const im = 4;  // Inside margin
+		const om = 8;  // Outside margin
+		const abs = Math.abs;
 
 		let dx = mx - w.posX,  dy = my - w.posY;
 		let dw = dx - w.width, dh = dy - w.height;
 
-		// If the mouse is outside the window + 8 pixel border
-		if (dx < -8 || dw > 8 ||
-			dy < -8 || dh > 8) return null;
+		// If the mouse is outside the window + pixel border
+		if (dx < -om || dw > om ||
+			dy < -om || dh > om) return null;
 
 		// Left or Right Edge
-		if (dx <= 0) h = -1;	
-		if (dw >= 0) h = 1;	 
-		if (dy <= 0) v = -1;	 
-		if (dh >= 0) v = 1;	 
+		let h = 0, v = 0;
+		if (dx <=  im) h = -1;
+		if (dw >= -im) h = 1;
+
+		if (dy <=  im) v = -1;	 
+		if (dh >= -im) v = 1;
 
 		if (h == 0 && v == 0) return null;
 		return [h, v]

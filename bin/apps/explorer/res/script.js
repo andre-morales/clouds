@@ -1,6 +1,6 @@
 window.ExplorerApp = class ExplorerApp extends App {
-	constructor(webSys) {
-		super(webSys);
+	constructor(webSys, args) {
+		super(webSys, args);
 		this.window = null;
 		this.$files = null;
 		this.cwd = null;
@@ -59,9 +59,6 @@ window.ExplorerApp = class ExplorerApp extends App {
 			        data: new FormData(this),
 			        processData: false,
 			        contentType: false,
-			        success: function(result){
-			            console.log(result);
-			        }
 			    });
 
 		    	ev.preventDefault();
@@ -72,8 +69,26 @@ window.ExplorerApp = class ExplorerApp extends App {
 		// Go to home page
 		await this.goHome();
 
+		/*if (this.initArgs.includes('--choose')) {
+			$win.find('.choose-options').addClass('.visible');
+		}*/
+
+		/*$win.find('.select').click(() => {
+			if (this.chooseCallback) {
+				return this.selectedFiles;
+			}
+		});*/
+
 		// Make the window visible
 		this.window.setVisible(true);
+	}
+
+	getChoosenPath() {
+		if (this.chooseCallback) throw new Error('Already awaiting for choice.');
+
+		return new Promise((resolve, reject) => {
+			this.chooseCallback = resolve;
+		});
 	}
 
 	async navigate(path) {
@@ -88,6 +103,15 @@ window.ExplorerApp = class ExplorerApp extends App {
 			this._sys.showErrorDialog("Can't find '" + path + "'");
 			this.$addressField.val(this.cwd);
 			return 404;
+		}
+		if (path == '/') {
+			this.window.setTitle('File Explorer');
+		} else {
+			let fname = path;
+			if (path.endsWith('/')) fname = path.slice(0, -1)
+
+			fname = fname.slice(fname.lastIndexOf('/') + 1);
+			this.window.setTitle(fname);
 		}
 
 		this.cwd = path;
@@ -104,7 +128,6 @@ window.ExplorerApp = class ExplorerApp extends App {
 			
 			if (A) return -1;
 			if (B) return 1;
-			
 		});
 
 		for (let file of files) {
@@ -119,11 +142,29 @@ window.ExplorerApp = class ExplorerApp extends App {
 		await this.go('/');
 	}
 
+	async openHandler(path) {
+		let qPath = '/fs/q' + path;
+
+		if (path.endsWith('/')) {
+			this.go(path)
+		} else {
+			if (FileTypes.isMedia(path)) {
+				let app = await webSys.runApp('sinestesia');
+				app.playFile(qPath);
+				app.window.bringToFront();
+				app.window.focus();
+			} else {
+				this.openFileExt(path);
+			}
+		}
+	}
+
 	makeFileIcon(fpath, callback) {
 		let _desktop = this._sys.desktop;
 
 		let fname = fpath;
 		let absPath = pathJoin(this.cwd, fpath);
+		
 		let isDir = fpath.endsWith('/');
 
 		let classes = 'file';
@@ -142,41 +183,51 @@ window.ExplorerApp = class ExplorerApp extends App {
 		$ic.click(() => {
 			if (_desktop.contextMenuOpen) return;
 
-			if(isDir) this.go(absPath);
-			else {
-				this.openFileExt(absPath);
-			}
+			this.openHandler(absPath);
 		});
 
-		let menu;
-		if (isDir) {
-			menu = [
-				['Open', () => this.go(absPath)]
-			];
-		} else {
-			menu = [
-				['Open', () => this.openFileExt(absPath)],
-				['Download', () => this.downloadFile(absPath)],
-				'-',
-				['Delete', null]
-			];
-		}
-		_desktop.addContextMenuOn($ic, menu);
+		_desktop.addContextMenuFnOn($ic, () => this.makeFileMenu(absPath));
 		return $ic;
+	}
+
+	makeFileMenu(absPath) {
+		let isDir = absPath.endsWith('/');
+		let qPath = '/fs/q' + absPath;
+
+		let menu = [
+			['Open', () => this.openHandler(absPath)],
+		];
+
+		if (isDir) {
+			menu.push(
+				['Open in another window', async () => {
+					let app = await webSys.runApp('explorer');
+					app.go(absPath);
+				}],
+			);
+		} else {
+			menu.push(
+				['Open outside', () => this.openFileExt(absPath)],
+				['Download', () => webSys.downloadUrl(qPath)]
+			);
+		}
+
+		if (FileTypes.isPicture(absPath)) {
+			menu.push(['Set as background', () => {
+				webSys.desktop.setBackground(qPath, true);
+			}]);
+		}
+
+		menu.push(
+			'-',
+			['Copy', () => copyTextToClipboard(qPath)],
+			['Delete', null]
+		);
+		return menu;
 	}
 
 	openFileExt(path) {
 		window.open('/fs/q' + path, '_blank').focus();
-	}
-
-	downloadFile(path) {
-		let link = document.createElement('a');
-		link.style.display = 'none';
-		link.href = '/fs/q' + path;
-		link.download = '';
-		document.body.appendChild(link);
-		link.click();
-		link.remove();
 	}
 
 	/* Checks if a string path represents a file (image or video) that
@@ -192,10 +243,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	_getFileClassByExt(file) {
-		let extensions = ['.mp3', '.m4a'];
+		if (FileTypes.isAudio(file)) return 'audio';
 
-		for (let ext of extensions) {
-			if (file.endsWith(ext)) return 'audio';
-		}
+		return null;
 	}
 }

@@ -69,31 +69,37 @@
 	display: flex;
 	flex: 0 0 auto;
 	width: 100%;
-	height: 40px;
+	height: 32px;
 	background: linear-gradient(to bottom, #333, #222);
 }
 
 .desktop .taskbar .tasks {
 	display: flex;
+	justify-content: flex-start;
 	flex-grow: 1;
-	min-width: 0;
 	overflow: hidden;
 }
 
 .taskbar .tasks div {
+	display: flex;
+	align-items: center;
 	height: 100%;
 	margin: 0 0.5em;
-	flex-basis: 0;
-	font: 12pt 'Tahoma';
-	white-space: nowrap;
+	font: 11pt 'Tahoma';
+	overflow: hidden;
 }
 
 .taskbar .tasks img {
-	width: 40px;
+	width: 32px;
 	height: 100%;
 	margin-right: 0.5em;
 	padding: 2px;
 	vertical-align: middle;
+}
+
+.taskbar .tasks span {
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .taskbar .fullscreen-btn {
@@ -113,6 +119,7 @@
 }
 
 .desktop .window {
+	--titlebar-height: 28px;
 	position: absolute;
 	pointer-events: auto;
 	display: none; /* Windows start invisible */
@@ -125,12 +132,16 @@
 	box-shadow: 0px 0px 8px black;
 }
 
+.desktop .window.maximized {
+	--titlebar-height: 22px;
+}
+
 .desktop .window.decorated {
-	border: solid 1px gray;
+	border: solid 1px darkgray;
 }
 
 .desktop .window.decorated.focused {
-	border: solid 1px blue;
+	border: solid 1px #25E;
 }
 
 .desktop .window.visible {
@@ -144,8 +155,7 @@
 .desktop .window.decorated > .head {
 	display: flex;
 	flex-shrink: 0;
-	height: 26px;
-	border-bottom: solid 1px gray;
+	height: var(--titlebar-height);
 	background: hsla(220, 55%, 40%);
 	white-space: nowrap;
 }
@@ -154,15 +164,19 @@
 	background: linear-gradient(to right, #23A, #35E, #FF7AD2);
 }
 
-.desktop .window.decorated > .head button {
-	width: 26px;
+.window.decorated > .head button {
+	width: var(--titlebar-height);
 	height: 100%;
 	flex-shrink: 0;
 	background-color: transparent;
 	background-image: var(--icon);
-	background-size: 18px;
+	background-size: 60%;
 	border: none;
 	color: white;
+}
+
+.window.maximized > .head button {
+	background-size: 80%;
 }
 
 .desktop .window.decorated > .head button:hover {
@@ -173,7 +187,7 @@
 	flex-grow: 1;
 	flex-shrink: 1;
 	margin: auto;
-	padding: 0 0 0 2px;
+	padding-left: 4px;
 	text-overflow: ellipsis;
 	overflow: hidden;
 	font-size: 11pt;
@@ -189,12 +203,16 @@
 	--icon: url("/res/img/icons/menu.png");
 }
 
-.iconify-btn {
-	--icon: url("/res/img/icons/iconify.png");
+.minimize-btn {
+	--icon: url("/res/img/icons/minimize.png");
 }
 
-.maximize-btn {
-	--icon: url("/res/img/icons/maxmin.png");
+.maxrestore-btn {
+	--icon: url("/res/img/icons/maximize.png");
+}
+
+.maxrestore-btn.restore {
+	--icon: url("/res/img/icons/restore.png");
 }
 
 .close-btn {
@@ -250,7 +268,7 @@
 	background-repeat: no-repeat;
 }
 
-.desktop .btn {
+.desktop .windows .btn {
 	padding: .25em .5em;
 	border: solid 1px #23F;
 	color: white;

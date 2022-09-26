@@ -1,0 +1,7 @@
+{
+	"id": "sines",
+	"builder": "SinesApp",
+	"scripts": [
+		"/app/sinestesia/res/script.js"	
+	]
+}

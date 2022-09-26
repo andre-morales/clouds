@@ -406,7 +406,7 @@ function guardRequest(req) {
 }
 
 function getRequestUser(req) {
-	//return 'andre';
+	return 'test';
 
 	let key = req.cookies.authkey;
 
@@ -452,11 +452,18 @@ function getRandomInt(min, max) {
 }
 
 /* -- Thumbnail handling -- */
+function toBase64(str) {
+	return str
+	.replaceAll('/', '_')
+	.replaceAll(':', '_');
+}
+
 async function handleThumbRequest(_abs, res){
 	let absFilePath = Pathex.toFullSystemPath(_abs);
 
 	var thumbfolder = Pathex.toFullSystemPath(`./.thumbnails/`);
-	var thumbpath = `${thumbfolder}/${btoa(_abs)}.jpg`;
+	let fthname = toBase64(_abs);
+	var thumbpath = `${thumbfolder}/${fthname}.jpg`;
 
 	if(FS.existsSync(thumbpath)){
 		res.sendFile(thumbpath);

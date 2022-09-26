@@ -53,13 +53,6 @@ async function initDesktop() {
 	// Destroy login script if any
 	destroyElementById('login-script');
 
-	// Fetch desktop page
-	let fres = await fetch('/page/desktop');
-	if (fres.status != 200) {
-		console.log('Forbidden.');
-	}
-	document.getElementById('body').innerHTML = await fres.text();
-
 	// Add system script
 	addScript('/res/js/websys.js', 'websys-script');
 }

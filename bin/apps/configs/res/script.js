@@ -24,8 +24,16 @@ window.ConfigsApp = class ConfigsApp extends App {
 		let $input = $win.find('input');
 		$input.val(getCookie('bg'));
 		$input.on('change', () => {
-			setCookie('bg', $input.val());
-			this._sys.desktop.setBackground($input.val());
+			this._sys.desktop.setBackground($input.val(), true);
+		});
+
+		$win.find('.find').click(async () => {
+			let app = await webSys.runApp('explorer', '--dialog');
+			let result = await app.getChosenPath();
+
+			let file = '/fs/q' + result;
+			setCookie('bg', file);
+			this._sys.desktop.setBackground(file);
 		});
 
 		$win.find('.logout').click(() => {
