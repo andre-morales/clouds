@@ -95,6 +95,10 @@
 	filter: brightness(70%) sepia(50%);
 }
 
+.app-file-explorer .file.symbolic {
+	font-style: italic;
+}
+
 .app-file-explorer .file.thumbbed i {
 	background-image: none;
 }

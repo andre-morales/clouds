@@ -98,6 +98,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 	async go(path) {
 		this.$addressField.val(path);
 
+		// Fetching and fetch error handling
 		let fres = await fetch('/fs/ls' + path);
 		if (fres.status != 200) {
 			let code = fres.status;
@@ -117,7 +118,12 @@ window.ExplorerApp = class ExplorerApp extends App {
 			this.$addressField.val(this.cwd);
 			return code;
 		}
+		this.cwd = path;
 
+		// UI changes
+		this.$files.css('display', 'none');
+		this.$files.empty();
+		
 		if (path == '/') {
 			this.window.setTitle('File Explorer');
 		} else {
@@ -128,29 +134,27 @@ window.ExplorerApp = class ExplorerApp extends App {
 			this.window.setTitle(fname);
 		}
 
-		this.cwd = path;
-		this.$files.empty();
-		this.$files.css('display', 'none');
-
+		// Sort files
 		let files = await fres.json();
-
+		
 		let val = (e) => {
 			if (e.endsWith('/')) return 1;
-			if (e.endsWith('*i')) return -1;
 			return 0;
 		};
 		files.sort((a, b) => {
-			let A = val(a);
-			let B = val(b);
+			let A = val(a.split('*')[0]);
+			let B = val(b.split('*')[0]);
 			if (A == B) return a.localeCompare(b);
 			return B - A;
 		});
 
+		// Make icons
 		for (let file of files) {
 			let $ic = this.makeFileIcon(file);
 			$ic.appendTo(this.$files);
 		}	
 
+		// Make the panel visible
 		this.$files.css('display', 'block');
 	}
 
@@ -178,7 +182,9 @@ window.ExplorerApp = class ExplorerApp extends App {
 	makeFileIcon(fcodes, callback) {
 		let sp = fcodes.split('*');
 		let fpath = sp[0];
-		let fcode = sp[1];
+		let ftags_ = sp[1];
+		let ftags = [];
+		if (ftags_) ftags = ftags_.split("");
 
 		let _desktop = this._sys.desktop;
 
@@ -192,10 +198,13 @@ window.ExplorerApp = class ExplorerApp extends App {
 			classes += ' dir';
 			fname = fpath.slice(0, -1);
 		}
-		if (fcode == 'i') {
+		if (ftags.includes('i')) {
 			classes += ' blocked';
 		}
-		
+		if (ftags.includes('s')) {
+			classes += ' symbolic';
+		}
+
 		if (this._doFileExtRequestThumbs(fpath)) {
 			ic = `<img src='/fs/thumb${absPath}'>`
 			classes += ' thumbbed';

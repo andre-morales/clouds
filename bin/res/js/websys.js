@@ -22,7 +22,7 @@ async function main() {
 
 class WebSys {
 	static get WEBSYS_VERSION() { return '0.4.3'; }
-	static get WSCLIENT_VERSION() { return '0.4.0'; }
+	static get WSCLIENT_VERSION() { return '0.4.1'; }
 
 	constructor() {
 		this.desktop = new Desktop(this);

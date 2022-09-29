@@ -27,9 +27,15 @@ export class FFmpeg {
 		let videolength = 0;
 		
 		let args = ['-i', `${path}`, '-show_entries', 'format=duration', '-v', 'quiet', '-of', 'csv'];
-		let ffprobe = await execute(ffprobeExec, args);
-		videolength = ffprobe.stdout.split("format,")[1] * 1.0;
-		return videolength;
+		try {
+			let ffprobe = await execute(ffprobeExec, args);
+			videolength = ffprobe.stdout.split("format,")[1] * 1.0;
+			return videolength;
+		} catch(err) {
+			console.log(err);
+			console.log('Video length query failed.');
+		}
+		return false;
 	}
 }
 

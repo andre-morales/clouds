@@ -34,30 +34,43 @@ class VFS {
 
 		let files;
 		try {
-			files = await FS.promises.readdir(path);
+			files = await FS.promises.readdir(path, {
+				"withFileTypes": true
+			});
 		} catch (err) {
 			if (err.code == 'EPERM') throw 403;
 			if (err.code == 'ENOENT') throw 404;
 			throw 500;
 		}
 
-		let promises = files.map(async (file) => {
-			let type = '';
+		//let stamp = new Date().getTime();
+		let promises = files.map(async (entry) => {
+			let file = entry.name;
+			let stype = '*i';
 
 			try {
-				let stats = await FS.promises.stat(path + file);
-				if (stats.isDirectory()) {
-					file += '/';
-				}
-			} catch(err) {
-				type = '*i';
-			}
+				if (entry.isSymbolicLink()) {
+					stype = '*si';
 
-			return file + type;
+					let stat = await FS.promises.stat(path + file);
+					if (stat.isDirectory()) {
+						file += '/';
+					}
+					stype = '*s';
+				} else {
+					stype = '';
+					if (entry.isDirectory()) {
+						file += '/';
+					}
+				}
+			} catch(e) {}
+			return file + stype;
 		});
 
 		let results = await Promise.all(promises);
-		return results;
+		//let time = new Date().getTime() - stamp;
+		//console.log('took ' + time + 'ms');
+		return results; 
 	}
 }
 
