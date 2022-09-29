@@ -22,11 +22,19 @@
 	background-position: center;
 }
 
-.desktop .backplane {
+.desktop .dt-area {
 	position: relative;
-	display: flex;
-	flex: 1 0;
+	flex-grow: 1;
 	min-height: 0;
+}
+
+.desktop .backplane {
+	display: flex;
+	overflow: hidden;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 	flex-direction: column;
 	flex-wrap: wrap;
 	align-content: flex-start;
@@ -112,7 +120,7 @@
 .desktop .windows {
 	position: absolute;
 	left: 0;
-	right: 0;
+	top: 0;
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
@@ -134,14 +142,15 @@
 
 .desktop .window.maximized {
 	--titlebar-height: 22px;
+	box-shadow: none;
 }
 
-.desktop .window.decorated {
+.desktop .window.decorated:not(.maximized) {
 	border: solid 1px darkgray;
 }
 
 .desktop .window.decorated.focused {
-	border: solid 1px #25E;
+	border-color: #25E;
 }
 
 .desktop .window.visible {

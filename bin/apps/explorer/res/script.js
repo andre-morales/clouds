@@ -83,13 +83,13 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.window.setVisible(true);
 	}
 
-	getChoosenPath() {
+	/*getChoosenPath() {
 		if (this.chooseCallback) throw new Error('Already awaiting for choice.');
 
 		return new Promise((resolve, reject) => {
 			this.chooseCallback = resolve;
 		});
-	}
+	}*/
 
 	async navigate(path) {
 		this.go(pathJoin(this.cwd, path));

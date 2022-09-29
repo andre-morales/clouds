@@ -11,8 +11,14 @@ export class FFmpeg {
 		let videolength = await this.getVideoLength(path);
 
 		let args = ['-ss', videolength / 2, '-i', path, '-q:v', '4', '-vf', "scale='iw*144/max(iw,ih):-1'", '-vframes', 1, dest];
-		await execute(ffmpegExec, args);
-		return true;
+		try {
+			await execute(ffmpegExec, args);
+			return true;
+		} catch(err) {
+			console.log(err);
+			console.log('Thumb creation failed.');
+		}
+		return false;
 	}
 
 	async getVideoLength(path) {
@@ -31,7 +37,7 @@ function execute(file, args, options){
 	return new Promise((resolve, reject) => {
 		let proc;
 		let callback = (err, sout, serr) => {
-			if(err){
+			if (err){
 				reject(err);
 			} else {
 				resolve({'stdout': sout, 'stderr': serr});

@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const Compression = require('compression');
 const WebSocket = require('ws');
 const Path = require('path');
-const FFmpeg = new FFmpegM.FFmpeg();
+let FFmpeg = null;
 const FS = require('fs');
 const Express = require('express');
 const CookieParser = require('cookie-parser');
@@ -51,7 +51,12 @@ function initUsers() {
 }
 
 function initExpress() {
-	FFmpeg.init(config.extensions.ffmpeg);
+	if (config.extensions &&
+		config.extensions.ffmpeg &&
+		config.extensions.ffmpeg.enabled) {
+		FFmpeg = new FFmpegM.FFmpeg();
+		FFmpeg.init(config.extensions.ffmpeg);
+	}
 
 	app = Express();
 	app.use(Compression());
@@ -85,6 +90,7 @@ function apiSetupRShell() {
 		}
 		let cmd = req.body.cmd;
 		shell.send(cmd);
+		res.end();
 	});
 
 	app.get('/shell/:id/stdout', (req, res) => {
@@ -470,7 +476,7 @@ async function handleThumbRequest(_abs, res){
 		return;
 	}
 
-	if(config.extensions.ffmpeg && config.extensions.ffmpeg.enabled) {
+	if(FFmpeg) {
 		if(!FS.existsSync(thumbfolder)) FS.mkdirSync(thumbfolder);
 
 		if(!FS.existsSync(thumbpath)){

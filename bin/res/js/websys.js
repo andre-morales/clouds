@@ -21,7 +21,7 @@ async function main() {
 }
 
 class WebSys {
-	static get WEBSYS_VERSION() { return '0.4.2'; }
+	static get WEBSYS_VERSION() { return '0.4.3'; }
 	static get WSCLIENT_VERSION() { return '0.4.0'; }
 
 	constructor() {

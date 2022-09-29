@@ -238,7 +238,7 @@ class Window {
 
 		this.restoredBounds = this.getBoundsA();
 
-		let rect = this._desktop.$desktop[0].getBoundingClientRect();
+		let rect = this._desktop.$windows[0].getBoundingClientRect();
 		this.setPosition(0, 0);
 		this.setSize(rect.width, rect.height);
 

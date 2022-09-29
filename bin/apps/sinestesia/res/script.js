@@ -29,15 +29,26 @@ window.SinesApp = class SinesApp extends App {
 		let $win = this.window.$window;
 		let $content = $win.find('.content');
 
-		if (path.endsWith('.mp4') || path.endsWith('.mkv') || path.endsWith('.webm')) {
+		let fname = path;
+		if (path.endsWith('/')) fname = path.slice(0, -1)
+
+		fname = fname.slice(fname.lastIndexOf('/') + 1);
+		this.window.setTitle(fname);
+		
+		if (FileTypes.isVideo(path)) {
 			let $video = $('<video controls></video>');
 			$video.append($(`<source src="${url}">`));
 			$content.empty();
 			$content.append($video);
-		} else if (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.webp')) {
-			let $img = $(`<img src="${url}"></video>`);
+		} else if (FileTypes.isPicture(path)) {
+			let $img = $(`<img src="${url}"></img>`);
 			$content.empty();
 			$content.append($img);
+		} else if (FileTypes.isAudio(path)) {
+			let $audio = $('<audio controls></audio>');
+			$audio.append($(`<source src="${url}">`));
+			$content.empty();
+			$content.append($audio);
 		} else {
 			webSys.showErrorDialog('Unknown media type');
 		}

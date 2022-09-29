@@ -44,7 +44,7 @@ class VFS {
 		
 		for (let file of files) {
 			try { 
-				let stats = await FS.promises.lstat(path + file);
+				let stats = await FS.promises.stat(path + file);
 				if (stats.isDirectory()) file += '/';
 				
 				results.push(file);

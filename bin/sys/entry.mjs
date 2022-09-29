@@ -5,8 +5,12 @@ function entry() {
 	runFullyAttached();
 }
 
-function runFullyAttached(){
-	console.log('Launching fully attached.');
+function runFullyAttached() {
+	let m = import('./core.js');
+}
+
+function runAttached(){
+	console.log('Launching attached.');
 
 	var opt = {
 		detached: false,
