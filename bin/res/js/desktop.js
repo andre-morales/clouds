@@ -13,10 +13,6 @@ class Desktop {
 		this.mouseY = 0;
 		this.contextMenuOpen = false;
 
-		let bounds = this.$desktop[0].getBoundingClientRect();
-		this.screenWidth = bounds.width;
-		this.screenHeight = bounds.height;
-
 		$('.taskbar .fullscreen-btn').click(() => {
 			$('body')[0].requestFullscreen();
 		});
@@ -48,16 +44,14 @@ class Desktop {
 		});
 
 		$(window).on('resize', () => {
-			let bounds = this.$desktop[0].getBoundingClientRect();
-			this.screenWidth = bounds.width;
-			this.screenHeight = bounds.height;
-
+			this._queryBounds();
 			for (let w of this.windows) {
 				if (w.maximized) {
-					w.setSize(this.screenWidth, this.screenHeight);
+					w.setSize(this.windowsWidth, this.windowsHeight);
 				}
 			}
 		});	
+		this._queryBounds();
 
 		let bg = getCookie('bg');
 		if (bg) this.setBackground(bg);
@@ -161,6 +155,15 @@ class Desktop {
 
 	setCursor(cursor) {
 		document.body.style.cursor = cursor;
+	}
+
+	_queryBounds() {
+		let bounds = this.$desktop[0].getBoundingClientRect();
+		this.screenWidth = bounds.width;
+		this.screenHeight = bounds.height;
+		bounds = this.$windows[0].getBoundingClientRect();
+		this.windowsWidth = bounds.width;
+		this.windowsHeight = bounds.height;
 	}
 
 	/* Sets windows' z-index to match the windows array */

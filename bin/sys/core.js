@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.0';
+const KAPI_VERSION = '0.5.1';
 
 const VFSM = await import('./vfs.js')
 const Pathex = await import('./pathex.js');
@@ -78,11 +78,13 @@ function apiSetupRShell() {
 	rshells = {};
 
 	app.get('/shell/0/init', (req, res) => {
+		getGuardedReqUser(req);
 		let id = createRemoteShell();
 		res.json(id);
 	});
 
 	app.post('/shell/:id/send', (req, res) => {
+		getGuardedReqUser(req);
 		let shell = rshells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
@@ -94,6 +96,7 @@ function apiSetupRShell() {
 	});
 
 	app.get('/shell/:id/stdout', (req, res) => {
+		getGuardedReqUser(req);
 		let shell = rshells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
@@ -104,6 +107,7 @@ function apiSetupRShell() {
 	});
 
 	app.get('/shell/:id/stdout_new', async (req, res) => {
+		getGuardedReqUser(req);
 		res.set('Cache-Control', 'no-store');
 
 		let shell = rshells[req.params.id]
@@ -123,6 +127,7 @@ function apiSetupRShell() {
 	});
 
 	app.get('/shell/:id/kill', (req, res) => {
+		getGuardedReqUser(req);
 		let id = req.params.id;
 		if (!rshells[id]) {
 			res.status(404).end();
@@ -135,6 +140,7 @@ function apiSetupRShell() {
 	});
 
 	app.get('/shell/:id/ping', (req, res) => {
+		getGuardedReqUser(req);
 		let shell = rshells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
@@ -248,8 +254,7 @@ function apiSetupPages() {
 
 	// - Desktop page
 	app.get('/page/desktop', (req, res) => {
-		guardRequest(req);
-
+		getGuardedReqUser(req);
 		res.render('desktop');
 	});
 
@@ -260,20 +265,14 @@ function apiSetupPages() {
 
 function apiSetupApps() {
 	app.get('/app/:app/manifest/', (req, res) => {
-		if(!checkRequest(req)) {
-			denyRequest(res);
-			return;
-		}
+		getGuardedReqUser(req);
 
 		res.sendFile(Path.resolve('./bin/apps/' + req.params.app + '/manifest.json'));
 	});
 
 	app.get('/app/:app/res/*', (req, res) => {
-		if(!checkRequest(req)) {
-			denyRequest(res);
-			return;
-		}
-
+		getGuardedReqUser(req);
+		
 		let app = req.params.app;
 		let path = req.params[0];	
 		let fpath = './bin/apps/' + app + '/res/' + path;
@@ -282,16 +281,10 @@ function apiSetupApps() {
 }
 
 function apiSetupFS() {
-
 	app.get('/fs/q/*', async (req, res) => {	
-		if(!checkRequest(req)) {
-			denyRequest(res);
-			return;
-		}
+		let userId = getGuardedReqUser(req);
 
 		let vpath = '/' + req.params[0];
-		let userId = getRequestUser(req);
-		
 		let fpath = vfs.translate(userId, vpath);
 		if (!fpath) {
 			res.status(404).end();
@@ -302,16 +295,10 @@ function apiSetupFS() {
 	});	
 
 	app.post('/fs/u/*', async (req, res) => {	
-		if(!checkRequest(req)) {
-			denyRequest(res);
-			return;
-		}
+		let userId = getGuardedReqUser(req);
 
 		let vpath = '/' + req.params[0];
-		let userId = getRequestUser(req);
-		
 		let fpath = vfs.translate(userId, vpath);
-
 
 		if(req.files && req.files.upload){
 			let upload = req.files.upload;
@@ -332,11 +319,7 @@ function apiSetupFS() {
 	});	
 
 	app.get('/fs/ls/*', async(req, res) => {
-		let userId = getRequestUser(req);
-		if(userId == null) {
-			denyRequest(res);
-			return;
-		}
+		let userId = getGuardedReqUser(req);
 
 		let vpath = '/' + req.params[0];
 		if (vpath == '/') {
@@ -346,25 +329,20 @@ function apiSetupFS() {
 
 		let fpath = vfs.translate(userId, vpath);
 		if (!fpath) {
-			res.status(404).end();
+			res.status(400).end();
 			return;
 		}
 
-		let results = await vfs.listPDir(fpath);
-		if (results === 404) {
-			res.status(404).end();
-			return;
+		try {
+			let results = await vfs.listPDir(fpath);
+			res.json(results);
+		} catch(err) {
+			res.status(err).end();
 		}
-
-		res.json(results);
 	});
 
 	app.get('/fs/thumb/*', async (req, res) => {	
-		let userId = getRequestUser(req);
-		if(userId == null) {
-			denyRequest(res);
-			return;
-		}
+		let userId = getGuardedReqUser(req);
 
 		let vpath = '/' + req.params[0];
 
@@ -407,11 +385,13 @@ function isFileExtVideo(path) {
 	return false;
 }
 
-function guardRequest(req) {
-	if (!checkRequest(req)) throw new BadAuthExecpt();
+function getGuardedReqUser(req) {
+	let user = getReqUser(req);
+	if (!user) throw new BadAuthExecpt();
+	return user;
 }
 
-function getRequestUser(req) {
+function getReqUser(req) {
 	return 'test';
 
 	let key = req.cookies.authkey;
@@ -424,7 +404,7 @@ function getRequestUser(req) {
 }
 
 function checkRequest(req) {
-	return getRequestUser(req) != null;
+	return getReqUser(req) != null;
 }
 
 function denyRequest(res) {

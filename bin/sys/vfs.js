@@ -32,25 +32,31 @@ class VFS {
 	async listPDir(path) {
 		if (!path.endsWith('/')) path += '/';
 
-		let results = [];
-		let readdirf = Util.promisify(FS.readdir);
 		let files;
-
 		try {
-			files = await readdirf(path);
+			files = await FS.promises.readdir(path);
 		} catch (err) {
-			return 404;
-		}
-		
-		for (let file of files) {
-			try { 
-				let stats = await FS.promises.stat(path + file);
-				if (stats.isDirectory()) file += '/';
-				
-				results.push(file);
-			} catch(err) {}	
+			if (err.code == 'EPERM') throw 403;
+			if (err.code == 'ENOENT') throw 404;
+			throw 500;
 		}
 
+		let promises = files.map(async (file) => {
+			let type = '';
+
+			try {
+				let stats = await FS.promises.stat(path + file);
+				if (stats.isDirectory()) {
+					file += '/';
+				}
+			} catch(err) {
+				type = '*i';
+			}
+
+			return file + type;
+		});
+
+		let results = await Promise.all(promises);
 		return results;
 	}
 }

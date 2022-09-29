@@ -99,11 +99,25 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.$addressField.val(path);
 
 		let fres = await fetch('/fs/ls' + path);
-		if (fres.status == 404) {
-			this._sys.showErrorDialog("Can't find '" + path + "'");
+		if (fres.status != 200) {
+			let code = fres.status;
+			let msg = '';
+			switch (code) {
+				case 400:
+					msg = "No mapping."; break;
+				case 404:
+					msg = "Could't find."; break;
+				case 403:
+					msg = "Not allowed to access."; break;
+				case 500:
+					msg = "Failed to query."; break;
+			}
+
+			this._sys.showErrorDialog(`${msg}\nPath: "${path}"`);
 			this.$addressField.val(this.cwd);
-			return 404;
+			return code;
 		}
+
 		if (path == '/') {
 			this.window.setTitle('File Explorer');
 		} else {
@@ -120,14 +134,16 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		let files = await fres.json();
 
+		let val = (e) => {
+			if (e.endsWith('/')) return 1;
+			if (e.endsWith('*i')) return -1;
+			return 0;
+		};
 		files.sort((a, b) => {
-			let A = a.endsWith('/');
-			let B = b.endsWith('/');
-
+			let A = val(a);
+			let B = val(b);
 			if (A == B) return a.localeCompare(b);
-			
-			if (A) return -1;
-			if (B) return 1;
+			return B - A;
 		});
 
 		for (let file of files) {
@@ -159,27 +175,36 @@ window.ExplorerApp = class ExplorerApp extends App {
 		}
 	}
 
-	makeFileIcon(fpath, callback) {
+	makeFileIcon(fcodes, callback) {
+		let sp = fcodes.split('*');
+		let fpath = sp[0];
+		let fcode = sp[1];
+
 		let _desktop = this._sys.desktop;
 
 		let fname = fpath;
-		let absPath = pathJoin(this.cwd, fpath);
-		
-		let isDir = fpath.endsWith('/');
-
-		let classes = 'file';
+		let absPath = pathJoin(this.cwd, fname);
+		let classes = '';
 		let ic = '';
+
+		let isDir = fpath.endsWith('/');
 		if (isDir) {
 			classes += ' dir';
 			fname = fpath.slice(0, -1);
-		} else if (this._doFileExtRequestThumbs(fpath)) {
+		}
+		if (fcode == 'i') {
+			classes += ' blocked';
+		}
+		
+		if (this._doFileExtRequestThumbs(fpath)) {
 			ic = `<img src='/fs/thumb${absPath}'>`
 			classes += ' thumbbed';
 		} else {
 			let cl = this._getFileClassByExt(fpath);
 			if (cl) classes += ' ' + cl;
 		}
-		let $ic = $(`<div class='${classes}'><i>${ic}</i><span>${fname}</span></div>`);
+
+		let $ic = $(`<div class='file${classes}'><i>${ic}</i><span>${fname}</span></div>`);
 		$ic.click(() => {
 			if (_desktop.contextMenuOpen) return;
 
@@ -244,7 +269,6 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 	_getFileClassByExt(file) {
 		if (FileTypes.isAudio(file)) return 'audio';
-
 		return null;
 	}
 }

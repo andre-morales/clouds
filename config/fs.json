@@ -1,6 +1,10 @@
 {
-	"/glc/": {
-		"path": "C:/",
+	"/data/": {
+		"path": "/",
+		"access": "@all"
+	},
+	"/mux/": {
+		"path": "/data/data/com.termux/",
 		"access": "@all"
 	}
 }

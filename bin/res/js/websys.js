@@ -219,7 +219,10 @@ class WebSys {
 		win.setTitle(title);
 		let $body = win.$window.find('.body');
 		$body.append($('<img src="/res/img/icons/error.png">'))
-		$body.append($('<span>' + msg + '</span>'))
+
+		let html = msg.toString().replaceAll('\n', '<br>');
+
+		$body.append($('<span>' + html + '</span>'))
 		win.onCloseRequest = win.close;
 		win.setSize(380, 200);
 		win.bringToCenter();
