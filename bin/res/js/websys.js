@@ -93,6 +93,7 @@ class WebSys {
 			}
 
 			let app = new AppClass(this, buildArgs);
+			app.classId = manifest.id;
 			this.runningApps.push(app);
 
 			// Register the app as an user of the loaded scripts.
@@ -331,6 +332,40 @@ class FileTypes {
 
 	static isMedia(path) {
 		return FileTypes.isVideo(path) || FileTypes.isPicture(path) || FileTypes.isAudio(path);
+	}
+}
+
+class Reactor {
+	constructor() {
+		this.evclasses = {};
+	}
+
+	unregister(name) {
+		delete this.evclasses[name];
+	}
+
+	on(name, callback) {
+		let list = this.evclasses[name];
+		if (!list) list = this.evclasses[name] = [];
+
+		list.push(callback);
+		return callback;
+	}
+
+	off(name, callback) {
+		let list = this.evclasses[name];
+		if (!list) return;
+		arrErase(list, callbcak);
+	}
+
+	fire(name, args) {
+		let list = this.evclasses[name];
+		if (!list) return;
+
+		for (let fn of list) {
+			if (args) fn(...args);
+			else fn();
+		}
 	}
 }
 

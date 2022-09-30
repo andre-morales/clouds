@@ -15,13 +15,10 @@ window.ExplorerApp = class ExplorerApp extends App {
 		// Create window and fetch app body
 		this.window = this._sys.desktop.createWindow();
 		this.window.icon = '/res/img/ftypes/folder128.png';
-		this.window.onCloseRequest = () => {
-			this.window.close();
-			this.close();
-		}
-		this.window.backButton = () => {
+		this.window.on('closereq', () => this.close());
+		this.window.on('backnav', () => {
 			this.navigate('..');
-		};
+		});
 		this.window.setTitle('File Explorer');
 		let $win = this.window.$window;
 
@@ -41,7 +38,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		});
 		$win.find('.upload-btn').click(async () => {
 			let helperWin = webSys.desktop.createWindow();
-			helperWin.onCloseRequest = helperWin.close;
+			helperWin.on('closereq', () => helperWin.close());
 			
 			await helperWin.setContentToUrl('/app/explorer/res/upload-helper.html');
 			helperWin.setTitle('Upload to: ' + this.cwd);
@@ -80,6 +77,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 		});*/
 
 		// Make the window visible
+		this.window.bringToCenter();
+		this.window.focus();
 		this.window.setVisible(true);
 	}
 
@@ -121,7 +120,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.cwd = path;
 
 		// UI changes
-		this.$files.css('display', 'none');
+		this.$files.addClass('d-none');
 		this.$files.empty();
 		
 		if (path == '/') {
@@ -155,7 +154,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		}	
 
 		// Make the panel visible
-		this.$files.css('display', 'block');
+		this.$files.removeClass('d-none');
 	}
 
 	async goHome() {
@@ -274,6 +273,10 @@ window.ExplorerApp = class ExplorerApp extends App {
 		}
 
 		return false;
+	}
+
+	onClose() {
+		this.window.close();
 	}
 
 	_getFileClassByExt(file) {

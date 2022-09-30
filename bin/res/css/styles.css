@@ -37,3 +37,7 @@ body {
 		transform: rotate(359.9deg);
 	}
 }
+
+.d-none {
+	display: none;
+}

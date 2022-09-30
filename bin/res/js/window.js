@@ -2,6 +2,7 @@ class Window {
 	constructor(desktop) {
 		this._desktop = desktop;
 		this._ownerApp = null;
+		this.eventReactor = new Reactor();
 		this.$window = null;
 		this.visible = false;
 		this.maximized = false;
@@ -11,8 +12,6 @@ class Window {
 		this.minWidth = 116;
 		this.minHeight = 28;
 		this.restoredBounds = [8, 8, 600, 400];
-		this.onCloseRequest = () => { };
-		this.backButton = () => {};
 	}
 
 	init() {
@@ -31,7 +30,7 @@ class Window {
 		this.$window.on("mousedown", () => this.focus() );
 		this.$window.on("touchstart", () => this.focus() );
 
-		win.find('.close-btn').click(() => this.onCloseRequest());
+		win.find('.close-btn').click(() => this.fire('closereq'));
 		win.find('.minimize-btn').click(() => this.minimize());
 		this.$maxrestoreBtn = win.find('.maxrestore-btn');
 		this.$maxrestoreBtn.click(() => {
@@ -125,6 +124,18 @@ class Window {
 
 		$doc.on("mouseup", dragEnd);
 		$doc.on("touchend", dragEnd);
+	}
+
+	on(evclass, callback) {
+		this.eventReactor.on(evclass, callback);
+	}
+
+	off(evclass, callback) {
+		this.eventReactor.off(evclass, callback);
+	}
+
+	fire(evclass, args) {
+		this.eventReactor.fire(evclass, args);
 	}
 
 	dispose() {

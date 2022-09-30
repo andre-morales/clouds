@@ -11,7 +11,7 @@ window.SystemLogApp = class SystemLogApp extends App {
 		// Create window and fetch app body
 		this.window = webSys.desktop.createWindow();
 		this.window.icon = '/res/img/apps/log128.png';
-		this.window.onCloseRequest = () => this.close();
+		this.window.on('closereq', () => this.close());
 		
 		this.window.setTitle('System Log');
 		let $win = this.window.$window;

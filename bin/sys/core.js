@@ -120,6 +120,7 @@ function apiSetupRShell() {
 			let result = await shell.newStdoutData();
 			res.send(result);
 		} catch(err) {
+			console.log(err);
 			res.status(500).end();
 			return;
 		}
@@ -179,19 +180,16 @@ class RShell {
 	}
 
 	newStdoutData() {
-		return new Promise((resolve, reject) => {
-			if (this.newOut) {
-				let copy = this.newOut;
-				this.newOut = '';
-				resolve(copy);
-			} else {
-				if (this.waiterObj) {
-					reject();
-					return;
-				}
+		if (this.newOut) {
+			let promise = Promise.resolve(this.newOut);
+			this.newOut = '';
+			return promise;
+		}
 
-				this.waiterObj = resolve;
-			}
+		if (this.waiterObj) return Promise.reject();
+
+		return new Promise((res) => {
+			this.waiterObj = res;
 		});
 	}
 
@@ -201,8 +199,9 @@ class RShell {
 			this.stdout += content;
 
 			if (this.waiterObj) {
-				this.waiterObj(content);
+				let prom = this.waiterObj;
 				this.waiterObj = null;
+				prom(content);
 			} else {
 				this.newOut += content;
 			}

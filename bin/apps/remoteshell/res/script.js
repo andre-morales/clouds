@@ -14,7 +14,7 @@ window.RemoteShellApp = class RemoteShellApp extends App {
 		// Create window and fetch app body
 		this.window = webSys.desktop.createWindow();
 		this.window.icon = '/res/img/apps/terminal128.png';
-		this.window.onCloseRequest = () => this.close();
+		this.window.on('closereq', () => this.close());
 		
 		this.window.setTitle('Remote Shell');
 		let $win = this.window.$window;

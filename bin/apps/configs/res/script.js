@@ -13,7 +13,7 @@ window.ConfigsApp = class ConfigsApp extends App {
 		this.window.icon = '/res/img/apps/config128.png';
 		this.window.setHeight(200);
 		this.window.setTitle('Configs');
-		this.window.onCloseRequest = () => this.close();
+		this.window.on('closereq', () => this.close());
 		
 		let $win = this.window.$window;
 		$win.addClass('app-configs');

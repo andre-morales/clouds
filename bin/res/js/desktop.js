@@ -53,7 +53,7 @@ class Desktop {
 		});	
 		this._queryBounds();
 
-		let bg = getCookie('bg');
+		let bg = localStorage.getItem('bg');
 		if (bg) this.setBackground(bg);
 		else this.setBackground('/res/img/background.png');
 	}
@@ -76,7 +76,7 @@ class Desktop {
 
 	backButton() {
 		if (this.focusedWindow) {
-			this.focusedWindow.backButton();
+			this.focusedWindow.fire('backnav');
 		}
 	}
 
@@ -93,7 +93,7 @@ class Desktop {
 	setBackground(url, save) {
 		this.$desktop.css('background-image', 'url("' + url + '")');
 		if (save) {
-			setCookie('bg', url);
+			localStorage.setItem('bg', url);
 		}
 	}
 

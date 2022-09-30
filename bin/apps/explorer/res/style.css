@@ -54,6 +54,7 @@
 }
 
 .app-file-explorer .files {
+	display: block;
 }
 
 .app-file-explorer .file {
