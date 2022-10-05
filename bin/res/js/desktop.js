@@ -142,8 +142,10 @@ class Desktop {
 		let mwidth = $menu[0].offsetWidth;
 		let mheight = $menu[0].offsetHeight;
 
-		if (y + mheight > this.screenHeight) y -= mheight;
 		if (x + mwidth > this.screenWidth) x -= mwidth;
+		if (x < 0) x = 0;
+		if (y + mheight > this.screenHeight) y -= mheight;
+		if (y < 0) y = 0;
 
 		$menu.css('left', x);
 		$menu.css('top', y);

@@ -1,0 +1,7 @@
+{
+	"id": "audioconf",
+	"builder": "AudioConf",
+	"scripts": [
+		"/app/audioconf/res/script.js"	
+	]
+}

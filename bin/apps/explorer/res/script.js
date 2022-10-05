@@ -3,6 +3,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		super(webSys, args);
 		this.window = null;
 		this.$files = null;
+		this.classId = null;
 		this.cwd = null;
 	}
 
@@ -10,16 +11,15 @@ window.ExplorerApp = class ExplorerApp extends App {
 		if (this.window) return;
 
 		// Require resources
-		await this.requireStyle('/app/explorer/res/style.css');
+		this.requireStyle('/app/explorer/res/style.css');
 
 		// Create window and fetch app body
 		this.window = this._sys.desktop.createWindow();
 		this.window.icon = '/res/img/ftypes/folder128.png';
 		this.window.on('closereq', () => this.close());
-		this.window.on('backnav', () => {
-			this.navigate('..');
-		});
+		this.window.on('backnav', () => this.navigate('..'));
 		this.window.setTitle('File Explorer');
+
 		let $win = this.window.$window;
 
 		// Fetch explorer body
@@ -28,7 +28,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 		// Query DOM
 		this.$files = $win.find('.files');
 		this.$addressField = $win.find('.address-field');
-		
+		this.$favorites = $win.find('.favorites');
+
 		// Setup events
 		this.$addressField.on('change', () => {
 			this.go(this.$addressField.val());
@@ -49,22 +50,21 @@ window.ExplorerApp = class ExplorerApp extends App {
 			let uploadPath = this.cwd;
 			let url = '/fs/u' + uploadPath;
 			let $form = helperWin.$window.find('form');
-			$form.submit(function(ev) {
-			    $.ajax({
-			        url: url,
-			        type: 'POST',
-			        data: new FormData(this),
-			        processData: false,
-			        contentType: false,
+			$form.submit((ev) => {
+			    fetch(url, {
+			        method: 'POST',
+			        body: new FormData($form[0])
 			    });
 
 		    	ev.preventDefault();
 			});
 			helperWin.setVisible(true);
 		});
-
+		$win.find('.clearfavs-btn').click(() => this.clearFavorites());
 		// Go to home page
 		await this.goHome();
+
+		this.refreshFavorites();
 
 		/*if (this.initArgs.includes('--choose')) {
 			$win.find('.choose-options').addClass('.visible');
@@ -79,6 +79,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		// Make the window visible
 		this.window.bringToCenter();
 		this.window.focus();
+		this.restoreAppWindowState(this.window);
 		this.window.setVisible(true);
 	}
 
@@ -237,6 +238,9 @@ window.ExplorerApp = class ExplorerApp extends App {
 					let app = await webSys.runApp('explorer');
 					app.go(absPath);
 				}],
+				['Add to favorites', () => {
+					this.addFavorite(absPath)
+				}]
 			);
 		} else {
 			menu.push(
@@ -259,8 +263,69 @@ window.ExplorerApp = class ExplorerApp extends App {
 		return menu;
 	}
 
+	addFavorite(path) {
+		let favorites = [];
+
+		let it = localStorage.getItem('favorites');
+		if (it) {
+			favorites = JSON.parse(it);
+		}
+
+		favorites.push(path);
+
+		localStorage.setItem('favorites', JSON.stringify(favorites));
+		this.refreshFavorites();
+	}
+
+	removeFavorite(path) {
+		let favorites = [];
+
+		let it = localStorage.getItem('favorites');
+		if (it) {
+			favorites = JSON.parse(it);
+		}
+
+		arrErase(favorites, path);
+
+		localStorage.setItem('favorites', JSON.stringify(favorites));
+		this.refreshFavorites();
+	}
+
+	clearFavorites() {
+		localStorage.removeItem('favorites');
+		this.refreshFavorites();
+	}
+
+	refreshFavorites() {
+		this.$favorites.empty();
+
+		let favorites = [];
+
+		let it = localStorage.getItem('favorites');
+		if (it) {
+			favorites = JSON.parse(it);
+		}
+
+		for (let path of favorites) {
+			let fname = this._getFileName(path);
+			let $item = $('<li>' + fname + '</li>');
+			$item.click(() => {
+				this.openHandler(path);
+			});
+			webSys.desktop.addContextMenuFnOn($item, () => [
+				['Remove', () => this.removeFavorite(path)]
+			]);
+			this.$favorites.append($item);
+		}
+	}
+
 	openFileExt(path) {
 		window.open('/fs/q' + path, '_blank').focus();
+	}
+
+	onClose() {
+		this.saveAppWindowState(this.window);
+		this.window.close();
 	}
 
 	/* Checks if a string path represents a file (image or video) that
@@ -275,8 +340,14 @@ window.ExplorerApp = class ExplorerApp extends App {
 		return false;
 	}
 
-	onClose() {
-		this.window.close();
+	_getFileName(path) {
+		if (path.endsWith('/')) {
+			path = path.slice(0, -1);
+		}
+
+		let sl = path.lastIndexOf('/');
+		if (sl == -1) return path;
+		return path.slice(sl + 1);
 	}
 
 	_getFileClassByExt(file) {

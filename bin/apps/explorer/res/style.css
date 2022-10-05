@@ -2,26 +2,6 @@
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	overflow: hidden;
-}
-
-.app-file-explorer .field {
-	padding: 4px;
-	font-size: inherit;
-	border: solid 1px blue;
-	background: none;
-	color: white;
-}
-
-.app-file-explorer .btn {
-	padding: 4px;
-	font-size: inherit;
-	border: solid 1px blue;
-	background: none;
-	color: white;
-}
-
-.app-file-explorer .head {
 }
 
 .app-file-explorer .ribbon {
@@ -49,12 +29,29 @@
 }
 
 .app-file-explorer .body {
+	display: flex;
 	flex-grow: 1;
-	overflow: auto;
+	overflow: hidden;
+}
+
+.app-file-explorer aside {
+	flex-shrink: 0;
+	background: rgba(0, 0, 0, 0.1);
+}
+
+.app-file-explorer aside li {
+	margin: 4px;
+	padding-left: 1.75rem;
+	font-size: 12pt;
+	background-image: url('/res/img/ftypes/folder128.png');
+	background-size: contain;
+	background-repeat: no-repeat;
 }
 
 .app-file-explorer .files {
 	display: block;
+	overflow: auto;
+	flex-grow: 1;
 }
 
 .app-file-explorer .file {
@@ -110,4 +107,20 @@
 
 .app-file-explorer .file.audio i {
 	background-image: url('/res/img/ftypes/audio128.png');
+}
+
+.app-file-explorer .field {
+	padding: 4px;
+	font-size: inherit;
+	border: solid 1px blue;
+	background: none;
+	color: white;
+}
+
+.app-file-explorer .btn {
+	padding: 4px;
+	font-size: inherit;
+	border: solid 1px blue;
+	background: none;
+	color: white;
 }

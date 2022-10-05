@@ -1,23 +1,24 @@
 import * as CProcess from 'child_process';
 
 function entry() {
-	//runFullyDetached();
-	runFullyAttached();
+	runInSelf();
 }
 
-function runFullyAttached() {
+function runInSelf() {
+	console.log('Launching in self.');
+
 	let m = import('./core.js');
 }
 
-function runAttached(){
-	console.log('Launching attached.');
+function runAttachedProc(){
+	console.log('Launching in attached process.');
 
 	var opt = {
 		detached: false,
 		stdio: 'pipe'
 	}
 
-	let child = CProcess.spawn("node.exe", ["bin\\sys\\core.js"], opt);
+	let child = CProcess.spawn("node", ["bin/sys/core.js"], opt);
 	child.stdout.on('data', (data) => {
 		console.log(`${data}`);
 	});
@@ -26,15 +27,15 @@ function runAttached(){
 	});
 }
 
-function runFullyDetached() {
-	console.log('Launching fully detached.');
+function runDetachedProc() {
+	console.log('Launching in detached process.');
 
 	var opt = {
 		detached: true,
 		stdio: 'ignore'
 	}
 
-	let child = CProcess.spawn("node.exe", ["bin\\sys\\core.js"], opt);
+	let child = CProcess.spawn("node", ["bin/sys/core.js"], opt);
 	child.unref();
 }
 

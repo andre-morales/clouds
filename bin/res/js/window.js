@@ -57,7 +57,7 @@ class Window {
 			['Minimize', () => this.minimize()],
 			['Restore', () => this.restore()],
 			'-',
-			['Close', () => this.onCloseRequest()]
+			['Close', () => this.fire('closereq')]
 		];
 	}
 
@@ -150,6 +150,8 @@ class Window {
 	}
 
 	setPosition(x, y) {
+		if (!isFinite(x) || !isFinite(y)) return;
+
 		if (y < 0) y = 0;
 		this.posX = x;
 		this.posY = y;
@@ -161,14 +163,21 @@ class Window {
 	}
 
 	setSize(w, h) {
+		if (!isFinite(w) || !isFinite(h)) return;
+
 		if (w < this.minWidth) w = this.minWidth;
 		if (h < this.minHeight) h = this.minHeight;
+
+		if (this.width == w && this.height == h) return;
+
 		this.width = w;
 		this.height = h;
 
 		if (this.$window) {
 			this.$window[0].style.width = this.width + "px";
 			this.$window[0].style.height = this.height + "px";
+
+			this.fire('resize');
 		}
 	}
 
@@ -244,18 +253,29 @@ class Window {
 		this.setPosition(x, y);
 	}
 
+	setMaximized(max) {
+		if (this.maximized == max) return;
+		this.maximized = max;
+
+		if (max) {
+			this.restoredBounds = this.getBoundsA();
+
+			let rect = this._desktop.$windows[0].getBoundingClientRect();
+			this.setPosition(0, 0);
+			this.setSize(rect.width, rect.height);
+
+			this.$window.addClass('maximized');
+			this.$maxrestoreBtn.addClass('restore');
+			
+		} else {
+			this.setBoundsA(this.restoredBounds);
+			this.$window.removeClass('maximized');
+			this.$maxrestoreBtn.removeClass('restore');
+		}
+	}
+
 	maximize() {
-		if (this.maximized) return;
-
-		this.restoredBounds = this.getBoundsA();
-
-		let rect = this._desktop.$windows[0].getBoundingClientRect();
-		this.setPosition(0, 0);
-		this.setSize(rect.width, rect.height);
-
-		this.$window.addClass('maximized');
-		this.$maxrestoreBtn.addClass('restore');
-		this.maximized = true;
+		this.setMaximized(true);
 	}
 
 	restore() {
@@ -271,10 +291,7 @@ class Window {
 		}
 
 		if (this.maximized) {
-			this.setBoundsA(this.restoredBounds);
-			this.maximized = false;
-			this.$window.removeClass('maximized');
-			this.$maxrestoreBtn.removeClass('restore');
+			this.setMaximized(false);
 		}
 	}
 

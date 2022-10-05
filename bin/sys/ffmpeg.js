@@ -10,7 +10,7 @@ export class FFmpeg {
 		// Run ffprobe on video to get video length.
 		let videolength = await this.getVideoLength(path);
 
-		let args = ['-ss', videolength / 2, '-i', path, '-q:v', '4', '-vf', "scale='iw*144/max(iw,ih):-1'", '-vframes', 1, dest];
+		let args = ['-ss', videolength / 2, '-i', path, '-q:v', '4', '-vf', "scale='iw*144/max(iw,ih):-1'", '-vframes', 1, '-f', 'mjpeg', dest];
 		try {
 			await execute(ffmpegExec, args);
 			return true;

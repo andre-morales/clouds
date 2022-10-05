@@ -10,11 +10,19 @@
 }
 
 .app-sinestesia img {
+	flex-grow: 1;
 	max-width: 100%;
 	max-height: 100%;
 }
 
 .app-sinestesia video {
+	flex-grow: 1;
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.app-sinestesia audio {
+	flex-grow: 1;
 	max-width: 100%;
 	max-height: 100%;
 }

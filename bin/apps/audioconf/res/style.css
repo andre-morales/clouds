@@ -1,0 +1,16 @@
+.app-audioconf {
+	display: flex;
+	padding: 1rem;
+	flex-direction: column;
+}
+
+.app-audioconf .audio-eq {
+	flex-grow: 1;
+	overflow: hidden;
+}
+
+.audio-eq canvas {
+	background: linear-gradient(to right, #181F27, #223, #181F27);
+	width: 100%;
+	height: 100%;
+}

@@ -21,8 +21,8 @@ async function main() {
 }
 
 class WebSys {
-	static get WEBSYS_VERSION() { return '0.4.3'; }
-	static get WSCLIENT_VERSION() { return '0.4.1'; }
+	static get WEBSYS_VERSION() { return '0.5.0'; }
+	static get WSCLIENT_VERSION() { return '0.5.0'; }
 
 	constructor() {
 		this.desktop = new Desktop(this);
@@ -51,6 +51,35 @@ class WebSys {
 		let clientv = WebSys.WSCLIENT_VERSION;
 		let vtext = `WebSys Modern v${sysv}<br>API v${apiv}<br>Client v${clientv}`; 
 		$('.desktop .backplane .text').html(vtext);
+
+		this.audioContext = new AudioContext();
+		this.audioDestination = this.audioContext.createGain();
+
+		var lowshelf = this.audioContext.createBiquadFilter(),
+	    mid = this.audioContext.createBiquadFilter(),
+	    highshelf = this.audioContext.createBiquadFilter();
+
+	 //set the filter types (you could set all to 5, for a different result, feel free to experiment)
+	 lowshelf.type = 'lowshelf';
+	 lowshelf.frequency.value = 250;
+	 lowshelf.gain.value = 0;
+
+	 mid.type = 'peaking';
+	 mid.frequency.value = 1000;
+	 mid.gain.value = 0;
+
+	 highshelf.type = 'highshelf';
+	 highshelf.frequency.value = 2000;
+	 highshelf.gain.value = 0;
+
+	 this.lowshelf = lowshelf;
+	 this.mids = mid;
+	 this.highshelf = highshelf;
+
+	 this.audioDestination.connect(lowshelf);
+	 lowshelf.connect(mid);
+	 mid.connect(highshelf);
+	 highshelf.connect(this.audioContext.destination);
 
 		if (args && args.loc) {
 			let app = await runApp('explorer');
@@ -92,7 +121,7 @@ class WebSys {
 				throw Error('Failed to instantiate "' + manifestURL + '", builder unavailable.');
 			}
 
-			let app = new AppClass(this, buildArgs);
+			let app = new AppClass(this, buildArgs);	
 			app.classId = manifest.id;
 			this.runningApps.push(app);
 
@@ -224,7 +253,7 @@ class WebSys {
 		let html = msg.toString().replaceAll('\n', '<br>');
 
 		$body.append($('<span>' + html + '</span>'))
-		win.onCloseRequest = win.close;
+		win.on('closereq', () => win.close());
 		win.setSize(380, 200);
 		win.bringToCenter();
 		win.bringToFront();
@@ -283,6 +312,31 @@ class App {
 		this.loadedResources.push(url);
 	}
 
+	saveAppWindowState(win) {
+		let state;
+		if (win.maximized) {
+			state = [win.maximized, win.restoredBounds];
+		} else {
+			state = [win.maximized, win.getBoundsA()];
+		}
+
+		let regname = 'app.' + this.classId + '.winstate';
+		localStorage.setItem(regname, JSON.stringify(state));
+	}
+
+	restoreAppWindowState(win) {
+		let regname = 'app.' + this.classId + '.winstate';
+		try {
+			let state = JSON.parse(localStorage.getItem(regname));
+			if (state) {
+				win.setBoundsA(state[1]);
+				win.setMaximized(state[0]);
+				return true;
+			}
+		} catch (e) {}
+		return false;
+	}
+
 	onClose() {}
 	
 	close() {
@@ -319,7 +373,7 @@ class FileTypes {
 	}
 
 	static isVideo(path) {
-		return endsWithArr(path, ['.mp4', '.mkv', '.webm']);
+		return endsWithArr(path, ['.mp4', '.mkv', '.webm', '.m4v']);
 	}
 
 	static isPicture(path) {
@@ -327,7 +381,7 @@ class FileTypes {
 	}
 
 	static isAudio(path) {
-		return endsWithArr(path, ['.mp3', '.ogg', 'm4a']);
+		return endsWithArr(path, ['.mp3', '.ogg', 'm4a', '.opus']);
 	}
 
 	static isMedia(path) {

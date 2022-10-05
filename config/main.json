@@ -2,8 +2,8 @@
 	"extensions": {
 		"ffmpeg": {
 			"enabled": true,
-			"ffmpeg_exec": "C:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe",
-			"ffprobe_exec": "C:\\Program Files\\FFmpeg\\bin\\ffprobe.exe"
+			"ffmpeg_exec": "ffmpeg",
+			"ffprobe_exec": "ffprobe"
 		}
 	}
 }

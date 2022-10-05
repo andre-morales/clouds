@@ -6,7 +6,7 @@ window.SinesApp = class SinesApp extends App {
 
 	async init() {
 		// Require resources
-		await this.requireStyle('/app/sinestesia/res/style.css');
+		this.requireStyle('/app/sinestesia/res/style.css');
 
 		// Create window and fetch app body
 		this.window = webSys.desktop.createWindow();
@@ -21,6 +21,7 @@ window.SinesApp = class SinesApp extends App {
 		await this.window.setContentToUrl('/app/sinestesia/res/main.html');
 
 		// Make the window visible
+		this.restoreAppWindowState(this.window);
 		this.window.setVisible(true);
 	}
 
@@ -40,6 +41,11 @@ window.SinesApp = class SinesApp extends App {
 			$video.append($(`<source src="${url}">`));
 			$content.empty();
 			$content.append($video);
+
+			let track = webSys.audioContext.createMediaElementSource($video[0]);
+			track.connect(webSys.audioDestination);
+			webSys.audioContext.resume();
+
 		} else if (FileTypes.isPicture(path)) {
 			let $img = $(`<img src="${url}"></img>`);
 			$content.empty();
@@ -49,12 +55,17 @@ window.SinesApp = class SinesApp extends App {
 			$audio.append($(`<source src="${url}">`));
 			$content.empty();
 			$content.append($audio);
+
+			let track = webSys.audioContext.createMediaElementSource($audio[0]);
+			track.connect(webSys.audioDestination);
+			webSys.audioContext.resume();
 		} else {
 			webSys.showErrorDialog('Unknown media type');
 		}
 	}
 
 	onClose() {
+		this.saveAppWindowState(this.window);
 		this.window.close();
 	}
 }

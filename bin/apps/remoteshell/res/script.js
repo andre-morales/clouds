@@ -2,10 +2,17 @@ window.RemoteShellApp = class RemoteShellApp extends App {
 	constructor(webSys) {
 		super(webSys);
 		this.window = null;
+		this.shellId = null;
 	}
 
 	async init() {
 		let fres = await fetch('/shell/0/init');
+		if (fres.status != 200) {
+			webSys.showErrorDialog('Shell creation failed.');
+			this.close();
+			return;
+		}
+
 		this.shellId = await fres.json();
 
 		// Require resources
@@ -71,8 +78,9 @@ window.RemoteShellApp = class RemoteShellApp extends App {
 		clearTimeout(this.fetchTimeout__);
 		this.fetchTimeout__ = null;
 
-		fetch('/shell/' + this.shellId + '/kill');
+		
 		this._sys.removeLogListener(this.logListener);
-		this.window.close();
+		if (this.shellId) fetch('/shell/' + this.shellId + '/kill');
+		if (this.window) this.window.close();
 	}
 }

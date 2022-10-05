@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.1';
+const KAPI_VERSION = '0.5.2';
 
 const VFSM = await import('./vfs.js')
 const Pathex = await import('./pathex.js');
@@ -80,6 +80,10 @@ function apiSetupRShell() {
 	app.get('/shell/0/init', (req, res) => {
 		getGuardedReqUser(req);
 		let id = createRemoteShell();
+		if (!id) {
+			res.status(500).end();
+			return;
+		}
 		res.json(id);
 	});
 
@@ -176,7 +180,13 @@ class RShell {
 	}
 
 	spawn() {
-		return this.proc = CProc.spawn('cmd.exe');
+		let proc = CProc.spawn('cmd.exe');
+		proc.on('error', (err) => {
+			if (err.code != 'ENOENT') console.log(err);
+		});
+
+		if (proc.pid) return this.proc = proc;
+		return null;
 	}
 
 	newStdoutData() {
@@ -221,13 +231,18 @@ class RShell {
 }
 
 function createRemoteShell() {
-	let id = rshellCounter++;
+	let id = rshellCounter;
 	console.log('Creating shell ' + id);
-
-	let shellObj = new RShell(id);
-	rshells[id] = shellObj;
 	
-	shellObj.spawn();
+	let shellObj = new RShell(id);
+
+	try {
+		if (!shellObj.spawn()) return false;
+	} catch(err) {
+		return false;
+	}
+	rshells[id] = shellObj;
+	rshellCounter++
 	shellObj.setupOutput();
 	shellObj.ping();
 
@@ -299,22 +314,30 @@ function apiSetupFS() {
 		let vpath = '/' + req.params[0];
 		let fpath = vfs.translate(userId, vpath);
 
-		if(req.files && req.files.upload){
-			let upload = req.files.upload;
-			var files = upload;
-			if(!Array.isArray(upload)){
-				files = [files];
-			}
-
-			for(let file of files){
-				file.mv(Path.join(fpath, file.name));
-			}	
-
-			res.end();
-			return;		
+		if (!req.files) {
+			console.log('no files');
+			res.status(500).end();
+			return;
 		}
 
-		res.status(500).end();
+		if (!req.files.upload) {
+			console.log('no uploaded files');
+			res.status(500).end();
+			return;
+		}
+
+		
+		let upload = req.files.upload;
+		var files = upload;
+		if(!Array.isArray(upload)){
+			files = [files];
+		}
+
+		for(let file of files){
+			file.mv(Path.join(fpath, file.name));
+		}	
+
+		res.end();
 	});	
 
 	app.get('/fs/ls/*', async(req, res) => {
@@ -448,7 +471,7 @@ async function handleThumbRequest(_abs, res){
 
 	var thumbfolder = Pathex.toFullSystemPath(`./.thumbnails/`);
 	let fthname = toBase64(_abs);
-	var thumbpath = `${thumbfolder}/${fthname}.jpg`;
+	var thumbpath = `${thumbfolder}/${fthname}.thb`;
 
 	if(FS.existsSync(thumbpath)){
 		res.sendFile(thumbpath);
