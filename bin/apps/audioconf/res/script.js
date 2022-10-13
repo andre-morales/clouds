@@ -1,15 +1,17 @@
 window.AudioConf = class AudioConf extends App {
-	constructor(webSys) {
-		super(webSys);
+	constructor() {
+		super();
 		this.window = null;
 	}
 
 	async init() {
+		let self = this;
+
 		// Require resources
 		this.requireStyle('/app/audioconf/res/style.css');
 
 		// Create window and fetch app body
-		this.window = webSys.desktop.createWindow();
+		this.window = WebSys.desktop.createWindow();
 		this.window.icon = '/res/img/apps/audio128.png';
 		this.window.on('closereq', () => this.close());
 		
@@ -24,13 +26,13 @@ window.AudioConf = class AudioConf extends App {
 		let $mrais = $win.find('.master-raiser');
 
 		let change = () => {
-			let mg = $mgain.val();
-			let mr = $mrais.val() ** 2;
+			let mg = $mgain.val() ** 2;
+			let mr = $mrais.val() ** 5;
 
-			webSys.audioDestination.gain.value = mg / 100.0 * mr;
+			WebSys.audioFinal.gain.value = mg * mr;
 
-			$('.master-gain-text').text(mg + '%');
-			$('.master-raiser-text').text(mr + 'x times');
+			$('.master-gain-text').text((mg * 100).toFixed(0) + '%');
+			$('.master-raiser-text').text(mr.toFixed(1) + 'x times');
 		}
 
 		$mgain.on('input', change);
@@ -38,15 +40,38 @@ window.AudioConf = class AudioConf extends App {
 
 		let $eqinf = $win.find('.eq-inf');
 		$eqinf.on('input', () => {
-			this.eqInfluence = $eqinf.val();
+			this.eqInfluence = $eqinf.val() ** 2;
 			this.recalcEq();
 
-			$win.find('.eq-inf-text').text(this.eqInfluence);
+			$win.find('.eq-inf-text').text(this.eqInfluence.toFixed(2));
 		});
+		$win.find('.eq-apply-btn').click(() => {
+			for (let p of this.eqPoints) {
+				p[1] *= this.eqInfluence;
+			}
 
+			this.eqInfluence = 1;
+			$eqinf.val(1);
+			$win.find('.eq-inf-text').text('1.00');
+			this.redrawEq();
+		});
+		$win.find('.clip-enable').change(function() {
+			WebSys.audioClipEnabled = this.checked;
+		});
+		$win.find('.clip-bound').on('input', function() {
+			let v = this.value * 1.0;
+			$win.find('.clip-bound-text').text(v.toFixed(2));
+			WebSys.audioClipBound = v;
+		});
 		this.maxEqDb = 12;
 		this.eqInfluence = 1.0;
-		this.eqPoints = [[0.1, 0.2], [0.5, 0.5], [0.7, -0.5]];
+		this.eqPoints = [];
+
+		for (let p of WebSys.audioEqPoints) {
+			let fr = Math.log2(p.frequency.value / 20) / 10;
+			let gain = p.gain.value / this.maxEqDb;
+			this.eqPoints.push([fr, gain]);
+		}
 		this.setupEq();
 		
 		// Make the window visible
@@ -64,7 +89,7 @@ window.AudioConf = class AudioConf extends App {
 		this.window.on('resize', () => this.redrawEq());
 
 		let held = false;
-		let heldPoint = null;
+		let heldPointI = -1;
 
 		let mdown = (clx, cly) => {
 			let rect = this.eqCanvas.getBoundingClientRect();
@@ -74,10 +99,11 @@ window.AudioConf = class AudioConf extends App {
 			let cy = my / rect.height * 2 - 1;
 			let abs = Math.abs;
 
-			for (let p of this.eqPoints) {
-				if (abs(p[0] - cx) < 0.1 &&
-					abs(-p[1] - cy) < 0.1) {
-					heldPoint = p;
+			for (let i = 0; i < this.eqPoints.length; i++) {
+				let p = this.eqPoints[i];
+				if (abs(p[0] - cx) < 0.05 &&
+					abs(-p[1] - cy) < 0.05) {
+					heldPointI = i;
 					held = true;
 					break;
 				}
@@ -89,12 +115,31 @@ window.AudioConf = class AudioConf extends App {
 			let rect = this.eqCanvas.getBoundingClientRect();
 			let mx = cx - rect.x;
 			let my = cy - rect.y;
+			let pts = this.eqPoints;
 
-			heldPoint[0] = mx / rect.width;
-			heldPoint[1] = -my / rect.height * 2 + 1;
+			let fr = clampf(mx / rect.width, 0, 1);
+
+			let nextI = heldPointI + 1;
+			if (nextI < pts.length && fr > pts[nextI][0]) {
+				pts[heldPointI][0] = pts[nextI][0];
+				pts[heldPointI][1] = pts[nextI][1];
+
+				heldPointI += 1;
+			}
+
+			let prevI = heldPointI - 1;
+			if (prevI >= 0 && fr < pts[prevI][0]) {
+				pts[heldPointI][0] = pts[prevI][0];
+				pts[heldPointI][1] = pts[prevI][1];
+
+				heldPointI -= 1;
+			}
+
+			let gain = clampf(-my / rect.height * 2 + 1, -1, 1);
+			pts[heldPointI][0] = fr;
+			pts[heldPointI][1] = gain;
 
 			this.recalcEq();
-
 			this.redrawEq();
 		};
 
@@ -126,11 +171,7 @@ window.AudioConf = class AudioConf extends App {
 
 	recalcEq() {
 		let points = this.eqPoints;
-		let controls = [
-			webSys.lowshelf,
-			webSys.mids,
-			webSys.highshelf
-		];
+		let controls = WebSys.audioEqPoints;
 
 		for (let i = 0; i < points.length; i++) {
 			let p = points[i];
@@ -145,18 +186,19 @@ window.AudioConf = class AudioConf extends App {
 	}
 
 	redrawEq() {
+		let $canvasC = this.window.$window.find('.audio-eq');
 		let canvas = this.eqCanvas;
 		let gr = this.eqCanvasContext;
 
-		let bounds = canvas.getBoundingClientRect();
-		let scaling = 1.2;
+		let bounds = $canvasC[0].getBoundingClientRect();
+		let scaling = 1.25;
 		let gw = bounds.width * scaling;
 		let gh = bounds.height * scaling;
 		canvas.width = gw;
 		canvas.height = gh;
 
 		// Grid
-		gr.strokeStyle = 'gray';
+		gr.strokeStyle = '#146';
 		gr.beginPath()
 		gr.moveTo(0, gh / 2);
 		gr.lineTo(gw, gh / 2);
@@ -176,9 +218,9 @@ window.AudioConf = class AudioConf extends App {
 			return [px, py];
 		});
 		gr.strokeStyle = 'white';
-		gr.font = '11pt sans-serif';
+		gr.font = 'bold 11pt sans-serif';
 		gr.fillStyle = 'white';
-		gr.lineWidth = 2;
+		gr.lineWidth = 1;
 		gr.beginPath();
 		gr.moveTo(0, pointsXY[0][1]);
 		for (let p of pointsXY) {
@@ -194,14 +236,27 @@ window.AudioConf = class AudioConf extends App {
 			gr.fill();
 		}
 
-		gr.fillStyle = '#ACF';
-		for (let p of points) {
-			let px = p[0] * gw;
-			let py = (-p[1] + 1) / 2 * gh;
-
+		gr.fillStyle = '#9BF';
+		for (let i = 0; i < points.length; i++) {
+			let p = points[i];
+			
 			let fr = 2 ** (p[0] * 10) * 20;
-			let dB = p[1] * this.maxEqDb;
-			gr.fillText(fr.toFixed(0) + ' Hz | ' + dB.toFixed(1) + ' dB', px - 40, py+20);
+			let gain = p[1] * this.maxEqDb;
+
+			let frStr;
+			if (fr > 1000) {
+				frStr = (fr / 1000).toFixed(1) + ' kHz';
+			} else if (fr > 500) {
+				frStr = Math.round(fr / 10) * 10 + ' Hz';
+			} else if (fr > 100) {
+				frStr = Math.round(fr / 5) * 5 + ' Hz';
+			} else {
+				frStr = Math.round(fr) + ' Hz';
+			}
+
+			let px = pointsXY[i][0] - 40
+			let py = pointsXY[i][1] + 20;
+			gr.fillText(`${frStr} | ${gain.toFixed(1)} dB`, px, py);
 		}
 		
 	}

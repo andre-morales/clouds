@@ -1,23 +1,22 @@
-<div class='app-file-explorer'>
-	<div class='head'>
-		<div class='ribbon'>
-			<button class='upload-btn'>Upload</button>
-			<button class='clearfavs-btn'>Clear Favorites</button>
-		</div>
-		<div class='navigation'>
-			<button class="btn back-btn">..</button>
-			<input class='field address-field' value='/'>
-		</div>
-		<!--<div class='choose-options'>
-			<button class='select'>Done</button>
-		</div>-->
+<div class='head'>
+	<div class='navigation'>
+		<button class='btn back-btn'></button>
+		<button class='btn refresh-btn'></button>
+		<input class='field address-field' value='/'>
+		<input class='field search-field' placeholder="Search...">
 	</div>
-	<div class='body'>
-		<aside>
-			<ul class='favorites'>
-				
-			</ul>
-		</aside>
+</div>
+<div class='body'>
+	<aside>
+		<ul class='favorites'></ul>
+		<button class='btn favorites-btn'>&lt;</button>
+	</aside>
+	<div class='files-container'>
 		<div class='files'></div>
+	</div>
+</div>
+<div class='footer'>
+	<div class='choose-options d-none'>
+		<button class='btn select'>Done</button>
 	</div>
 </div>

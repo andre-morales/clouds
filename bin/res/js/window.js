@@ -3,6 +3,7 @@ class Window {
 		this._desktop = desktop;
 		this._ownerApp = null;
 		this.eventReactor = new Reactor();
+		this.eventReactor.register('closereq', 'backnav', 'resize');
 		this.$window = null;
 		this.visible = false;
 		this.maximized = false;
@@ -25,22 +26,32 @@ class Window {
 		// Queries
 		this.$window = win;
 		this.$windowHeader = win.find('.head');
+		this.$windowTitle = win.find('.title');
 
 		// Behavior
+		let hammer = new Hammer.Manager(this.$window[0], {
+			recognizers: [
+				[Hammer.Swipe,{ direction: Hammer.DIRECTION_LEFT }],
+			]
+		});
+		hammer.on('swipeleft', () => {
+			this.fire('backnav');
+		});
+
 		this.$window.on("mousedown", () => this.focus() );
 		this.$window.on("touchstart", () => this.focus() );
 
 		win.find('.close-btn').click(() => this.fire('closereq'));
 		win.find('.minimize-btn').click(() => this.minimize());
-		this.$maxrestoreBtn = win.find('.maxrestore-btn');
-		this.$maxrestoreBtn.click(() => {
+		win.find('.maxrestore-btn').click(() => {
 			if (this.maximized) this.restore();
-			else this.maximize()
+			else this.setMaximized(true)
 		});
 		win.find('.options-btn').click((ev) => {
 			this._desktop.openContextMenuAt(this.optionsMenu, ev.clientX, ev.clientY);
 		});
-		this._desktop.addContextMenuOn(win.find('.title'), this.optionsMenu)
+		this._desktop.addContextMenuOn(this.$windowTitle, this.optionsMenu)
+		this.$windowTitle.dblclick(() => this.setMaximized(!this.maximized));
 		this.setupDragListeners();
 
 		// Styling
@@ -53,7 +64,7 @@ class Window {
 	makeOptionsMenu() {
 		return [
 			['Fullscreen', () => this.makeFullscreen()],
-			['Maximize', () => this.maximize()],
+			['Maximize', () => this.setMaximized(true)],
 			['Minimize', () => this.minimize()],
 			['Restore', () => this.restore()],
 			'-',
@@ -103,7 +114,7 @@ class Window {
 		let $doc = $(document);
 		let $wh = this.$windowHeader;
 
-		let $title = $wh.find('.title');
+		let $title = this.$windowTitle;
 		$title.on("mousedown", (e) => {
 			dragStart(e.pageX, e.pageY);
 		});
@@ -146,7 +157,7 @@ class Window {
 
 	setTitle(title) {
 		this.title = title;
-		$(this.$window).find('.title').text(title);
+		this.$windowTitle.text(title);
 	}
 
 	setPosition(x, y) {
@@ -265,17 +276,11 @@ class Window {
 			this.setSize(rect.width, rect.height);
 
 			this.$window.addClass('maximized');
-			this.$maxrestoreBtn.addClass('restore');
 			
 		} else {
 			this.setBoundsA(this.restoredBounds);
 			this.$window.removeClass('maximized');
-			this.$maxrestoreBtn.removeClass('restore');
 		}
-	}
-
-	maximize() {
-		this.setMaximized(true);
 	}
 
 	restore() {
@@ -307,13 +312,14 @@ class Window {
 
 		let $task = $(`<div><img src=${icon}><span>${title}</span></div>`);
 		$task.click(() => {
+			klog('clicked ' + title);
+
 			this.restore();
 			this.focus();
 		});	
 
 		this._desktop.iconifiedWindows.set(this, $task);
 		
-
 		let menu = this.optionsMenu;
 
 		this._desktop.addContextMenuOn($task, menu);
@@ -333,7 +339,7 @@ class Window {
 	makeFullscreen() {
 		if (this.minimized) this.restore();
 
-		this._desktop.makeElementFullscreen(this.$window.find('.body')[0]);
+		this._desktop.fullscrTo(this.$window.find('.body')[0]);
 	}
 
 	async setContentToUrl(url) {

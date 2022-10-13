@@ -1,5 +1,5 @@
 :root {
-	--dark-window-bg: hsla(220, 5%, 10%, 0.9);
+	--dark-window-bg: hsla(220, 5%, 10%, 0.8);
 }
 
 #body {
@@ -64,6 +64,7 @@
 }
 
 .app-icon label {
+	display: block;
 	font-size: 12pt;
 	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
 }
@@ -92,28 +93,31 @@
 	display: flex;
 	align-items: center;
 	height: 100%;
-	margin: 0 0.5em;
+	margin: 0;
 	font: 11pt 'Tahoma';
 	overflow: hidden;
 }
 
 .taskbar .tasks img {
-	width: 32px;
+	width: 46px;
+	min-width: 32px;
 	height: 100%;
-	margin-right: 0.5em;
-	padding: 2px;
+	margin: 2px 0px 2px 6px;
 	vertical-align: middle;
+	object-fit: contain;
 }
 
 .taskbar .tasks span {
 	text-overflow: ellipsis;
 	overflow: hidden;
+	white-space: nowrap;
 }
 
 .taskbar .fullscreen-btn {
-	width: 32px;
+	width: 36px;
 	background-image: url('/res/img/icons/fullscreen.png');
-	background-size: 24px 24px;
+	background-size: 26px;
+	flex-shrink: 0;
 }
 
 /* Windows */
@@ -128,6 +132,7 @@
 
 .desktop .window {
 	--titlebar-height: 28px;
+	--icon-size: 20px;
 	position: absolute;
 	pointer-events: auto;
 	display: none; /* Windows start invisible */
@@ -161,7 +166,7 @@
 	display: none;	
 }
 
-.desktop .window.decorated > .head {
+.window.decorated > .head {
 	display: flex;
 	flex-shrink: 0;
 	height: var(--titlebar-height);
@@ -169,23 +174,19 @@
 	white-space: nowrap;
 }
 
-.desktop .window.decorated.focused > .head {
-	background: linear-gradient(to right, #23A, #35E, #FF7AD2);
+.desktop .window.decorated.focused > .head {	
+	background: linear-gradient(to right, hsla(220, 100%, 38%, 0.9), hsla(204, 100%, 45%, 0.8), hsla(320, 90%, 60%, 0.9));
 }
 
 .window.decorated > .head button {
-	width: var(--titlebar-height);
+	width: 32px;
 	height: 100%;
 	flex-shrink: 0;
 	background-color: transparent;
 	background-image: var(--icon);
-	background-size: 60%;
+	background-size: var(--icon-size);
 	border: none;
 	color: white;
-}
-
-.window.maximized > .head button {
-	background-size: 80%;
 }
 
 .desktop .window.decorated > .head button:hover {
@@ -220,7 +221,7 @@
 	--icon: url("/res/img/icons/maximize.png");
 }
 
-.maxrestore-btn.restore {
+.window.maximized .maxrestore-btn {
 	--icon: url("/res/img/icons/restore.png");
 }
 
@@ -277,7 +278,7 @@
 	background-repeat: no-repeat;
 }
 
-.desktop .windows .btn {
+.windows .btn {
 	padding: .25em .5em;
 	border: solid 1px #23F;
 	color: white;
@@ -289,6 +290,11 @@
 
 .btn:active {
 	background-color: rgba(0, 0, 0, 0.2);
+	outline: none;
+}
+
+.btn:focus {
+	outline: none;
 }
 
 .field {

@@ -1,37 +1,55 @@
-var webSys = null;
+var WebSys;
 
 async function main() {
-	await addScript('/res/js/lib/zepto.min.js');
-	await addScript('/res/js/desktop.js');
-	await addScript('/res/js/window.js');
+	let scriptsP = Promise.all([
+		addScript('/res/js/lib/zepto.min.js'),
+		addScript('/res/js/lib/hammer.min.js'),
+		addScript('/res/js/desktop.js'),
+		addScript('/res/js/window.js')
+	]);
 
 	addStylesheet('/res/css/desktop.css');
 
 	// Fetch desktop page
 	let fres = await fetch('/page/desktop');
 	if (fres.status != 200) {
-		console.log('Forbidden.');
+		console.error('Forbidden.');
+		return;
 	}
 	document.getElementById('body').innerHTML = await fres.text();
 
-	webSys = new WebSys();
+	// Instatiate system
+	await scriptsP;
+
+	WebSys = new WebSysClass();
+	await WebSys.init();
 	endTransition();
 
-	webSys.init(getURLParams());
+	WebSys.start(getURLParams());
 }
 
-class WebSys {
-	static get WEBSYS_VERSION() { return '0.5.0'; }
-	static get WSCLIENT_VERSION() { return '0.5.0'; }
+class WebSysClass {
+	async init() {
+		this.WEBSYS_VERSION = '0.6.0';
+		this.WSCLIENT_VERSION = '0.6.0';
+		this.logHistory = '[Begin]\n';
+		this.setupLogging();
 
-	constructor() {
-		this.desktop = new Desktop(this);
 		this.runningApps = [];
 		this.loadedResources = {};
-		this.logHistory = '[Begin]\n';
-		this.logListeners = [];
+		this.reactor = new Reactor();
+		this.reactor.register('log', 'apps-add', 'apps-rem');
+		this.desktop = new Desktop();
 
-		history.pushState(null, null, location.href); // Push new history entry to stack
+		fetch('/version').then(async (fres) => {
+			let apiv = await fres.text();
+			let sysv = WebSys.WEBSYS_VERSION;
+			let clientv = WebSys.WSCLIENT_VERSION;
+			let vtext = `WebSys Modern v${sysv}<br>API v${apiv}<br>Client v${clientv}`; 
+			$('.desktop .backplane .text').html(vtext);
+		})
+		
+		history.pushState(null, null, location.href);
 
 		let btime = 0;
 		window.addEventListener('popstate', () => {
@@ -42,49 +60,73 @@ class WebSys {
 
 			history.go(1);
 		});
+
+		this.createAudioSystem();
+
+	 	let fres = await fetch('/res/user/desktop.json');
+		let deskApps = await fres.json();
+		this.desktop.setApps(deskApps);
 	}
 
-	async init(args) {
-		let apiv = await (await fetch('/version')).text();
-
-		let sysv = WebSys.WEBSYS_VERSION;
-		let clientv = WebSys.WSCLIENT_VERSION;
-		let vtext = `WebSys Modern v${sysv}<br>API v${apiv}<br>Client v${clientv}`; 
-		$('.desktop .backplane .text').html(vtext);
-
-		this.audioContext = new AudioContext();
-		this.audioDestination = this.audioContext.createGain();
-
-		var lowshelf = this.audioContext.createBiquadFilter(),
-	    mid = this.audioContext.createBiquadFilter(),
-	    highshelf = this.audioContext.createBiquadFilter();
-
-	 //set the filter types (you could set all to 5, for a different result, feel free to experiment)
-	 lowshelf.type = 'lowshelf';
-	 lowshelf.frequency.value = 250;
-	 lowshelf.gain.value = 0;
-
-	 mid.type = 'peaking';
-	 mid.frequency.value = 1000;
-	 mid.gain.value = 0;
-
-	 highshelf.type = 'highshelf';
-	 highshelf.frequency.value = 2000;
-	 highshelf.gain.value = 0;
-
-	 this.lowshelf = lowshelf;
-	 this.mids = mid;
-	 this.highshelf = highshelf;
-
-	 this.audioDestination.connect(lowshelf);
-	 lowshelf.connect(mid);
-	 mid.connect(highshelf);
-	 highshelf.connect(this.audioContext.destination);
+	async start(args) {
+		this.desktop.start();
 
 		if (args && args.loc) {
 			let app = await runApp('explorer');
 			app.go(args.loc);
 		}
+	}
+
+	createAudioSystem() {
+		this.audioContext = new AudioContext();
+		this.audioDestination = this.audioContext.createGain();
+		this.audioEqPoints = [];
+		this.audioClipEnabled = false;
+		this.audioClipBound = 1;
+
+		let pointsc = 6;
+		let prevNode = this.audioDestination;
+
+		for (let i = 0; i < pointsc; i++) {
+			let filter = this.audioContext.createBiquadFilter();
+			filter.frequency.value = 2 ** (10/(pointsc + 1) * (i + 1)) * 20;
+
+			if (i == 0) {
+				filter.type = 'lowshelf';
+			} else if (i == pointsc - 1) {
+				filter.type = 'highshelf';
+			} else {
+				filter.type = 'peaking';
+			}
+
+			prevNode.connect(filter);
+			prevNode = filter;
+			this.audioEqPoints.push(filter);
+		}
+
+		this.audioFinal = this.audioContext.createGain();
+		let nodex = this.audioContext.createScriptProcessor(0, 1, 1);
+		nodex.onaudioprocess = (ev) => {
+			let input = ev.inputBuffer.getChannelData(0);
+	        let output = ev.outputBuffer.getChannelData(0);
+
+	        if (!this.audioClipEnabled) { 
+	        	output.set(input);
+	        	return;
+	        }
+
+	        let b = this.audioClipBound;
+	        for (let i = 0; i < input.length; i++) {
+	        	let v = input[i];
+	        	if (v > b) v = b;
+	        	if (v < -b) v = -b;
+	        	output[i] = v;
+	        }
+		};
+
+		prevNode.connect(this.audioFinal);
+		this.audioFinal.connect(nodex);
+		nodex.connect(this.audioContext.destination);
 	}
 
 	async runApp(name, buildArgs) {
@@ -93,8 +135,6 @@ class WebSys {
 
 	async runAppFetch(manifestURL, buildArgs) {
 		try {
-			klog('Fetching [' + manifestURL + ']');
-
 			// Fetch manifest
 			let fres = await fetch(manifestURL);
 			if (fres.status == 404) {
@@ -121,9 +161,10 @@ class WebSys {
 				throw Error('Failed to instantiate "' + manifestURL + '", builder unavailable.');
 			}
 
-			let app = new AppClass(this, buildArgs);	
+			let app = new AppClass(buildArgs);	
 			app.classId = manifest.id;
 			this.runningApps.push(app);
+			this.reactor.fire('apps-add');
 
 			// Register the app as an user of the loaded scripts.
 			for (let url of manifest.scripts) {
@@ -173,7 +214,7 @@ class WebSys {
 
 		// Remove app from app list
 		arr.splice(i, 1); 
-
+		this.reactor.fire('apps-rem');
 	}
 
 	async requestScript(url, user) {
@@ -272,43 +313,62 @@ class WebSys {
 
 	log(msg) {
 		this.logHistory += msg + '\n';
-		for (let ll of this.logListeners) {
-			try {
-				ll();
-			} catch (err) {
-				this.showErrorDialog(err);
-			}
+		try {
+			this.reactor.fire('log')
+		} catch (err) {
+			this.showErrorDialog(err);
 		}
 	}
 
-	addLogListener(fn) {
-		this.logListeners.push(fn);
-		return fn;
+
+	setupLogging() {
+		let self = this;
+
+		// Hijack console
+		let conLog = window.console.log;
+		window.console.log = function() {
+			self.logHistory += [...arguments].join(' ') + '\n';
+			conLog(...arguments);
+		}
+
+		let conError = window.console.error;
+		window.console.error = function() {
+			conError(...arguments);
+		}
+
+		window.addEventListener('error', (ev) => {
+			this.log(`[Error] '${ev.message}' at ${ev.filename}:${ev.lineno}`);
+		});
+
+		window.addEventListener('unhandledrejection', (ev) => {
+			this.log(`[PromErr] '${ev.reason}'`);
+		});
 	}
 
-	removeLogListener(fn) {
-		let arr = this.logListeners;
-		var i = arr.indexOf(fn);
-		if (i == -1) return;
-		arr.splice(i, 1); 
+	on(evclass, callback) {
+		this.reactor.on(evclass, callback);
+		return callback;
+	}
+
+	off(evclass, callback) {
+		this.reactor.off(evclass, callback);
 	}
 }
 
 class App {
-	constructor(sys, args) {
-		this._sys = sys;
+	constructor(args) {
 		if (!args) args = [];
 		this.buildArgs = args;
 		this.loadedResources = [];
 	}
 
 	requireScript(url) {
-		this._sys.requestScript(url, this);
+		WebSys.requestScript(url, this);
 		this.loadedResources.push(url);
 	}
 
 	requireStyle(url) {
-		this._sys.requestStyle(url, this);
+		WebSys.requestStyle(url, this);
 		this.loadedResources.push(url);
 	}
 
@@ -341,8 +401,7 @@ class App {
 	
 	close() {
 		this.onClose();
-
-		this._sys.endApp(this);
+		WebSys.endApp(this);
 	}
 }
 
@@ -362,7 +421,6 @@ class Resource {
 	}
 
 	unload() {
-		console.log('Unloading resource id ' + atob(this.id));
 		this.fnUnload();
 	}
 }
@@ -394,13 +452,19 @@ class Reactor {
 		this.evclasses = {};
 	}
 
+	register() {
+		for (let name of arguments) {
+			this.evclasses[name] = [];
+		}
+	}
+
 	unregister(name) {
 		delete this.evclasses[name];
 	}
 
 	on(name, callback) {
 		let list = this.evclasses[name];
-		if (!list) list = this.evclasses[name] = [];
+		if (!list) throw Error(`No class ${name} registered.`);
 
 		list.push(callback);
 		return callback;
@@ -409,7 +473,7 @@ class Reactor {
 	off(name, callback) {
 		let list = this.evclasses[name];
 		if (!list) return;
-		arrErase(list, callbcak);
+		arrErase(list, callback);
 	}
 
 	fire(name, args) {
@@ -423,8 +487,17 @@ class Reactor {
 	}
 }
 
+class Deferred {
+	constructor() {
+		this.promise = new Promise((resolve, reject) => {
+			this.reject = reject
+			this.resolve = resolve
+		})
+	}
+}
+
 function klog(msg) {
-	webSys.log(msg);
+	WebSys.log(msg);
 }
 
 function getObjectByName(name) {
@@ -459,6 +532,9 @@ function pathJoin(base, child) {
 }
 
 function pathResolve(path) {
+	path = path.replaceAll('/./', '/');
+	if (path.endsWith('/.')) path = path.slice(0, -1);
+
 	while (true) {
 		let ellipsis = path.indexOf("/..", 1);
 		if (ellipsis == -1) break;
@@ -506,6 +582,12 @@ function getURLParams() {
 
 async function copyTextToClipboard(text) {
 	await navigator.clipboard.writeText(text);
+}
+
+function clampf(value, min, max) {
+	if (value > max) return max;
+	if (value < min) return min;
+	return value;
 }
 
 main();

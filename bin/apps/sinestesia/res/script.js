@@ -1,6 +1,6 @@
 window.SinesApp = class SinesApp extends App {
-	constructor(webSys) {
-		super(webSys);
+	constructor() {
+		super();
 		this.window = null;
 	}
 
@@ -9,16 +9,28 @@ window.SinesApp = class SinesApp extends App {
 		this.requireStyle('/app/sinestesia/res/style.css');
 
 		// Create window and fetch app body
-		this.window = webSys.desktop.createWindow();
+		this.window = WebSys.desktop.createWindow();
 		this.window.icon = '/res/img/apps/picture128.png';
 		this.window.on('closereq', () => this.close());
-		
+		this.window.on('backnav', () => {
+			this.close();
+		});
 		this.window.setTitle('Sinestesia');
 		let $win = this.window.$window;
 		$win.find('.body').addClass('app-sinestesia');
 		
 		// Fetch explorer body
 		await this.window.setContentToUrl('/app/sinestesia/res/main.html');
+
+		$win.find('.open-btn').click(async () => {
+			let app = await WebSys.runApp('explorer');
+			app.asFileSelector('open', 'one');
+			let result = await app.waitFileSelection();
+			if (!result.length) return;
+
+			let file = result[0];
+			this.playFile('/fs/q' + file);
+		});
 
 		// Make the window visible
 		this.restoreAppWindowState(this.window);
@@ -42,9 +54,9 @@ window.SinesApp = class SinesApp extends App {
 			$content.empty();
 			$content.append($video);
 
-			let track = webSys.audioContext.createMediaElementSource($video[0]);
-			track.connect(webSys.audioDestination);
-			webSys.audioContext.resume();
+			let track = WebSys.audioContext.createMediaElementSource($video[0]);
+			track.connect(WebSys.audioDestination);
+			WebSys.audioContext.resume();
 
 		} else if (FileTypes.isPicture(path)) {
 			let $img = $(`<img src="${url}"></img>`);
@@ -56,11 +68,11 @@ window.SinesApp = class SinesApp extends App {
 			$content.empty();
 			$content.append($audio);
 
-			let track = webSys.audioContext.createMediaElementSource($audio[0]);
-			track.connect(webSys.audioDestination);
-			webSys.audioContext.resume();
+			let track = WebSys.audioContext.createMediaElementSource($audio[0]);
+			track.connect(WebSys.audioDestination);
+			WebSys.audioContext.resume();
 		} else {
-			webSys.showErrorDialog('Unknown media type');
+			WebSys.showErrorDialog('Unknown media type');
 		}
 	}
 

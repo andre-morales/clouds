@@ -1,6 +1,6 @@
 window.ConfigsApp = class ConfigsApp extends App {
-	constructor(webSys) {
-		super(webSys);
+	constructor() {
+		super();
 		this.window = null;
 	}
 
@@ -9,7 +9,7 @@ window.ConfigsApp = class ConfigsApp extends App {
 		await this.requireStyle('/app/configs/res/style.css');
 
 		// Create window and fetch app body
-		this.window = webSys.desktop.createWindow();
+		this.window = WebSys.desktop.createWindow();
 		this.window.icon = '/res/img/apps/config128.png';
 		this.window.setHeight(200);
 		this.window.setTitle('Configs');
@@ -24,16 +24,18 @@ window.ConfigsApp = class ConfigsApp extends App {
 		let $input = $win.find('input');
 		$input.val(getCookie('bg'));
 		$input.on('change', () => {
-			this._sys.desktop.setBackground($input.val(), true);
+			WebSys.desktop.setBackground($input.val(), true);
 		});
 
 		$win.find('.find').click(async () => {
-			let app = await webSys.runApp('explorer', '--dialog');
-			let result = await app.getChosenPath();
+			let app = await WebSys.runApp('explorer');
+			app.asFileSelector('open', 'one');
+			let result = await app.waitFileSelection();
+			if (!result || !result.length) return;
 
-			let file = '/fs/q' + result;
-			setCookie('bg', file);
-			this._sys.desktop.setBackground(file);
+			let file = '/fs/q' + result[0];
+			$input.val(file);
+			WebSys.desktop.setBackground(file, true);
 		});
 
 		$win.find('.logout').click(() => {

@@ -1,6 +1,6 @@
 window.SystemLogApp = class SystemLogApp extends App {
-	constructor(webSys) {
-		super(webSys);
+	constructor() {
+		super();
 		this.window = null;
 	}
 
@@ -9,7 +9,7 @@ window.SystemLogApp = class SystemLogApp extends App {
 		await this.requireStyle('/app/systemlog/res/style.css');
 
 		// Create window and fetch app body
-		this.window = webSys.desktop.createWindow();
+		this.window = WebSys.desktop.createWindow();
 		this.window.icon = '/res/img/apps/log128.png';
 		this.window.on('closereq', () => this.close());
 		
@@ -19,7 +19,7 @@ window.SystemLogApp = class SystemLogApp extends App {
 		// Fetch explorer body
 		await this.window.setContentToUrl('/app/systemlog/res/main.html');
 
-		this.logListener = this._sys.addLogListener(() => {
+		this.logListener = WebSys.on('log', () => {
 			this.updateLog();
 		});
 
@@ -30,12 +30,12 @@ window.SystemLogApp = class SystemLogApp extends App {
 	}
 
 	updateLog() {
-		let html = this._sys.logHistory.replaceAll('\n', '<br>');
+		let html = WebSys.logHistory.replaceAll('\n', '<br>');
 		this.window.$window.find('.content').html(html);
 	}
 
 	onClose() {
-		this._sys.removeLogListener(this.logListener);
+		WebSys.off('log', this.logListener);
 		this.window.close();
 	}
 }

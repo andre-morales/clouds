@@ -1,0 +1,7 @@
+{
+	"id": "sysmonitor",
+	"builder": "SystemMonitorApp",
+	"scripts": [
+		"/app/systemmonitor/res/script.js"	
+	]
+}

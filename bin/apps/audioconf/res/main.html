@@ -1,31 +1,28 @@
-<div>
-	<span>Volume: </span>
-	<input type="range" class='master-gain' max="150" min="0" value="100">
-	<span class='master-gain-text'></span>
+<div class='stage eq-stage'>
+	<div>
+		<span>Eq Influence: </span>
+		<input type='range' class='eq-inf' max='3' min='0' value='1' step='any'>
+		<span class='eq-inf-text'></span>
+		<button class='btn eq-apply-btn'>Apply Influence</button>
+	</div>
+	<div class='audio-eq'>
+		<canvas></canvas>
+	</div>
 </div>
-<div>
-	<span>Gain Multiplier: </span>
-	<input type='range' class='master-raiser' max='12' min='1' value='1' step='0.5'>
+<div class='stage'>
+	<span>Volume: </span>
+	<input type="range" class='master-gain' max="1.224" min="0" value="1" step='any'>
+	<span class='master-gain-text'></span>
+	<span>Exp. Multiplier: </span>
+	<input type='range' class='master-raiser' max='3' min='1' value='1' step='any'>
 	<span class='master-raiser-text'></span>
 </div>
-<div>
-	<span>Eq Influence: </span>
-	<input type='range' class='eq-inf' max='5' min='0' value='1' step='0.1'>
-	<span class='eq-inf-text'></span>
-</div>
-<!--<div>
-	<span>Bass: </span>
-	<input type='range' class='bass' max='40' min='-40' value='1'>
-</div>
-<div>
-	<span>Mids: </span>
-	<input type='range' class='mids' max='40' min='-40' value='1'>
-</div>
-<div>
-	<span>Highs: </span>
-	<input type='range' class='highs' max='40' min='-40' value='1'>
-</div>-->
-
-<div class='audio-eq	'>
-	<canvas></canvas>
-</div>
+<div class='stage'>
+	<label>
+		<input type="checkbox" class='clip-enable'>
+		Clipping
+	</label>
+	<span>Clamp Max: </span>
+	<input type="range" class='clip-bound' max="2" min="0" value="1" step='any'>
+	<span class='clip-bound-text'></span>
+</div>	

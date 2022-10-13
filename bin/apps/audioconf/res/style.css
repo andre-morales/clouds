@@ -1,7 +1,21 @@
 .app-audioconf {
 	display: flex;
-	padding: 1rem;
 	flex-direction: column;
+	padding: 0.15rem;
+	font-size: 10pt;
+}
+
+.app-audioconf .stage {
+	border: solid 1px rgba(40, 50, 255, 0.4);
+	margin: 0.1rem;
+	padding: 0.3rem;
+}
+
+.app-audioconf .eq-stage {
+	display: flex;
+	flex-grow: 1;
+	flex-direction: column;
+	overflow: hidden;
 }
 
 .app-audioconf .audio-eq {
@@ -10,7 +24,7 @@
 }
 
 .audio-eq canvas {
-	background: linear-gradient(to right, #181F27, #223, #181F27);
+	background: rgba(30, 40, 80, 0.5);
 	width: 100%;
 	height: 100%;
 }

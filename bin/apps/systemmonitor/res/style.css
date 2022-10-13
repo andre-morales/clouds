@@ -1,0 +1,33 @@
+.app-sysmonitor .tabpane {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.app-sysmonitor .header {
+	font-size: 0;
+}
+
+.app-sysmonitor .header button {
+	border: solid 1px blue;
+	border-left: none;
+	font-size: 12pt;
+}
+
+.app-sysmonitor .header button.selected {
+	border-bottom: solid 1px transparent;
+}
+
+.app-sysmonitor .tab {
+	display: none;
+	flex-grow: 1;
+}
+
+.app-sysmonitor .tab.visible {
+	display: block;
+}
+
+.app-sysmonitor .apps-tab .app {
+	padding: 4px;
+	border: solid 1px lightblue;
+}

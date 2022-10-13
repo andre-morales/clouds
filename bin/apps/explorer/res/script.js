@@ -1,10 +1,14 @@
 window.ExplorerApp = class ExplorerApp extends App {
-	constructor(webSys, args) {
-		super(webSys, args);
+	constructor(args) {
+		super(args);
 		this.window = null;
+		this.filesCount = 0;
 		this.$files = null;
-		this.classId = null;
 		this.cwd = null;
+		this.selectionMode = 'default';
+		this.selectedFiles = [];
+		this.selectedElems = [];
+		this.closingDeferred = new Deferred();
 	}
 
 	async init() {
@@ -14,13 +18,14 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.requireStyle('/app/explorer/res/style.css');
 
 		// Create window and fetch app body
-		this.window = this._sys.desktop.createWindow();
+		this.window = WebSys.desktop.createWindow();
 		this.window.icon = '/res/img/ftypes/folder128.png';
+		this.window.setTitle('File Explorer');
 		this.window.on('closereq', () => this.close());
 		this.window.on('backnav', () => this.navigate('..'));
-		this.window.setTitle('File Explorer');
 
 		let $win = this.window.$window;
+		$win.find('.body').addClass('app-explorer');
 
 		// Fetch explorer body
 		await this.window.setContentToUrl('/app/explorer/res/main.html');
@@ -34,62 +39,104 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.$addressField.on('change', () => {
 			this.go(this.$addressField.val());
 		});
-		$win.find('.back-btn').click(() => {
-			this.navigate('..');
+		$win.find('.back-btn').click(() => this.navigate('..'));
+		$win.find('.refresh-btn').click(() => this.navigate('.'));
+		$win.find('.favorites-btn').click(() => {
+			$win.find('.favorites').toggleClass('hidden');
+			this.recalculateIcons();
 		});
-		$win.find('.upload-btn').click(async () => {
-			let helperWin = webSys.desktop.createWindow();
-			helperWin.on('closereq', () => helperWin.close());
-			
-			await helperWin.setContentToUrl('/app/explorer/res/upload-helper.html');
-			helperWin.setTitle('Upload to: ' + this.cwd);
-			helperWin.setSize(280, 200);
-			helperWin.bringToCenter();
-			helperWin.bringToFront();
+		$win.find('.search-field').on('change', () => this.searchFiles());
+		this.window.on('resize', () => this.recalculateIcons());
 
-			let uploadPath = this.cwd;
-			let url = '/fs/u' + uploadPath;
-			let $form = helperWin.$window.find('form');
-			$form.submit((ev) => {
-			    fetch(url, {
-			        method: 'POST',
-			        body: new FormData($form[0])
-			    });
+		let $filesContainer = $win.find('.files-container');
+		WebSys.desktop.addContextMenuFnOn($filesContainer, () => [
+			['Upload...', () => this.openUploadDialog()]
+		]);
 
-		    	ev.preventDefault();
-			});
-			helperWin.setVisible(true);
-		});
-		$win.find('.clearfavs-btn').click(() => this.clearFavorites());
-		// Go to home page
-		await this.goHome();
-
+		// Final preparation
 		this.refreshFavorites();
-
-		/*if (this.initArgs.includes('--choose')) {
-			$win.find('.choose-options').addClass('.visible');
-		}*/
-
-		/*$win.find('.select').click(() => {
-			if (this.chooseCallback) {
-				return this.selectedFiles;
-			}
-		});*/
 
 		// Make the window visible
 		this.window.bringToCenter();
 		this.window.focus();
 		this.restoreAppWindowState(this.window);
 		this.window.setVisible(true);
+		
+		await this.goHome();
 	}
 
-	/*getChoosenPath() {
-		if (this.chooseCallback) throw new Error('Already awaiting for choice.');
+	async openUploadDialog() {
+		let helperWin = WebSys.desktop.createWindow();
+		helperWin.on('closereq', () => helperWin.close());
+		
+		await helperWin.setContentToUrl('/app/explorer/res/upload-helper.html');
+		helperWin.setTitle('Upload to: ' + this.cwd);
+		helperWin.setSize(280, 200);
+		helperWin.bringToCenter();
+		helperWin.bringToFront();
 
-		return new Promise((resolve, reject) => {
-			this.chooseCallback = resolve;
+		let uploadPath = this.cwd;
+		let url = '/fs/u' + uploadPath;
+		let $form = helperWin.$window.find('form');
+		$form.submit((ev) => {
+			fetch(url, {
+		    	method: 'POST',
+		    	body: new FormData($form[0])
+		    });
+
+	    	ev.preventDefault();
 		});
-	}*/
+		helperWin.setVisible(true);
+	}
+
+	recalculateIcons() {
+		let iw = 128;
+
+		let w = this.$files.width();
+		let icons = Math.floor(w / iw); // How many icons fit vertically
+		let tm = w - icons * iw - 2;    // Remaining space
+		let m = tm / icons / 2;         // Divide remaining space as margin
+		this.$files.css('--icon-border', m + 'px');
+	}
+
+	searchFiles() {
+		let query = this.window.$window.find('.search-field').val();
+		if (query.length == 0) {
+			this.$files.children().removeClass('hidden');
+			return;
+		}
+
+		query = query.toLowerCase();
+		this.$files.children().each((i, el) => {
+			let $el = $(el);
+			let fname = $el.find('span').text().toLowerCase();
+			if (fname.includes(query)) {
+				$el.removeClass('hidden')
+			} else {
+				$el.addClass('hidden');
+			}
+		});
+	}
+
+	asFileSelector(mode, selectionMode) {
+		this.selectionMode = selectionMode;
+		let $win = this.window.$window;
+
+		if (mode == 'open') {
+			$win.find('.choose-options').addClass('d-block');
+			$win.find('.ribbon').addClass('d-none');
+			$win.find('.select').click(() => {
+				this.doneClicked = true;
+				this.close();
+			});
+		}
+	}
+
+	async waitFileSelection() {
+		await this.closingDeferred.promise;
+		if (this.doneClicked) return this.selectedFiles;
+		return null;
+	}
 
 	async navigate(path) {
 		this.go(pathJoin(this.cwd, path));
@@ -114,7 +161,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 					msg = "Failed to query."; break;
 			}
 
-			this._sys.showErrorDialog(`${msg}\nPath: "${path}"`);
+			WebSys.showErrorDialog(`${msg}\nPath: "${path}"`);
 			this.$addressField.val(this.cwd);
 			return code;
 		}
@@ -136,7 +183,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		// Sort files
 		let files = await fres.json();
-		
+		this.filesCount = files.length;
+
 		let val = (e) => {
 			if (e.endsWith('/')) return 1;
 			return 0;
@@ -156,6 +204,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		// Make the panel visible
 		this.$files.removeClass('d-none');
+		this.recalculateIcons();
 	}
 
 	async goHome() {
@@ -169,7 +218,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 			this.go(path)
 		} else {
 			if (FileTypes.isMedia(path)) {
-				let app = await webSys.runApp('sinestesia');
+				let app = await WebSys.runApp('sinestesia');
 				app.playFile(qPath);
 				app.window.bringToFront();
 				app.window.focus();
@@ -186,7 +235,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		let ftags = [];
 		if (ftags_) ftags = ftags_.split("");
 
-		let _desktop = this._sys.desktop;
+		let _desktop = WebSys.desktop;
 
 		let fname = fpath;
 		let absPath = pathJoin(this.cwd, fname);
@@ -205,7 +254,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 			classes += ' symbolic';
 		}
 
-		if (this._doFileExtRequestThumbs(fpath)) {
+		let hasThumb = FileTypes.isVideo(fname) || FileTypes.isPicture(fname);
+		if (hasThumb) {
 			ic = `<img src='/fs/thumb${absPath}'>`
 			classes += ' thumbbed';
 		} else {
@@ -216,10 +266,42 @@ window.ExplorerApp = class ExplorerApp extends App {
 		let $ic = $(`<div class='file${classes}'><i>${ic}</i><span>${fname}</span></div>`);
 		$ic.click(() => {
 			if (_desktop.contextMenuOpen) return;
+			if (this.selectionMode == 'default') {
+				this.openHandler(absPath);
+				return;
+			}
 
-			this.openHandler(absPath);
+			switch(this.selectionMode) {
+			case 'one':
+				if ($ic.hasClass('selected')) {
+					this.selectedFiles = [];
+					this.selectedElems = [];
+				} else {
+					for (let $el of this.selectedElems) {
+						$el.removeClass('selected');
+					};	
+					this.selectedFiles = [absPath];
+					this.selectedElems = [$ic];
+				}
+				break;
+			case 'many':
+				let i = this.selectedFiles.indexOf(absPath);
+				if (i == -1) {
+					this.selectedFiles.push(absPath);
+					this.selectedElems.push($ic);
+				} else {
+					this.selectedFiles.splice(i, 1);
+					this.selectedElems.splice(i, 1);
+				}
+				break;
+			}
+			$ic.toggleClass('selected');
 		});
-
+		$ic.dblclick(() => {
+			if (this.selectionMode != 'default') {
+				this.openHandler(absPath);
+			}
+		});
 		_desktop.addContextMenuFnOn($ic, () => this.makeFileMenu(absPath));
 		return $ic;
 	}
@@ -235,7 +317,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		if (isDir) {
 			menu.push(
 				['Open in another window', async () => {
-					let app = await webSys.runApp('explorer');
+					let app = await WebSys.runApp('explorer');
 					app.go(absPath);
 				}],
 				['Add to favorites', () => {
@@ -245,13 +327,13 @@ window.ExplorerApp = class ExplorerApp extends App {
 		} else {
 			menu.push(
 				['Open outside', () => this.openFileExt(absPath)],
-				['Download', () => webSys.downloadUrl(qPath)]
+				['Download', () => WebSys.downloadUrl(qPath)]
 			);
 		}
 
 		if (FileTypes.isPicture(absPath)) {
 			menu.push(['Set as background', () => {
-				webSys.desktop.setBackground(qPath, true);
+				WebSys.desktop.setBackground(qPath, true);
 			}]);
 		}
 
@@ -312,7 +394,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 			$item.click(() => {
 				this.openHandler(path);
 			});
-			webSys.desktop.addContextMenuFnOn($item, () => [
+			WebSys.desktop.addContextMenuFnOn($item, () => [
 				['Remove', () => this.removeFavorite(path)]
 			]);
 			this.$favorites.append($item);
@@ -326,18 +408,11 @@ window.ExplorerApp = class ExplorerApp extends App {
 	onClose() {
 		this.saveAppWindowState(this.window);
 		this.window.close();
+		this.closingDeferred.resolve();
 	}
 
-	/* Checks if a string path represents a file (image or video) that
-	can have a thumbnail. */
-	_doFileExtRequestThumbs(path) {
-		let extensions = ['.mp4', '.webm', '.mkv', '.png', '.jpg', '.jpeg', '.webp'];
-
-		for (let ext of extensions) {
-			if (path.endsWith(ext)) return true;
-		}
-
-		return false;
+	closePromise() {
+		return this.closingDeferred.promise;
 	}
 
 	_getFileName(path) {

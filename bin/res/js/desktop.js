@@ -1,6 +1,5 @@
 class Desktop {
-	constructor(webSys) {
-		this._sys = webSys;
+	constructor() {
 		this.windows = [];
 		this.iconifiedWindows = new Map();
 		this.$desktop = $('.desktop');
@@ -8,18 +7,21 @@ class Desktop {
 		this.$tasks = $('.taskbar .tasks');
 		this.$contextMenu = $('.context-menu');
 		this.focusedWindow = null;
-
+		this.fullscreenElems = [];
 		this.mouseX = 0;
 		this.mouseY = 0;
 		this.contextMenuOpen = false;
 
 		$('.taskbar .fullscreen-btn').click(() => {
-			$('body')[0].requestFullscreen();
+			let body = $('body')[0];
+			if (this.fullscreenElem == body) {
+				this.fullscrLeave();
+			} else this.fullscrTo(body);
 		});
 
 		let menu = [
 			["System Settings", () => {
-				webSys.runApp('configs');
+				WebSys.runApp('configs');
 			}]
 		]
 		this.addContextMenuOn(this.$desktop.find('.backplane'), menu);
@@ -51,8 +53,26 @@ class Desktop {
 				}
 			}
 		});	
-		this._queryBounds();
+		
+		let fscrHandler = () => {
+			let el = document.fullscreenElement;
+			if (!el) {
+				this.fullscreenElems = [];
+				this.fullscreenElem = null;
+				klog('empty');
+			} else {
+				this.fullscreenElems.push(el);
+				this.fullscreenElem = el;
+				klog('full');
+			}
+		}
 
+		document.addEventListener('fullscreenchange', fscrHandler);
+		//document.addEventListener('webkitfullscreenchange', fscrHandler);
+		this._queryBounds();	
+	}
+
+	start() {
 		let bg = localStorage.getItem('bg');
 		if (bg) this.setBackground(bg);
 		else this.setBackground('/res/img/background.png');
@@ -151,12 +171,43 @@ class Desktop {
 		$menu.css('top', y);
 	}
 
-	makeElementFullscreen(element) {
-		element.requestFullscreen();
-	}
-
 	setCursor(cursor) {
 		document.body.style.cursor = cursor;
+	}
+
+	setApps(apps) {
+		let $apps = $('.backplane');
+		for (let [label, def] of Object.entries(apps)) {
+			let img = def.icon;
+			let $icon = $(`<div class='app-icon'> <img src='${img}'> <label>${label}</label> </div>`);
+			$icon.click(() => {
+				WebSys.runApp(def.app);
+			});
+			$apps.append($icon);
+		}
+	}
+
+	fullscrTo(el) {
+		this._fullscreenElem(el);
+	}
+
+	fullscrLeave() {
+		this.fullscreenElems = [];
+		this.fullscreenElem = null;
+		document.exitFullscreen();
+	}
+
+	fullscrRewind() {
+		let pop = this.fullscreenElems.pop();
+		let len = this.fullscreenElems.length;
+		if (len == 0) return;
+
+		let last = this.fullscreenElems[len - 1];
+		if(last) this._fullscreenElem(last);
+	}
+
+	_fullscreenElem(el) {
+		el.requestFullscreen();
 	}
 
 	_queryBounds() {
@@ -188,11 +239,11 @@ class Desktop {
 
 		let dragStart = (mx, my, ev) => {
 			for(let win of this.windows.slice().reverse()) {
-				if (win.maximized) continue;
-
 				dragDir = this._getResizeDirection(win, mx, my);
 
 				if (dragDir) {
+					if (win.maximized) return;
+
 					resWin = win;
 					startMX = mx,       startMY = my;
 					startB = win.getBoundsA();
@@ -203,9 +254,9 @@ class Desktop {
 				}
 			};
 
-			if (this.focusedWindow) {
-				this.focusedWindow.unfocus();
-			}
+			//if (this.focusedWindow) {
+			//	this.focusedWindow.unfocus();
+			//}
 		}
 
 		let dragMove = (mx, my) => {
@@ -215,10 +266,10 @@ class Desktop {
 			}
 
 			for(let win of this.windows.slice().reverse()) {
-				if (win.maximized) continue;
-
 				let dir = this._getResizeDirection(win, mx, my);
 				if (dir) {
+					if (win.maximized) return;
+
 					this.setCursor(this._getDirectionCursor(dir));
 					return; 
 				}
