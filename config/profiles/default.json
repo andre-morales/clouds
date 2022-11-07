@@ -1,0 +1,28 @@
+{
+	"fs": {
+		"/sys/": {
+			"path": "/",
+			"access": "@all"
+		},
+		"/d/": {
+			"path": "/",
+			"access": "@all"
+		},
+		"/usr/": {
+			"path": "./usr/$user/",
+			"acess": "@all"
+		}
+	},
+	
+	"extensions": {
+		"shell": {
+			"enabled": true,
+			"exec": "cmd.exe"
+		},
+		"ffmpeg": {
+			"enabled": true,
+			"ffmpeg_exec": "ffmpeg",
+			"ffprobe_exec": "ffprobe"
+		}
+	}
+}

@@ -5,14 +5,14 @@ window.AudioConf = class AudioConf extends App {
 	}
 
 	async init() {
-		let self = this;
+		const self = this;
 
 		// Require resources
 		this.requireStyle('/app/audioconf/res/style.css');
 
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow();
-		this.window.icon = '/res/img/apps/audio128.png';
+		this.window.setIcon('/res/img/apps/audio128.png');
 		this.window.on('closereq', () => this.close());
 		
 		this.window.setTitle('Audio System');
@@ -29,7 +29,7 @@ window.AudioConf = class AudioConf extends App {
 			let mg = $mgain.val() ** 2;
 			let mr = $mrais.val() ** 5;
 
-			WebSys.audioFinal.gain.value = mg * mr;
+			WebSys.audio.final.gain.value = mg * mr;
 
 			$('.master-gain-text').text((mg * 100).toFixed(0) + '%');
 			$('.master-raiser-text').text(mr.toFixed(1) + 'x times');
@@ -56,18 +56,27 @@ window.AudioConf = class AudioConf extends App {
 			this.redrawEq();
 		});
 		$win.find('.clip-enable').change(function() {
-			WebSys.audioClipEnabled = this.checked;
+			WebSys.audio.clipEnabled = this.checked;
 		});
 		$win.find('.clip-bound').on('input', function() {
 			let v = this.value * 1.0;
 			$win.find('.clip-bound-text').text(v.toFixed(2));
-			WebSys.audioClipBound = v;
+			WebSys.audio.clipBound = v;
 		});
+
+
+		$win.find('.echo').on('input', function() {
+			let v = this.value;
+			WebSys.audio.setReverbBalance(v);
+		});
+		$win.find('.stage-title').click(function() {
+			$(this).parent().toggleClass('collapsed');
+		})
 		this.maxEqDb = 12;
 		this.eqInfluence = 1.0;
 		this.eqPoints = [];
 
-		for (let p of WebSys.audioEqPoints) {
+		for (let p of WebSys.audio.eqPoints) {
 			let fr = Math.log2(p.frequency.value / 20) / 10;
 			let gain = p.gain.value / this.maxEqDb;
 			this.eqPoints.push([fr, gain]);
@@ -171,7 +180,7 @@ window.AudioConf = class AudioConf extends App {
 
 	recalcEq() {
 		let points = this.eqPoints;
-		let controls = WebSys.audioEqPoints;
+		let controls = WebSys.audio.eqPoints;
 
 		for (let i = 0; i < points.length; i++) {
 			let p = points[i];
@@ -191,11 +200,11 @@ window.AudioConf = class AudioConf extends App {
 		let gr = this.eqCanvasContext;
 
 		let bounds = $canvasC[0].getBoundingClientRect();
-		let scaling = 1.25;
-		let gw = bounds.width * scaling;
-		let gh = bounds.height * scaling;
-		canvas.width = gw;
-		canvas.height = gh;
+		let scaling = 1;
+		let gw = bounds.width * scaling - 1;
+		let gh = bounds.height * scaling - 1;
+		canvas.width = Math.trunc(gw);
+		canvas.height = Math.trunc(gh);
 
 		// Grid
 		gr.strokeStyle = '#146';

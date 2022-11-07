@@ -1,13 +1,17 @@
 import * as CProcess from 'child_process';
 
 function entry() {
-	runInSelf();
+	let args = process.argv.slice(2);
+
+	runInSelf(args);
 }
 
-function runInSelf() {
+function runInSelf(args) {
 	console.log('Launching in self.');
 
-	let m = import('./core.js');
+	import('./core.js').then((mod) => {
+		mod.main(args);
+	});
 }
 
 function runAttachedProc(){

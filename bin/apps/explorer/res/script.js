@@ -1,3 +1,5 @@
+'use strict';
+
 window.ExplorerApp = class ExplorerApp extends App {
 	constructor(args) {
 		super(args);
@@ -8,6 +10,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.selectionMode = 'default';
 		this.selectedFiles = [];
 		this.selectedElems = [];
+		this.favorites = [];
+		this.collections = {};
 		this.closingDeferred = new Deferred();
 	}
 
@@ -19,7 +23,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow();
-		this.window.icon = '/res/img/ftypes/folder128.png';
+		this.window.setIcon('/res/img/ftypes/folder128.png');
 		this.window.setTitle('File Explorer');
 		this.window.on('closereq', () => this.close());
 		this.window.on('backnav', () => this.navigate('..'));
@@ -34,6 +38,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.$files = $win.find('.files');
 		this.$addressField = $win.find('.address-field');
 		this.$favorites = $win.find('.favorites');
+		this.$collections = $win.find('.collections');
 
 		// Setup events
 		this.$addressField.on('change', () => {
@@ -42,7 +47,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		$win.find('.back-btn').click(() => this.navigate('..'));
 		$win.find('.refresh-btn').click(() => this.navigate('.'));
 		$win.find('.favorites-btn').click(() => {
-			$win.find('.favorites').toggleClass('hidden');
+			$win.find('aside').toggleClass('hidden');
 			this.recalculateIcons();
 		});
 		$win.find('.search-field').on('change', () => this.searchFiles());
@@ -53,7 +58,13 @@ window.ExplorerApp = class ExplorerApp extends App {
 			['Upload...', () => this.openUploadDialog()]
 		]);
 
+		let $sidePanel = $win.find('aside');
+		WebSys.desktop.addContextMenuFnOn($sidePanel, () => [
+			['Create collection...', () => this.openCreateCollectionDialog()]
+		]);
+
 		// Final preparation
+		await this.loadFavorites();
 		this.refreshFavorites();
 
 		// Make the window visible
@@ -78,7 +89,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		let uploadPath = this.cwd;
 		let url = '/fs/u' + uploadPath;
 		let $form = helperWin.$window.find('form');
-		$form.submit((ev) => {
+		$form.on('submit', (ev) => {
 			fetch(url, {
 		    	method: 'POST',
 		    	body: new FormData($form[0])
@@ -87,6 +98,30 @@ window.ExplorerApp = class ExplorerApp extends App {
 	    	ev.preventDefault();
 		});
 		helperWin.setVisible(true);
+	}
+
+	async openCreateCollectionDialog() {
+		let win = WebSys.desktop.createWindow();
+		win.on('closereq', () => win.close());
+		
+		let $body = win.$window.find('.body');
+		
+		let $input = $('<input>')
+		$body.append($input);
+
+		let $save = $('<button>Save</button>')
+		$save.click(() => {
+			this.createCollection($input.val());
+			win.close();
+		});
+		$body.append($save);
+
+		win.setTitle('Create Collection');
+		win.setSize(280, 200);
+		win.bringToCenter();
+		win.bringToFront();
+
+		win.setVisible(true);
 	}
 
 	recalculateIcons() {
@@ -139,7 +174,10 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	async navigate(path) {
-		this.go(pathJoin(this.cwd, path));
+		let p = pathJoin(this.cwd, path);
+		if (p == '/..') return;
+
+		this.go(p);
 	}
 
 	async go(path) {
@@ -228,44 +266,49 @@ window.ExplorerApp = class ExplorerApp extends App {
 		}
 	}
 
-	makeFileIcon(fcodes, callback) {
-		let sp = fcodes.split('*');
-		let fpath = sp[0];
-		let ftags_ = sp[1];
-		let ftags = [];
-		if (ftags_) ftags = ftags_.split("");
-
-		let _desktop = WebSys.desktop;
+	makeFileIcon(fentry, callback) {
+		let [fpath, ftags=""] = fentry.split('*');
 
 		let fname = fpath;
-		let absPath = pathJoin(this.cwd, fname);
-		let classes = '';
-		let ic = '';
+		let absPath = pathJoin(this.cwd, fpath);
 
+		// Obtain file classes
+		let classes = ['file'];
 		let isDir = fpath.endsWith('/');
 		if (isDir) {
-			classes += ' dir';
+			classes.push('dir');
 			fname = fpath.slice(0, -1);
 		}
 		if (ftags.includes('i')) {
-			classes += ' blocked';
+			classes.push('blocked');
 		}
 		if (ftags.includes('s')) {
-			classes += ' symbolic';
+			classes.push('symbolic');
 		}
 
+		let cl = this._getFileClassByExt(fpath);
+		if (cl) classes.push(cl);
+
+		let $img = null;
 		let hasThumb = FileTypes.isVideo(fname) || FileTypes.isPicture(fname);
 		if (hasThumb) {
-			ic = `<img src='/fs/thumb${absPath}'>`
-			classes += ' thumbbed';
-		} else {
-			let cl = this._getFileClassByExt(fpath);
-			if (cl) classes += ' ' + cl;
+			$img = $(`<img src='/fs/thumb${absPath}'>`);
+			classes.push('thumbbed');
 		}
 
-		let $ic = $(`<div class='file${classes}'><i>${ic}</i><span>${fname}</span></div>`);
-		$ic.click(() => {
-			if (_desktop.contextMenuOpen) return;
+		let $file = $(`<div><span>${fname}</span></div>`,
+			{'class': classes.join(' ')});
+		let $ic = $('<i></i>');
+		if ($img) {
+			$ic.append($img);
+			$img.on('error', () => {
+				$img.remove();
+				$file.removeClass('thumbbed');
+			});
+		}
+		$file.prepend($ic);
+		$file.click(() => {
+			if (WebSys.desktop.contextMenuOpen) return;
 			if (this.selectionMode == 'default') {
 				this.openHandler(absPath);
 				return;
@@ -273,7 +316,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 			switch(this.selectionMode) {
 			case 'one':
-				if ($ic.hasClass('selected')) {
+				if ($file.hasClass('selected')) {
 					this.selectedFiles = [];
 					this.selectedElems = [];
 				} else {
@@ -281,29 +324,29 @@ window.ExplorerApp = class ExplorerApp extends App {
 						$el.removeClass('selected');
 					};	
 					this.selectedFiles = [absPath];
-					this.selectedElems = [$ic];
+					this.selectedElems = [$file];
 				}
 				break;
 			case 'many':
 				let i = this.selectedFiles.indexOf(absPath);
 				if (i == -1) {
 					this.selectedFiles.push(absPath);
-					this.selectedElems.push($ic);
+					this.selectedElems.push($file);
 				} else {
 					this.selectedFiles.splice(i, 1);
 					this.selectedElems.splice(i, 1);
 				}
 				break;
 			}
-			$ic.toggleClass('selected');
+			$file.toggleClass('selected');
 		});
-		$ic.dblclick(() => {
+		$file.dblclick(() => {
 			if (this.selectionMode != 'default') {
 				this.openHandler(absPath);
 			}
 		});
-		_desktop.addContextMenuFnOn($ic, () => this.makeFileMenu(absPath));
-		return $ic;
+		WebSys.desktop.addContextMenuFnOn($file, () => this.makeFileMenu(absPath));
+		return $file;
 	}
 
 	makeFileMenu(absPath) {
@@ -345,50 +388,25 @@ window.ExplorerApp = class ExplorerApp extends App {
 		return menu;
 	}
 
+	// Favorites 
 	addFavorite(path) {
-		let favorites = [];
+		this.favorites.push(path);
 
-		let it = localStorage.getItem('favorites');
-		if (it) {
-			favorites = JSON.parse(it);
-		}
-
-		favorites.push(path);
-
-		localStorage.setItem('favorites', JSON.stringify(favorites));
+		this.saveFavorites();
 		this.refreshFavorites();
 	}
 
 	removeFavorite(path) {
-		let favorites = [];
+		arrErase(this.favorites, path);
 
-		let it = localStorage.getItem('favorites');
-		if (it) {
-			favorites = JSON.parse(it);
-		}
-
-		arrErase(favorites, path);
-
-		localStorage.setItem('favorites', JSON.stringify(favorites));
+		this.saveFavorites();
 		this.refreshFavorites();
 	}
-
-	clearFavorites() {
-		localStorage.removeItem('favorites');
-		this.refreshFavorites();
-	}
-
+	
 	refreshFavorites() {
 		this.$favorites.empty();
 
-		let favorites = [];
-
-		let it = localStorage.getItem('favorites');
-		if (it) {
-			favorites = JSON.parse(it);
-		}
-
-		for (let path of favorites) {
+		for (let path of this.favorites) {
 			let fname = this._getFileName(path);
 			let $item = $('<li>' + fname + '</li>');
 			$item.click(() => {
@@ -399,6 +417,74 @@ window.ExplorerApp = class ExplorerApp extends App {
 			]);
 			this.$favorites.append($item);
 		}
+	}
+
+	async saveFavorites() {
+		let data = JSON.stringify(this.favorites);
+
+		await fetch('/fs/ud/usr/favorites.json', {
+			method: 'POST',
+			body: data,
+			headers: {
+				'Content-Type': 'text/plain'
+			}
+		})
+	}
+
+	async loadFavorites() {
+		let data = await (await fetch('/fs/q/usr/favorites.json')).text();
+		this.favorites = JSON.parse(data);
+	}
+
+	// Collections
+	createCollection(name) {
+		this.collections[name] = {};
+
+		this.saveCollections();
+		this.refreshCollections();
+	}
+
+	destroyCollection(name) {
+		delete this.collections[name];
+
+		this.saveCollections();
+		this.refreshCollections();
+	}
+	
+	refreshCollections() {
+		this.$collections.empty();
+
+		for (let [name, entries] of Object.entries(this.collections)) {
+			let $item = $('<li>' + name + '</li>');
+			$item.click(() => {
+				this.openCollection(name);
+			});
+			WebSys.desktop.addContextMenuFnOn($item, () => [
+				['Remove', () => this.destroyCollection(name)]
+			]);
+			this.$collections.append($item);
+		}
+	}
+
+	async saveCollections() {
+		let data = JSON.stringify(this.collections);
+
+		await fetch('/fs/ud/usr/collections.json', {
+			method: 'POST',
+			body: data,
+			headers: {
+				'Content-Type': 'text/plain'
+			}
+		})
+	}
+
+	async loadCollections() {
+		let data = await (await fetch('/fs/q/usr/collections.json')).text();
+		this.collections = JSON.parse(data);
+	}
+
+	openCollection(cname) {
+		let col = this.collections[cname];
 	}
 
 	openFileExt(path) {

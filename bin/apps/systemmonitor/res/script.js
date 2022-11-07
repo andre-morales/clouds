@@ -10,7 +10,7 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow();
-		this.window.icon = '/res/img/apps/monitor128.png';
+		this.window.setIcon('/res/img/apps/monitor128.png');
 		this.window.on('closereq', () => this.close());
 		this.window.setTitle('System Monitor');
 

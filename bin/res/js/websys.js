@@ -5,7 +5,8 @@ async function main() {
 		addScript('/res/js/lib/zepto.min.js'),
 		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/desktop.js'),
-		addScript('/res/js/window.js')
+		addScript('/res/js/window.js'),
+		addScript('/res/js/audiosystem.js')
 	]);
 
 	addStylesheet('/res/css/desktop.css');
@@ -30,8 +31,8 @@ async function main() {
 
 class WebSysClass {
 	async init() {
-		this.WEBSYS_VERSION = '0.6.0';
-		this.WSCLIENT_VERSION = '0.6.0';
+		this.WEBSYS_VERSION = '0.6.5';
+		this.WSCLIENT_VERSION = '0.6.1';
 		this.logHistory = '[Begin]\n';
 		this.setupLogging();
 
@@ -61,7 +62,7 @@ class WebSysClass {
 			history.go(1);
 		});
 
-		this.createAudioSystem();
+		this.audio = new AudioSystem();
 
 	 	let fres = await fetch('/res/user/desktop.json');
 		let deskApps = await fres.json();
@@ -75,58 +76,6 @@ class WebSysClass {
 			let app = await runApp('explorer');
 			app.go(args.loc);
 		}
-	}
-
-	createAudioSystem() {
-		this.audioContext = new AudioContext();
-		this.audioDestination = this.audioContext.createGain();
-		this.audioEqPoints = [];
-		this.audioClipEnabled = false;
-		this.audioClipBound = 1;
-
-		let pointsc = 6;
-		let prevNode = this.audioDestination;
-
-		for (let i = 0; i < pointsc; i++) {
-			let filter = this.audioContext.createBiquadFilter();
-			filter.frequency.value = 2 ** (10/(pointsc + 1) * (i + 1)) * 20;
-
-			if (i == 0) {
-				filter.type = 'lowshelf';
-			} else if (i == pointsc - 1) {
-				filter.type = 'highshelf';
-			} else {
-				filter.type = 'peaking';
-			}
-
-			prevNode.connect(filter);
-			prevNode = filter;
-			this.audioEqPoints.push(filter);
-		}
-
-		this.audioFinal = this.audioContext.createGain();
-		let nodex = this.audioContext.createScriptProcessor(0, 1, 1);
-		nodex.onaudioprocess = (ev) => {
-			let input = ev.inputBuffer.getChannelData(0);
-	        let output = ev.outputBuffer.getChannelData(0);
-
-	        if (!this.audioClipEnabled) { 
-	        	output.set(input);
-	        	return;
-	        }
-
-	        let b = this.audioClipBound;
-	        for (let i = 0; i < input.length; i++) {
-	        	let v = input[i];
-	        	if (v > b) v = b;
-	        	if (v < -b) v = -b;
-	        	output[i] = v;
-	        }
-		};
-
-		prevNode.connect(this.audioFinal);
-		this.audioFinal.connect(nodex);
-		nodex.connect(this.audioContext.destination);
 	}
 
 	async runApp(name, buildArgs) {
@@ -328,6 +277,7 @@ class WebSysClass {
 		let conLog = window.console.log;
 		window.console.log = function() {
 			self.logHistory += [...arguments].join(' ') + '\n';
+			self.reactor.fire('log');
 			conLog(...arguments);
 		}
 
@@ -590,5 +540,100 @@ function clampf(value, min, max) {
 	return value;
 }
 
+class Mathx {
+	static clamp(value, min, max) {
+		if (value > max) return max;
+		if (value < min) return min;
+		return value;
+	}	
+}
+
 main();
 
+
+function createSlider(slider){
+	if (slider.attr('data-ready')) return;
+	slider.attr('data-ready', true);
+
+	// Creating handles
+	let lower = $('<span class="Lower"></span>');
+	let thumb = $('<span class="Thumb"></span>');
+	slider.append(lower).append(thumb);
+
+	let attrOr = (elem, attr, def) => {
+		let v = elem.attr(attr);
+		if (v === 0) return 0;
+		if (!v) return def;
+		return v; 
+	};
+
+	let min = attrOr(slider, "data-min", 0);
+	let max = attrOr(slider, "data-max", 100);
+	
+	let valueChange = (coff, fireEv) => {
+		coff = Mathx.clamp(coff, 0, 1);
+		let value = min + (max - min) * coff;
+
+		if(slider[0].value == value) return;
+		slider[0].value = value;
+
+		lower.css("width", `${coff * 100}%`);
+		thumb.css("left", `${coff * slider.width() - thumb.width()/2}px`);
+		
+		if(fireEv) slider.trigger('change');
+	};
+
+	let dragX = (ev) => {
+		let mx = ev.pageX;
+
+		let touches = ev.changedTouches;
+		if (touches && touches[0]) {
+			mx = touches[0].pageX;
+		}
+		return (mx - slider.offset().left) / slider.width();
+	};
+
+	// Event handling
+	let held = false;
+	$(document).on('mousemove touchmove', (ev) => {
+		if(!held) return
+
+		valueChange(dragX(ev), true);	
+	});
+	
+	slider.on('mousedown touchstart', (ev) => {
+		held = true;
+		valueChange(dragX(ev), true);
+	});
+	thumb.on('mousedown touchstart', () => {
+		held = true;
+	});
+
+	$(document).on('mouseup', (ev) => {
+		if(!held) return;
+
+		valueChange(dragX(ev), true);
+		held = false;
+	});
+
+	// Properties
+	slider[0].setValue = (value, fireEv) => {
+		valueChange((value-min)/(max-min), fireEv);
+	};
+	
+	// Initial value
+	var initval = attrOr(slider, "data-value", 0);
+	setTimeout(() => {
+		valueChange(Mathx.clamp(initval, min, max));
+	}, 0)	
+}
+
+function prepareSliders(){
+	var sliders = $(".Slider");
+
+	for(let i = 0; i < sliders.length; i++){
+		let $slider = $(sliders[i]);
+		
+		createSlider($slider);
+	}
+}

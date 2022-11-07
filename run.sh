@@ -1,1 +1,1 @@
-node bin
+node bin $@

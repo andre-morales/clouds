@@ -1,9 +1,0 @@
-{
-	"extensions": {
-		"ffmpeg": {
-			"enabled": true,
-			"ffmpeg_exec": "ffmpeg",
-			"ffprobe_exec": "ffprobe"
-		}
-	}
-}

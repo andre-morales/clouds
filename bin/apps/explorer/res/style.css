@@ -24,17 +24,6 @@
 	background-image: url('/res/img/icons/refresh.png');
 }
 
-/*.app-explorer .ribbon {
-	background: rgba(0.24, 0.25, 0.25, 0.2);
-}
-
-.app-explorer .ribbon button {
-	padding: 4px;
-	background: none;
-	border: none;
-	color: white;
-}*/
-
 .app-explorer .navigation {
 	display: flex;
 	padding: 4px;
@@ -66,9 +55,12 @@
 }
 
 .app-explorer aside {
-	display: flex;
 	flex-shrink: 0;
 	background: rgba(0, 0, 0, 0.1);
+}
+
+.app-explorer aside.hidden {
+	display: none;
 }
 
 .app-explorer .favorites-btn {
@@ -78,20 +70,24 @@
 	background: rgba(128, 128, 128, 0.1);
 }
 
-.app-explorer .favorites {
-	display: inline-block;
-}
-.app-explorer .favorites.hidden {
-	display: none;
-}
-
-.app-explorer aside li {
+.app-explorer .favorites li {
 	margin: 4px;
 	padding-left: 1.75rem;
 	font-size: 12pt;
 	background-image: url('/res/img/ftypes/folder128.png');
 	background-size: contain;
 	background-repeat: no-repeat;
+	filter: hue-rotate(150deg);
+}
+
+.app-explorer .collections li {
+	margin: 4px;
+	padding-left: 1.75rem;
+	font-size: 12pt;
+	background-image: url('/res/img/ftypes/folder128.png');
+	background-size: contain;
+	background-repeat: no-repeat;
+	filter: hue-rotate(60deg);
 }
 
 .app-explorer .files-container {
@@ -132,7 +128,7 @@
 	background-image: url('/res/img/ftypes/file128.png');
 	background-size: contain;
 	background-repeat: no-repeat;
-	background-position: center;
+	background-position: bottom;
 }
 
 .app-explorer .file i img {

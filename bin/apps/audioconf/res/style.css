@@ -3,28 +3,55 @@
 	flex-direction: column;
 	padding: 0.15rem;
 	font-size: 10pt;
+	overflow: hidden;
 }
 
 .app-audioconf .stage {
 	border: solid 1px rgba(40, 50, 255, 0.4);
-	margin: 0.1rem;
-	padding: 0.3rem;
+	margin: .5rem .1rem .1rem .1rem;
+	padding: 0.5rem;
+	position: relative;
+	flex-basis: 0;
+}
+
+.app-audioconf .stage.collapsed {
+	flex-grow: 0;
+}
+
+.app-audioconf .stage.collapsed .stage-title::before {
+	content: ' > ';
+}
+.app-audioconf .stage:not(.collapsed) .stage-title::before {
+	content: ' - ';
+}
+.app-audioconf .stage.collapsed *:not(.stage-title) {
+	display: none;
+}
+
+.app-audioconf .stage-title {
+	position: absolute;
+	min-width: 10ch;
+	right: .5rem;
+	top: -.6rem;
+	padding: .1rem .5rem;
+	border: solid 1px blue;
+	background: rgba(40, 50, 255, 0.4);
+	box-sizing: content-box;
 }
 
 .app-audioconf .eq-stage {
 	display: flex;
 	flex-grow: 1;
 	flex-direction: column;
-	overflow: hidden;
 }
 
 .app-audioconf .audio-eq {
 	flex-grow: 1;
 	overflow: hidden;
+	flex-basis: 0;
 }
 
 .audio-eq canvas {
 	background: rgba(30, 40, 80, 0.5);
-	width: 100%;
-	height: 100%;
+	overflow: hidden;
 }

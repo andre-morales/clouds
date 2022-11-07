@@ -1,22 +1,26 @@
-const KAPI_VERSION = '0.5.2';
+const KAPI_VERSION = '0.5.3';
+
+import Compression from 'compression';
+import Express from 'express';
 
 const VFSM = await import('./vfs.js')
 const Pathex = await import('./pathex.js');
 const FFmpegM = await import('./ffmpeg.js');
+const ShellMgr = await import ('./rshell.js');
 
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
-const Compression = require('compression');
 const WebSocket = require('ws');
 const Path = require('path');
 let FFmpeg = null;
 const FS = require('fs');
-const Express = require('express');
 const CookieParser = require('cookie-parser');
 const CProc = require('child_process');
 const FileUpload = require('express-fileupload');
 
+var progArgs = null;
+var profile = 'default';
 var config = null;
 var app = null;
 var appSv = null;
@@ -26,8 +30,9 @@ var vfs = null;
 var rshells = null;
 var rshellCounter = 1;
 
-function main() {
+export function main(args) {
 	console.log('KAPI Version: ' + KAPI_VERSION);
+	progArgs = args;
 
 	initConfig();
 	initFS();
@@ -37,12 +42,18 @@ function main() {
 }
 
 function initConfig() {
-	config = JSON.parse(FS.readFileSync('config/main.json'));
+	let i = progArgs.indexOf('--profile');
+	if (i >= 0) profile = progArgs[i + 1];
+
+	console.log('Profile: ' + profile);
+	config = JSON.parse(FS.readFileSync(`config/profiles/${profile}.json`));
+
+	ShellMgr.loadDefs(config.extensions.shell);
 }
 
 function initFS() {
 	vfs = new VFSM.VFS();
-	vfs.loadDefs('config/fs.json');
+	vfs.loadDefs(config.fs);
 }
 
 function initUsers() {
@@ -60,11 +71,12 @@ function initExpress() {
 
 	app = Express();
 	app.use(Compression());
-	app.use(FileUpload({
-		createParentPath: true
-	}));
-	app.use(Express.json());                    // JSON parser
-	app.use(CookieParser());					// Cookie parser
+	
+	app.use(Express.json());
+	app.use(Express.text());
+	app.use(FileUpload({ createParentPath: true }));
+	app.use(CookieParser());
+
 	app.use('/res', Express.static('bin/res')); // Static public resources
 
 	apiSetupAuth();  // Auth system
@@ -170,71 +182,11 @@ function apiSetupRShell() {
 	}, 20000)
 }
 
-class RShell {
-	constructor(id) {
-		this.id = id;
-		this.stdout = '';
-		this.newOut = '';
-		this.proc = null;
-		this.waiterObj = null;
-	}
-
-	spawn() {
-		let proc = CProc.spawn('cmd.exe');
-		proc.on('error', (err) => {
-			if (err.code != 'ENOENT') console.log(err);
-		});
-
-		if (proc.pid) return this.proc = proc;
-		return null;
-	}
-
-	newStdoutData() {
-		if (this.newOut) {
-			let promise = Promise.resolve(this.newOut);
-			this.newOut = '';
-			return promise;
-		}
-
-		if (this.waiterObj) return Promise.reject();
-
-		return new Promise((res) => {
-			this.waiterObj = res;
-		});
-	}
-
-	setupOutput() {
-		let outFn = (ch) => {
-			let content = ch.toString();
-			this.stdout += content;
-
-			if (this.waiterObj) {
-				let prom = this.waiterObj;
-				this.waiterObj = null;
-				prom(content);
-			} else {
-				this.newOut += content;
-			}
-		}
-
-		this.proc.stdout.on('data', outFn);
-		this.proc.stderr.on('data', outFn);
-	}
-
-	ping() {
-		this.lastPing = (new Date()).getTime();
-	}
-
-	send(msg) {
-		this.proc.stdin.write(msg + '\n');
-	};
-}
-
 function createRemoteShell() {
 	let id = rshellCounter;
 	console.log('Creating shell ' + id);
 	
-	let shellObj = new RShell(id);
+	let shellObj = ShellMgr.create(id);
 
 	try {
 		if (!shellObj.spawn()) return false;
@@ -305,7 +257,7 @@ function apiSetupFS() {
 			return;
 		}
 		
-		res.sendFile(fpath);
+		res.sendFile(Path.resolve(fpath));
 	});	
 
 	app.post('/fs/u/*', async (req, res) => {	
@@ -325,7 +277,6 @@ function apiSetupFS() {
 			res.status(500).end();
 			return;
 		}
-
 		
 		let upload = req.files.upload;
 		var files = upload;
@@ -339,6 +290,19 @@ function apiSetupFS() {
 
 		res.end();
 	});	
+
+	app.post('/fs/ud/*', async (req, res) => {
+		let user = getGuardedReqUser(req);
+
+		let path = vfs.translate(user, '/' + req.params[0]);
+
+		try {
+			await FS.promises.writeFile(path, req.body);
+		} catch (err) {
+			res.status(500);
+		}
+		res.end();
+	});
 
 	app.get('/fs/ls/*', async(req, res) => {
 		let userId = getGuardedReqUser(req);
@@ -399,7 +363,7 @@ function apiSetupAuth() {
 }
 
 function isFileExtVideo(path) {
-	let extensions = ['.mp4', '.webm', '.mkv'];
+	let extensions = ['.mp4', '.webm', '.mkv', '.m4v'];
 	for (let ext of extensions) {
 		if (path.endsWith(ext)) return true;
 	}
@@ -414,8 +378,6 @@ function getGuardedReqUser(req) {
 }
 
 function getReqUser(req) {
-	return 'test';
-
 	let key = req.cookies.authkey;
 
 	for (let user in logins) {
@@ -460,17 +422,17 @@ function getRandomInt(min, max) {
 }
 
 /* -- Thumbnail handling -- */
-function toBase64(str) {
+function hashPathStr(str) {
 	return str
 	.replaceAll('/', '_')
+	.replaceAll('\\', '_')
 	.replaceAll(':', '_');
 }
 
 async function handleThumbRequest(_abs, res){
 	let absFilePath = Pathex.toFullSystemPath(_abs);
-
 	var thumbfolder = Pathex.toFullSystemPath(`./.thumbnails/`);
-	let fthname = toBase64(_abs);
+	let fthname = hashPathStr(_abs);
 	var thumbpath = `${thumbfolder}/${fthname}.thb`;
 
 	if(FS.existsSync(thumbpath)){
@@ -523,5 +485,3 @@ class BadAuthExecpt extends Except {
 		super('BadAuthExecpt');
 	}
 }
-
-main();

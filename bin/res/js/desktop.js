@@ -7,16 +7,15 @@ class Desktop {
 		this.$tasks = $('.taskbar .tasks');
 		this.$contextMenu = $('.context-menu');
 		this.focusedWindow = null;
-		this.fullscreenElems = [];
 		this.mouseX = 0;
 		this.mouseY = 0;
 		this.contextMenuOpen = false;
 
 		$('.taskbar .fullscreen-btn').click(() => {
 			let body = $('body')[0];
-			if (this.fullscreenElem == body) {
-				this.fullscrLeave();
-			} else this.fullscrTo(body);
+			if (Fullscreen.element == body) {
+				Fullscreen.leave();
+			} else Fullscreen.on(body);
 		});
 
 		let menu = [
@@ -54,21 +53,7 @@ class Desktop {
 			}
 		});	
 		
-		let fscrHandler = () => {
-			let el = document.fullscreenElement;
-			if (!el) {
-				this.fullscreenElems = [];
-				this.fullscreenElem = null;
-				klog('empty');
-			} else {
-				this.fullscreenElems.push(el);
-				this.fullscreenElem = el;
-				klog('full');
-			}
-		}
-
-		document.addEventListener('fullscreenchange', fscrHandler);
-		//document.addEventListener('webkitfullscreenchange', fscrHandler);
+		Fullscreen.init();
 		this._queryBounds();	
 	}
 
@@ -164,6 +149,7 @@ class Desktop {
 
 		if (x + mwidth > this.screenWidth) x -= mwidth;
 		if (x < 0) x = 0;
+
 		if (y + mheight > this.screenHeight) y -= mheight;
 		if (y < 0) y = 0;
 
@@ -186,30 +172,7 @@ class Desktop {
 			$apps.append($icon);
 		}
 	}
-
-	fullscrTo(el) {
-		this._fullscreenElem(el);
-	}
-
-	fullscrLeave() {
-		this.fullscreenElems = [];
-		this.fullscreenElem = null;
-		document.exitFullscreen();
-	}
-
-	fullscrRewind() {
-		let pop = this.fullscreenElems.pop();
-		let len = this.fullscreenElems.length;
-		if (len == 0) return;
-
-		let last = this.fullscreenElems[len - 1];
-		if(last) this._fullscreenElem(last);
-	}
-
-	_fullscreenElem(el) {
-		el.requestFullscreen();
-	}
-
+	
 	_queryBounds() {
 		let bounds = this.$desktop[0].getBoundingClientRect();
 		this.screenWidth = bounds.width;
@@ -253,10 +216,6 @@ class Desktop {
 					if (win.isPointInside(mx, my)) return;
 				}
 			};
-
-			//if (this.focusedWindow) {
-			//	this.focusedWindow.unfocus();
-			//}
 		}
 
 		let dragMove = (mx, my) => {
@@ -366,4 +325,85 @@ class Desktop {
 		if (h == 0 && v == 0) return null;
 		return [h, v]
 	};
+}
+
+class Fullscreen {
+	static stack = [];
+	static element = null;
+
+	static init() {
+		let fscrHandler = () => {
+			let el = document.fullscreenElement;
+			if (!el) {
+				this._exitFullscr();
+				this.stack = [];
+				this.element = null;
+			}
+		}
+
+		document.addEventListener('fullscreenchange', fscrHandler);
+	}
+
+	static on(el) {
+		this._fullscreenElem(el);
+		document.documentElement.requestFullscreen();
+
+		this.element = el;
+		this.stack.push(el);
+	}
+
+	static leave() {
+		this.stack = [];
+		this.element = null;
+
+		this._exitFullscr();
+		this._domExit();
+	}
+
+	static rewind() {
+		let pop = this.stack.pop();
+		let len = this.stack.length;
+		if (len == 0) {
+			this._domExit();
+			this.element = null;
+		}
+
+		let last = this.stack[len - 1];
+		this.element = last;
+		if(last) this._fullscreenElem(last);
+	}
+
+	static _exitFullscr() {
+		let $felem = $('.fullscreened');
+		if ($felem.length < 1) return;
+
+		$felem[0].style.transform = "";
+		//$felem[0].style.left = ""
+		//$felem[0].style.top = ""
+
+		$felem.removeClass('fullscreened');
+		$('.fscr-parent').removeClass('fscr-parent')
+	}
+
+	static _domExit() {
+		if (document.fullscreenElement) document.exitFullscreen();
+	}
+
+	static _fullscreenElem(el) {
+		this._exitFullscr();
+
+		let $el = $(el);
+		$el.addClass('fullscreened');
+		$el.parents().each((i, el) => {
+			//if (el == document.documentElement) return;
+			//if (el == document.body) return;
+
+			$(el).addClass('fscr-parent');
+		});
+		
+		let rect = el.getBoundingClientRect();
+		$el[0].style.transform = `translate(${-rect.x}px, ${-rect.y}px)`;
+		//$el[0].style.left = `${-rect.x}px`;
+		//$el[0].style.top = `${-rect.y}px`
+	}
 }

@@ -2,17 +2,22 @@ class Window {
 	constructor(desktop) {
 		this._desktop = desktop;
 		this._ownerApp = null;
-		this.eventReactor = new Reactor();
-		this.eventReactor.register('closereq', 'backnav', 'resize');
-		this.$window = null;
+		
 		this.visible = false;
 		this.maximized = false;
 		this.title = 'Window';
+		this.icon = '';
+
 		this.posX  = 8,   this.posY = 8;
 		this.width = 600, this.height = 400;
 		this.minWidth = 116;
 		this.minHeight = 28;
 		this.restoredBounds = [8, 8, 600, 400];
+
+		this.eventReactor = new Reactor();
+		this.eventReactor.register('closereq', 'backnav', 'resize');
+
+		this.$window = null;
 	}
 
 	init() {
@@ -31,7 +36,11 @@ class Window {
 		// Behavior
 		let hammer = new Hammer.Manager(this.$window[0], {
 			recognizers: [
-				[Hammer.Swipe,{ direction: Hammer.DIRECTION_LEFT }],
+				[Hammer.Swipe, {
+					direction: Hammer.DIRECTION_LEFT,
+					velocity: 1.5,
+					treshold: 15
+				}],
 			]
 		});
 		hammer.on('swipeleft', () => {
@@ -137,18 +146,6 @@ class Window {
 		$doc.on("touchend", dragEnd);
 	}
 
-	on(evclass, callback) {
-		this.eventReactor.on(evclass, callback);
-	}
-
-	off(evclass, callback) {
-		this.eventReactor.off(evclass, callback);
-	}
-
-	fire(evclass, args) {
-		this.eventReactor.fire(evclass, args);
-	}
-
 	dispose() {
 		if (!this.$window) return;
 		this.$window.remove();
@@ -168,8 +165,9 @@ class Window {
 		this.posY = y;
 
 		if (this.$window) {
-			this.$window[0].style.left = x + "px";
-			this.$window[0].style.top = y + "px";
+			this.$window[0].style.transform = `translate(${x}px, ${y}px)`;
+			//this.$window[0].style.left = `${x}px`;
+			//this.$window[0].style.top = `${y}px`;
 		}
 	}
 
@@ -213,6 +211,11 @@ class Window {
 		} else {
 			this.$window.removeClass('visible');
 		}
+	}
+
+	setIcon(icon) {
+		this.icon = icon;
+		this.$window.find('.options-btn').css('background-image', `url('${icon}')`);
 	}
 
 	setDecorated(decorated) {
@@ -304,8 +307,8 @@ class Window {
 		if (this.minimized) return;
 
 		let icon = this.icon;
+		if (!icon) icon = '/res/img/apps/window64.png';
 		let title = this.title;
-		if (!icon) icon = "/res/img/apps/window64.png";
 
 		this.minimized = true;
 		this.setVisible(false);
@@ -339,11 +342,23 @@ class Window {
 	makeFullscreen() {
 		if (this.minimized) this.restore();
 
-		this._desktop.fullscrTo(this.$window.find('.body')[0]);
+		Fullscreen.on(this.$window.find('.body')[0]);
 	}
 
 	async setContentToUrl(url) {
 		let fres = await fetch(url);
 		this.$window.find('.body').html(await fres.text());
+	}
+
+	on(evclass, callback) {
+		this.eventReactor.on(evclass, callback);
+	}
+
+	off(evclass, callback) {
+		this.eventReactor.off(evclass, callback);
+	}
+
+	fire(evclass, args) {
+		this.eventReactor.fire(evclass, args);
 	}
 }

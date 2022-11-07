@@ -10,7 +10,7 @@ window.ConfigsApp = class ConfigsApp extends App {
 
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow();
-		this.window.icon = '/res/img/apps/config128.png';
+		this.window.setIcon('/res/img/apps/config128.png');
 		this.window.setHeight(200);
 		this.window.setTitle('Configs');
 		this.window.on('closereq', () => this.close());

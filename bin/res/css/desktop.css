@@ -2,24 +2,38 @@
 	--dark-window-bg: hsla(220, 5%, 10%, 0.8);
 }
 
+html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
 #body {
 	display: block;
+	width: 100%;
+	height: 100%;
 }
 
 /* Desktop and backplane */
-.desktop {
+#body .desktop {
 	display: flex;
 	flex-direction: column;
 	position: relative;
-	max-width: 100vw;
-	width: 100vw;
-	height: 100vh;
+	max-width: 100%;
+	width: 100%;
+	height: 100%;
 	overflow: hidden;
 	font: 14pt sans-serif;
 	color: white;
 	background-image: none;
 	background-size: cover;
 	background-position: center;
+	overflow: hidden !important;
 }
 
 .desktop .dt-area {
@@ -53,8 +67,9 @@
 
 .desktop .backplane .app-icon {
 	border: solid 1px transparent;
-	width: 6rem;
-	margin: 0.75rem 0.75rem;
+	width: 7rem;
+	margin:  .2rem .2rem;
+	padding: .4rem .1rem;
 	text-align: center;
 }
 
@@ -133,12 +148,10 @@
 .desktop .window {
 	--titlebar-height: 28px;
 	--icon-size: 20px;
-	position: absolute;
 	pointer-events: auto;
 	display: none; /* Windows start invisible */
 	flex-direction: column;
-	left: 2px;
-	top: 2px;
+	position: absolute;
 	width: 1280px;
 	height: 720px;
 	overflow: hidden;
@@ -197,7 +210,7 @@
 	flex-grow: 1;
 	flex-shrink: 1;
 	margin: auto;
-	padding-left: 4px;
+	padding-left: 2px;
 	text-overflow: ellipsis;
 	overflow: hidden;
 	font-size: 11pt;
@@ -315,4 +328,78 @@
 	-ms-user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;	
+}
+
+.fullscreened {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: calc(100vw - 0.1px) !important;
+	height: calc(100vh - 0.1px) !important;
+	max-width: calc(100vw - 0.1px) !important;
+	max-height: calc(100vh - 0.1px) !important;
+}
+
+.fscr-parent {
+	overflow: initial !important;
+}
+
+
+
+/* ----- */
+.Slider {
+	--thumb-size: 18px;
+
+	position: relative;
+	display: inline-block;
+	width: 256px;
+	height: 8px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #333;
+	border-color: rgba(10, 10, 10, 0.5);
+	font-size: 7px;
+	box-sizing: border-box;
+	user-select: none;
+	background: white;
+}
+
+.Lower {
+	position: absolute;
+	display: block;
+	height: 100%;
+	width: 50%;
+	left: 0;
+	top: 0;
+	line-height: 0;
+	box-sizing: border-box;
+	user-select: none;
+	background: #00B6FF;
+}
+.Slider .Thumb {
+	position: absolute;
+	display: block;
+	top: calc(50% - var(--thumb-size)/2);
+	width: var(--thumb-size);
+	height: var(--thumb-size);
+	box-sizing: border-box;
+	box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.75);
+	border-style: solid;
+	border-width: 1px;
+	border-color: #000;
+	border-color: rgba(0, 0, 0, 0);
+	border-radius: 50%;
+	user-select: none;
+	background: white;
+}
+.Slider .Thumb:hover {
+	background: #00B6FF;
+}
+.Slider .Upper {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	background: white;
 }

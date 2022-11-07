@@ -1,13 +1,14 @@
 import Util from 'util';
 import FS from 'fs';
+import Path from 'path';
 
 class VFS {
 	constructor() {
 		this.fsDefs = null;
 	}
 
-	loadDefs(file) {
-		this.fsDefs = JSON.parse(FS.readFileSync(file));
+	loadDefs(defs) {
+		this.fsDefs = defs;
 	}
 
 	translate(userid, vpath) {
@@ -15,7 +16,9 @@ class VFS {
 
 		for (let mountp in defs) {
 			if (vpath.startsWith(mountp)) {
-				return defs[mountp].path + vpath.replace(mountp, "");
+				let phyPoint = defs[mountp].path;
+				phyPoint = phyPoint.replace('$user', userid);
+				return phyPoint + vpath.replace(mountp, "");
 			}
 		}
 
@@ -43,7 +46,6 @@ class VFS {
 			throw 500;
 		}
 
-		//let stamp = new Date().getTime();
 		let promises = files.map(async (entry) => {
 			let file = entry.name;
 			let stype = '*i';
@@ -68,8 +70,6 @@ class VFS {
 		});
 
 		let results = await Promise.all(promises);
-		//let time = new Date().getTime() - stamp;
-		//console.log('took ' + time + 'ms');
 		return results; 
 	}
 }
