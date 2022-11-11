@@ -513,6 +513,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 	_getFileClassByExt(file) {
 		if (FileTypes.isAudio(file)) return 'audio';
+		if (FileTypes.isVideo(file)) return 'video';
 		return null;
 	}
 }

@@ -15,8 +15,8 @@ export class FFmpeg {
 			await execute(ffmpegExec, args);
 			return true;
 		} catch(err) {
-			console.log(err);
-			console.log('Thumb creation failed.');
+			//console.log(err);
+			//console.log('Thumb creation failed.');
 		}
 		return false;
 	}
@@ -32,8 +32,8 @@ export class FFmpeg {
 			videolength = ffprobe.stdout.split("format,")[1] * 1.0;
 			return videolength;
 		} catch(err) {
-			console.log(err);
-			console.log('Video length query failed.');
+			//console.log(err);
+			//console.log('Video length query failed.');
 		}
 		return false;
 	}

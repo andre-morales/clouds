@@ -338,6 +338,7 @@ body {
 	height: calc(100vh - 0.1px) !important;
 	max-width: calc(100vw - 0.1px) !important;
 	max-height: calc(100vh - 0.1px) !important;
+	flex-shrink: 0;
 }
 
 .fscr-parent {

@@ -159,6 +159,10 @@
 	background-image: url('/res/img/ftypes/audio128.png');
 }
 
+.app-explorer .file.video:not(.thumbbed) i {
+	background-image: url('/res/img/ftypes/video128.png');
+}
+
 .app-explorer .file.hidden {
 	display: none;
 }

@@ -1,20 +1,24 @@
 const KAPI_VERSION = '0.5.3';
 
+// Lib imports
+import Util from 'util';
+import FS from 'fs';
 import Compression from 'compression';
 import Express from 'express';
 
+// Local imports
 const VFSM = await import('./vfs.js')
 const Pathex = await import('./pathex.js');
 const FFmpegM = await import('./ffmpeg.js');
 const ShellMgr = await import ('./rshell.js');
 
+// Lib requires
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 const WebSocket = require('ws');
 const Path = require('path');
 let FFmpeg = null;
-const FS = require('fs');
 const CookieParser = require('cookie-parser');
 const CProc = require('child_process');
 const FileUpload = require('express-fileupload');
@@ -305,7 +309,8 @@ function apiSetupFS() {
 	});
 
 	app.get('/fs/ls/*', async(req, res) => {
-		let userId = getGuardedReqUser(req);
+		let userId = getReqUser(req, true, res);
+		if (!userId) return;
 
 		let vpath = '/' + req.params[0];
 		if (vpath == '/') {
@@ -357,7 +362,7 @@ function apiSetupAuth() {
 	});
 
 	app.get('/auth/test', (req, res) => {
-		let result = checkRequest(req);
+		let result = getReqUser(req) != null;
 		res.json({ 'ok': result });
 	});
 }
@@ -377,18 +382,15 @@ function getGuardedReqUser(req) {
 	return user;
 }
 
-function getReqUser(req) {
+function getReqUser(req, autoDeny, res) {
 	let key = req.cookies.authkey;
 
 	for (let user in logins) {
 		if (logins[user] == key) return user;
 	}
 
+	if (autoDeny) denyRequest(res);
 	return null;
-}
-
-function checkRequest(req) {
-	return getReqUser(req) != null;
 }
 
 function denyRequest(res) {
@@ -432,6 +434,7 @@ function hashPathStr(str) {
 async function handleThumbRequest(_abs, res){
 	let absFilePath = Pathex.toFullSystemPath(_abs);
 	var thumbfolder = Pathex.toFullSystemPath(`./.thumbnails/`);
+
 	let fthname = hashPathStr(_abs);
 	var thumbpath = `${thumbfolder}/${fthname}.thb`;
 
@@ -447,8 +450,10 @@ async function handleThumbRequest(_abs, res){
 			let result = await FFmpeg.createThumbOf(absFilePath, thumbpath);
 
 			if(!result){
-				res.status(404).end();
-				return;
+				let f = await FS.promises.open(thumbpath, 'w');
+				f.close();
+				//res.status(404).end();
+				//return;
 			}	
 		} 
 

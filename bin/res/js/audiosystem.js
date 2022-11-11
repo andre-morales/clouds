@@ -50,7 +50,7 @@ class AudioSystem {
 
 			let b = this.clipBound;
 			for (let i = 0; i < input.length; i++) {
-				let v = input[i];
+				let v = input[i] * 1.0 / this.clipBound;
 				if (v > b) v = b;
 				if (v < -b) v = -b;
 				output[i] = v;
