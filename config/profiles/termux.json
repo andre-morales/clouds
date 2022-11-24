@@ -1,0 +1,28 @@
+{
+	"fs": {
+		"/sys/": {
+			"path": "/",
+			"access": "@all"
+		},
+		"/tm/": {
+			"path": "/data/data/com.termux/files/",
+			"access": "@all"
+		},
+		"/usr/": {
+			"path": "./usr/$user/",
+			"acess": "@all"
+		}
+	},
+	
+	"extensions": {
+		"shell": {
+			"enabled": true,
+			"exec": "bash"
+		},
+		"ffmpeg": {
+			"enabled": true,
+			"ffmpeg_exec": "ffmpeg",
+			"ffprobe_exec": "ffprobe"
+		}
+	}
+}
