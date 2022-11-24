@@ -3,17 +3,6 @@
 	flex-direction: column;
 }
 
-.app-sinestesia .ribbon {
-	background: rgba(0.24, 0.25, 0.25, 0.2);
-}
-
-.app-sinestesia .ribbon button {
-	padding: 4px;
-	background: none;
-	border: none;
-	color: white;
-}
-
 .app-sinestesia .contentw {
 	display: none;
 	flex-grow: 1;
@@ -56,6 +45,7 @@
 	right: 0;
 	opacity: 0;
 	transition: opacity 200ms;
+	pointer-events: none;
 }
 
 .app-sinestesia .controls .bottom {
@@ -64,6 +54,7 @@
 	padding: 0 .4rem;
 	align-items: center;
 	background: rgba(20, 20, 20, 0.3);
+	pointer-events: all;
 } 
 
 .app-sinestesia .controls .bottom .progressbar {
@@ -99,6 +90,7 @@
 	width: 48px;
 	height: 48px;
 	background-image: url('/res/img/icons/play.png');
+	pointer-events: all;
 }
 
 .app-sinestesia .video-container.playing .play-btn {
@@ -114,4 +106,17 @@
 	flex-grow: 1;
 	max-width: 100%;
 	max-height: 100%;
+}
+
+.app-sinestesia .progressbar .thumb::before {
+	content: var(--time);
+	position: absolute;
+	bottom: 115%;
+	left: calc(50% - 2rem);
+	width: 4rem;
+	padding: 3px;
+	border: solid 1px #4AF;
+	font-size: 12pt;
+	text-align: center;
+	background: rgba(10, 10, 10, 0.4);
 }

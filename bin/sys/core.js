@@ -4,13 +4,17 @@ const KAPI_VERSION = '0.5.3';
 import Util from 'util';
 import FS from 'fs';
 import Compression from 'compression';
+import CookieParser from 'cookie-parser';
+import Cors from 'cors';
 import Express from 'express';
 
 // Local imports
 const VFSM = await import('./vfs.js')
 const Pathex = await import('./pathex.js');
-const FFmpegM = await import('./ffmpeg.js');
-const ShellMgr = await import ('./rshell.js');
+const FFmpegM = await import('./ext/ffmpeg.js');
+const ShellMgr = await import ('./ext/rshell.js');
+const MediaStr = await import ('./ext/mediastr.js');
+const FetchProxy = await import ('./fetchproxy.js');
 
 // Lib requires
 import { createRequire } from "module";
@@ -19,7 +23,7 @@ const require = createRequire(import.meta.url);
 const WebSocket = require('ws');
 const Path = require('path');
 let FFmpeg = null;
-const CookieParser = require('cookie-parser');
+
 const CProc = require('child_process');
 const FileUpload = require('express-fileupload');
 
@@ -31,10 +35,8 @@ var appSv = null;
 var logins = null;
 var userDefs = null;
 var vfs = null;
-var rshells = null;
-var rshellCounter = 1;
 
-export function main(args) {
+export async function main(args) {
 	console.log('KAPI Version: ' + KAPI_VERSION);
 	progArgs = args;
 
@@ -43,6 +45,8 @@ export function main(args) {
 	initUsers();
 	initExpress();
 	startExpress();
+	await FetchProxy.init();
+	FetchProxy.start();
 }
 
 function initConfig() {
@@ -65,15 +69,20 @@ function initUsers() {
 	logins = {};
 }
 
+function isExtEnabled(ext) {
+	return config.extensions
+		&& config.extensions[ext]
+		&& config.extensions[ext].enabled;
+}
+
 function initExpress() {
-	if (config.extensions &&
-		config.extensions.ffmpeg &&
-		config.extensions.ffmpeg.enabled) {
+	if (isExtEnabled('ffmpeg')) {
 		FFmpeg = new FFmpegM.FFmpeg();
 		FFmpeg.init(config.extensions.ffmpeg);
 	}
 
 	app = Express();
+	app.use(Cors());
 	app.use(Compression());
 	
 	app.use(Express.json());
@@ -83,29 +92,36 @@ function initExpress() {
 
 	app.use('/res', Express.static('bin/res')); // Static public resources
 
-	apiSetupAuth();  // Auth system
-	apiSetupPages(); // Entry, Auth and Desktop
-	apiSetupFS();    // File system
-	apiSetupApps();  // Apps service
-	apiSetupRShell();  // Remote console
+	apiSetupAuth();       // Auth system
+	apiSetupPages();      // Entry, Auth and Desktop
+	apiSetupFS();         // File system
+	apiSetupApps();       // Apps service
+	apiSetupRShell();     // Remote console
+
+	if (isExtEnabled('mediastr')) {
+		MediaStr.init(config.extensions.mediastr);
+		app.use('/mstr', MediaStr.getExpressRouter());
+	}
 }
 
 function apiSetupRShell() {
-	rshells = {};
-
 	app.get('/shell/0/init', (req, res) => {
 		getGuardedReqUser(req);
-		let id = createRemoteShell();
-		if (!id) {
+
+		let shell = ShellMgr.create();
+		if (!shell) {
 			res.status(500).end();
 			return;
 		}
-		res.json(id);
+
+		console.log('Created shell ' + shell.id);
+		res.json(shell.id);
 	});
 
 	app.post('/shell/:id/send', (req, res) => {
 		getGuardedReqUser(req);
-		let shell = rshells[req.params.id]
+
+		let shell = ShellMgr.shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
 			return;
@@ -117,7 +133,7 @@ function apiSetupRShell() {
 
 	app.get('/shell/:id/stdout', (req, res) => {
 		getGuardedReqUser(req);
-		let shell = rshells[req.params.id]
+		let shell = ShellMgr.shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
 			return;
@@ -130,7 +146,7 @@ function apiSetupRShell() {
 		getGuardedReqUser(req);
 		res.set('Cache-Control', 'no-store');
 
-		let shell = rshells[req.params.id]
+		let shell = ShellMgr.shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
 			return;
@@ -149,20 +165,21 @@ function apiSetupRShell() {
 
 	app.get('/shell/:id/kill', (req, res) => {
 		getGuardedReqUser(req);
+		
 		let id = req.params.id;
-		if (!rshells[id]) {
+		
+		if(!ShellMgr.destroy(id)) {
 			res.status(404).end();
 			return;
 		}
 
-		destroyRemoteShell(id);
-
+		console.log('Destroyed shell ' + id);
 		res.end();
 	});
 
 	app.get('/shell/:id/ping', (req, res) => {
 		getGuardedReqUser(req);
-		let shell = rshells[req.params.id]
+		let shell = ShellMgr.shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
 			return;
@@ -172,43 +189,10 @@ function apiSetupRShell() {
 		res.end();
 	});
 
+
 	setInterval(() => {
-		let now = (new Date()).getTime();
-		let destroyedShells = [];
-
-		for (const [id, proc] of Object.entries(rshells)) {
-			if (now - proc.lastPing > 20000) {
-				destroyedShells.push(id);
-			}
-		}
-
-		destroyedShells.forEach(destroyRemoteShell);
+		ShellMgr.destroyOldShells(20);
 	}, 20000)
-}
-
-function createRemoteShell() {
-	let id = rshellCounter;
-	console.log('Creating shell ' + id);
-	
-	let shellObj = ShellMgr.create(id);
-
-	try {
-		if (!shellObj.spawn()) return false;
-	} catch(err) {
-		return false;
-	}
-	rshells[id] = shellObj;
-	rshellCounter++
-	shellObj.setupOutput();
-	shellObj.ping();
-
-	return id;
-}
-
-function destroyRemoteShell(id) {
-	console.log('Destroying shell ' + id);
-	rshells[id].proc.kill();
-	delete rshells[id];
 }
 
 function apiSetupPages() {
@@ -383,6 +367,8 @@ function getGuardedReqUser(req) {
 }
 
 function getReqUser(req, autoDeny, res) {
+	return 'andre';
+
 	let key = req.cookies.authkey;
 
 	for (let user in logins) {

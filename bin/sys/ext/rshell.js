@@ -1,13 +1,49 @@
 import CProc from 'child_process';
 
 var defs = null; 
+export var shells = {};
+var counter = 1;
 
 export function loadDefs(defs_) {
 	defs = defs_;
 }
 
-export function create(id) {
-	return new RShell(id);
+export function create() {
+	let id = counter;
+	let shell = new RShell(id);
+
+	try {
+		if (!shell.spawn()) return null;
+	} catch(err) {
+		return null;
+	}
+
+	counter++;
+	shells[id] = shell;
+	shell.setupOutput();
+	shell.ping();
+	return shell;
+}
+
+export function destroy(id) {
+	if (!shells[id]) return false;
+
+	shells[id].proc.kill();
+	delete shells[id];
+	return true;
+}
+
+export function destroyOldShells(limit) {
+	let now = (new Date()).getTime();
+	let destroyedShells = [];
+
+	for (const [id, proc] of Object.entries(shells)) {
+		if (now - proc.lastPing > limit*1000) {
+			destroyedShells.push(id);
+		}
+	}
+
+	destroyedShells.forEach(destroy);
 }
 
 export class RShell {

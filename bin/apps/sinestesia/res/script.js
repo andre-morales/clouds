@@ -31,19 +31,19 @@ window.SinesApp = class SinesApp extends App {
 		await this.window.setContentToUrl('/app/sinestesia/res/main.html');
 
 		// Behaviour
-		$win.find('.open-btn').click(async () => {
-			let app = await WebSys.runApp('explorer');
-			app.asFileSelector('open', 'one');
-			let result = await app.waitFileSelection();
-			if (!result.length) return;
-
-			let file = result[0];
-			this.playFile('/fs/q' + file);
-		});
+		let ctxMenu = CtxMenu([
+			CtxItem('Open', () => this.showOpenDialog()),
+			CtxCheck('Lock playback', (v) => {
+				this.lockedPlayback = v;
+				this.cancelPauseEvents = v;
+			})
+		]);
+		WebSys.desktop.addCtxMenuOn($win.find('.body'), () => ctxMenu);
 
 		// Video container behaviour
 		let $videoc = $win.find('.video-container');
 		let $video = $videoc.find('video');
+		let video = $video[0];
 		let $time = $videoc.find('.time');
 		let $duration = $videoc.find('.duration');
 
@@ -51,10 +51,9 @@ window.SinesApp = class SinesApp extends App {
 			let el = this.mediaElement[0];
 			if (el.paused) {
 				el.play();
-				$videoc.addClass('playing');
 			} else {
+				this.cancelPauseEvents = false;
 				el.pause();
-				$videoc.removeClass('playing');
 			}
 		});
 
@@ -69,14 +68,21 @@ window.SinesApp = class SinesApp extends App {
 		});
 
 		let $controls = $win.find('.controls');
-		$win.find('.controls .center').click(() => {
+		$win.find('video').click(() => {
 			$controls.toggleClass('visible');
 		});
 		
 		let progressbarHeld = false;
 		let $progressbar = $win.find('.progressbar');
+		let $barThumb = $progressbar.find('.thumb');
 		$progressbar.on('mousedown touchstart', () => {
 			progressbarHeld = true;
+		});
+		$(document).on('mousemove', () => {
+			if (!progressbarHeld) return;
+
+			let t = $progressbar[0].value * $video[0].duration / 100.0;
+			$barThumb.css('--time', `'${fnTimeAsString(t)}'`);
 		});
 		$(document).on('mouseup touchend', () => {
 			if (!progressbarHeld) return;
@@ -84,9 +90,12 @@ window.SinesApp = class SinesApp extends App {
 			
 			let time = $progressbar[0].value * $video[0].duration / 100.0;
 			$video[0].currentTime = time;
+			$barThumb.css('--time', null);
 		});
 		$video.on('loadedmetadata', function() {
 			$duration.text(fnTimeAsString(this.duration));
+			//this.playbackRate = 1.3;
+			//this.preservesPitch = false;
 		});
 		$video.on("timeupdate", function() {
 			if (progressbarHeld) return;
@@ -95,12 +104,23 @@ window.SinesApp = class SinesApp extends App {
 
 			$time.text(fnTimeAsString(this.currentTime));
 		});
+		$video.on('play', (ev) => {
+			$videoc.addClass('playing');
+		});
+		$video.on('pause', (ev) => {
+			if (this.cancelPauseEvents) {
+				video.play();
+			} else {
+				$videoc.removeClass('playing');
+			}
+			if (this.lockedPlayback) this.cancelPauseEvents = true;
+		});
+
 		// Make the window visible
 		this.restoreAppWindowState(this.window);
 		this.window.setVisible(true);
 
 		prepareSliders();
-
 
 		let fnTwo = (n) => {
 			return n.toLocaleString(undefined, {
@@ -123,6 +143,16 @@ window.SinesApp = class SinesApp extends App {
 		};
 	}
 
+	async showOpenDialog() {
+		let app = await WebSys.runApp('explorer');
+		app.asFileSelector('open', 'one');
+		let result = await app.waitFileSelection();
+		if (!result.length) return;
+
+		let file = result[0];
+		this.playFile('/fs/q' + file);
+	}
+
 	playFile(path) {
 		let url = encodeURI(path);
 		let $win = this.window.$window;
@@ -138,8 +168,6 @@ window.SinesApp = class SinesApp extends App {
 
 		if (FileTypes.isPicture(path)) {
 			this.openPicture(url);
-		} else if (FileTypes.isVideo(path)) {
-			this.openVideo(url);
 		} else if (FileTypes.isAudio(path)) {
 			let $audio = $('<audio controls></audio>');
 			$audio.append($(`<source src="${url}">`));
@@ -150,8 +178,11 @@ window.SinesApp = class SinesApp extends App {
 
 			let track = WebSys.audio.context.createMediaElementSource($audio[0]);
 			track.connect(WebSys.audio.destination);
+		} else if (FileTypes.isVideo(path)) {
+			this.openVideo(url);
 		} else {
-			WebSys.showErrorDialog('Unknown media type');
+			this.openVideo(url);
+			//WebSys.showErrorDialog('Unknown media type');
 		}
 	}
 
@@ -166,9 +197,11 @@ window.SinesApp = class SinesApp extends App {
 				Fullscreen.on($img[0]);
 			}
 		});
-		
+
 		let $container = this.window.$window.find('.contentw.img')
 		$container.append($img).addClass('enabled');
+
+		this.setupPanZoomGestures($img);
 	}
 
 	openVideo(url) {
@@ -183,9 +216,46 @@ window.SinesApp = class SinesApp extends App {
 
 		let track = WebSys.audio.context.createMediaElementSource($video[0]);
 		track.connect(WebSys.audio.destination);
+
+		this.setupPanZoomGestures($video);
+	}
+
+	setupPanZoomGestures($el) {
+		let _scale = 1;
+		let _lscale = 1;
+		let _x = 0, _y = 0;
+		let _lx = 0, _ly = 0;
+
+		let transform = () => {
+			$el.css('transform', `scale(${_scale}) translate(${_x}px, ${_y}px)`);
+		}
+
+		let hammer = new Hammer.Manager($el[0], {
+			recognizers: [
+				[Hammer.Pinch, {}],
+				[Hammer.Pan, {}]
+			]
+		});
+		hammer.on('pinch', (ev) => {
+			_scale = _lscale * ev.scale; 
+			transform();
+		});
+		hammer.on('pinchend', (ev) => {
+			_lscale = _scale;
+		});
+		hammer.on('pan', (ev) => {
+			_x = _lx + ev.deltaX / _scale;
+			_y = _ly + ev.deltaY / _scale;
+			transform();
+		});
+		hammer.on('panend', (ev) => {
+			_lx = _x;
+			_ly = _y;
+		});
 	}
 
 	onClose() {
+		this.cancelPauseEvents = false;
 		this.saveAppWindowState(this.window);
 		this.window.close();
 	}

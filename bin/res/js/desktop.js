@@ -18,12 +18,12 @@ class Desktop {
 			} else Fullscreen.on(body);
 		});
 
-		let menu = [
-			["System Settings", () => {
+		let menu = CtxMenu([
+			CtxItem("System Settings", () => {
 				WebSys.runApp('configs');
-			}]
-		]
-		this.addContextMenuOn(this.$desktop.find('.backplane'), menu);
+			})
+		]);
+		this.addCtxMenuOn(this.$desktop.find('.backplane'), () => menu);
 
 		this._installWindowResizeHandlers();
 
@@ -102,46 +102,13 @@ class Desktop {
 		}
 	}
 
-	addContextMenuOn(element, menu) {
-		$(element).on('contextmenu', (ev) => {
-			let mx = ev.clientX, my = ev.clientY;
-
-			this.openContextMenuAt(menu, mx, my);
-			ev.preventDefault();
-			return false;
-		});
-	}
-
-	addContextMenuFnOn(element, menuFn) {
-		$(element).on('contextmenu', (ev) => {
-			let mx = ev.clientX, my = ev.clientY;
-
-			this.openContextMenuAt(menuFn(), mx, my);
-			ev.preventDefault();
-			return false;
-		});
-	}
-
-	openContextMenuAt(menu, x, y) {
+	openCtxMenuAt(menu, x, y) {
 		this.contextMenuOpen = true;
 		let $menu = this.$contextMenu;
 		$menu.removeClass('.visible');
 		$menu.empty();
 
-		for (let obj of menu) {
-			if (obj === '-') {
-				$menu.append($('<hr>'));
-			} else {
-				let name = obj[0];
-				let action = obj[1];
-				let item = $(`<i>${name}</i>`)
-				item.on('click', () => {
-					action();
-					$menu.removeClass('visible');
-				});
-				$menu.append(item);
-			}
-		}
+		menu.buildIn($menu, this.$contextMenu, this.screenWidth, this.screenHeight);
 
 		$menu.addClass('visible');
 		let mwidth = $menu[0].offsetWidth;
@@ -155,6 +122,16 @@ class Desktop {
 
 		$menu.css('left', x);
 		$menu.css('top', y);
+	}
+
+	addCtxMenuOn(element, menuFn) {
+		$(element).on('contextmenu', (ev) => {
+			let mx = ev.clientX, my = ev.clientY;
+
+			this.openCtxMenuAt(menuFn(), mx, my);
+			ev.preventDefault();
+			return false;
+		});
 	}
 
 	setCursor(cursor) {
@@ -406,4 +383,97 @@ class Fullscreen {
 		//$el[0].style.left = `${-rect.x}px`;
 		//$el[0].style.top = `${-rect.y}px`
 	}
+}
+
+class CtxMenuClass {
+	constructor(entr, label) {
+		this.entries = (entr) ? entr : [];
+		this.label = label;
+	}
+
+	buildIn($menu, $rootMenu, screenWidth, screenHeight) {
+		for (let entry of this.entries) {
+			if (entry === '-') {
+				$menu.append($('<hr>'));
+				continue;
+			}
+
+			let $item;
+			let label = entry.label;
+			let action = entry.action;
+
+			if (entry instanceof CtxCheckClass) {
+				$item = $(`<i class='check'>${label}</i>`)
+				if (entry.checked) $item.addClass('checked');
+
+				$item.on('click', () => {
+					entry.checked = !entry.checked;
+					//$item.toggleClass('checked', entry.checked);
+					if (action) action.apply(entry, [entry.checked]);
+					$rootMenu.removeClass('visible');
+				});
+			} else if (entry instanceof CtxMenuClass) {
+				$item = $(`<i class='menu'>${label}</i>`);
+				let $sub = $('<div class="context-menu">');
+				entry.buildIn($sub, $rootMenu);
+
+				$item.append($sub);
+
+				$item.on('click', () => {
+					$sub.addClass('visible');
+					let rectP = $menu[0].getBoundingClientRect();
+					let rectI = $item[0].getBoundingClientRect();
+
+					let x = rectI.width;
+					let y = rectI.y - rectP.y;
+
+					let mwidth = $sub[0].offsetWidth;
+					let mheight = $sub[0].offsetHeight;
+
+					if (rectP.x + x + mwidth > screenWidth) x -= mwidth;
+					if (x < 0) x = 0;
+
+					if (rectP.y + y + mheight > screenHeight) y -= mheight;
+					if (y < 0) y = 0;
+
+					$sub.css('left', x);
+					$sub.css('top', y);
+				});
+			} else {
+				$item = $(`<i>${label}</i>`)
+				$item.on('click', () => {
+					if (action) action();
+					$rootMenu.removeClass('visible');
+				});
+			}
+
+			$menu.append($item);
+		}
+	}
+}
+
+class CtxItemClass {
+	constructor(label, action) {
+		this.label = label;
+		this.action = action;
+	}
+}
+
+class CtxCheckClass extends CtxItemClass {
+	constructor(label, action, checked) {
+		super(label, action);
+		this.checked = Boolean(checked);
+	}
+}
+
+function CtxMenu() {
+	return new CtxMenuClass(...arguments);
+}
+
+function CtxItem() {
+	return new CtxItemClass(...arguments);
+}
+
+function CtxCheck() {
+	return new CtxCheckClass(...arguments);
 }

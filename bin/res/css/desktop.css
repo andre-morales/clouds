@@ -278,6 +278,33 @@ body {
 	background-color: #35D;
 }
 
+.context-menu i.check {
+	padding-left: 0;
+}
+
+.context-menu i.check::before {
+	width: 1.25em;
+	content: '';
+	display: inline-block;
+	text-align: center;
+}
+
+.context-menu i.check.checked::before {
+	content: '\2713';
+}
+
+.context-menu i.menu {
+	padding-right: 0;
+}
+
+.context-menu i.menu::after {
+	width: 2em;
+	content: '>';
+	display: inline-block;
+	text-align: center;
+	float: right;
+}
+
 .context-menu hr {
 	margin: 4px 0;
 }
@@ -365,7 +392,7 @@ body {
 	background: white;
 }
 
-.Lower {
+.Slider .lower {
 	position: absolute;
 	display: block;
 	height: 100%;
@@ -377,7 +404,7 @@ body {
 	user-select: none;
 	background: #00B6FF;
 }
-.Slider .Thumb {
+.Slider .thumb {
 	position: absolute;
 	display: block;
 	top: calc(50% - var(--thumb-size)/2);
@@ -393,14 +420,18 @@ body {
 	user-select: none;
 	background: white;
 }
-.Slider .Thumb:hover {
+.Slider .thumb:hover {
 	background: #00B6FF;
 }
-.Slider .Upper {
+/*.Slider .Upper {
 	position: absolute;
 	right: 0;
 	top: 0;
 	bottom: 0;
 	left: 50%;
 	background: white;
+}*/
+
+.hidden_ {
+	display: none !important; 
 }

@@ -23,6 +23,11 @@
 			"enabled": true,
 			"ffmpeg_exec": "ffmpeg",
 			"ffprobe_exec": "ffprobe"
+		},
+		"mediastr": {
+			"enabled": true,
+			"ytdl": "python extensions/yt-dlp.py",
+			"downpath": "downloads"
 		}
 	}
 }

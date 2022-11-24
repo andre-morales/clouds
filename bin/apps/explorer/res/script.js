@@ -12,7 +12,12 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.selectedElems = [];
 		this.favorites = [];
 		this.collections = {};
+		this.collectionsMap = new Map();
+		this.collectionsVisible = [];
 		this.closingDeferred = new Deferred();
+		this.subs();
+		this.history.save();
+		this.zoom = 1;
 	}
 
 	async init() {
@@ -26,46 +31,51 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.window.setIcon('/res/img/ftypes/folder128.png');
 		this.window.setTitle('File Explorer');
 		this.window.on('closereq', () => this.close());
-		this.window.on('backnav', () => this.navigate('..'));
+		this.window.on('backnav', () => this.goBack());
 
-		let $win = this.window.$window;
-		$win.find('.body').addClass('app-explorer');
+		let $app = this.window.$window.find('.body');
+		this.$app = $app;
+		$app.addClass('app-explorer');
 
 		// Fetch explorer body
 		await this.window.setContentToUrl('/app/explorer/res/main.html');
 
 		// Query DOM
-		this.$files = $win.find('.files');
-		this.$addressField = $win.find('.address-field');
-		this.$favorites = $win.find('.favorites');
-		this.$collections = $win.find('.collections');
+		this.$files = $app.find('.files');
+		this.$addressField = $app.find('.address-field');
+		this.$favorites = $app.find('.favorites');
+		this.$collections = $app.find('.collections');
 
 		// Setup events
 		this.$addressField.on('change', () => {
 			this.go(this.$addressField.val());
 		});
-		$win.find('.back-btn').click(() => this.navigate('..'));
-		$win.find('.refresh-btn').click(() => this.navigate('.'));
-		$win.find('.favorites-btn').click(() => {
-			$win.find('aside').toggleClass('hidden');
+		$app.find('.back-btn').click(() => this.goBack());
+		$app.find('.up-btn').click(() => this.goUp());
+		$app.find('.refresh-btn').click(() => this.navigate('.'));
+		$app.find('.favorites-btn').click(() => {
+			$app.find('aside').toggleClass('hidden');
 			this.recalculateIcons();
 		});
-		$win.find('.search-field').on('change', () => this.searchFiles());
+		$app.find('.search-field').on('change', () => this.searchFiles());
 		this.window.on('resize', () => this.recalculateIcons());
 
-		let $filesContainer = $win.find('.files-container');
-		WebSys.desktop.addContextMenuFnOn($filesContainer, () => [
-			['Upload...', () => this.openUploadDialog()]
-		]);
+		let $filesContainer = $app.find('.files-container');
+		WebSys.desktop.addCtxMenuOn($filesContainer, () => CtxMenu([
+			CtxItem('Paste', () => this.pasteFile()),
+			CtxItem('Upload...', () => this.openUploadDialog())
+		]));
 
-		let $sidePanel = $win.find('aside');
-		WebSys.desktop.addContextMenuFnOn($sidePanel, () => [
-			['Create collection...', () => this.openCreateCollectionDialog()]
-		]);
+		let $sidePanel = $app.find('aside');
+		WebSys.desktop.addCtxMenuOn($sidePanel, () => CtxMenu([
+			CtxItem('Create collection...', () => this.openCreateCollectionDialog())
+		]));
 
 		// Final preparation
 		await this.loadFavorites();
 		this.refreshFavorites();
+		await this.loadCollections();
+		this.recreateCollections();
 
 		// Make the window visible
 		this.window.bringToCenter();
@@ -74,6 +84,17 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.window.setVisible(true);
 		
 		await this.goHome();
+
+		this.history.save();
+
+		let hammer = new Hammer.Manager(this.$app.find('.body')[0], {
+			recognizers: [
+				[Hammer.Pinch, {}]
+			]
+		});
+		hammer.on('pinch', (ev) => {
+			this.setZoom(ev.scale);
+		});
 	}
 
 	async openUploadDialog() {
@@ -124,8 +145,20 @@ window.ExplorerApp = class ExplorerApp extends App {
 		win.setVisible(true);
 	}
 
+	goBack() {
+		let path = this.history.goBack();
+		console.log(path);
+		if (path) this.go(path);
+	}
+
+	goUp() {
+		let path = this.getNavPath('..');
+		this.go(path);
+		this.history.save(path);
+	}
+
 	recalculateIcons() {
-		let iw = 128;
+		let iw = 128 * this.zoom;
 
 		let w = this.$files.width();
 		let icons = Math.floor(w / iw); // How many icons fit vertically
@@ -173,14 +206,24 @@ window.ExplorerApp = class ExplorerApp extends App {
 		return null;
 	}
 
-	async navigate(path) {
-		let p = pathJoin(this.cwd, path);
-		if (p == '/..') return;
+	getNavPath(path) {
+		if (path == '.') return this.cwd;
 
-		this.go(p);
+		let p = pathJoin(this.cwd, path);
+		if (p == '/..') return '/';
+		return p;
+	}
+
+	async navigate(path) {
+		this.go(this.getNavPath(path));
 	}
 
 	async go(path) {
+		if (path.startsWith('$')) {
+			this.openCollection(path.substring(1));
+			return;
+		}
+
 		this.$addressField.val(path);
 
 		// Fetching and fetch error handling
@@ -203,12 +246,12 @@ window.ExplorerApp = class ExplorerApp extends App {
 			this.$addressField.val(this.cwd);
 			return code;
 		}
+
 		this.cwd = path;
 
-		// UI changes
-		this.$files.addClass('d-none');
-		this.$files.empty();
-		
+		// UI changes		
+		this.refreshCollections();
+
 		if (path == '/') {
 			this.window.setTitle('File Explorer');
 		} else {
@@ -221,6 +264,12 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		// Sort files
 		let files = await fres.json();
+		this.setFilePanelContent(files);
+	}
+
+	async setFilePanelContent(files) {
+		this.$files.addClass('d-none');
+		this.$files.empty();
 		this.filesCount = files.length;
 
 		let val = (e) => {
@@ -245,39 +294,27 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.recalculateIcons();
 	}
 
-	async goHome() {
-		await this.go('/');
-	}
-
-	async openHandler(path) {
-		let qPath = '/fs/q' + path;
-
-		if (path.endsWith('/')) {
-			this.go(path)
-		} else {
-			if (FileTypes.isMedia(path)) {
-				let app = await WebSys.runApp('sinestesia');
-				app.playFile(qPath);
-				app.window.bringToFront();
-				app.window.focus();
-			} else {
-				this.openFileExt(path);
-			}
-		}
-	}
-
-	makeFileIcon(fentry, callback) {
+	makeFileIcon(fentry) {
 		let [fpath, ftags=""] = fentry.split('*');
 
+		// Get file name between slashes in the entry
 		let fname = fpath;
-		let absPath = pathJoin(this.cwd, fpath);
+		let ls = fpath.lastIndexOf('/', fpath.length-2);
+		if (ls != -1) fname = fpath.substring(ls + 1);
+		if (fname.endsWith('/')) fname = fname.slice(0, -1);
+
+		// Absolute path of the entry
+		let absPath;
+		if (!this.cwd.startsWith('$')) {
+			absPath = pathJoin(this.cwd, fpath);
+		} else {
+			absPath = fpath;
+		}
 
 		// Obtain file classes
 		let classes = ['file'];
-		let isDir = fpath.endsWith('/');
-		if (isDir) {
+		if (fpath.endsWith('/')) {
 			classes.push('dir');
-			fname = fpath.slice(0, -1);
 		}
 		if (ftags.includes('i')) {
 			classes.push('blocked');
@@ -286,18 +323,24 @@ window.ExplorerApp = class ExplorerApp extends App {
 			classes.push('symbolic');
 		}
 
+		// Get file type given file extension
 		let cl = this._getFileClassByExt(fpath);
 		if (cl) classes.push(cl);
 
+		// Create thumbnail image if needed
 		let $img = null;
 		let hasThumb = FileTypes.isVideo(fname) || FileTypes.isPicture(fname);
 		if (hasThumb) {
-			$img = $(`<img src='/fs/thumb${absPath}'>`);
+			$img = $(`<img src='/fs/thumb${absPath}' draggable='false'>`);
 			classes.push('thumbbed');
 		}
 
-		let $file = $(`<div><span>${fname}</span></div>`,
-			{'class': classes.join(' ')});
+		// Create file element
+		let $file = $(`<div><span>${fname}</span></div>`, {
+			'class': classes.join(' ')
+		});
+
+		// Add thumbnail element
 		let $ic = $('<i></i>');
 		if ($img) {
 			$ic.append($img);
@@ -307,6 +350,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 			});
 		}
 		$file.prepend($ic);
+
+		// Clicking behaviour
 		$file.click(() => {
 			if (WebSys.desktop.contextMenuOpen) return;
 			if (this.selectionMode == 'default') {
@@ -345,8 +390,40 @@ window.ExplorerApp = class ExplorerApp extends App {
 				this.openHandler(absPath);
 			}
 		});
-		WebSys.desktop.addContextMenuFnOn($file, () => this.makeFileMenu(absPath));
+		WebSys.desktop.addCtxMenuOn($file, () => this.makeFileMenu(absPath));
+		$file.attr('draggable', 'true');
 		return $file;
+	}
+
+	async goHome() {
+		this.history.save('/');
+		await this.go('/');
+	}
+
+	async pasteFile() {
+		let str = Clipboard.object;
+		let src = str.replace(/^(\/fs\/q\/\.)/,"");
+		let dst = this.cwd;
+
+		fetch(`/fs/cp?from=${encodeURIComponent(src)}&to=${encodeURIComponent(dst)}`);
+	}
+
+	async openHandler(path) {
+		let qPath = '/fs/q' + path;
+
+		if (path.endsWith('/')) {
+			this.go(path);
+			this.history.save(path);
+		} else {
+			if (FileTypes.isMedia(path) || path.endsWith('.part')) {
+				let app = await WebSys.runApp('sinestesia');
+				app.playFile(qPath);
+				app.window.bringToFront();
+				app.window.focus();
+			} else {
+				this.openFileExt(path);
+			}
+		}
 	}
 
 	makeFileMenu(absPath) {
@@ -354,38 +431,58 @@ window.ExplorerApp = class ExplorerApp extends App {
 		let qPath = '/fs/q' + absPath;
 
 		let menu = [
-			['Open', () => this.openHandler(absPath)],
+			CtxItem('Open', () => this.openHandler(absPath)),
 		];
 
 		if (isDir) {
 			menu.push(
-				['Open in another window', async () => {
+				CtxItem('Open in another window', async () => {
 					let app = await WebSys.runApp('explorer');
 					app.go(absPath);
-				}],
-				['Add to favorites', () => {
+				}),
+				CtxItem('Add to favorites', () => {
 					this.addFavorite(absPath)
-				}]
+				})
 			);
 		} else {
 			menu.push(
-				['Open outside', () => this.openFileExt(absPath)],
-				['Download', () => WebSys.downloadUrl(qPath)]
+				CtxItem('Open outside', () => this.openFileExt(absPath)),
+				CtxItem('Download', () => WebSys.downloadUrl(qPath))
 			);
 		}
 
+		if (this.cwd.startsWith('$')) {
+			menu.push(CtxItem('Remove from this collection', () => {
+				let colName = this.cwd.substring(1);
+				let coll = this.collections[colName];
+				arrErase(coll.files, absPath);
+
+				this.saveCollections();
+				this.navigate('.');
+			}));
+		}
+
+		menu.push(CtxMenu(
+			this.collectionsVisible.map((cname) => CtxItem(cname, () => {
+				this.addFileToCollection(cname, absPath);
+			}))
+		, 'Add to collection'));
+
 		if (FileTypes.isPicture(absPath)) {
-			menu.push(['Set as background', () => {
+			menu.push(CtxItem('Set as background', () => {
 				WebSys.desktop.setBackground(qPath, true);
-			}]);
+			}));
 		}
 
 		menu.push(
 			'-',
-			['Copy', () => copyTextToClipboard(qPath)],
-			['Delete', null]
+			CtxItem('Cut', () => {
+				Clipboard.copyObject(qPath, 'cutfile');
+			}),
+			CtxItem('Copy', () => Clipboard.copyText(qPath)),
+			CtxItem('Delete')
 		);
-		return menu;
+		return CtxMenu(menu);
 	}
 
 	// Favorites 
@@ -412,9 +509,9 @@ window.ExplorerApp = class ExplorerApp extends App {
 			$item.click(() => {
 				this.openHandler(path);
 			});
-			WebSys.desktop.addContextMenuFnOn($item, () => [
-				['Remove', () => this.removeFavorite(path)]
-			]);
+			WebSys.desktop.addCtxMenuOn($item, () => CtxMenu([
+				CtxItem('Remove', () => this.removeFavorite(path))
+			]));
 			this.$favorites.append($item);
 		}
 	}
@@ -441,29 +538,54 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.collections[name] = {};
 
 		this.saveCollections();
-		this.refreshCollections();
+		this.recreateCollections();
 	}
 
 	destroyCollection(name) {
 		delete this.collections[name];
 
 		this.saveCollections();
-		this.refreshCollections();
+		this.recreateCollections();
 	}
 	
 	refreshCollections() {
-		this.$collections.empty();
+		this.collectionsVisible.length = 0;
+		for (let [name, $item] of this.collectionsMap.entries()) {
+			let coll = this.collections[name];
 
-		for (let [name, entries] of Object.entries(this.collections)) {
-			let $item = $('<li>' + name + '</li>');
+			let visible = !coll.exclusive || coll.exclusive == this.cwd;
+			$item.toggleClass('hidden_', !visible);
+			if (visible) this.collectionsVisible.push(name);
+		}
+	}
+
+	recreateCollections() {
+		let self = this;
+
+		this.$collections.empty();
+		this.collectionsMap.clear();
+
+		for (let [name, coll] of Object.entries(this.collections)) {
+			let $item = $('<li class="hidden_">' + name + '</li>');
+			this.collectionsMap.set(name, $item);
+
 			$item.click(() => {
 				this.openCollection(name);
 			});
-			WebSys.desktop.addContextMenuFnOn($item, () => [
-				['Remove', () => this.destroyCollection(name)]
-			]);
+
+			WebSys.desktop.addCtxMenuOn($item, () => {
+				return CtxMenu([
+					CtxCheck('Only show here', (c) => {
+						coll.exclusive = (c) ? self.cwd : null;
+						this.saveCollections();
+					}, coll.exclusive == this.cwd),
+					CtxItem('Remove', () => this.destroyCollection(name))
+				]);
+			});
 			this.$collections.append($item);
 		}
+
+		this.refreshCollections();
 	}
 
 	async saveCollections() {
@@ -485,6 +607,24 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 	openCollection(cname) {
 		let col = this.collections[cname];
+		if (!col) return;
+
+		this.window.setTitle(`[${cname}]`);
+		this.setFilePanelContent(col.files);
+
+		this.cwd = '$' + cname;
+		this.history.save(this.cwd);
+		this.$addressField.val(this.cwd);
+	}
+
+	addFileToCollection(cname, file) {
+		let coll = this.collections[cname];
+		if (!coll.files) coll.files = [];
+
+		if (coll.files.includes(file)) return;
+		
+		coll.files.push(file);
+		this.saveCollections();
 	}
 
 	openFileExt(path) {
@@ -515,5 +655,38 @@ window.ExplorerApp = class ExplorerApp extends App {
 		if (FileTypes.isAudio(file)) return 'audio';
 		if (FileTypes.isVideo(file)) return 'video';
 		return null;
+	}
+
+	setZoom(v) {
+		this.zoom = v;
+		this.$files.css('--icon-width', 128 * v + 'px');
+		this.$files.css('--icon-height', 96 * v + 'px');
+		this.recalculateIcons();
+	}
+
+	subs() {
+		let self = this;
+
+		this.history = {
+			log: [],
+			logIndex: -1,
+
+			save(entry) {
+				this.logIndex++;
+
+				if (this.logIndex == this.log.length) {
+					this.log.push(entry);
+				} else {
+					this.log[this.logIndex] = entry;
+					this.log.length = this.logIndex+1;
+				}
+			},
+
+			goBack() {
+				if (this.logIndex <= 0) return null;
+
+				return this.log[--this.logIndex];
+			}
+		}
 	}
 }

@@ -26,5 +26,13 @@
 	"System Monitor": {
 		"icon": "/res/img/apps/monitor128.png",
 		"app": "systemmonitor"
+	},
+	"Virtual Turn Table": {
+		"icon": "/res/img/apps/vttable128.png",
+		"app": "vttable"
+	},
+	"Browser": {
+		"icon": "/res/img/apps/browser128.png",
+		"app": "browser"
 	}
 }

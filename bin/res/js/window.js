@@ -26,7 +26,7 @@ class Window {
 		// Instantiation
 		let win = $(cloneTemplate('window')).find('.window');
 		this._desktop.$windows.append(win);
-		this.optionsMenu = this.makeOptionsMenu();
+		this.optionsCtxMenu = this.makeOptionsCtxMenu();
 
 		// Queries
 		this.$window = win;
@@ -34,12 +34,12 @@ class Window {
 		this.$windowTitle = win.find('.title');
 
 		// Behavior
-		let hammer = new Hammer.Manager(this.$window[0], {
+		let hammer = new Hammer.Manager(this.$window.find('.body')[0], {
 			recognizers: [
 				[Hammer.Swipe, {
 					direction: Hammer.DIRECTION_LEFT,
-					velocity: 1.3,
-					treshold: 20
+					velocity: 1.0,
+					treshold: 15
 				}],
 			]
 		});
@@ -57,9 +57,9 @@ class Window {
 			else this.setMaximized(true)
 		});
 		win.find('.options-btn').click((ev) => {
-			this._desktop.openContextMenuAt(this.optionsMenu, ev.clientX, ev.clientY);
+			this._desktop.openCtxMenuAt(this.optionsCtxMenu, ev.clientX, ev.clientY);
 		});
-		this._desktop.addContextMenuOn(this.$windowTitle, this.optionsMenu)
+		this._desktop.addCtxMenuOn(this.$windowHeader, () => this.optionsCtxMenu)
 		this.$windowTitle.dblclick(() => this.setMaximized(!this.maximized));
 		this.setupDragListeners();
 
@@ -70,15 +70,15 @@ class Window {
 		this.setDecorated(true);
 	}
 
-	makeOptionsMenu() {
-		return [
-			['Fullscreen', () => this.makeFullscreen()],
-			['Maximize', () => this.setMaximized(true)],
-			['Minimize', () => this.minimize()],
-			['Restore', () => this.restore()],
+	makeOptionsCtxMenu() {
+		return CtxMenu([
+			CtxItem('Fullscreen', () => this.makeFullscreen()),
+			CtxItem('Maximize', () => this.setMaximized(true)),
+			CtxItem('Minimize', () => this.minimize()),
+			CtxItem('Restore', () => this.restore()),
 			'-',
-			['Close', () => this.fire('closereq')]
-		];
+			CtxItem('Close', () => this.fire('closereq'))
+		]);
 	}
 
 	setupDragListeners() {
@@ -166,8 +166,6 @@ class Window {
 
 		if (this.$window) {
 			this.$window[0].style.transform = `translate(${x}px, ${y}px)`;
-			//this.$window[0].style.left = `${x}px`;
-			//this.$window[0].style.top = `${y}px`;
 		}
 	}
 
@@ -323,9 +321,9 @@ class Window {
 
 		this._desktop.iconifiedWindows.set(this, $task);
 		
-		let menu = this.optionsMenu;
+		let menu = this.optionsCtxMenu;
 
-		this._desktop.addContextMenuOn($task, menu);
+		this._desktop.addCtxMenuOn($task, menu);
 		this._desktop.$tasks.append($task);
 	}
 

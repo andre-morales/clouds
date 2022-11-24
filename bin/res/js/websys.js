@@ -530,14 +530,23 @@ function getURLParams() {
 	});
 }
 
-async function copyTextToClipboard(text) {
-	await navigator.clipboard.writeText(text);
-}
-
 function clampf(value, min, max) {
 	if (value > max) return max;
 	if (value < min) return min;
 	return value;
+}
+
+class Clipboard {
+	static async copyText(text) {
+		this.object = text;
+		this.type = 'text';
+		await navigator.clipboard.writeText(text);
+	}
+
+	static async copyObject(object, type) {
+		this.object = object;
+		this.type = type;
+	}
 }
 
 class Mathx {
@@ -556,9 +565,17 @@ function createSlider(slider){
 	slider.attr('data-ready', true);
 
 	// Creating handles
-	let lower = $('<span class="Lower"></span>');
-	let thumb = $('<span class="Thumb"></span>');
-	slider.append(lower).append(thumb);
+	let $lower = slider.find('.lower');
+	if (!$lower.length) {
+		$lower = $('<span class="lower"></span>');
+		slider.append($lower);
+	}
+
+	let $thumb = slider.find('.thumb');
+	if (!$thumb.length) {
+		$thumb = $('<span class="thumb"></span>');
+		slider.append($thumb);
+	}
 
 	let attrOr = (elem, attr, def) => {
 		let v = elem.attr(attr);
@@ -577,8 +594,8 @@ function createSlider(slider){
 		if(slider[0].value == value) return;
 		slider[0].value = value;
 
-		lower.css("width", `${coff * 100}%`);
-		thumb.css("left", `${coff * slider.width() - thumb.width()/2}px`);
+		$lower.css("width", `${coff * 100}%`);
+		$thumb.css("left", `${coff * slider.width() - $thumb.width()/2}px`);
 		
 		if(fireEv) slider.trigger('change');
 	};
@@ -605,7 +622,7 @@ function createSlider(slider){
 		held = true;
 		valueChange(dragX(ev), true);
 	});
-	thumb.on('mousedown touchstart', () => {
+	$thumb.on('mousedown touchstart', () => {
 		held = true;
 	});
 

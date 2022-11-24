@@ -1,0 +1,125 @@
+.app-vttable {
+	position: relative;
+	--pan-bg: rgba(250, 250, 250, 0.4);
+}
+
+.app-vttable .layer {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.app-vttable video {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	pointer-events: all;
+}
+
+.app-vttable .fg-layer {
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	transition: opacity 200ms;
+}
+
+.app-vttable .playback-controls {
+	background: var(--pan-bg);
+	border-radius: 4px;
+	white-space: nowrap;
+	font-size: 0;
+	box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+	overflow: hidden;
+	pointer-events: all;
+}
+
+.app-vttable .playlist-pan {
+	align-self: flex-start;
+	pointer-events: all;
+}
+
+.app-vttable .playlist-pan ul {
+	list-style: none;
+	background: var(--pan-bg);
+	border-radius: 4px;
+}
+
+.app-vttable .search-layer {
+	padding: .5rem;
+	background: rgba(0, 0, 0, 0.3);
+	backdrop-filter: blur(4px);
+}
+
+.app-vttable .search-pan {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	pointer-events: all;
+}
+
+.app-vttable .search-pan input {
+	width: 100%;
+	border-bottom: solid 1px gray;
+}
+
+.app-vttable .results {
+	flex-grow: 1;
+	margin: 0.5rem 0;
+	font-size: 15pt;
+	overflow: auto;
+}
+
+.app-vttable .results li {
+	display: flex;
+	align-items: center;
+	justify-content: left;
+	position: relative;
+	height: 6rem;
+}
+
+.app-vttable .results li + li {
+	margin-top: solid 1px rgba(250, 250, 250, 0.15);
+}
+
+.app-vttable .results li img {
+	text-align: left;
+	height: 100%;
+}
+
+.app-vttable .results li:hover {
+	background-color: rgba(250, 250, 250, 0.5);
+}
+
+.app-vttable .results li span {
+	position: absolute;
+	right: 0;
+	text-align: right;
+	padding: 4px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.app-vttable .invisible {
+	opacity: 0 !important;
+}
+
+.app-vttable .btn {
+	min-height: 42px;
+	min-width: 42px;
+	vertical-align: top;
+	border: none;
+	font-size: 14pt;
+	color: white;
+}
+
+.app-vttable .field {
+	min-height: 42px;
+	vertical-align: top;
+	border: none;
+	font-size: 14pt;
+	color: white;
+	background-color: transparent;
+}
