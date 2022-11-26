@@ -367,7 +367,7 @@ function getGuardedReqUser(req) {
 }
 
 function getReqUser(req, autoDeny, res) {
-	return 'andre';
+	return 'test';
 
 	let key = req.cookies.authkey;
 

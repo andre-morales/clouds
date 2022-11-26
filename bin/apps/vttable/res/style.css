@@ -47,7 +47,7 @@
 }
 
 .app-vttable .search-layer {
-	padding: .5rem;
+	padding: 2px;
 	background: rgba(0, 0, 0, 0.3);
 	backdrop-filter: blur(4px);
 }
@@ -68,7 +68,7 @@
 .app-vttable .results {
 	flex-grow: 1;
 	margin: 0.5rem 0;
-	font-size: 15pt;
+	font-size: 13pt;
 	overflow: auto;
 }
 
@@ -102,6 +102,45 @@
 	overflow: hidden;
 }
 
+/* -- Playlist -- */
+.app-vttable .playlist {
+	width: 18rem;
+	flex-grow: 1;
+	margin: 0.5rem 0;
+	font-size: 10.5pt;
+	overflow: auto;
+}
+
+.app-vttable .playlist .song {
+	display: flex;
+	align-items: center;
+	justify-content: left;
+	position: relative;
+	height: 6rem;
+}
+
+.app-vttable .playlist .song + .song {
+	margin-top: solid 1px rgba(250, 250, 250, 0.15);
+}
+
+.app-vttable .playlist .song img {
+	text-align: left;
+	height: 100%;
+}
+
+.app-vttable .playlist .song:hover {
+	background-color: rgba(250, 250, 250, 0.5);
+}
+
+.app-vttable .playlist .song span {
+	position: absolute;
+	right: 0;
+	text-align: right;
+	padding: 4px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
 .app-vttable .invisible {
 	opacity: 0 !important;
 }
@@ -122,4 +161,35 @@
 	font-size: 14pt;
 	color: white;
 	background-color: transparent;
+}
+
+.app-vttable .tabpane {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.app-vttable .tabpane .header {
+	font-size: 0;
+}
+
+.app-vttable .tabpane .header button {
+	min-height: 2rem;
+	padding: 0 1rem;
+	border-bottom: solid 3px gray;
+	font-size: 12pt;
+}
+
+.app-vttable .tabpane .header button.selected {
+	border-bottom: solid 3px #3AF;
+	box-shadow: inset 0px -6px 4px -5px #3AF;
+}
+
+.app-vttable .tabpane .tab {
+	display: none;
+	flex-grow: 1;
+}
+
+.app-vttable .tabpane .tab.visible {
+	display: block;
 }

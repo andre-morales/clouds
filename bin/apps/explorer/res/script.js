@@ -529,7 +529,13 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	async loadFavorites() {
-		let data = await (await fetch('/fs/q/usr/favorites.json')).text();
+		let freq = await fetch('/fs/q/usr/favorites.json');
+		if (freq.status == 404) {
+			this.favorites = [];
+			return;
+		}
+		
+		let data = await freq.text();
 		this.favorites = JSON.parse(data);
 	}
 
@@ -601,7 +607,13 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	async loadCollections() {
-		let data = await (await fetch('/fs/q/usr/collections.json')).text();
+		let freq = await fetch('/fs/q/usr/collections.json');
+		if (freq.status == 404) {
+			this.collections = {};
+			return;
+		}
+
+		let data = await freq.text();
 		this.collections = JSON.parse(data);
 	}
 

@@ -2,6 +2,9 @@
 	<video>
 		<source src="/res/sample">
 	</video>
+	<audio class="d-none">
+		<source src="">
+	</audio>
 </div>
 <div class='layer fg-layer'>
 	<div class="playback-controls">
@@ -11,11 +14,7 @@
 		<button class='btn subtitle-btn'>CC</button>
 	</div>
 	<div class='playlist-pan'>
-		<ul>
-			<li>Song A</li>
-			<li>Song B</li>
-			<li>Song C</li>
-		</ul>
+		<ul class='playlist'></ul>
 		<div class="playlist-controls">
 			<button class='btn add-songs-btn'>+</button>
 		</div>
@@ -23,11 +22,20 @@
 </div>
 <div class='layer search-layer d-none'>
 	<div class="search-pan">
-		<input class="field query-input" placeholder="Search songs here...">
-		<div class="results"></div>
-		<div>
-			<button class="add-selected-btn">Add selected</button>
-			<button class="close-btn">Close</button>
+		<div class='tabpane'>
+			<div class='header'>
+				<button class='btn selected' data-tab='yt'>Youtube</button>
+				<button class='btn' data-tab='spot'>Spotify</button>
+			</div>
+			<div class='tab ytsearch-tab visible' data-tab='yt'>
+				<input class="field query-input" placeholder="Search or paste a link here...">
+				<div class="results"></div>
+				<div>
+					<button class="add-selected-btn">Add selected</button>
+					<button class="close-btn">Close</button>
+				</div>
+			</div>
+			<div class='tab' data-tab='spot'></div>
 		</div>
 	</div>
 </div>
