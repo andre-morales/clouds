@@ -1,5 +1,5 @@
 .thumbnails/*
 mediares/*
 bin/node_modules/*
-./usr/test/collections.json
-./usr/test/favorites.json
+usr/test/collections.json
+usr/test/favorites.json
