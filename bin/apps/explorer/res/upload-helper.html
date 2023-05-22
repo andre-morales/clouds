@@ -1,4 +1,18 @@
-<form method="post" enctype="multipart/form-data">
-	<input type="file" name="upload" multiple>
-	<input type="submit">
+<div class="choose-step">
+	<button class="select-btn">
+		<i></i>
+		<span>Click here to select files...</span>
+	</button>
+</div>
+
+<div class="upload-step d-none">
+	<div class="upload-btns">
+		<button class="btn clear-btn">Clear file selection</button>
+		<button class="btn upload-btn">Upload files</button>
+	</div>
+</div>
+
+<form method="post" enctype="multipart/form-data" style="display: none">
+	<input class="form-select" type="file" name="upload" multiple>
+	<input class="form-submit" type="submit">
 </form>
