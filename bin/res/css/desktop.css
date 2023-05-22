@@ -5,6 +5,7 @@
 html {
 	width: 100%;
 	height: 100%;
+	background: magenta; /* You're not supposed to see this. */
 }
 
 body {
@@ -135,6 +136,14 @@ body {
 	flex-shrink: 0;
 }
 
+.taskbar .apps-btn {
+	width: 36px;
+	background-image: url('/res/img/icons/apps.png');
+	background-size: 26px;
+	flex-shrink: 0;
+}
+
+
 /* Windows */
 .desktop .windows {
 	position: absolute;
@@ -252,6 +261,36 @@ body {
 	margin: 0.5rem 1rem 0 0;
 }
 
+.window.dialog .body {
+	display: flex;
+	flex-wrap: wrap;
+	padding-top: 1rem;
+}
+
+.window.dialog .body span {
+	display: flex;
+	flex-wrap: wrap;
+	padding-top: 1rem;
+}
+
+.window.dialog .body img {
+	max-height: 64px;
+	max-width: 64px;
+	margin: 0.5rem 1rem 0 0;
+}
+
+.window.dialog .options {
+	width: 100%;
+	align-self: flex-end;
+	text-align: right;
+	background: rgba(20, 20, 20, 0.4);
+}
+
+.window.dialog .options .btn {
+	margin: .2rem;
+	font-size: 12pt;
+}
+
 /* Context menu */
 .context-menu {
 	display: none;
@@ -319,7 +358,7 @@ body {
 }
 
 .windows .btn {
-	padding: .25em .5em;
+	padding: .3em .5em;
 	border: solid 1px #23F;
 	color: white;
 }
@@ -366,10 +405,12 @@ body {
 	max-width: calc(100vw - 0.1px) !important;
 	max-height: calc(100vh - 0.1px) !important;
 	flex-shrink: 0;
+	backdrop-filter: blur(2px);
 }
 
 .fscr-parent {
 	overflow: initial !important;
+	/*transform: none !important;*/
 }
 
 
@@ -381,7 +422,8 @@ body {
 	position: relative;
 	display: inline-block;
 	width: 256px;
-	height: 8px;
+	height: 12px;
+	padding: 3px;
 	border-style: solid;
 	border-width: 1px;
 	border-color: #333;
@@ -390,6 +432,7 @@ body {
 	box-sizing: border-box;
 	user-select: none;
 	background: white;
+	background-clip: content-box;
 }
 
 .Slider .lower {
@@ -397,12 +440,14 @@ body {
 	display: block;
 	height: 100%;
 	width: 50%;
+	padding: 3px;
 	left: 0;
 	top: 0;
 	line-height: 0;
 	box-sizing: border-box;
 	user-select: none;
 	background: #00B6FF;
+	background-clip: content-box;
 }
 .Slider .thumb {
 	position: absolute;

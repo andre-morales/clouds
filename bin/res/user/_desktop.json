@@ -34,5 +34,13 @@
 	"Browser": {
 		"icon": "/res/img/apps/browser128.png",
 		"app": "browser"
+	},
+	"Notepad": {
+		"icon": "/res/img/apps/log128.png",
+		"app": "notepad"
+	},
+	"Flight": {
+		"icon": "/res/img/apps/log128.png",
+		"app": "flight"
 	}
 }

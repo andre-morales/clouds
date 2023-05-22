@@ -18,6 +18,24 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.subs();
 		this.history.save();
 		this.zoom = 1;
+		this.typeAssociations = {
+			'mp4': 'sinestesia',
+			'webm': 'sinestesia',
+			'mkv': 'sinestesia',
+			'm4v': 'sinestesia',
+
+			'weba': 'sinestesia',
+			'm4a': 'sinestesia',
+			'mp3': 'sinestesia',
+			'wav': 'sinestesia',
+			'ogg': 'sinestesia',
+			'png': 'sinestesia',
+			'jpg': 'sinestesia',
+			'jpeg': 'sinestesia',
+			'webp': 'sinestesia',
+
+			'txt': 'notepad'
+		}
 	}
 
 	async init() {
@@ -31,7 +49,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.window.setIcon('/res/img/ftypes/folder128.png');
 		this.window.setTitle('File Explorer');
 		this.window.on('closereq', () => this.close());
-		this.window.on('backnav', () => this.goBack());
+		this.window.on('backnav', () => this.goUp());
 
 		let $app = this.window.$window.find('.body');
 		this.$app = $app;
@@ -99,6 +117,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 	async openUploadDialog() {
 		let helperWin = WebSys.desktop.createWindow();
+		helperWin.setOwner(this.window);
 		helperWin.on('closereq', () => helperWin.close());
 		
 		await helperWin.setContentToUrl('/app/explorer/res/upload-helper.html');
@@ -109,7 +128,38 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		let uploadPath = this.cwd;
 		let url = '/fs/u' + uploadPath;
-		let $form = helperWin.$window.find('form');
+		
+		let $win = helperWin.$window.find(".body");
+		$win.addClass("fileupload-helper");
+		
+		let $chooseStep = $win.find(".choose-step");
+		let $uploadStep = $win.find(".upload-step");
+		
+		let filesChangedFn = () => {
+			let files = $formSelect[0].files;
+			
+			$chooseStep.toggleClass("d-none", !!files.length);
+			$uploadStep.toggleClass("d-none", !files.length);
+		};
+		
+		let $form = $win.find('form');
+		let $formSelect = $form.find(".form-select");
+		let $formSubmit = $form.find(".form-submit");
+		$formSelect.on("change", filesChangedFn);
+		
+		$win.find('.clear-btn').click(() => {
+			$formSelect[0].value = null;
+			filesChangedFn();
+		});
+		
+		$win.find('.upload-btn').click(() => {
+			$formSubmit.click();
+		});
+		
+		$win.find('.select-btn').click(() => {
+			$formSelect.click();
+		});
+		
 		$form.on('submit', (ev) => {
 			fetch(url, {
 		    	method: 'POST',
@@ -147,7 +197,6 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 	goBack() {
 		let path = this.history.goBack();
-		console.log(path);
 		if (path) this.go(path);
 	}
 
@@ -219,6 +268,14 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	async go(path) {
+		//this.$files.addClass('d-none');
+		//this.$files.find("img").each(function() {
+		///	console.log(this);
+		//	this.src = "";
+		//});
+		//this.$files.empty();
+
+		
 		if (path.startsWith('$')) {
 			this.openCollection(path.substring(1));
 			return;
@@ -391,7 +448,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 			}
 		});
 		WebSys.desktop.addCtxMenuOn($file, () => this.makeFileMenu(absPath));
-		$file.attr('draggable', 'true');
+		//$file.attr('draggable', 'true');
 		return $file;
 	}
 
@@ -414,16 +471,24 @@ window.ExplorerApp = class ExplorerApp extends App {
 		if (path.endsWith('/')) {
 			this.go(path);
 			this.history.save(path);
-		} else {
-			if (FileTypes.isMedia(path) || path.endsWith('.part')) {
-				let app = await WebSys.runApp('sinestesia');
-				app.playFile(qPath);
+			return;
+		}
+
+		let i = path.lastIndexOf('.');
+		if (i != -1) {
+			let ext = path.substring(i + 1);
+			let appId = this.typeAssociations[ext];
+			if (appId) {
+				let app = await WebSys.runApp(appId, [qPath]);
+				if (!app.window) return;
+
 				app.window.bringToFront();
 				app.window.focus();
-			} else {
-				this.openFileExt(path);
+				return;
 			}
 		}
+
+		this.openFileExt(path);	
 	}
 
 	makeFileMenu(absPath) {
@@ -446,7 +511,10 @@ window.ExplorerApp = class ExplorerApp extends App {
 			);
 		} else {
 			menu.push(
-				CtxItem('Open outside', () => this.openFileExt(absPath)),
+				CtxMenu([
+					CtxItem('With',  () => this.openFileWith(absPath)),
+					CtxItem('Outside', () => this.openFileExt(absPath))
+				], 'Open...'),
 				CtxItem('Download', () => WebSys.downloadUrl(qPath))
 			);
 		}
@@ -639,6 +707,37 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.saveCollections();
 	}
 
+	async openFileWith(path) {
+		let hWin = WebSys.desktop.createWindow();
+		hWin.on('closereq', () => hWin.close());
+		
+		await hWin.setContentToUrl('/app/explorer/res/openwith-helper.html');
+		hWin.setTitle('Open: ' + path);
+		hWin.setSize(280, 280);
+		hWin.bringToCenter();
+		hWin.bringToFront();
+
+		let $win = hWin.$window;
+		$win.find('.body').addClass('openwith-helper');
+		let $list = $win.find('ul');
+		for (let [id, defs] of Object.entries(WebSys.registeredApps)) {
+			if (!defs.flags.includes('tool')) continue;
+
+			let $item = $(`<li>${defs.name}</li>`);
+			$item.click(async () => {
+				let app = await WebSys.runApp(id, ['/fs/q' + path]);
+				if (!app.window) return;
+
+				app.window.bringToFront();
+				app.window.focus();
+				return;
+			});
+			$list.append($item);
+		}
+
+		hWin.setVisible(true);	
+	}
+
 	openFileExt(path) {
 		window.open('/fs/q' + path, '_blank').focus();
 	}
@@ -666,6 +765,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 	_getFileClassByExt(file) {
 		if (FileTypes.isAudio(file)) return 'audio';
 		if (FileTypes.isVideo(file)) return 'video';
+		if (FileTypes.isText(file)) return 'text';
 		return null;
 	}
 

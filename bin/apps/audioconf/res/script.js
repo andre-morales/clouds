@@ -69,6 +69,10 @@ window.AudioConf = class AudioConf extends App {
 			let v = this.value;
 			WebSys.audio.setReverbBalance(v);
 		});
+		$win.find('.delaygain').on('input', function() {
+			let v = this.value;
+			WebSys.audio.delayFeedbackGain.gain.value = v;
+		});
 		$win.find('.stage-title').click(function() {
 			$(this).parent().toggleClass('collapsed');
 		})

@@ -1,0 +1,29 @@
+.app-notepad {
+	display: flex;
+	flex-direction: column;
+}
+
+.app-notepad .ribbon button {
+	border: none;
+	padding: 2px 4px;
+	background: none;
+	color: white;
+	text-align: center;
+}
+
+.app-notepad textarea {
+	flex-grow: 1;
+	border: none;
+	padding: 0;
+	outline: none;
+	resize: none;
+}
+
+.app-notepad.dark textarea {
+	background: #202020;
+	color: white;	
+}
+
+.app-notepad textarea:focused {
+	outline: none;
+}

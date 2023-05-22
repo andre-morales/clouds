@@ -3,6 +3,8 @@ const KAPI_VERSION = '0.5.3';
 // Lib imports
 import Util from 'util';
 import FS from 'fs';
+import HTTP from 'http';
+import HTTPS from 'https';
 import Compression from 'compression';
 import CookieParser from 'cookie-parser';
 import Cors from 'cors';
@@ -31,7 +33,6 @@ var progArgs = null;
 var profile = 'default';
 var config = null;
 var app = null;
-var appSv = null;
 var logins = null;
 var userDefs = null;
 var vfs = null;
@@ -238,6 +239,7 @@ function apiSetupFS() {
 	app.get('/fs/q/*', async (req, res) => {	
 		let userId = getGuardedReqUser(req);
 
+		// Translate the virtual path to a real one
 		let vpath = '/' + req.params[0];
 		let fpath = vfs.translate(userId, vpath);
 		if (!fpath) {
@@ -245,7 +247,14 @@ function apiSetupFS() {
 			return;
 		}
 		
-		res.sendFile(Path.resolve(fpath));
+		// Resolve the path and send the file. If an error occurs,
+		// answer with a 404 error code.
+		let absPath = Path.resolve(fpath);
+		res.sendFile(absPath, (err) => {
+			if (err) {
+				res.status(404).end();
+			}
+		});
 	});	
 
 	app.post('/fs/u/*', async (req, res) => {	
@@ -398,8 +407,20 @@ function startExpress() {
 	app.set('views', 'bin/views');
 	app.disable('x-powered-by');
 
-	appSv = app.listen(9200, () => {
+	let httpsKey = FS.readFileSync('ssl/key.key');
+	let httpsCert = FS.readFileSync('ssl/cert.crt');
+
+	let http = HTTP.createServer(app);
+	let https = HTTPS.createServer({
+		key: httpsKey,
+		cert: httpsCert
+	}, app);
+
+	http.listen(9200, () => {
 		console.log('Listening on port 9200.');
+	});
+	https.listen(9100, () => {
+		console.log('Listening on port 9100.');
 	});
 }
 

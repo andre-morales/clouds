@@ -1,7 +1,0 @@
-{
-	"id": "vttable",
-	"builder": "VTTableApp",
-	"scripts": [
-		"/app/vttable/res/script.js"	
-	]
-}

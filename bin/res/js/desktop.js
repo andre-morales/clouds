@@ -4,6 +4,7 @@ class Desktop {
 		this.iconifiedWindows = new Map();
 		this.$desktop = $('.desktop');
 		this.$windows = $('.windows');
+		this.$taskBar = $('.taskbar');
 		this.$tasks = $('.taskbar .tasks');
 		this.$contextMenu = $('.context-menu');
 		this.focusedWindow = null;
@@ -16,6 +17,14 @@ class Desktop {
 			if (Fullscreen.element == body) {
 				Fullscreen.leave();
 			} else Fullscreen.on(body);
+		});
+
+		this.$taskBar.find('.apps-btn').click((ev) => {
+			let items = Object.keys(WebSys.registeredApps)
+				.map((id) => CtxItem(WebSys.registeredApps[id].name, () => WebSys.runApp(id)));
+			
+			let menu = CtxMenu(items);
+			this.openCtxMenuAt(menu, ev.clientX, ev.clientY);
 		});
 
 		let menu = CtxMenu([
@@ -127,10 +136,13 @@ class Desktop {
 	addCtxMenuOn(element, menuFn) {
 		$(element).on('contextmenu', (ev) => {
 			let mx = ev.clientX, my = ev.clientY;
-
-			this.openCtxMenuAt(menuFn(), mx, my);
-			ev.preventDefault();
-			return false;
+	
+			let menu = menuFn(ev);
+			if (menu) {
+				this.openCtxMenuAt(menu, mx, my);
+				ev.preventDefault();
+				return false;
+			}
 		});
 	}
 
@@ -138,13 +150,19 @@ class Desktop {
 		document.body.style.cursor = cursor;
 	}
 
-	setApps(apps) {
+	setupApps() {
 		let $apps = $('.backplane');
-		for (let [label, def] of Object.entries(apps)) {
+		for (let id in WebSys.registeredApps) {
+			let def = WebSys.registeredApps[id];
+			if (def.flags.includes('disabled')) continue;
+		
+			if (!def.flags.includes('desk')) continue;
+
 			let img = def.icon;
-			let $icon = $(`<div class='app-icon'> <img src='${img}'> <label>${label}</label> </div>`);
+			let name = def.name;
+			let $icon = $(`<div class='app-icon'> <img src='${img}'> <label>${name}</label> </div>`);
 			$icon.click(() => {
-				WebSys.runApp(def.app);
+				WebSys.runApp(id);
 			});
 			$apps.append($icon);
 		}
@@ -307,26 +325,40 @@ class Desktop {
 class Fullscreen {
 	static stack = [];
 	static element = null;
+	static fullscreenCallbacks = [];
+	static $style = null;
 
 	static init() {
 		let fscrHandler = () => {
-			let el = document.fullscreenElement;
-			if (!el) {
-				this._exitFullscr();
-				this.stack = [];
-				this.element = null;
+			if(document.fullscreenElement) {
+				// Notify those who are waiting for
+				// the browser to finish going fullscreen
+				this.fullscreenCallbacks.forEach(fn => fn());
+				this.fullscreenCallbacks = [];
+				return;
 			}
+			
+			// Whenever the user exits browser fullscreen,
+			// update our custom fullscreen state as well
+			this._exitFullscr();
+			this.stack = [];
+			this.element = null;			
 		}
-
+		
+		this.$style = $("#fullscreen-style");
+		
 		document.addEventListener('fullscreenchange', fscrHandler);
 	}
 
 	static on(el) {
-		this._fullscreenElem(el);
-		document.documentElement.requestFullscreen();
-
 		this.element = el;
-		this.stack.push(el);
+		this.stack.push(el);			
+		
+		// Wait for the browser to go fullscreen if it wasn't already
+		// and then apply the styles.
+		Fullscreen._domEnterFscr(() => {
+			Fullscreen._fullscreenElem(el);
+		});
 	}
 
 	static leave() {
@@ -334,14 +366,14 @@ class Fullscreen {
 		this.element = null;
 
 		this._exitFullscr();
-		this._domExit();
+		this._domExitFscr();
 	}
 
 	static rewind() {
 		let pop = this.stack.pop();
 		let len = this.stack.length;
 		if (len == 0) {
-			this._domExit();
+			this._domExitFscr();
 			this.element = null;
 		}
 
@@ -349,39 +381,72 @@ class Fullscreen {
 		this.element = last;
 		if(last) this._fullscreenElem(last);
 	}
-
-	static _exitFullscr() {
-		let $felem = $('.fullscreened');
-		if ($felem.length < 1) return;
-
-		$felem[0].style.transform = "";
-		//$felem[0].style.left = ""
-		//$felem[0].style.top = ""
-
-		$felem.removeClass('fullscreened');
-		$('.fscr-parent').removeClass('fscr-parent')
-	}
-
-	static _domExit() {
-		if (document.fullscreenElement) document.exitFullscreen();
-	}
-
-	static _fullscreenElem(el) {
+	
+	/** Adds classes to the fullscreen element and its parents and applies custom styles to them. 
+	This function does NOT enter browser fullscreen. */
+	static _fullscreenElem($el) {
+		// Exit previous full screen
 		this._exitFullscr();
-
-		let $el = $(el);
+		
+		$el = $($el);
 		$el.addClass('fullscreened');
 		$el.parents().each((i, el) => {
-			//if (el == document.documentElement) return;
-			//if (el == document.body) return;
-
 			$(el).addClass('fscr-parent');
 		});
 		
-		let rect = el.getBoundingClientRect();
-		$el[0].style.transform = `translate(${-rect.x}px, ${-rect.y}px)`;
-		//$el[0].style.left = `${-rect.x}px`;
-		//$el[0].style.top = `${-rect.y}px`
+		Fullscreen._applyStyle($el);
+	}
+	
+	/** Brings all elements to their original state (before fullscreen).
+	This function does NOT exit browser fullscreen, 
+	and does NOT modify the this.stack or this.element properties. */
+	static _exitFullscr() {
+		// Get fullscreened element
+		let $el = $('.fullscreened');
+		if ($el.length == 0) return;
+
+		// Remove classes
+		$el.removeClass('fullscreened');
+		$('.fscr-parent').removeClass('fscr-parent')
+		
+		// Clear style sheet
+		Fullscreen._clearStyle();
+	}
+
+	/** Applies custom styling to the fullscreened element and its parents. */
+	static _applyStyle($el) {
+		this._clearStyle();
+		
+		let sheet = this.$style[0].sheet;
+		
+		//setTimeout(() => {
+			let rect = $el[0].getBoundingClientRect();
+			sheet.insertRule(`.fullscreened { transform: translate(${-rect.x}px, ${-rect.y}px); width: ${window.innerWidth}px; height: ${window.innerHeight}px; } `);
+		//}, 1000);
+		
+		//sheet.insertRule(`.fullscreened { transform: translate(${-rect.x}px, ${-rect.y}px); width: ${window.innerWidth}px; height: ${window.innerHeight}px; } `);
+	}
+
+	/** Removes all custom styling without altering the elements. */ 
+	static _clearStyle() {
+		let sheet = this.$style[0].sheet;
+		while (sheet.cssRules.length > 0) {
+			sheet.deleteRule(0);
+		}
+	}
+
+	static _domEnterFscr(fn) {
+		if (document.fullscreenElement) {
+			if (fn) fn();
+			return;
+		}
+		
+		if (fn) this.fullscreenCallbacks.push(fn);
+		document.documentElement.requestFullscreen();
+	}
+	
+	static _domExitFscr() {
+		if (document.fullscreenElement) document.exitFullscreen();
 	}
 }
 

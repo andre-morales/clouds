@@ -3,6 +3,9 @@ class Window {
 		this._desktop = desktop;
 		this._ownerApp = null;
 		
+		this.owner = null;
+		this.children = [];
+		
 		this.visible = false;
 		this.maximized = false;
 		this.title = 'Window';
@@ -19,7 +22,16 @@ class Window {
 
 		this.$window = null;
 	}
-
+	
+	setOwner(window) {
+		if (this.owner) {
+			arrErase(this.owner.children, this);
+		}
+		
+		if (window) window.children.push(this);
+		this.owner = window;
+	}
+	
 	init() {
 		if (this.$window) return;
 
@@ -38,8 +50,8 @@ class Window {
 			recognizers: [
 				[Hammer.Swipe, {
 					direction: Hammer.DIRECTION_LEFT,
-					velocity: 1.0,
-					treshold: 15
+					velocity: 0.3,
+					treshold: 10
 				}],
 			]
 		});
@@ -146,15 +158,10 @@ class Window {
 		$doc.on("touchend", dragEnd);
 	}
 
-	dispose() {
-		if (!this.$window) return;
-		this.$window.remove();
-		this.$window = null;
-	}
-
 	setTitle(title) {
 		this.title = title;
 		this.$windowTitle.text(title);
+		if (this.$taskbarBtn) this.$taskbarBtn.find("span").text(title);
 	}
 
 	setPosition(x, y) {
@@ -206,6 +213,8 @@ class Window {
 		this.visible = visible;
 		if (visible) {
 			this.$window.addClass('visible');
+			
+			if (!this.$taskbarBtn) this.createTaskbarButton();
 		} else {
 			this.$window.removeClass('visible');
 		}
@@ -214,6 +223,10 @@ class Window {
 	setIcon(icon) {
 		this.icon = icon;
 		this.$window.find('.options-btn').css('background-image', `url('${icon}')`);
+		if (this.$taskbarBtn) {
+			this.$taskbarBtn.find("img").src = icon;
+		}
+		
 	}
 
 	setDecorated(decorated) {
@@ -290,9 +303,7 @@ class Window {
 
 			this.setVisible(true);
 			this.minimized = false;
-			$task.remove();
-			
-			delete this._desktop.iconifiedWindows[this];
+			//this.destroyTaskbarButton();
 			return;
 		}
 
@@ -305,36 +316,56 @@ class Window {
 		if (this.minimized) return;
 
 		let icon = this.icon;
-		if (!icon) icon = '/res/img/apps/window64.png';
 		let title = this.title;
 
 		this.minimized = true;
 		this.setVisible(false);
-
-		let $task = $(`<div><img src=${icon}><span>${title}</span></div>`);
-		$task.click(() => {
-			klog('clicked ' + title);
-
-			this.restore();
-			this.focus();
-		});	
-
-		this._desktop.iconifiedWindows.set(this, $task);
+	}
+	
+	createTaskbarButton() {
+		let icon = this.icon;
+		if (!icon) icon = '/res/img/apps/window64.png';
 		
-		let menu = this.optionsCtxMenu;
-
-		this._desktop.addCtxMenuOn($task, menu);
+		let $task = $(`<div><img src=${icon}><span>${this.title}</span></div>`);
+		this._desktop.addCtxMenuOn($task, () => this.optionsCtxMenu);
+		$task.click(() => {
+			if (this.minimized) {
+				this.restore();
+			}
+			
+			this.bringToFront();
+			this.focus();
+		});			
+		
+		this.$taskbarBtn = $task;
+		this._desktop.iconifiedWindows.set(this, $task);
 		this._desktop.$tasks.append($task);
 	}
 
+	destroyTaskbarButton() {
+		if (!this.$taskbarBtn) return;
+		
+		this.$taskbarBtn.remove();
+		delete this._desktop.iconifiedWindows[this];
+		this.$taskbarBtn = null;
+	}
+
 	close() {
+		for (let w of this.children) {
+			w.fire('closereq');
+		}
+		
+		this.destroyTaskbarButton();
 		arrErase(this._desktop.windows, this);
 
 		if (this.minimized) {
 			this._desktop.iconifiedWindows.get(this).remove();
 			this._desktop.iconifiedWindows.delete(this);
 		}
-		this.dispose();
+		
+		if (!this.$window) return;
+		this.$window.remove();
+		this.$window = null;
 	}
 
 	makeFullscreen() {

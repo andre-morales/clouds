@@ -1,0 +1,63 @@
+{
+	"explorer": {
+		"name": "File Explorer",
+		"icon": "/res/img/ftypes/folder128.png",
+		"flags": ["desk"]
+	},
+	"systemlog": {
+		"name": "System Log",
+		"icon": "/res/img/apps/log128.png",
+		"flags": ["desk"]
+	},
+	"configs": {
+		"name": "System Config",
+		"icon": "/res/img/apps/config128.png",
+		"flags": []
+	},
+	"remoteshell": {
+		"name": "Remote Shell",
+		"icon": "/res/img/apps/terminal128.png",
+		"flags": ["desk"]
+	},
+	"sinestesia": {
+		"name": "Sinestesia",
+		"icon": "/res/img/apps/picture128.png",
+		"flags": ["tool"]
+	},
+	"audioconf": {
+		"name": "Audio System",
+		"icon": "/res/img/apps/audio128.png",
+		"flags": []
+	},
+	"systemmonitor": {
+		"name": "System Monitor",
+		"icon": "/res/img/apps/monitor128.png",
+		"flags": []
+	},
+	"notepad": {
+		"name": "Notepad",
+		"icon": "/res/img/apps/log128.png",
+		"flags": ["desk", "tool"]
+	},
+	"-soundgraph": {
+		"name": "Sound Graph",
+		"icon": "/res/img/apps/log128.png",
+		"flags": []
+	},
+	"-vttable": {
+		"name": "Virtual Turn Table",
+		"icon": "/res/img/apps/vttable128.png",
+		"flags": []
+	},
+	"-browser": {
+		"name": "Browser",
+		"icon": "/res/img/apps/browser128.png",
+		"flags": []
+	},
+	"-flight": {
+		"name": "Flight",
+		"icon": "/res/img/apps/log128.png",
+		"flags": []
+	}
+	
+}

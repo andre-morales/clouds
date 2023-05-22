@@ -1,7 +1,12 @@
 window.SinesApp = class SinesApp extends App {
 	constructor() {
-		super();
+		super(arguments);
+		
 		this.window = null;
+		this.$mediaElement = null;
+		this.transform = {
+			scale: 1, x: 0, y: 0, rotation: 0
+		};
 	}
 
 	async init() {
@@ -32,11 +37,24 @@ window.SinesApp = class SinesApp extends App {
 
 		// Behaviour
 		let ctxMenu = CtxMenu([
-			CtxItem('Open', () => this.showOpenDialog()),
+			CtxItem('Open...', () => this.showOpenDialog()),
+			'-',
 			CtxCheck('Lock playback', (v) => {
 				this.lockedPlayback = v;
 				this.cancelPauseEvents = v;
-			})
+			}),
+			CtxItem('Rotate right', () => {
+				this.transform.rotation += 90;
+				this.updateTransform();
+			}),
+			CtxItem('Rotate left', () => {
+				this.transform.rotation -= 90;
+				this.updateTransform();
+			}),
+			CtxCheck('Allow zoom/pan', (v) => {
+				this.lockedZoomPan = !v;
+			}, true),
+			CtxItem('Reset transform', () => this.resetZoomPan()),
 		]);
 		WebSys.desktop.addCtxMenuOn($win.find('.body'), () => ctxMenu);
 
@@ -48,9 +66,11 @@ window.SinesApp = class SinesApp extends App {
 		let $duration = $videoc.find('.duration');
 
 		$win.find('.play-btn').click(() => {
-			let el = this.mediaElement[0];
+			let el = this.$mediaElement[0];
 			if (el.paused) {
+				WebSys.audio.context.resume();
 				el.play();
+				
 			} else {
 				this.cancelPauseEvents = false;
 				el.pause();
@@ -141,6 +161,10 @@ window.SinesApp = class SinesApp extends App {
 				return `${minutes}:${strSec}`;
 			}
 		};
+
+		if (this.buildArgs.length > 0) {
+			this.playFile(this.buildArgs[0]);
+		}
 	}
 
 	async showOpenDialog() {
@@ -163,31 +187,20 @@ window.SinesApp = class SinesApp extends App {
 		
 		$win.find('.contentw').removeClass('enabled');
 		$win.find('.contentw.picture').empty();
-		$win.find('.contentw.audio').empty();
 		$win.find('.contentw.video video').empty();
 
 		if (FileTypes.isPicture(path)) {
 			this.openPicture(url);
-		} else if (FileTypes.isAudio(path)) {
-			let $audio = $('<audio controls></audio>');
-			$audio.append($(`<source src="${url}">`));
-	
-			let $container = $win.find('.contentw.audio')
-			$container.append($audio);
-			$container.addClass('enabled');
-
-			let track = WebSys.audio.context.createMediaElementSource($audio[0]);
-			track.connect(WebSys.audio.destination);
 		} else if (FileTypes.isVideo(path)) {
 			this.openVideo(url);
 		} else {
 			this.openVideo(url);
-			//WebSys.showErrorDialog('Unknown media type');
 		}
 	}
 
 	openPicture(url) {
 		let $img = $(`<img src="${url}" draggable="false"></img>`);
+		this.$mediaElement = $img;
 		$img.dblclick(() => {
 			if (Fullscreen.element == $img[0]) {
 				Fullscreen.rewind();
@@ -201,14 +214,14 @@ window.SinesApp = class SinesApp extends App {
 		let $container = this.window.$window.find('.contentw.img')
 		$container.append($img).addClass('enabled');
 
-		this.setupPanZoomGestures($img);
+		this.setupZoomPanGestures();
 	}
 
 	openVideo(url) {
 		let $win = this.window.$window;
 
 		let $video = $win.find('video');
-		this.mediaElement = $video;
+		this.$mediaElement = $video;
 		$video.append($(`<source src="${url}">`));
 
 		let $container = $win.find('.contentw.video')
@@ -217,41 +230,57 @@ window.SinesApp = class SinesApp extends App {
 		let track = WebSys.audio.context.createMediaElementSource($video[0]);
 		track.connect(WebSys.audio.destination);
 
-		this.setupPanZoomGestures($video);
+		this.setupZoomPanGestures();
 	}
 
-	setupPanZoomGestures($el) {
-		let _scale = 1;
-		let _lscale = 1;
-		let _x = 0, _y = 0;
+	updateTransform() {
+		let t = this.transform;
+		let css = `scale(${t.scale}) translate(${t.x}px, ${t.y}px) rotate(${t.rotation}deg)`;
+		this.$mediaElement.css('transform', css);
+	}
+
+	setupZoomPanGestures() {
+		let $el = this.$mediaElement;
+		let trans = this.transform;
+		
 		let _lx = 0, _ly = 0;
-
-		let transform = () => {
-			$el.css('transform', `scale(${_scale}) translate(${_x}px, ${_y}px)`);
-		}
-
+		let _lscale = 1;
+		
 		let hammer = new Hammer.Manager($el[0], {
 			recognizers: [
 				[Hammer.Pinch, {}],
 				[Hammer.Pan, {}]
 			]
 		});
-		hammer.on('pinch', (ev) => {
-			_scale = _lscale * ev.scale; 
-			transform();
+		
+		hammer.on('pinchstart', () => {
+			_lscale = trans.scale;
 		});
-		hammer.on('pinchend', (ev) => {
-			_lscale = _scale;
+		hammer.on('pinch', (ev) => {
+			if (this.lockedZoomPan) return;
+
+			trans.scale = _lscale * ev.scale; 
+			this.updateTransform();
+		});
+
+		hammer.on('panstart', () => {
+			_lx = trans.x;
+			_ly = trans.y;
 		});
 		hammer.on('pan', (ev) => {
-			_x = _lx + ev.deltaX / _scale;
-			_y = _ly + ev.deltaY / _scale;
-			transform();
+			if (this.lockedZoomPan) return;
+
+			trans.x = _lx + ev.deltaX / trans.scale;
+			trans.y = _ly + ev.deltaY / trans.scale;
+			this.updateTransform();
 		});
-		hammer.on('panend', (ev) => {
-			_lx = _x;
-			_ly = _y;
-		});
+	}
+
+	resetZoomPan() {
+		this.transform.x = 0;
+		this.transform.y = 0;
+		this.transform.scale = 1;	
+		this.updateTransform();
 	}
 
 	onClose() {

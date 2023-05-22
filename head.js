@@ -62,7 +62,6 @@
 	function hijackHTTPReq() {
 		let rawOpen = XMLHttpRequest.prototype.open;
 		XMLHttpRequest.prototype.open = function() {
-			//console.log('HTTPREQ: ', arguments)
 			let url = arguments[1];
 			if (url) {
 				arguments[1] = transformUrl(url);

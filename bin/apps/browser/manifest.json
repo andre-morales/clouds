@@ -1,7 +1,0 @@
-{
-	"id": "browser",
-	"builder": "BrowserApp",
-	"scripts": [
-		"/app/browser/res/script.js"	
-	]
-}

@@ -1,0 +1,7 @@
+{
+	"id": "notepad",
+	"builder": "NotepadApp",
+	"scripts": [
+		"/app/notepad/res/script.js"	
+	]
+}

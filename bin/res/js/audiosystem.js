@@ -57,7 +57,29 @@ class AudioSystem {
 			}
 		};
 
+		// -- Delay
+		let feedback = this.context.createGain();
+		feedback.gain.value = 0.3;
+		this.delayFeedbackGain = feedback;
+		let delayNode = this.context.createDelay();
+		delayNode.delayTime.value = 0.03;
+
 		// -- Final connection
+		//this.connectArr([
+		//	lastEqPoint,
+		//	feedback,
+		//	delayNode
+		//]);
+
+		//this.connectArr([
+		//	feedback,
+		//	delayNode
+		//]);
+
+		//this.connectArr([delayNode, this.reverbWetGain]);
+		//this.connectArr([delayNode, this.reverbDryGain]);
+
+		// Master pipeline without reverb effect
 		this.connectArr([
 			this.destination,
 			...this.eqPoints,
@@ -67,6 +89,7 @@ class AudioSystem {
 			this.context.destination
 		]);
 
+		// Extra pipe with reverb
 		this.connectArr([
 			lastEqPoint,
 			reverbNode,
@@ -87,8 +110,7 @@ class AudioSystem {
 		var impulseL = impulse.getChannelData(0);
 		var impulseR = impulse.getChannelData(1);
 
-		if (!decay)
-			decay = 2.0;
+		if (!decay) decay = 2.0;
 		for (var i = 0; i < length; i++){
 		  var n = reverse ? length - i : i;
 		  impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);

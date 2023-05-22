@@ -63,17 +63,24 @@ class WebSysClass {
 		});
 
 		this.audio = new AudioSystem();
-
-	 	let fres = await fetch('/res/user/desktop.json');
-		let deskApps = await fres.json();
-		this.desktop.setApps(deskApps);
+		
+		// Fetch app definitions and prepare them
+	 	let fres = await fetch('/res/user/apps.json');
+		this.registeredApps = await fres.json();
+		
+		// Remove disabled apps
+		for (let app of Object.keys(this.registeredApps)) {
+			if (app.startsWith('-')) delete this.registeredApps[app];
+		}
+		
+		this.desktop.setupApps();
 	}
 
 	async start(args) {
 		this.desktop.start();
 
 		if (args && args.loc) {
-			let app = await runApp('explorer');
+			let app = await this.runApp('explorer');
 			app.go(args.loc);
 		}
 	}
@@ -110,7 +117,8 @@ class WebSysClass {
 				throw Error('Failed to instantiate "' + manifestURL + '", builder unavailable.');
 			}
 
-			let app = new AppClass(buildArgs);	
+			if (!buildArgs) buildArgs = [];
+			let app = new AppClass(...buildArgs);	
 			app.classId = manifest.id;
 			this.runningApps.push(app);
 			this.reactor.fire('apps-add');
@@ -269,7 +277,6 @@ class WebSysClass {
 		}
 	}
 
-
 	setupLogging() {
 		let self = this;
 
@@ -302,6 +309,61 @@ class WebSysClass {
 
 	off(evclass, callback) {
 		this.reactor.off(evclass, callback);
+	}
+}
+
+class Dialogs {
+	static showError(title, msg) {
+		if (!title) title = 'Error';
+
+		let win = WebSys.desktop.createWindow();
+		win.$window.addClass('error-dialog');
+		win.setTitle(title);
+		let $body = win.$window.find('.body');
+		$body.append($('<img src="/res/img/icons/error.png">'))
+
+		let html = msg.toString().replaceAll('\n', '<br>');
+
+		$body.append($('<span>' + html + '</span>'))
+		win.on('closereq', () => win.close());
+		win.setSize(380, 200);
+		win.bringToCenter();
+		win.bringToFront();
+		win.setVisible(true);
+		return win;
+	}
+
+	static showOptions(title, msg, options) {
+		let deferred = new Deferred();
+
+		let win = WebSys.desktop.createWindow();
+		win.$window.addClass('dialog');
+		win.setTitle(title);
+		let $body = win.$window.find('.body');
+		$body.append($('<img src="/res/img/icons/error.png">'))
+
+		let html = msg.toString().replaceAll('\n', '<br>');
+
+		$body.append($('<span>' + html + '</span>'));
+		let $options = $('<div class="options"></div>');
+		$body.append($options);
+		for (let i = 0; i < options.length; i++) {
+			let $btn = $(`<button class="btn">${options[i]}</button>`);
+			$btn.click(() => {
+				deferred.resolve(i);
+				win.close();
+			});
+			$options.append($btn);
+		}
+		win.on('closereq', () => {
+			deferred.resolve(-1);
+			win.close();
+		});
+		win.setSize(380, 200);
+		win.bringToCenter();
+		win.bringToFront();
+		win.setVisible(true);
+		return [win, deferred.promise];
 	}
 }
 
@@ -389,9 +451,13 @@ class FileTypes {
 	}
 
 	static isAudio(path) {
-		return endsWithArr(path, ['.mp3', '.ogg', 'm4a', '.opus']);
+		return endsWithArr(path, ['.mp3', '.ogg', 'm4a', '.opus', '.weba']);
 	}
-
+	
+	static isText(path) {
+		return endsWithArr(path, ['.txt']);
+	}
+	
 	static isMedia(path) {
 		return FileTypes.isVideo(path) || FileTypes.isPicture(path) || FileTypes.isAudio(path);
 	}
