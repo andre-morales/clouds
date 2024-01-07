@@ -42,11 +42,11 @@ class Window {
 
 		// Queries
 		this.$window = win;
-		this.$windowHeader = win.find('.head');
+		this.$windowHeader = win.find('.window-head');
 		this.$windowTitle = win.find('.title');
 
 		// Behavior
-		let hammer = new Hammer.Manager(this.$window.find('.body')[0], {
+		let hammer = new Hammer.Manager(this.$window.find('.window-body')[0], {
 			recognizers: [
 				[Hammer.Swipe, {
 					direction: Hammer.DIRECTION_LEFT,
@@ -371,12 +371,12 @@ class Window {
 	makeFullscreen() {
 		if (this.minimized) this.restore();
 
-		Fullscreen.on(this.$window.find('.body')[0]);
+		Fullscreen.on(this.$window.find('.window-body')[0]);
 	}
 
 	async setContentToUrl(url) {
 		let fres = await fetch(url);
-		this.$window.find('.body').html(await fres.text());
+		this.$window.find('.window-body').html(await fres.text());
 	}
 
 	on(evclass, callback) {

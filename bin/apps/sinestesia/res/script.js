@@ -30,7 +30,7 @@ window.SinesApp = class SinesApp extends App {
 		this.window.setTitle('Sinestesia');
 
 		let $win = this.window.$window;
-		$win.find('.body').addClass('app-sinestesia');
+		$win.find('.window-body').addClass('app-sinestesia');
 		
 		// Fetch explorer body
 		await this.window.setContentToUrl('/app/sinestesia/res/main.html');
@@ -56,7 +56,7 @@ window.SinesApp = class SinesApp extends App {
 			}, true),
 			CtxItem('Reset transform', () => this.resetZoomPan()),
 		]);
-		WebSys.desktop.addCtxMenuOn($win.find('.body'), () => ctxMenu);
+		WebSys.desktop.addCtxMenuOn($win.find('.window-body'), () => ctxMenu);
 
 		// Video container behaviour
 		let $videoc = $win.find('.video-container');

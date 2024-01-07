@@ -1,7 +1,7 @@
-.thumbnails/*
+.*/*
 mediares/*
 bin/node_modules/*
 usr/test/collections.json
 usr/test/favorites.json
-bin\apps\_graveyard
-ssl\
+bin/apps/_graveyard/*
+ssl/*

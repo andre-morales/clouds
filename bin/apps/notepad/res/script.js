@@ -5,8 +5,8 @@ window.NotepadApp = class NotepadApp extends App {
 	}
 
 	async init() {
+		// If notepad was launched with a path (opening a file)
 		if (this.buildArgs.length > 0) {
-
 			this.path = this.buildArgs[0].substring('/fs/q'.length);
 		}
 
@@ -25,11 +25,14 @@ window.NotepadApp = class NotepadApp extends App {
 			let [win, promise] = Dialogs.showOptions('Notepad', 'Do you want to save?', [
 				"Save", "Don't save", "Cancel"]);
 			
-			promise.then((r) => {
-				// Save
+			promise.then(async (r) => {
+				// Save clicked, if saved succesfully, close.
 				if (r == 0) {
-					this.save();
-					this.close();
+					let saved = await this.save();
+					if (saved) {
+						this.close();	
+					}
+					
 				}
 
 				// Don't save
@@ -38,7 +41,7 @@ window.NotepadApp = class NotepadApp extends App {
 		});
 		this.window.setTitle('Notepad');
 
-		let $app = this.window.$window.find('.body');
+		let $app = this.window.$window.find('.window-body');
 		this.$app = $app;
 		$app.addClass('app-notepad');
 
@@ -50,6 +53,8 @@ window.NotepadApp = class NotepadApp extends App {
 		this.$textArea.on('change', () => this.edited = true);
 	
 		let fileMenu = CtxMenu([
+			CtxItem('Save', () => { this.save(); }),
+		
 			CtxCheck('Dark theme', (v) => { 
 				this.setDarkTheme(v);
 			}, true),
@@ -73,7 +78,35 @@ window.NotepadApp = class NotepadApp extends App {
 		this.window.setVisible(true);
 	}
 
-	save() {
+	async save() {
+		// If notepad was opening a file, save it
+		if (this.path) {
+			this.upload();
+			return true;
+		}
+		
+		// Otherwise, let the user choose where to save the file and give it a name
+		let app = await WebSys.runApp('explorer');
+		app.asFileSelector('save', 'one');
+		
+		let result = await app.waitFileSelection();
+		
+		// No path chosen, cancel save
+		if (!result.length) return false;
+		
+		// A path was chosen, set it and save the file
+		this.setPath(result[0]);
+		this.upload();
+		return true;
+	}
+	
+	setPath(path) {
+		this.path = path;
+		
+		this.window.setTitle(path);
+	}
+	
+	upload() {
 		fetch('/fs/ud' + this.path, {
 			method: 'POST',
 			body: this.$textArea.val(),

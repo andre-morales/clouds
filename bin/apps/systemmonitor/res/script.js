@@ -15,7 +15,7 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 		this.window.setTitle('System Monitor');
 
 		let $win = this.window.$window;
-		$win.find('.body').addClass('app-sysmonitor');
+		$win.find('.window-body').addClass('app-sysmonitor');
 
 		// Fetch explorer body
 		await this.window.setContentToUrl('/app/systemmonitor/res/main.html');
@@ -23,7 +23,7 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 		let $tabPane = $win.find('.tabpane');
 		$tabPane.find('button').click((ev) => {
 			let tab = ev.target.getAttribute('data-tab');
-			$tabPane.find('.header .btn').removeClass('selected');
+			$tabPane.find('.header .button').removeClass('selected');
 			$tabPane.find('.tab').removeClass('visible');
 
 			ev.target.classList.add('selected');

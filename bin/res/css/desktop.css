@@ -131,6 +131,7 @@ body {
 
 .taskbar .fullscreen-btn {
 	width: 36px;
+	background-color: transparent;
 	background-image: url('/res/img/icons/fullscreen.png');
 	background-size: 26px;
 	flex-shrink: 0;
@@ -138,6 +139,7 @@ body {
 
 .taskbar .apps-btn {
 	width: 36px;
+	background-color: transparent;
 	background-image: url('/res/img/icons/apps.png');
 	background-size: 26px;
 	flex-shrink: 0;
@@ -184,11 +186,11 @@ body {
 	display: flex;
 }
 
-.desktop .window > .head {
+.desktop .window > .window-head {
 	display: none;	
 }
 
-.window.decorated > .head {
+.window.decorated > .window-head {
 	display: flex;
 	flex-shrink: 0;
 	height: var(--titlebar-height);
@@ -196,11 +198,11 @@ body {
 	white-space: nowrap;
 }
 
-.desktop .window.decorated.focused > .head {	
+.desktop .window.decorated.focused > .window-head {	
 	background: linear-gradient(to right, hsla(220, 100%, 38%, 0.9), hsla(204, 100%, 45%, 0.8), hsla(320, 90%, 60%, 0.9));
 }
 
-.window.decorated > .head button {
+.window.decorated > .window-head button {
 	width: 32px;
 	height: 100%;
 	flex-shrink: 0;
@@ -211,11 +213,11 @@ body {
 	color: white;
 }
 
-.desktop .window.decorated > .head button:hover {
+.desktop .window.decorated > .window-head button:hover {
 	background-color: rgba(0, 0, 0, 0.2);
 }
 
-.desktop .window.decorated > .head .title {
+.desktop .window.decorated > .window-head .title {
 	flex-grow: 1;
 	flex-shrink: 1;
 	margin: auto;
@@ -225,7 +227,7 @@ body {
 	font-size: 11pt;
 }
 
-.desktop .window > .body {
+.desktop .window > .window-body {
 	overflow: hidden;
 	flex-grow: 1;
 	background: var(--dark-window-bg);
@@ -252,28 +254,28 @@ body {
 }
 
 /* Dialogs */
-.error-dialog .body {
+.error-dialog .window-body {
 	padding: 1rem 0.4rem;
 }
-.error-dialog .body img {
+.error-dialog .window-body img {
 	float: left;
 	width: 64px;
 	margin: 0.5rem 1rem 0 0;
 }
 
-.window.dialog .body {
+.window.dialog .window-body {
 	display: flex;
 	flex-wrap: wrap;
 	padding-top: 1rem;
 }
 
-.window.dialog .body span {
+.window.dialog .window-body span {
 	display: flex;
 	flex-wrap: wrap;
 	padding-top: 1rem;
 }
 
-.window.dialog .body img {
+.window.dialog .window-body img {
 	max-height: 64px;
 	max-width: 64px;
 	margin: 0.5rem 1rem 0 0;
@@ -349,44 +351,50 @@ body {
 }
 
 /* General */
-.btn {
+.button {
 	border: none;
-	background-color: transparent;
+	background-color: rgba(255, 255, 255, 0.075);
 	background-position: center;
 	background-size: contain;
 	background-repeat: no-repeat;
+	background-clip: padding-box;
 }
 
-.windows .btn {
-	padding: .3em .5em;
-	border: solid 1px #23F;
+.window-body .button {
+	margin: .15em;
+	padding: .35em .5em;
+	font: 13pt 'Tahoma';
 	color: white;
 }
 
-.btn:hover {
+.button:hover {
 	background-color: rgba(255, 255, 255, 0.15);
 }
 
-.btn:active {
+.button:active {
 	background-color: rgba(0, 0, 0, 0.2);
 	outline: none;
 }
 
-.btn:focus {
+.button:focus {
 	outline: none;
 }
 
 .field {
 	width: 10em;
 	min-width: 0;
-	padding: 0.125em;
-	border: solid 1px #23F;
-	background-color: #111;
-	color: white;
+	margin: .15em;
+	padding: .1em .2em;
+	border: none;
+	border-bottom: ridge 2px #47F;
+	font-size: 13pt;
+	background-color: rgba(255, 255, 255, 0.05);
+	color: white;	
 }
 
 .field:focus {
 	outline: none;
+	border-bottom-color: hsl(320, 70%, 60%);
 }
 
 .noselect {

@@ -51,7 +51,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.window.on('closereq', () => this.close());
 		this.window.on('backnav', () => this.goUp());
 
-		let $app = this.window.$window.find('.body');
+		let $app = this.window.$window.find('.window-body');
 		this.$app = $app;
 		$app.addClass('app-explorer');
 
@@ -122,14 +122,14 @@ window.ExplorerApp = class ExplorerApp extends App {
 		
 		await helperWin.setContentToUrl('/app/explorer/res/upload-helper.html');
 		helperWin.setTitle('Upload to: ' + this.cwd);
-		helperWin.setSize(280, 200);
+		helperWin.setSize(380, 270);
 		helperWin.bringToCenter();
 		helperWin.bringToFront();
 
 		let uploadPath = this.cwd;
 		let url = '/fs/u' + uploadPath;
 		
-		let $win = helperWin.$window.find(".body");
+		let $win = helperWin.$window.find(".window-body");
 		$win.addClass("fileupload-helper");
 		
 		let $chooseStep = $win.find(".choose-step");
@@ -175,7 +175,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		let win = WebSys.desktop.createWindow();
 		win.on('closereq', () => win.close());
 		
-		let $body = win.$window.find('.body');
+		let $body = win.$window.find('.window-body');
 		
 		let $input = $('<input>')
 		$body.append($input);
@@ -247,10 +247,22 @@ window.ExplorerApp = class ExplorerApp extends App {
 				this.close();
 			});
 		}
+		if (mode == 'save') {
+			$win.find('.save-options').addClass('d-block');
+			$win.find('.ribbon').addClass('d-none');
+			$win.find('.save').click(() => {
+				let fileName = $win.find('.name-field').val();
+				
+				this.selectedFiles = [this.cwd + fileName];
+				this.doneClicked = true;
+				this.close();
+			});
+		}
 	}
 
 	async waitFileSelection() {
 		await this.closingDeferred.promise;
+
 		if (this.doneClicked) return this.selectedFiles;
 		return null;
 	}
@@ -267,15 +279,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.go(this.getNavPath(path));
 	}
 
-	async go(path) {
-		//this.$files.addClass('d-none');
-		//this.$files.find("img").each(function() {
-		///	console.log(this);
-		//	this.src = "";
-		//});
-		//this.$files.empty();
-
-		
+	async go(path) {	
 		if (path.startsWith('$')) {
 			this.openCollection(path.substring(1));
 			return;
@@ -718,7 +722,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		hWin.bringToFront();
 
 		let $win = hWin.$window;
-		$win.find('.body').addClass('openwith-helper');
+		$win.find('.window-body').addClass('openwith-helper');
 		let $list = $win.find('ul');
 		for (let [id, defs] of Object.entries(WebSys.registeredApps)) {
 			if (!defs.flags.includes('tool')) continue;

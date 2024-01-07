@@ -22,7 +22,7 @@
 	"sinestesia": {
 		"name": "Sinestesia",
 		"icon": "/res/img/apps/picture128.png",
-		"flags": ["tool"]
+		"flags": ["desk", "tool"]
 	},
 	"audioconf": {
 		"name": "Audio System",

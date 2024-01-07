@@ -6,6 +6,7 @@ async function main() {
 		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/desktop.js'),
 		addScript('/res/js/window.js'),
+		addScript('/res/js/dialogs.js'),
 		addScript('/res/js/audiosystem.js')
 	]);
 
@@ -65,7 +66,7 @@ class WebSysClass {
 		this.audio = new AudioSystem();
 		
 		// Fetch app definitions and prepare them
-	 	let fres = await fetch('/res/user/apps.json');
+	 	let fres = await fetch('/fs/q/usr/apps.json');
 		this.registeredApps = await fres.json();
 		
 		// Remove disabled apps
@@ -309,61 +310,6 @@ class WebSysClass {
 
 	off(evclass, callback) {
 		this.reactor.off(evclass, callback);
-	}
-}
-
-class Dialogs {
-	static showError(title, msg) {
-		if (!title) title = 'Error';
-
-		let win = WebSys.desktop.createWindow();
-		win.$window.addClass('error-dialog');
-		win.setTitle(title);
-		let $body = win.$window.find('.body');
-		$body.append($('<img src="/res/img/icons/error.png">'))
-
-		let html = msg.toString().replaceAll('\n', '<br>');
-
-		$body.append($('<span>' + html + '</span>'))
-		win.on('closereq', () => win.close());
-		win.setSize(380, 200);
-		win.bringToCenter();
-		win.bringToFront();
-		win.setVisible(true);
-		return win;
-	}
-
-	static showOptions(title, msg, options) {
-		let deferred = new Deferred();
-
-		let win = WebSys.desktop.createWindow();
-		win.$window.addClass('dialog');
-		win.setTitle(title);
-		let $body = win.$window.find('.body');
-		$body.append($('<img src="/res/img/icons/error.png">'))
-
-		let html = msg.toString().replaceAll('\n', '<br>');
-
-		$body.append($('<span>' + html + '</span>'));
-		let $options = $('<div class="options"></div>');
-		$body.append($options);
-		for (let i = 0; i < options.length; i++) {
-			let $btn = $(`<button class="btn">${options[i]}</button>`);
-			$btn.click(() => {
-				deferred.resolve(i);
-				win.close();
-			});
-			$options.append($btn);
-		}
-		win.on('closereq', () => {
-			deferred.resolve(-1);
-			win.close();
-		});
-		win.setSize(380, 200);
-		win.bringToCenter();
-		win.bringToFront();
-		win.setVisible(true);
-		return [win, deferred.promise];
 	}
 }
 

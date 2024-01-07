@@ -9,9 +9,11 @@
 }
 
 .app-sysmonitor .header button {
-	border: solid 1px blue;
+	margin: 0;
+	border: solid 1px #34F;
 	border-left: none;
-	font-size: 12pt;
+	font-size: 13pt;
+	background-color: transparent;
 }
 
 .app-sysmonitor .header button.selected {

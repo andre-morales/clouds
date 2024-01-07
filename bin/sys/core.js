@@ -50,32 +50,6 @@ export async function main(args) {
 	FetchProxy.start();
 }
 
-function initConfig() {
-	let i = progArgs.indexOf('--profile');
-	if (i >= 0) profile = progArgs[i + 1];
-
-	console.log('Profile: ' + profile);
-	config = JSON.parse(FS.readFileSync(`config/profiles/${profile}.json`));
-
-	ShellMgr.loadDefs(config.extensions.shell);
-}
-
-function initFS() {
-	vfs = new VFSM.VFS();
-	vfs.loadDefs(config.fs);
-}
-
-function initUsers() {
-	userDefs = JSON.parse(FS.readFileSync('config/users.json'));
-	logins = {};
-}
-
-function isExtEnabled(ext) {
-	return config.extensions
-		&& config.extensions[ext]
-		&& config.extensions[ext].enabled;
-}
-
 function initExpress() {
 	if (isExtEnabled('ffmpeg')) {
 		FFmpeg = new FFmpegM.FFmpeg();
@@ -103,6 +77,36 @@ function initExpress() {
 		MediaStr.init(config.extensions.mediastr);
 		app.use('/mstr', MediaStr.getExpressRouter());
 	}
+}
+
+function initConfig() {
+	let i = progArgs.indexOf('--profile');
+	if (i >= 0) profile = progArgs[i + 1];
+	console.log('Profile: ' + profile);
+	
+	let allConfig = JSON.parse(FS.readFileSync(`config/profiles/all.json`));
+	let profConfig = JSON.parse(FS.readFileSync(`config/profiles/${profile}.json`));
+	config = Object.assign({}, allConfig, profConfig);
+	
+	console.log(config);
+	
+	ShellMgr.loadDefs(config.extensions.shell);
+}
+
+function initFS() {
+	vfs = new VFSM.VFS();
+	vfs.loadDefs(config.fs);
+}
+
+function initUsers() {
+	userDefs = JSON.parse(FS.readFileSync('config/users.json'));
+	logins = {};
+}
+
+function isExtEnabled(ext) {
+	return config.extensions
+		&& config.extensions[ext]
+		&& config.extensions[ext].enabled;
 }
 
 function apiSetupRShell() {
@@ -376,14 +380,19 @@ function getGuardedReqUser(req) {
 }
 
 function getReqUser(req, autoDeny, res) {
-	return 'test';
-
 	let key = req.cookies.authkey;
-
+	
+	// Iterate over logged in users and compare authentication key
 	for (let user in logins) {
 		if (logins[user] == key) return user;
 	}
 
+	// If the key isn't registered, check if we have a no-auth user configured
+	if (config.noauth) {
+		return config.noauth
+	}
+	
+	// Otherwise, just deny the request
 	if (autoDeny) denyRequest(res);
 	return null;
 }
