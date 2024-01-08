@@ -282,7 +282,7 @@ class WebSysClass {
 		let self = this;
 
 		// Hijack console
-		let conLog = window.console.log;
+		/*let conLog = window.console.log;
 		window.console.log = function() {
 			self.logHistory += [...arguments].join(' ') + '\n';
 			self.reactor.fire('log');
@@ -292,7 +292,7 @@ class WebSysClass {
 		let conError = window.console.error;
 		window.console.error = function() {
 			conError(...arguments);
-		}
+		}*/
 
 		window.addEventListener('error', (ev) => {
 			this.log(`[Error] '${ev.message}' at ${ev.filename}:${ev.lineno}`);

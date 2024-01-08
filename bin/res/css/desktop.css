@@ -5,7 +5,9 @@
 html {
 	width: 100%;
 	height: 100%;
-	background: magenta; /* You're not supposed to see this. */
+	background-image: url('/res/favicon.png');
+	background-color: #39F;
+	background-size: 64px 64px;
 }
 
 body {
