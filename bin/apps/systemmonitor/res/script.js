@@ -5,9 +5,6 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 	}
 
 	async init() {
-		// Require resources
-		await this.requireStyle('/app/systemmonitor/res/style.css');
-
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow();
 		this.window.setIcon('/res/img/apps/monitor128.png');
@@ -17,7 +14,7 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 		let $win = this.window.$window;
 		$win.find('.window-body').addClass('app-sysmonitor');
 
-		// Fetch explorer body
+		// Fetch app body
 		await this.window.setContentToUrl('/app/systemmonitor/res/main.html');
 
 		let $tabPane = $win.find('.tabpane');

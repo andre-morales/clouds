@@ -102,57 +102,57 @@ class WebSysClass {
 			if (fres.status == 403) {
 				throw Error('Failed to instantiate "' + manifestURL + '", access denied.');
 			}
+
+			// Await for manifest
 			let manifest = await fres.json();
 
-			// Load required scripts beforehand
-			for (let url of manifest.scripts) {
-				// If the script is not loaded yet, do so.
+			let tmpUserId = 'APP-CREATOR';
 
-				if (!this.loadedResources[url]) {
-					let resId = btoa(url);
-					await addScript(url, resId);
-				}
-			}
+			// Load required scripts and styles declared in the manifest
+			let scripts = (manifest.scripts) ? manifest.scripts : [];
+			let styles = (manifest.styles) ? manifest.styles : [];
 
-			// After loading required scripts, create the app object.
+			let loadingScriptsPromises = scripts.map((url) => {
+				return this.requestScript(url, tmpUserId);
+			});
+
+			let loadingStylesPromises = styles.map((url) => {
+				return this.requestStyle(url, tmpUserId);
+			});
+
+			// Wait for all scripts to load and save the resource objects.
+			// We don't wait for the styles to load since most of the time, its not necessary
+			let loadedScriptResources = await Promise.all(loadingScriptsPromises);
+
+			// Obtain the app class from manifest.
 			let AppClass = getObjectByName(manifest.builder);
 			if (!AppClass) {
 				throw Error('Failed to instantiate "' + manifestURL + '", builder unavailable.');
 			}
 
+			// Instantiate the app object with any passed arguments
 			if (!buildArgs) buildArgs = [];
-			let app = new AppClass(...buildArgs);	
+
+			let app = new AppClass(...buildArgs);
 			app.classId = manifest.id;
+
+			// Replace the temporary user and set the app as a user of its own script resources
+			for (let res of loadedScriptResources) {
+				res.users[res.users.indexOf(tmpUserId)] = app;
+			}
+
+			// Once a style its loaded, we should replace the temporary user with the app object.
+			for (let promise of loadingStylesPromises) {
+				promise.then((resource) => {
+					resource.users[resource.users.indexOf(tmpUserId)] = app;
+				});
+			}
+
+			// Save the app in the running array and fire any events
 			this.runningApps.push(app);
 			this.reactor.fire('apps-add');
 
-			// Register the app as an user of the loaded scripts.
-			for (let url of manifest.scripts) {
-				// Register resource in the app
-				app.loadedResources.push(url);
-
-				let res = this.loadedResources[url];
-				if (res) {
-					// The resource is already registered,
-					// just add another user.
-					res.addUser(app);
-				} else {
-					// Resource not registered yet, create its
-					// object.
-					let resId = btoa(url);
-
-					// The resource hasn't been loaded yet.
-					let resObj = new Resource();
-					resObj.id = resId;
-					resObj.users = [app];
-					resObj.fnUnload = () => {
-						destroyElementById(resId);
-					};
-					resObj.permanent = true;
-					this.loadedResources[url] = resObj;
-				}
-			}		
-		
+			// Fire the app initialization and return its instance
 			await app.init();
 			return app;
 		} catch (err) {
@@ -178,54 +178,61 @@ class WebSysClass {
 		this.reactor.fire('apps-rem');
 	}
 
+	// Loads the script with the given url and registers a user.
+	// If the script is already loaded, just register another user for it. Otherwise, load it and register its first user.
+	// Returns the resource object that represents this script.
 	async requestScript(url, user) {
-		let res = this.loadedResources[url];
-
-		if (res) {
+		let resource = this.loadedResources[url];
+		if (resource) {
 			// The resource was already loaded, let's register
 			// another user of it.
-			res.addUser(user);
+			resource.addUser(user);
 		} else {
+			// The resource hasn't been loaded yet, let's create it and load the script
 			let resId = btoa(url);
-
-			// The resource hasn't been loaded yet.
-			let resObj = new Resource();
-			resObj.permanent = true;
-			resObj.id = resId;
-			resObj.users = [user];
-			resObj.fnUnload = () => {
+			resource = new Resource();
+			resource.permanent = true;
+			resource.id = resId;
+			resource.users = [user];
+			resource.fnUnload = () => {
 				destroyElementById(resId);
 			};
-			this.loadedResources[url] = resObj;
+			this.loadedResources[url] = resource;
 
 			await addScript(url, resId);
 		}
+		return resource;
 	}
 
+	// Loads a style of the given url and registers a user.
+	// If the style was already loaded, just add another user to it.
+	// Otherwise, load the style, create its resource object and register its first user.
+	// Returns the resource object representing this style resource.
 	async requestStyle(url, user) {
-		let res = this.loadedResources[url];
+		let resource = this.loadedResources[url];
 
-		if (res) {
+		if (resource) {
 			// The resource was already loaded, let's register
 			// another user of it.
-			if (!res["users"].includes(user)) {
-				res["users"].push(user);
+			if (!resource["users"].includes(user)) {
+				resource["users"].push(user);
 			}
 		} else {
 			let resId = btoa(url);
 
 			// The resource hasn't been loaded yet.
-			let resObj = new Resource();
-			resObj.id = resId;
-			resObj.users = [user];
-			resObj.fnUnload = () => {
+			resource = new Resource();
+			resource.id = resId;
+			resource.users = [user];
+			resource.fnUnload = () => {
 				destroyElementById(resId);
 			};
-			resObj.permanent = true;
-			this.loadedResources[url] = resObj;
+			resource.permanent = true;
+			this.loadedResources[url] = resource;
 
 			await addStylesheet(url, resId);
 		}
+		return resource;
 	}
 
 	releaseResource(url, user) {

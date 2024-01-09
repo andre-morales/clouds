@@ -3,5 +3,8 @@
 	"builder": "SystemMonitorApp",
 	"scripts": [
 		"/app/systemmonitor/res/script.js"	
+	],
+	"styles": [
+		"/app/systemmonitor/res/style.css"
 	]
 }

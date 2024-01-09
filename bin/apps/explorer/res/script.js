@@ -46,6 +46,11 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow();
+		this.window.bringToCenter();
+		this.restoreAppWindowState(this.window);
+		
+		this.window.setVisible(true);
+
 		this.window.setIcon('/res/img/ftypes/folder128.png');
 		this.window.setTitle('File Explorer');
 		this.window.on('closereq', () => this.close());
@@ -96,9 +101,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.recreateCollections();
 
 		// Make the window visible
-		this.window.bringToCenter();
 		this.window.focus();
-		this.restoreAppWindowState(this.window);
 		this.window.setVisible(true);
 		
 		await this.goHome();
