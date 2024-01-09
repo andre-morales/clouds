@@ -11,6 +11,10 @@
 		"/usr/": {
 			"path": "./usr/$user/",
 			"acess": "@all"
+		},
+		"/trash/": {
+			"path": "./usr/$user/trash/",
+			"acess": "@all"
 		}
 	},
 	

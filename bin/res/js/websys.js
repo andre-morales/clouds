@@ -4,6 +4,7 @@ async function main() {
 	let scriptsP = Promise.all([
 		addScript('/res/js/lib/zepto.min.js'),
 		addScript('/res/js/lib/hammer.min.js'),
+		addScript('/res/js/app.js'),
 		addScript('/res/js/desktop.js'),
 		addScript('/res/js/window.js'),
 		addScript('/res/js/dialogs.js'),
@@ -20,9 +21,10 @@ async function main() {
 	}
 	document.getElementById('body').innerHTML = await fres.text();
 
-	// Instatiate system
+	// Wait for all scripts to load
 	await scriptsP;
 
+	// Instatiate system
 	WebSys = new WebSysClass();
 	await WebSys.init();
 	endTransition();
@@ -146,6 +148,7 @@ class WebSysClass {
 					resObj.fnUnload = () => {
 						destroyElementById(resId);
 					};
+					resObj.permanent = true;
 					this.loadedResources[url] = resObj;
 				}
 			}		
@@ -187,6 +190,7 @@ class WebSysClass {
 
 			// The resource hasn't been loaded yet.
 			let resObj = new Resource();
+			resObj.permanent = true;
 			resObj.id = resId;
 			resObj.users = [user];
 			resObj.fnUnload = () => {
@@ -217,6 +221,7 @@ class WebSysClass {
 			resObj.fnUnload = () => {
 				destroyElementById(resId);
 			};
+			resObj.permanent = true;
 			this.loadedResources[url] = resObj;
 
 			await addStylesheet(url, resId);
@@ -224,20 +229,15 @@ class WebSysClass {
 	}
 
 	releaseResource(url, user) {
+		// Find resource
 		let res = this.loadedResources[url];
 		if (!res) return;
 
-		let users = res["users"];
-
-		var i = users.indexOf(user);
-		if (i == -1) return;
-			
-		users.splice(i, 1);
-
-		if (users.length == 0) {
-			res.unload();
+		// Remove its user, and if it gets unloaded, remove it from the list
+		res.removeUser(user);
+		if (res.unloaded) {
 			delete this.loadedResources[url];
-		}	
+		}
 	}
 
 	showErrorDialog(msg, title) {
@@ -246,7 +246,7 @@ class WebSysClass {
 		let win = this.desktop.createWindow();
 		win.$window.addClass('error-dialog');
 		win.setTitle(title);
-		let $body = win.$window.find('.body');
+		let $body = win.$window.find('.window-body');
 		$body.append($('<img src="/res/img/icons/error.png">'))
 
 		let html = msg.toString().replaceAll('\n', '<br>');
@@ -310,76 +310,6 @@ class WebSysClass {
 
 	off(evclass, callback) {
 		this.reactor.off(evclass, callback);
-	}
-}
-
-class App {
-	constructor(args) {
-		if (!args) args = [];
-		this.buildArgs = args;
-		this.loadedResources = [];
-	}
-
-	requireScript(url) {
-		WebSys.requestScript(url, this);
-		this.loadedResources.push(url);
-	}
-
-	requireStyle(url) {
-		WebSys.requestStyle(url, this);
-		this.loadedResources.push(url);
-	}
-
-	saveAppWindowState(win) {
-		let state;
-		if (win.maximized) {
-			state = [win.maximized, win.restoredBounds];
-		} else {
-			state = [win.maximized, win.getBoundsA()];
-		}
-
-		let regname = 'app.' + this.classId + '.winstate';
-		localStorage.setItem(regname, JSON.stringify(state));
-	}
-
-	restoreAppWindowState(win) {
-		let regname = 'app.' + this.classId + '.winstate';
-		try {
-			let state = JSON.parse(localStorage.getItem(regname));
-			if (state) {
-				win.setBoundsA(state[1]);
-				win.setMaximized(state[0]);
-				return true;
-			}
-		} catch (e) {}
-		return false;
-	}
-
-	onClose() {}
-	
-	close() {
-		this.onClose();
-		WebSys.endApp(this);
-	}
-}
-
-class Resource {
-	constructor() {
-		this.id = null;
-		this.users = [];
-		this.fnUnload = null;
-	}
-
-	addUser(user) {
-		if (!this.users.includes(user)) {
-			this.users.push(user);
-			return true;
-		}
-		return false;
-	}
-
-	unload() {
-		this.fnUnload();
 	}
 }
 

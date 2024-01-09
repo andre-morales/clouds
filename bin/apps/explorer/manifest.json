@@ -2,6 +2,7 @@
 	"id": "explorer",
 	"builder": "ExplorerApp",
 	"scripts": [
-		"/app/explorer/res/script.js"	
+		"/app/explorer/res/script.js",
+		"/app/explorer/res/uploader.js"
 	]
 }

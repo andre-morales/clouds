@@ -1,0 +1,63 @@
+'use strict'
+
+window.ExplorerUploader = class ExplorerUploader {
+	constructor(explorer) {
+		this.explorer = explorer;
+	}
+
+	async open() {
+		let helperWin = WebSys.desktop.createWindow();
+		helperWin.setOwner(this.explorer.window);
+		helperWin.on('closereq', () => helperWin.close());
+		
+		await helperWin.setContentToUrl('/app/explorer/res/upload-helper.html');
+		helperWin.setTitle('Upload to: ' + this.explorer.cwd);
+		helperWin.setSize(380, 270);
+		helperWin.bringToCenter();
+		helperWin.bringToFront();
+
+		let uploadPath = this.explorer.cwd;
+		let url = '/fs/u' + uploadPath;
+		
+		let $win = helperWin.$window.find(".window-body");
+		$win.addClass("fileupload-helper");
+		
+		let $chooseStep = $win.find(".choose-step");
+		let $uploadStep = $win.find(".upload-step");
+		
+		let filesChangedFn = () => {
+			let files = $formSelect[0].files;
+			
+			$chooseStep.toggleClass("d-none", !!files.length);
+			$uploadStep.toggleClass("d-none", !files.length);
+		};
+		
+		let $form = $win.find('form');
+		let $formSelect = $form.find(".form-select");
+		let $formSubmit = $form.find(".form-submit");
+		$formSelect.on("change", filesChangedFn);
+		
+		$win.find('.clear-btn').click(() => {
+			$formSelect[0].value = null;
+			filesChangedFn();
+		});
+		
+		$win.find('.upload-btn').click(() => {
+			$formSubmit.click();
+		});
+		
+		$win.find('.select-btn').click(() => {
+			$formSelect.click();
+		});
+		
+		$form.on('submit', (ev) => {
+			fetch(url, {
+		    	method: 'POST',
+		    	body: new FormData($form[0])
+		    });
+
+	    	ev.preventDefault();
+		});
+		helperWin.setVisible(true);
+	}
+}
