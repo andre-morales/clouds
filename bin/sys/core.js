@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.3';
+const KAPI_VERSION = '0.5.4';
 
 // Lib imports
 import Util from 'util';
@@ -12,7 +12,7 @@ import Express from 'express';
 
 // Local imports
 const VFSM = await import('./vfs.js')
-const Pathex = await import('./pathex.js');
+const Files = await import('./files.js');
 const FFmpegM = await import('./ext/ffmpeg.js');
 const ShellMgr = await import ('./ext/rshell.js');
 const MediaStr = await import ('./ext/mediastr.js');
@@ -336,7 +336,7 @@ function apiSetupFS() {
 
 		let fpath = vfs.translate(userId, vpath);
 
-		if (isFileExtVideo(fpath)) {
+		if (Files.isFileExtVideo(fpath) || Files.isFileExtPicture(fpath)) {
 			await handleThumbRequest(fpath, res);
 		} else {
 			res.sendFile(fpath);
@@ -362,15 +362,6 @@ function apiSetupAuth() {
 		let result = getReqUser(req) != null;
 		res.json({ 'ok': result });
 	});
-}
-
-function isFileExtVideo(path) {
-	let extensions = ['.mp4', '.webm', '.mkv', '.m4v'];
-	for (let ext of extensions) {
-		if (path.endsWith(ext)) return true;
-	}
-
-	return false;
 }
 
 function getGuardedReqUser(req) {
@@ -448,8 +439,8 @@ function hashPathStr(str) {
 }
 
 async function handleThumbRequest(_abs, res){
-	let absFilePath = Pathex.toFullSystemPath(_abs);
-	var thumbfolder = Pathex.toFullSystemPath(`./.thumbnails/`);
+	let absFilePath = Files.toFullSystemPath(_abs);
+	var thumbfolder = Files.toFullSystemPath(`./.thumbnails/`);
 
 	let fthname = hashPathStr(_abs);
 	var thumbpath = `${thumbfolder}/${fthname}.thb`;

@@ -1,23 +1,36 @@
 import * as CProc from 'child_process';
 
+const Files = await import('./../files.js');
+
 export class FFmpeg {
 	init(config) {
 		this.config = config;
 	}
 
 	async createThumbOf(path, dest) {
+		// Get path of ffmpeg executable
 		let ffmpegExec = this.config.ffmpeg_exec;
-		// Run ffprobe on video to get video length.
-		let videolength = await this.getVideoLength(path);
+		let args;
 
-		let args = ['-ss', videolength / 2, '-i', path, '-q:v', '4', '-vf', "scale='iw*144/max(iw,ih):-1'", '-vframes', 1, '-f', 'mjpeg', dest];
+		// If the path points to a video
+		if (Files.isFileExtVideo(path)) {
+			// Run ffprobe on video to get video length.
+			let videolength = await this.getVideoLength(path);
+
+			args = ['-ss', videolength / 2, '-i', path, '-q:v', '4', '-vf', "scale='iw*144/max(iw,ih):-1'", '-vframes', 1, '-f', 'mjpeg', dest];
+		// Treat the file as an image otherwise
+		} else {
+			args = ['-i', path, '-vf', "scale='iw*144/max(iw,ih):-1'", '-f', 'mjpeg', dest];
+		}
+		
+		// Execute ffmpeg with the arguments. If there's an error, fail silently
 		try {
 			await execute(ffmpegExec, args);
 			return true;
 		} catch(err) {
-			//console.log(err);
-			//console.log('Thumb creation failed.');
+			console.log(err);
 		}
+
 		return false;
 	}
 
