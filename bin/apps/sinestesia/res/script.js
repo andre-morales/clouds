@@ -12,9 +12,6 @@ window.SinesApp = class SinesApp extends App {
 	}
 
 	async init() {
-		// Require resources
-		this.requireStyle('/app/sinestesia/res/style.css');
-
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow();
 		this.window.setIcon('/res/img/apps/picture128.png');
@@ -218,9 +215,7 @@ window.SinesApp = class SinesApp extends App {
 		this.openFolder(folder);
 	}
 
-	openFile(path) {
-		console.log("Playing file : " + path);
-		
+	openFile(path) {	
 		// Set window title
 		let fname = path.replace(/\/+$/, ''); // Remove trailing slash
 		fname = fname.slice(fname.lastIndexOf('/') + 1);

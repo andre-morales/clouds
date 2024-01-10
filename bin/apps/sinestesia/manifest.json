@@ -3,5 +3,8 @@
 	"builder": "SinesApp",
 	"scripts": [
 		"/app/sinestesia/res/script.js"	
+	],
+	"styles": [
+		"/app/sinestesia/res/style.css"
 	]
 }

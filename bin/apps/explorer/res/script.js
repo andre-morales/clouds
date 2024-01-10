@@ -94,21 +94,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 			CtxItem('Create collection...', () => this.openCreateCollectionDialog())
 		]));
 
-		// Final preparation
-		await this.loadFavorites();
-		this.refreshFavorites();
-		await this.loadCollections();
-		this.recreateCollections();
-
-		// Make the window visible
-		this.window.focus();
-		this.window.setVisible(true);
-		
-		await this.goHome();
-
-		this.history.save();
-
-		// Touch gestures
+		// Configure touch gestures
 		let hammer = new Hammer.Manager(this.$app.find('.body')[0], {
 			recognizers: [
 				[Hammer.Pinch, {}]
@@ -118,6 +104,23 @@ window.ExplorerApp = class ExplorerApp extends App {
 		hammer.on('pinch', (ev) => {
 			this.setZoom(ev.scale);
 		});
+
+		// Final preparation
+		this.loadFavorites().then(() => {
+			this.refreshFavorites();
+		});
+		
+		this.loadCollections().then(() => {
+			this.recreateCollections();
+		});
+
+		// Make the window visible
+		this.window.focus();
+		this.window.setVisible(true);
+		
+		// Go to the root directory and save it in history
+		await this.goHome();
+		this.history.save();
 	}
 
 	async openUploadDialog() {
