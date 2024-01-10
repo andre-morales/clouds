@@ -108,11 +108,13 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		this.history.save();
 
+		// Touch gestures
 		let hammer = new Hammer.Manager(this.$app.find('.body')[0], {
 			recognizers: [
 				[Hammer.Pinch, {}]
 			]
 		});
+
 		hammer.on('pinch', (ev) => {
 			this.setZoom(ev.scale);
 		});

@@ -50,8 +50,8 @@ class Window {
 			recognizers: [
 				[Hammer.Swipe, {
 					direction: Hammer.DIRECTION_LEFT,
-					velocity: 0.3,
-					treshold: 10
+					velocity: 0.4,
+					treshold: 20
 				}],
 			]
 		});
