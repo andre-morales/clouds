@@ -353,8 +353,13 @@ window.ExplorerApp = class ExplorerApp extends App {
 			classes.push('thumbbed');
 		}
 
-		// Create file element
-		let $file = $(`<div><span>${fname}</span></div>`, {
+		// Create file element itself
+		let iconText = fname;
+		if (fname.length > 20) {
+			iconText = fname.substring(0, 20) + "…";
+		}
+		
+		let $file = $(`<div><span>${iconText}</span></div>`, {
 			'class': classes.join(' ')
 		});
 
@@ -403,6 +408,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 			}
 			$file.toggleClass('selected');
 		});
+
 		$file.dblclick(() => {
 			if (this.selectionMode != 'default') {
 				this.openHandler(absPath);
@@ -669,34 +675,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	async openFileWith(path) {
-		let hWin = WebSys.desktop.createWindow();
-		hWin.on('closereq', () => hWin.close());
-		
-		await hWin.setContentToUrl('/app/explorer/res/openwith-helper.html');
-		hWin.setTitle('Open: ' + path);
-		hWin.setSize(280, 280);
-		hWin.bringToCenter();
-		hWin.bringToFront();
-
-		let $win = hWin.$window;
-		$win.find('.window-body').addClass('openwith-helper');
-		let $list = $win.find('ul');
-		for (let [id, defs] of Object.entries(WebSys.registeredApps)) {
-			if (!defs.flags.includes('tool')) continue;
-
-			let $item = $(`<li>${defs.name}</li>`);
-			$item.click(async () => {
-				let app = await WebSys.runApp(id, ['/fs/q' + path]);
-				if (!app.window) return;
-
-				app.window.bringToFront();
-				app.window.focus();
-				return;
-			});
-			$list.append($item);
-		}
-
-		hWin.setVisible(true);	
+		let openWith = new ExplorerOpenWith(this);
+		openWith.open(path);
 	}
 
 	openFileExt(path) {

@@ -2,7 +2,8 @@
 	"id": "explorer",
 	"builder": "ExplorerApp",
 	"scripts": [
-		"/app/explorer/res/script.js",
-		"/app/explorer/res/uploader.js"
+		"/app/explorer/script.js",
+		"/app/explorer/uploader.js",
+		"/app/explorer/openwith.js"
 	]
 }

@@ -229,12 +229,12 @@ function apiSetupApps() {
 		res.sendFile(Path.resolve('./bin/apps/' + req.params.app + '/manifest.json'));
 	});
 
-	app.get('/app/:app/res/*', (req, res) => {
+	app.get('/app/:app/*', (req, res) => {
 		getGuardedReqUser(req);
 		
 		let app = req.params.app;
 		let path = req.params[0];	
-		let fpath = './bin/apps/' + app + '/res/' + path;
+		let fpath = './bin/apps/' + app + '/' + path;
 		res.sendFile(Path.resolve(fpath));
 	});
 }
