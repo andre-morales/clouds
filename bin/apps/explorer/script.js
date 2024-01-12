@@ -49,10 +49,10 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.window.bringToCenter();
 		this.restoreAppWindowState(this.window);
 		
-		this.window.setVisible(true);
-
 		this.window.setIcon('/res/img/ftypes/folder128.png');
 		this.window.setTitle('File Explorer');
+		this.window.setVisible(true);
+
 		this.window.on('closereq', () => this.close());
 		this.window.on('backnav', () => this.goUp());
 
