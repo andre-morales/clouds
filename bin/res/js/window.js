@@ -1,6 +1,6 @@
 class Window {
 	constructor(desktop, app) {
-		//if (!app) throw new InternalFault("Windows must have valid owner apps.");
+		if (!app) throw new InternalFault("Windows must have valid owner apps.");
 
 		this._desktop = desktop;
 		this.app = app;
@@ -45,7 +45,7 @@ class Window {
 		// Queries
 		this.$window = win;
 		this.$windowHeader = win.find('.window-head');
-		this.$windowTitle = win.find('.title');
+		this.$windowTitle = win.find('.window-title');
 
 		// Behavior
 		let hammer = new Hammer.Manager(this.$window.find('.window-body')[0], {
@@ -137,11 +137,11 @@ class Window {
 		let $doc = $(document);
 		let $wh = this.$windowHeader;
 
-		let $title = this.$windowTitle;
-		$title.on("mousedown", (e) => {
+		let $titlebox = this.$window.find(".window-title-box");
+		$titlebox.on("mousedown", (e) => {
 			dragStart(e.pageX, e.pageY);
 		});
-		$title.on("touchstart", (e) => {
+		$titlebox.on("touchstart", (e) => {
 			let mx = e.changedTouches[0].pageX;
 			let my = e.changedTouches[0].pageY;
 			dragStart(mx, my);
@@ -173,9 +173,13 @@ class Window {
 		this.posX = x;
 		this.posY = y;
 
-		if (this.$window) {
-			this.$window[0].style.transform = `translate(${x}px, ${y}px)`;
-		}
+		if (!this.$window) return;
+
+
+	//	this.$window[0].style.left = `${x}px`;
+	//	this.$window[0].style.top = `${y}px`;
+
+		this.$window[0].style.transform = `translate(${x}px, ${y}px)`;
 	}
 
 	setSize(w, h) {
@@ -325,7 +329,7 @@ class Window {
 	}
 	
 	createTaskbarButton() {
-		/*let icon = this.icon;
+		let icon = this.icon;
 		if (!icon) icon = '/res/img/apps/window64.png';
 		
 		let $task = $(`<div><img src=${icon}><span>${this.title}</span></div>`);
@@ -341,7 +345,7 @@ class Window {
 		
 		this.$taskbarBtn = $task;
 		this._desktop.iconifiedWindows.set(this, $task);
-		this._desktop.$tasks.append($task);*/
+		this._desktop.$tasks.append($task);
 	}
 
 	destroyTaskbarButton() {

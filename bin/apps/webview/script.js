@@ -1,6 +1,6 @@
 window.WebViewApp = class WebViewApp extends App {
-	constructor() {
-		super(arguments);
+	constructor(...args) {
+		super(...args);
 		this.window = null;
 	}
 
@@ -11,7 +11,7 @@ window.WebViewApp = class WebViewApp extends App {
 		}
 
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow();
+		this.window = WebSys.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/log128.png');
 		this.window.on('closereq', () => this.close());
 		this.window.setTitle('WebView');

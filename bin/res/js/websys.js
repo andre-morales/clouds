@@ -34,7 +34,7 @@ async function main() {
 
 class WebSysClass {
 	async init() {
-		this.WEBSYS_VERSION = '0.6.6';
+		this.WEBSYS_VERSION = '0.6.6_a';
 		this.logHistory = '[Begin]\n';
 		this.setupLogging();
 
@@ -75,11 +75,6 @@ class WebSysClass {
 		}
 		
 		this.desktop.setupApps();
-
-		window.onunhandledrejection = (ev) => {
-			console.log("Unhandled rejection!");
-			this.showErrorDialog(`Unhandled internal rejection: ${event.reason}`, "Fault");
-		};
 	}
 
 	async start(args) {
@@ -136,8 +131,7 @@ class WebSysClass {
 			// Instantiate the app object with any passed arguments
 			if (!buildArgs) buildArgs = [];
 
-			let app = new AppClass(...buildArgs);
-			app.classId = manifest.id;
+			let app = new AppClass(manifest.id, buildArgs);
 
 			// Replace the temporary user and set the app as a user of its own script resources
 			for (let res of loadedScriptResources) {
@@ -323,13 +317,15 @@ class WebSysClass {
 			conError(...arguments);
 		}*/
 
-		window.addEventListener('error', (ev) => {
+		window.onerror = (ev) => {
 			this.log(`[Error] '${ev.message}' at ${ev.filename}:${ev.lineno}`);
-		});
+			this.showErrorDialog(`Unhandled error: ${ev}`, "Fault");
+		};
 
-		window.addEventListener('unhandledrejection', (ev) => {
+		window.onunhandledrejection = (ev) => {
 			this.log(`[PromErr] '${ev.reason}'`);
-		});
+			this.showErrorDialog(`Unhandled internal rejection: ${event.reason}`, "Fault");
+		};
 	}
 
 	on(evclass, callback) {

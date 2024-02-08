@@ -4,30 +4,15 @@
 		"icon": "/res/img/ftypes/folder128.png",
 		"flags": ["desk"]
 	},
-	"systemlog": {
-		"name": "System Log",
-		"icon": "/res/img/apps/log128.png",
-		"flags": ["desk"]
-	},
 	"configs": {
 		"name": "System Config",
 		"icon": "/res/img/apps/config128.png",
 		"flags": []
 	},
-	"remoteshell": {
-		"name": "Remote Shell",
-		"icon": "/res/img/apps/terminal128.png",
-		"flags": ["desk"]
-	},
 	"sinestesia": {
 		"name": "Sinestesia",
 		"icon": "/res/img/apps/picture128.png",
 		"flags": ["desk", "tool"]
-	},
-	"audioconf": {
-		"name": "Audio System",
-		"icon": "/res/img/apps/audio128.png",
-		"flags": []
 	},
 	"systemmonitor": {
 		"name": "System Monitor",
@@ -43,6 +28,22 @@
 		"name": "WebView",
 		"icon": "/res/img/apps/log128.png",
 		"flags": ["desk", "tool"]
+	},
+
+	"systemlog": {
+		"name": "System Log",
+		"icon": "/res/img/apps/log128.png",
+		"flags": []
+	},
+	"remoteshell": {
+		"name": "Remote Shell",
+		"icon": "/res/img/apps/terminal128.png",
+		"flags": []
+	},
+	"audioconf": {
+		"name": "Audio System",
+		"icon": "/res/img/apps/audio128.png",
+		"flags": []
 	},
 
 	"-soundgraph": {

@@ -1,7 +1,8 @@
 class App {
-	constructor(args) {
-		if (!args) args = [];
-		this.buildArgs = args;
+	constructor(classId, args) {
+		if (!classId) throw new InternalFault("Apps need a unique id");
+		this.classId = classId;
+		this.buildArgs = (args) ? args : [];
 		this.loadedResources = [];
 	}
 

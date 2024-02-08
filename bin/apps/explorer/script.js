@@ -1,8 +1,8 @@
 'use strict';
 
 window.ExplorerApp = class ExplorerApp extends App {
-	constructor(args) {
-		super(args);
+	constructor(...args) {
+		super(...args);
 		this.window = null;
 		this.filesCount = 0;
 		this.$files = null;
@@ -351,7 +351,6 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	makeFileIcon(fentry) {
-		console.log(fentry);
 		let [fpath, ftags="", fcreation=0] = fentry;
 
 		// Get file name between slashes in the entry
@@ -474,15 +473,18 @@ window.ExplorerApp = class ExplorerApp extends App {
 	async openHandler(path) {
 		let qPath = '/fs/q' + path;
 
+		// If it's a folder
 		if (path.endsWith('/')) {
 			this.go(path);
 			this.history.save(path);
 			return;
 		}
 
+		// Query file extension if it has one
 		let i = path.lastIndexOf('.');
 		if (i != -1) {
 			let ext = path.substring(i + 1);
+
 			let appId = this.typeAssociations[ext];
 			if (appId) {
 				let app = await WebSys.runApp(appId, [qPath]);
@@ -494,6 +496,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 			}
 		}
 
+		// If there was no extension or no app associated with this file, open it externally
 		this.openFileExt(path);	
 	}
 

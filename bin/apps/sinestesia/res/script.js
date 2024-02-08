@@ -1,6 +1,6 @@
 window.SinesApp = class SinesApp extends App {
-	constructor() {
-		super(arguments);
+	constructor(...args) {
+		super(...args);
 		
 		this.window = null;
 		this.$mediaElement = null;
@@ -13,7 +13,7 @@ window.SinesApp = class SinesApp extends App {
 
 	async init() {
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow();
+		this.window = WebSys.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/picture128.png');
 		this.window.on('closereq', () => this.close());
 		this.window.on('backnav', () => {
@@ -199,7 +199,7 @@ window.SinesApp = class SinesApp extends App {
 		let app = await WebSys.runApp('explorer');
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
-		if (!result.length) return;
+		if (!result || !result.length) return;
 
 		let file = result[0];
 		this.openFile('/fs/q' + file);
@@ -219,6 +219,7 @@ window.SinesApp = class SinesApp extends App {
 		// Set window title
 		let fname = path.replace(/\/+$/, ''); // Remove trailing slash
 		fname = fname.slice(fname.lastIndexOf('/') + 1);
+		console.log(path);
 		this.window.setTitle(fname);
 
 		this.stop();

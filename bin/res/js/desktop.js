@@ -1,8 +1,10 @@
 class Desktop {
 	constructor() {
 		this.windows = [];
-		this.dwm = new App();
+		this.dwm = new App("dwm");
+		this.configs = [];
 		this.iconifiedWindows = new Map();
+		this.iconifiedGroups = {};
 		this.$desktop = $('.desktop');
 		this.$windows = $('.windows');
 		this.$taskBar = $('.taskbar');
@@ -13,7 +15,9 @@ class Desktop {
 		this.mouseY = 0;
 		this.contextMenuOpen = false;
 
-		$('.taskbar .fullscreen-btn').click(() => {
+		this._configsProm = fetch("/fs/q/usr/desktop.json").then(res => res.json());
+
+		this.$taskBar.find('.fullscreen-btn').click(() => {
 			let body = $('body')[0];
 			if (Fullscreen.element == body) {
 				Fullscreen.leave();
@@ -63,19 +67,39 @@ class Desktop {
 			}
 		});	
 		
+		// Ready fullscreen system
 		Fullscreen.init();
 		this._queryBounds();	
+
+
 	}
 
-	start() {
-		let bg = localStorage.getItem('bg');
+	async start() {
+		this.configs = await this._configsProm;
+
+		let bg = this.configs.background;
 		if (bg) this.setBackground(bg);
 		else this.setBackground('/res/img/background.png');
+	}
+
+	async saveConfigs() {
+		let data = JSON.stringify(this.configs);
+		
+		await fetch('/fs/ud/usr/desktop.json', {
+			method: 'POST',
+			body: data,
+			headers: {
+				'Content-Type': 'text/plain'
+			}
+		});
 	}
 
 	createWindow(app) {
 		let win = new Window(this, app);
 		this.windows.push(win);
+
+		//this.iconifiedGroups[app.id];
+
 		win.init();
 		return win;
 	}
@@ -108,7 +132,8 @@ class Desktop {
 	setBackground(url, save) {
 		this.$desktop.css('background-image', 'url("' + url + '")');
 		if (save) {
-			localStorage.setItem('bg', url);
+			this.configs.background = url;
+			this.saveConfigs();
 		}
 	}
 
@@ -171,6 +196,7 @@ class Desktop {
 		}
 	}
 	
+	// Updates desktop area to match client window area
 	_queryBounds() {
 		let bounds = this.$desktop[0].getBoundingClientRect();
 		this.screenWidth = bounds.width;
