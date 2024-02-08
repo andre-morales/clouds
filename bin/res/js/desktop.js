@@ -1,6 +1,7 @@
 class Desktop {
 	constructor() {
 		this.windows = [];
+		this.dwm = new App();
 		this.iconifiedWindows = new Map();
 		this.$desktop = $('.desktop');
 		this.$windows = $('.windows');
@@ -72,8 +73,8 @@ class Desktop {
 		else this.setBackground('/res/img/background.png');
 	}
 
-	createWindow() {
-		let win = new Window(this);
+	createWindow(app) {
+		let win = new Window(this, app);
 		this.windows.push(win);
 		win.init();
 		return win;

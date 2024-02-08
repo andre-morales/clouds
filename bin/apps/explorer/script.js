@@ -50,7 +50,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.requireStyle('/app/explorer/res/style.css');
 
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow();
+		this.window = WebSys.desktop.createWindow(this);
 		this.window.bringToCenter();
 		this.restoreAppWindowState(this.window);
 		

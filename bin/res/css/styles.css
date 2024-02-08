@@ -45,3 +45,29 @@ body {
 .d-block {
 	display: block;
 }
+
+.crit-fault {
+	position: absolute;
+	left: 0%;
+	top: 0%;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	text-align: center;
+	background: #58A;	
+}
+
+.crit-fault h1 {
+	margin: 1em 0;
+	font: 18pt monospace;
+}
+
+.crit-fault p {
+	margin: 1em 0;
+	font: 14pt monospace;
+}
+
+.crit-fault button {
+	font: 18pt monospace;
+	padding: .5em;
+}

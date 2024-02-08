@@ -77,6 +77,11 @@ class WebSysClass {
 		}
 		
 		this.desktop.setupApps();
+
+		window.onunhandledrejection = (ev) => {
+			console.log("Unhandled rejection!");
+			this.showErrorDialog(`Unhandled internal rejection: ${event.reason}`, "Fault");
+		};
 	}
 
 	async start(args) {
@@ -250,20 +255,39 @@ class WebSysClass {
 	showErrorDialog(msg, title) {
 		if (!title) title = 'System Error';
 
-		let win = this.desktop.createWindow();
-		win.$window.addClass('error-dialog');
-		win.setTitle(title);
-		let $body = win.$window.find('.window-body');
-		$body.append($('<img src="/res/img/icons/error.png">'))
+		try {
+			let win = this.desktop.createWindow(this.desktop.dwm);
+			win.$window.addClass('error-dialog');
+			win.setTitle(title);
+			let $body = win.$window.find('.window-body');
+			$body.append($('<img src="/res/img/icons/error.png">'))
 
-		let html = msg.toString().replaceAll('\n', '<br>');
+			let html = msg.toString().replaceAll('\n', '<br>');
 
-		$body.append($('<span>' + html + '</span>'))
-		win.on('closereq', () => win.close());
-		win.setSize(380, 200);
-		win.bringToCenter();
-		win.bringToFront();
-		win.setVisible(true);
+			$body.append($('<span>' + html + '</span>'))
+			win.on('closereq', () => win.close());
+			win.setSize(380, 200);
+			win.bringToCenter();
+			win.bringToFront();
+			win.setVisible(true);
+		} catch (err) {
+			console.log("Couldn't display error message!");
+
+			this.critFaultMsg(`Couldn't show [${title}]: "${msg}"`, "No Error Display");
+		}
+	}
+
+	critFaultMsg(msg, title) {
+		let index = 1024;
+
+		let $desktop = $('.desktop');
+		let $box = $(`<div class='crit-fault' style="z-index: ${index};"> <h1>Critical Fault: ${title}</h1> <p>${msg}</p>`);
+		let $dismiss = $("<button>Dismiss</button>");
+		$dismiss.click(() => {
+			$box.remove();
+		});
+		$desktop.append($box);
+		$box.append($dismiss);
 	}
 
 	downloadUrl(path) {
@@ -504,6 +528,13 @@ class Mathx {
 		if (value < min) return min;
 		return value;
 	}	
+}
+
+class InternalFault extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "InternalFault";
+	}
 }
 
 main();

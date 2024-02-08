@@ -1,8 +1,10 @@
 class Window {
-	constructor(desktop) {
+	constructor(desktop, app) {
+		//if (!app) throw new InternalFault("Windows must have valid owner apps.");
+
 		this._desktop = desktop;
-		this._ownerApp = null;
-		
+		this.app = app;
+
 		this.owner = null;
 		this.children = [];
 		
@@ -323,7 +325,7 @@ class Window {
 	}
 	
 	createTaskbarButton() {
-		let icon = this.icon;
+		/*let icon = this.icon;
 		if (!icon) icon = '/res/img/apps/window64.png';
 		
 		let $task = $(`<div><img src=${icon}><span>${this.title}</span></div>`);
@@ -339,7 +341,7 @@ class Window {
 		
 		this.$taskbarBtn = $task;
 		this._desktop.iconifiedWindows.set(this, $task);
-		this._desktop.$tasks.append($task);
+		this._desktop.$tasks.append($task);*/
 	}
 
 	destroyTaskbarButton() {
