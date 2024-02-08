@@ -34,7 +34,12 @@ window.ExplorerApp = class ExplorerApp extends App {
 			'jpeg': 'sinestesia',
 			'webp': 'sinestesia',
 
-			'txt': 'notepad'
+			'txt': 'notepad',
+			'ini': 'notepad',
+			'log': 'notepad',
+
+			'html': 'webview',
+			'htm': 'webview'
 		}
 	}
 
@@ -83,8 +88,14 @@ window.ExplorerApp = class ExplorerApp extends App {
 		$app.find('.search-field').on('change', () => this.searchFiles());
 		this.window.on('resize', () => this.recalculateIcons());
 
+		// Context menus
 		let $filesContainer = $app.find('.files-container');
 		WebSys.desktop.addCtxMenuOn($filesContainer, () => CtxMenu([
+			CtxMenu([
+				CtxItem('Name', () => this.sortBy('name')),
+				CtxItem('Date', () => this.sortBy('date'))
+			], "Sort by..."),
+			'-',
 			CtxItem('Paste', () => this.pasteFile()),
 			CtxItem('Upload...', () => this.openUploadDialog())
 		]));
@@ -93,6 +104,14 @@ window.ExplorerApp = class ExplorerApp extends App {
 		WebSys.desktop.addCtxMenuOn($sidePanel, () => CtxMenu([
 			CtxItem('Create collection...', () => this.openCreateCollectionDialog())
 		]));
+
+		//let $menubarView = $app.find('.view-button');
+		//$menubarView.click(() => {
+
+			//});
+		//WebSys.desktop.addCtxMenuOn($menubar, () => CtxMenu([
+		//	CtxMenu(['-', '-', '-'], "Sort by...")
+		//]));
 
 		// Configure touch gestures
 		let hammer = new Hammer.Manager(this.$app.find('.body')[0], {
@@ -192,6 +211,11 @@ window.ExplorerApp = class ExplorerApp extends App {
 		});
 	}
 
+	sortBy(what) {
+		this.sorting = what;
+		this.setFilePanelContent(this.files);
+	}
+
 	asFileSelector(mode, selectionMode) {
 		this.selectionMode = selectionMode;
 		let $win = this.window.$window;
@@ -280,26 +304,40 @@ window.ExplorerApp = class ExplorerApp extends App {
 			this.window.setTitle(fname);
 		}
 
-		// Sort files
 		let files = await fres.json();
 		this.setFilePanelContent(files);
 	}
 
 	async setFilePanelContent(files) {
+		this.files = files;
 		this.$files.addClass('d-none');
 		this.$files.empty();
 		this.filesCount = files.length;
 
-		let val = (e) => {
-			if (e.endsWith('/')) return 1;
-			return 0;
-		};
-		files.sort((a, b) => {
-			let A = val(a.split('*')[0]);
-			let B = val(b.split('*')[0]);
-			if (A == B) return a.localeCompare(b);
-			return B - A;
-		});
+		// Sort files 
+		switch (this.sorting) {
+		case 'date':
+			files.sort((a, b) => {
+				let A = a[2];
+				let B = b[2];
+				return B - A;
+			});
+			break;
+
+		// By default, sort alphabetically
+		default:
+			let val = (e) => {
+				if (e.endsWith('/')) return 1;
+				return 0;
+			};
+
+			files.sort((a, b) => {
+				let A = val(a[0]);
+				let B = val(b[0]);
+				if (A == B) return a[0].localeCompare(b[0]);
+				return B - A;
+			});
+		}
 
 		// Make icons
 		for (let file of files) {
@@ -313,7 +351,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	makeFileIcon(fentry) {
-		let [fpath, ftags=""] = fentry.split('*');
+		console.log(fentry);
+		let [fpath, ftags="", fcreation=0] = fentry;
 
 		// Get file name between slashes in the entry
 		let fname = fpath;

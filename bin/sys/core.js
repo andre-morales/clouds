@@ -306,21 +306,25 @@ function apiSetupFS() {
 	});
 
 	app.get('/fs/ls/*', async(req, res) => {
+		// User authentication
 		let userId = getReqUser(req, true, res);
 		if (!userId) return;
 
+		// If the virtual path is root '/', list the virtual mounting points
 		let vpath = '/' + req.params[0];
 		if (vpath == '/') {
 			res.json(vfs.listVMPoints(userId));
 			return;
 		}
 
+		// Translate the virtual path to the machine physical path
 		let fpath = vfs.translate(userId, vpath);
 		if (!fpath) {
 			res.status(400).end();
 			return;
 		}
 
+		// List the directory, and return the json results
 		try {
 			let results = await vfs.listPDir(fpath);
 			res.json(results);

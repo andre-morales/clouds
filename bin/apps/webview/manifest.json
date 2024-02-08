@@ -1,0 +1,10 @@
+{
+	"id": "webview",
+	"builder": "WebViewApp",
+	"scripts": [
+		"/app/webview/script.js"	
+	],
+	"styles": [
+		"/app/webview/style.css"
+	]
+}

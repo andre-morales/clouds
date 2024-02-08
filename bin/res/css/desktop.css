@@ -369,6 +369,14 @@ body {
 	color: white;
 }
 
+.window-body .menu-button {
+	margin: 0;
+	padding: .1em 1em;
+	border-bottom: solid 1px rgb(127, 127, 127);
+	font: 11pt 'Tahoma';
+	color: white;
+}
+
 .button:hover {
 	background-color: rgba(255, 255, 255, 0.15);
 }

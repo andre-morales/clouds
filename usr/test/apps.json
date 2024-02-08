@@ -39,6 +39,12 @@
 		"icon": "/res/img/apps/log128.png",
 		"flags": ["desk", "tool"]
 	},
+	"webview": {
+		"name": "WebView",
+		"icon": "/res/img/apps/log128.png",
+		"flags": ["desk", "tool"]
+	},
+
 	"-soundgraph": {
 		"name": "Sound Graph",
 		"icon": "/res/img/apps/log128.png",

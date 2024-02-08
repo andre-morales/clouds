@@ -70,6 +70,8 @@
 }
 
 .app-explorer aside {
+	width: 10%;
+	min-width: 7em;
 	flex-shrink: 0;
 	background: rgba(0, 0, 0, 0.1);
 }
@@ -88,6 +90,8 @@
 .app-explorer .favorites li {
 	margin: 4px;
 	padding-left: 1.75rem;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
 	font-size: 12pt;
 	background-image: url('/res/img/ftypes/folder128.png');
 	background-size: contain;

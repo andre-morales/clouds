@@ -29,6 +29,9 @@ class VFS {
 		return Object.keys(this.fsDefs)
 		.filter((vmp) => {
 			return !this.fsDefs[vmp].hidden;
+		})
+		.map((vmp) => {
+			return [vmp];
 		});
 	}
 
@@ -48,25 +51,30 @@ class VFS {
 
 		let promises = files.map(async (entry) => {
 			let file = entry.name;
-			let stype = '*i';
+			let stype = '';
+			let creationTime = 0;
 
+			// If this try-catch fails, we probably have no rights to gather
+			// information about the file
 			try {
-				if (entry.isSymbolicLink()) {
-					stype = '*si';
+				let stat = await FS.promises.stat(path + file);
 
-					let stat = await FS.promises.stat(path + file);
-					if (stat.isDirectory()) {
-						file += '/';
-					}
-					stype = '*s';
-				} else {
-					stype = '';
-					if (entry.isDirectory()) {
-						file += '/';
-					}
+				//creationTime = stat.birthtimeMs;
+				creationTime = stat.mtimeMs;
+
+				if (stat.isDirectory()) {
+					file += '/';
 				}
-			} catch(e) {}
-			return file + stype;
+
+				if (entry.isSymbolicLink()) {
+					stype += 's';
+				}
+			} catch(e) {
+				// Add inacessible tag to it
+				stype += 'i';
+			}
+
+			return [file, stype, creationTime];
 		});
 
 		let results = await Promise.all(promises);
