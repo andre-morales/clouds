@@ -34,8 +34,7 @@ async function main() {
 
 class WebSysClass {
 	async init() {
-		this.WEBSYS_VERSION = '0.6.5';
-		this.WSCLIENT_VERSION = '0.6.1';
+		this.WEBSYS_VERSION = '0.6.6';
 		this.logHistory = '[Begin]\n';
 		this.setupLogging();
 
@@ -48,8 +47,7 @@ class WebSysClass {
 		fetch('/version').then(async (fres) => {
 			let apiv = await fres.text();
 			let sysv = WebSys.WEBSYS_VERSION;
-			let clientv = WebSys.WSCLIENT_VERSION;
-			let vtext = `WebSys Modern v${sysv}<br>API v${apiv}<br>Client v${clientv}`; 
+			let vtext = `WebSys Modern v${sysv}<br>API v${apiv}`; 
 			$('.desktop .backplane .text').html(vtext);
 		})
 		
