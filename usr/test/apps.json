@@ -26,8 +26,8 @@
 	},
 	"webview": {
 		"name": "WebView",
-		"icon": "/res/img/apps/log128.png",
-		"flags": ["desk", "tool"]
+		"icon": "/res/img/apps/browser128.png",
+		"flags": ["tool"]
 	},
 
 	"systemlog": {

@@ -9,10 +9,7 @@ window.NotepadApp = class NotepadApp extends App {
 		if (this.buildArgs.length > 0) {
 			this.path = this.buildArgs[0].substring('/fs/q'.length);
 		}
-
-		// Require resources
-		await this.requireStyle('/app/notepad/res/style.css');
-
+	
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/log128.png');
@@ -53,7 +50,8 @@ window.NotepadApp = class NotepadApp extends App {
 		this.$textArea.on('change', () => this.edited = true);
 	
 		let fileMenu = CtxMenu([
-			CtxItem('Save', () => { this.save(); }),
+			CtxItem('Save...', () => { this.save(); }),
+			CtxItem('Save as...', () => { this.save(); }),
 		
 			CtxCheck('Dark theme', (v) => { 
 				this.setDarkTheme(v);
@@ -92,7 +90,23 @@ window.NotepadApp = class NotepadApp extends App {
 		let result = await app.waitFileSelection();
 		
 		// No path chosen, cancel save
-		if (!result.length) return false;
+		if (!result || !result.length) return false;
+		
+		// A path was chosen, set it and save the file
+		this.setPath(result[0]);
+		this.upload();
+		return true;
+	}
+	
+	async saveAs() {
+		// Choose file location
+		let app = await WebSys.runApp('explorer');
+		app.asFileSelector('save', 'one');
+		
+		let result = await app.waitFileSelection();
+		
+		// No path chosen, cancel save
+		if (!result || !result.length) return false;
 		
 		// A path was chosen, set it and save the file
 		this.setPath(result[0]);

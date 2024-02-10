@@ -2,6 +2,9 @@
 	"id": "configs",
 	"builder": "ConfigsApp",
 	"scripts": [
-		"/app/configs/res/script.js"	
+		"/app/configs/script.js"	
+	],
+	"styles": [
+		"/app/configs/style.css"
 	]
 }

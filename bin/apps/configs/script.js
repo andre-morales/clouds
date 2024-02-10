@@ -1,13 +1,10 @@
 window.ConfigsApp = class ConfigsApp extends App {
-	constructor(args) {
-		super(args);
+	constructor(...args) {
+		super(...args);
 		this.window = null;
 	}
 
 	async init() {
-		// Require resources
-		await this.requireStyle('/app/configs/res/style.css');
-
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/config128.png');
@@ -19,10 +16,10 @@ window.ConfigsApp = class ConfigsApp extends App {
 		$win.addClass('app-configs');
 
 		// Fetch body
-		await this.window.setContentToUrl('/app/configs/res/main.html');
+		await this.window.setContentToUrl('/app/configs/main.html');
 
 		let $input = $win.find('input');
-		$input.val(getCookie('bg'));
+		$input.val(WebSys.desktop.configs.background);
 		$input.on('change', () => {
 			WebSys.desktop.setBackground($input.val(), true);
 		});

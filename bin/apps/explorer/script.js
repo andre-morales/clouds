@@ -221,16 +221,14 @@ window.ExplorerApp = class ExplorerApp extends App {
 		let $win = this.window.$window;
 
 		if (mode == 'open') {
-			$win.find('.choose-options').addClass('d-block');
-			$win.find('.ribbon').addClass('d-none');
+			$win.find('.choose-options').removeClass('d-none');
 			$win.find('.select').click(() => {
 				this.doneClicked = true;
 				this.close();
 			});
 		}
 		if (mode == 'save') {
-			$win.find('.save-options').addClass('d-block');
-			$win.find('.ribbon').addClass('d-none');
+			$win.find('.save-options').removeClass('d-none');
 			$win.find('.save').click(() => {
 				let fileName = $win.find('.name-field').val();
 				
@@ -260,7 +258,10 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.go(this.getNavPath(path));
 	}
 
-	async go(path) {	
+	async go(path) {
+		this.$files.find('img').attr('src', '');
+		//this.$files.empty();
+		
 		if (path.startsWith('$')) {
 			this.openCollection(path.substring(1));
 			return;
@@ -290,6 +291,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		}
 
 		this.cwd = path;
+		
 
 		// UI changes		
 		this.refreshCollections();

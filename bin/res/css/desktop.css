@@ -374,14 +374,6 @@ body {
 	color: white;
 }
 
-.window-body .menu-button {
-	margin: 0;
-	padding: .1em 1em;
-	border-bottom: solid 1px rgb(127, 127, 127);
-	font: 11pt 'Tahoma';
-	color: white;
-}
-
 .button:hover {
 	background-color: rgba(255, 255, 255, 0.15);
 }
@@ -392,6 +384,31 @@ body {
 }
 
 .button:focus {
+	outline: none;
+}
+
+
+.window-body .menu-bar {
+	border: none;
+	border-bottom: solid 1px rgb(127, 127, 127);
+	font-size: 0;
+}
+
+.window-body .menu-button {
+	margin: 0;
+	padding: .1em 2em;
+	border: none;
+	font: 11pt 'Tahoma';
+	background: none;
+	color: white;
+}
+
+.menu-button:hover {
+	background-color: rgba(255, 255, 255, 0.15);
+}
+
+.menu-button:active {
+	background-color: rgba(0, 0, 0, 0.2);
 	outline: none;
 }
 

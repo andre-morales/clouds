@@ -370,6 +370,10 @@ class Window {
 		}
 		
 		if (!this.$window) return;
+		
+		
+		// Set src to null on every image this window contained, this cancels image fetches
+		this.$window.find("img").attr("src", "");
 		this.$window.remove();
 		this.$window = null;
 	}

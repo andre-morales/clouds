@@ -3,5 +3,8 @@
 	"builder": "NotepadApp",
 	"scripts": [
 		"/app/notepad/res/script.js"	
+	],
+	"styles": [
+		"/app/notepad/res/style.css"
 	]
 }
