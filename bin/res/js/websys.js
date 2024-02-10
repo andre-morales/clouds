@@ -34,7 +34,8 @@ async function main() {
 
 class WebSysClass {
 	async init() {
-		this.WEBSYS_VERSION = '0.6.6_a';
+		this.CLIENT_VERSION = '1.0.001';
+		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 		this.logHistory = '[Begin]\n';
 		this.setupLogging();
 
@@ -46,8 +47,8 @@ class WebSysClass {
 
 		fetch('/version').then(async (fres) => {
 			let apiv = await fres.text();
-			let sysv = WebSys.WEBSYS_VERSION;
-			let vtext = `WebSys Modern v${sysv}<br>API v${apiv}`; 
+			let sysv = WebSys.BUILD_TEXT;
+			let vtext = `${sysv}<br>API v${apiv}`; 
 			$('.desktop .backplane .text').html(vtext);
 		})
 		
