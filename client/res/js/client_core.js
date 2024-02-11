@@ -41,15 +41,20 @@ class ClientClass {
 	}
 
 	async init() {
+		// Start logging record
 		this.logHistory = '[Begin]\n';
 		this.setupLogging();
 
+		// Create main structures
 		this.runningApps = [];
 		this.loadedResources = {};
 		this.reactor = new Reactor();
 		this.reactor.register('log', 'apps-add', 'apps-rem');
+
+		// Create desktop subsystem
 		this.desktop = new Desktop();
 
+		// Display version on ui
 		fetch('/version').then(async (fres) => {
 			let apiv = await fres.text();
 			let sysv = Client.BUILD_TEXT;
@@ -57,8 +62,10 @@ class ClientClass {
 			$('.desktop .backplane .text').html(vtext);
 		})
 		
+		// Save current page on history
 		history.pushState(null, null, location.href);
 
+		// Track back button press
 		let btime = 0;
 		window.addEventListener('popstate', () => {
 			let time = new Date().getTime()
@@ -69,9 +76,10 @@ class ClientClass {
 			history.go(1);
 		});
 
+		// Initialize audio subsystem
 		this.audio = new AudioSystem();
 		
-		// Fetch app definitions and prepare them
+		// Fetch app definitions from the user profile
 	 	let fres = await fetch('/fs/q/usr/apps.json');
 		this.registeredApps = await fres.json();
 		
@@ -80,6 +88,7 @@ class ClientClass {
 			if (app.startsWith('-')) delete this.registeredApps[app];
 		}
 		
+		// Let the desktop prepare app icons and behavior
 		this.desktop.setupApps();
 	}
 

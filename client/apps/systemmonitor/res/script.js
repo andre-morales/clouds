@@ -1,12 +1,12 @@
 window.SystemMonitorApp = class SystemMonitorApp extends App {
-	constructor() {
-		super();
+	constructor(...args) {
+		super(...args);
 		this.window = null;
 	}
 
 	async init() {
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow();
+		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/monitor128.png');
 		this.window.on('closereq', () => this.close());
 		this.window.setTitle('System Monitor');
