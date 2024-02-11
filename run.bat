@@ -1,1 +1,1 @@
-@node bin --no-warnings
+@node api --no-warnings

@@ -1,8 +1,7 @@
 .*/*
-mediares/*
-bin/node_modules/*
+api/node_modules/*
 usr/test/collections.json
 usr/test/favorites.json
 usr/test/desktop.json
-bin/apps/_graveyard/*
+client/apps/_graveyard/*
 ssl/*

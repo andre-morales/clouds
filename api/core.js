@@ -65,7 +65,7 @@ function initExpress() {
 	app.use(FileUpload({ createParentPath: true }));
 	app.use(CookieParser());
 
-	app.use('/res', Express.static('bin/res')); // Static public resources
+	app.use('/res', Express.static('client/res')); // Static public resources
 
 	apiSetupAuth();       // Auth system
 	apiSetupPages();      // Entry, Auth and Desktop
@@ -223,18 +223,12 @@ function apiSetupPages() {
 }
 
 function apiSetupApps() {
-	app.get('/app/:app/manifest/', (req, res) => {
-		getGuardedReqUser(req);
-
-		res.sendFile(Path.resolve('./bin/apps/' + req.params.app + '/manifest.json'));
-	});
-
 	app.get('/app/:app/*', (req, res) => {
 		getGuardedReqUser(req);
 		
 		let app = req.params.app;
 		let path = req.params[0];	
-		let fpath = './bin/apps/' + app + '/' + path;
+		let fpath = './client/apps/' + app + '/' + path;
 		res.sendFile(Path.resolve(fpath));
 	});
 }
@@ -408,7 +402,7 @@ function startExpress() {
 	});
 
 	app.set('view engine', 'ejs');
-	app.set('views', 'bin/views');
+	app.set('views', 'api/pages');
 	app.disable('x-powered-by');
 
 	let httpsKey = FS.readFileSync('ssl/key.key');

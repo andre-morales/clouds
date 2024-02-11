@@ -34,7 +34,7 @@ async function main() {
 
 class WebSysClass {
 	async init() {
-		this.CLIENT_VERSION = '1.0.001';
+		this.CLIENT_VERSION = '1.0.002';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 		this.logHistory = '[Begin]\n';
 		this.setupLogging();
@@ -88,7 +88,7 @@ class WebSysClass {
 	}
 
 	async runApp(name, buildArgs) {
-		return await this.runAppFetch('/app/' + name + '/manifest', buildArgs);
+		return await this.runAppFetch('/app/' + name + '/manifest.json', buildArgs);
 	}
 
 	async runAppFetch(manifestURL, buildArgs) {
