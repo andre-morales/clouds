@@ -18,7 +18,7 @@ async function testAuthkey() {
 
 async function initLogin() {
 	// Set title
-	document.title = 'Auth - WebSys';
+	document.title = 'Auth - Clouds';
 
 	// Fetch login page
 	let res = await fetch('/page/login');
@@ -48,18 +48,18 @@ async function initDesktop() {
 	initTransition();
 
 	// Set title
-	document.title = 'Desktop - WebSys';
+	document.title = 'Clouds';
 
 	// Destroy login script if any
 	destroyElementById('login-script');
 
 	// Add system script
-	addScript('/res/js/websys.js', 'websys-script');
+	addScript('/res/js/client_core.js');
 }
 
 function addScript(src, id) {
 	var scr = document.createElement('script');
-	if(id) scr.setAttribute('id', id);
+	if (id) scr.setAttribute('id', id);
 	scr.setAttribute('src', src);
 	document.head.appendChild(scr);
 

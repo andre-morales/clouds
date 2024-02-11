@@ -9,7 +9,7 @@ function entry() {
 function runInSelf(args) {
 	console.log('Launching in self.');
 
-	import('./core.js').then((mod) => {
+	import('./api_core.js').then((mod) => {
 		mod.main(args);
 	});
 }
@@ -22,7 +22,7 @@ function runAttachedProc(){
 		stdio: 'pipe'
 	}
 
-	let child = CProcess.spawn("node", ["bin/sys/core.js"], opt);
+	let child = CProcess.spawn("node", ["api/api_core.js"], opt);
 	child.stdout.on('data', (data) => {
 		console.log(`${data}`);
 	});
@@ -39,7 +39,7 @@ function runDetachedProc() {
 		stdio: 'ignore'
 	}
 
-	let child = CProcess.spawn("node", ["bin/sys/core.js"], opt);
+	let child = CProcess.spawn("node", ["api/api_core.js"], opt);
 	child.unref();
 }
 

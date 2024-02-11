@@ -25,8 +25,8 @@ class Desktop {
 		});
 
 		this.$taskBar.find('.apps-btn').click((ev) => {
-			let items = Object.keys(WebSys.registeredApps)
-				.map((id) => CtxItem(WebSys.registeredApps[id].name, () => WebSys.runApp(id)));
+			let items = Object.keys(Client.registeredApps)
+				.map((id) => CtxItem(Client.registeredApps[id].name, () => Client.runApp(id)));
 			
 			let menu = CtxMenu(items);
 			this.openCtxMenuAt(menu, ev.clientX, ev.clientY);
@@ -34,7 +34,7 @@ class Desktop {
 
 		let menu = CtxMenu([
 			CtxItem("System Settings", () => {
-				WebSys.runApp('configs');
+				Client.runApp('configs');
 			})
 		]);
 		this.addCtxMenuOn(this.$desktop.find('.backplane'), () => menu);
@@ -180,8 +180,8 @@ class Desktop {
 	// also configures their input behavior.
 	setupApps() {
 		let $apps = $('.backplane');
-		for (let id in WebSys.registeredApps) {
-			let def = WebSys.registeredApps[id];
+		for (let id in Client.registeredApps) {
+			let def = Client.registeredApps[id];
 
 			if (def.flags.includes('disabled')) continue;
 			if (!def.flags.includes('desk')) continue;
@@ -190,7 +190,7 @@ class Desktop {
 			let name = def.name;
 			let $icon = $(`<div class='app-icon'> <img src='${img}'> <label>${name}</label> </div>`);
 			$icon.click(() => {
-				WebSys.runApp(id);
+				Client.runApp(id);
 			});
 			$apps.append($icon);
 		}

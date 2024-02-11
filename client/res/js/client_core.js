@@ -1,3 +1,4 @@
+var Client;
 var WebSys;
 
 async function main() {
@@ -25,17 +26,21 @@ async function main() {
 	await scriptsP;
 
 	// Instatiate system
-	WebSys = new WebSysClass();
-	await WebSys.init();
+	Client = new ClientClass();
+	WebSys = Client;
+	await Client.init();
 	endTransition();
 
-	WebSys.start(getURLParams());
+	Client.start(getURLParams());
 }
 
-class WebSysClass {
-	async init() {
+class ClientClass {
+	constructor() {
 		this.CLIENT_VERSION = '1.0.002';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
+	}
+
+	async init() {
 		this.logHistory = '[Begin]\n';
 		this.setupLogging();
 
@@ -47,7 +52,7 @@ class WebSysClass {
 
 		fetch('/version').then(async (fres) => {
 			let apiv = await fres.text();
-			let sysv = WebSys.BUILD_TEXT;
+			let sysv = Client.BUILD_TEXT;
 			let vtext = `${sysv}<br>API v${apiv}`; 
 			$('.desktop .backplane .text').html(vtext);
 		})
@@ -415,7 +420,7 @@ class Deferred {
 }
 
 function klog(msg) {
-	WebSys.log(msg);
+	Client.log(msg);
 }
 
 function getObjectByName(name) {
