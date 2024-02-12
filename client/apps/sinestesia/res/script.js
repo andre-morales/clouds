@@ -23,7 +23,7 @@ window.SinesApp = class SinesApp extends App {
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/picture128.png');
-		this.window.on('closereq', () => this.exit());
+		this.window.setDefaultCloseAction('exit');
 		this.window.on('backnav', () => {
 			if (this.fullscreen && Fullscreen.element == this.fullscreen) {
 				Fullscreen.rewind();

@@ -13,13 +13,11 @@ window.NotepadApp = class NotepadApp extends App {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/log128.png');
-		this.window.on('closereq', (ev) => {
+		this.window.on('closing', (ev) => {
 			if (!this.edited) {
 				this.exit();
 				return;
 			}
-
-			ev.cancel();
 
 			let [win, promise] = Dialogs.showOptions('Notepad', 'Do you want to save?', [
 				"Save", "Don't save", "Cancel"]);

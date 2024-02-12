@@ -1,40 +1,63 @@
+class ReactorClass {
+	constructor() {
+		this.listeners = [];
+		this.defaultHandler = null;
+	}
+}
 
 class Reactor {
 	constructor() {
-		this.evclasses = {};
+		this.classes = {};
 	}
 
 	register() {
 		for (let name of arguments) {
-			this.evclasses[name] = [];
+			this.classes[name] = new ReactorClass();
 		}
 	}
 
 	unregister(name) {
-		delete this.evclasses[name];
+		delete this.classes[name];
+	}
+
+	getClass(name) {
+		return this.classes[name];
 	}
 
 	on(name, callback) {
-		let list = this.evclasses[name];
+		let list = this.classes[name];
 		if (!list) throw Error(`No class ${name} registered.`);
 
-		list.push(callback);
+		list.listeners.push(callback);
 		return callback;
 	}
 
 	off(name, callback) {
-		let list = this.evclasses[name];
+		let list = this.classes[name];
 		if (!list) throw Error(`No class ${name} registered.`);
 
-		arrErase(list, callback);
+		arrErase(list.listeners, callback);
+	}
+
+	default(name, callback) {
+		let evclass = this.classes[name];
+		if (!evclass) throw Error(`No class ${name} registered.`);
+
+		evclass.defaultHandler = callback;
 	}
 
 	dispatch(name, event) {
-		let list = this.evclasses[name];
-		if (!list) throw Error(`No class ${name} registered.`);
+		let evclass = this.classes[name];
+		if (!evclass) throw Error(`No class ${name} registered.`);
 
-		for (let fn of list) {
+		for (let fn of evclass.listeners) {
 			fn(event);
+		}
+
+		if (event && event.canceled) return;
+
+		if (evclass.defaultHandler) {
+			evclass.defaultHandler(event);
 		}
 	}
 }

@@ -9,21 +9,22 @@ class App {
 		this.events.register("exit");
 	}
 
-	exit(code) {
-		Client.endApp(this, code);
-	}
-
 	_dispose(code) {
 		this.dispatch("exit", code);
 
+		// Destroy all windows owned by this app
 		for (let win of this.windows) {
 			Client.desktop.destroyWindow(win);
 		}
 
-		// Release app resources
+		// Release all app resources
 		for (let res of this.loadedResources) {
 			Client.releaseResource(res, this);
 		}
+	}
+
+	exit(code) {
+		Client.endApp(this, code);
 	}
 
 	requireScript(url) {

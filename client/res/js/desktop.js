@@ -94,18 +94,17 @@ class Desktop {
 	}
 
 	createWindow(app) {
-		let win = new Window(this, app);
+		let win = new Window(app);
 		this.windows.push(win);
 
 		app.windows.push(win);
-		//this.iconifiedGroups[app.id];
 
 		win.init();
 		return win;
 	}
 
 	destroyWindow(win) {
-		win.dispose();
+		win._dispose();
 
 		win.destroyTaskbarButton();
 		arrErase(this.windows, win);

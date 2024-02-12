@@ -1,8 +1,7 @@
 class Window {
-	constructor(desktop, app) {
+	constructor(app) {
 		if (!app) throw new InternalFault("Windows must have valid owner apps.");
 
-		this._desktop = desktop;
 		this.app = app;
 
 		this.owner = null;
@@ -19,8 +18,11 @@ class Window {
 		this.minHeight = 28;
 		this.restoredBounds = [8, 8, 600, 400];
 
-		this.eventReactor = new Reactor();
-		this.eventReactor.register('closereq', 'backnav', 'resize');
+		this.events = new Reactor();
+		this.events.register('closing', 'closereq', 'backnav', 'resize');
+
+		// None | Close | Exit
+		this._defaultCloseAction = 'none';
 
 		this.$window = null;
 	}
@@ -29,14 +31,14 @@ class Window {
 		if (this.$window) return;
 
 		// Instantiation
-		let win = $(cloneTemplate('window')).find('.window');
-		this._desktop.$windows.append(win);
+		let $win = $(cloneTemplate('window')).find('.window');
+		Client.desktop.$windows.append($win);
 		this.optionsCtxMenu = this.makeOptionsCtxMenu();
 
 		// Queries
-		this.$window = win;
-		this.$windowHeader = win.find('.window-head');
-		this.$windowTitle = win.find('.window-title');
+		this.$window = $win;
+		this.$windowHeader = $win.find('.window-head');
+		this.$windowTitle = $win.find('.window-title');
 
 		// Behavior
 		let hammer = new Hammer.Manager(this.$window.find('.window-body')[0], {
@@ -55,39 +57,57 @@ class Window {
 		this.$window.on("mousedown", () => this.focus() );
 		this.$window.on("touchstart", () => this.focus() );
 
-		win.find('.close-btn').click(() => {
+		$win.find('.close-btn').click(() => {
+			let closingev = new ReactorEvent();
+			this.dispatch('closing', closingev);
+
 			let event = new ReactorEvent();
 			this.dispatch('closereq', event);
-			if (!event.canceled) {
-				Client.desktop.destroyWindow(this);
+		});
+
+		this.events.default('closing', (ev) => {
+			if (ev.canceled) return;
+			
+			switch (this.defaultCloseAction) {
+			case 'exit':
+				this.app.exit();
+				break;
+			case 'close':
+				this.destroy();
+				break;
 			}
 		});
-		win.find('.minimize-btn').click(() => this.minimize());
-		win.find('.maxrestore-btn').click(() => {
+
+		$win.find('.minimize-btn').click(() => this.minimize());
+		$win.find('.maxrestore-btn').click(() => {
 			if (this.maximized) this.restore();
 			else this.setMaximized(true)
 		});
-		win.find('.options-btn').click((ev) => {
-			this._desktop.openCtxMenuAt(this.optionsCtxMenu, ev.clientX, ev.clientY);
+		$win.find('.options-btn').click((ev) => {
+			Client.desktop.openCtxMenuAt(this.optionsCtxMenu, ev.clientX, ev.clientY);
 		});
-		this._desktop.addCtxMenuOn(this.$windowHeader, () => this.optionsCtxMenu)
+		Client.desktop.addCtxMenuOn(this.$windowHeader, () => this.optionsCtxMenu)
 		this.$windowTitle.dblclick(() => this.setMaximized(!this.maximized));
 		this.setupDragListeners();
 
 		// Styling
-		this.setBoundsA(this._desktop.getDefaultWindowBounds());
+		this.setBoundsA(Client.desktop.getDefaultWindowBounds());
 		this.setPosition(this.posX, this.posY);
 		this.setSize(this.width, this.height);
 		this.setDecorated(true);
 	}
 
-	dispose() {
+	_dispose() {
 		if (!this.$window) return;	
 		
 		// Set src to null on every image this window contained, this cancels image fetches
 		this.$window.find("img").attr("src", "");
 		this.$window.remove();
 		this.$window = null;
+	}
+
+	destroy() {
+		Client.desktop.destroyWindow(this);
 	}
 
 	setOwner(window) {
@@ -173,6 +193,10 @@ class Window {
 
 		$doc.on("mouseup", dragEnd);
 		$doc.on("touchend", dragEnd);
+	}
+
+	setDefaultCloseAction(action) {
+		this.defaultCloseAction = action;
 	}
 
 	setTitle(title) {
@@ -271,29 +295,29 @@ class Window {
 	}
 
 	unfocus() {
-		if (this._desktop.focusedWindow != this) return;
+		if (Client.desktop.focusedWindow != this) return;
 
-		this._desktop.focusedWindow = null;
+		Client.desktop.focusedWindow = null;
 		if (this.$window) this.$window.removeClass('focused');
 	}
 
 	focus() {
-		if (this._desktop.focusedWindow) {
-			this._desktop.focusedWindow.unfocus();		
+		if (Client.desktop.focusedWindow) {
+			Client.desktop.focusedWindow.unfocus();		
 		}
 
-		this._desktop.focusedWindow = this;
+		Client.desktop.focusedWindow = this;
 		this.$window.addClass('focused');
 
 		this.bringToFront();
 	}
 
 	bringToFront() {
-		this._desktop.bringWindowToFront(this);
+		Client.desktop.bringWindowToFront(this);
 	}
 
 	bringToCenter() {
-		let rect = this._desktop.$desktop[0].getBoundingClientRect();
+		let rect = Client.desktop.$desktop[0].getBoundingClientRect();
 		let x = (rect.width  - this.width) / 2;
 		let y = (rect.height - this.height) / 2;
 		this.setPosition(x, y);
@@ -306,7 +330,7 @@ class Window {
 		if (max) {
 			this.restoredBounds = this.getBoundsA();
 
-			let rect = this._desktop.$windows[0].getBoundingClientRect();
+			let rect = Client.desktop.$windows[0].getBoundingClientRect();
 			this.setPosition(0, 0);
 			this.setSize(rect.width, rect.height);
 
@@ -320,7 +344,7 @@ class Window {
 
 	restore() {
 		if (this.minimized) {
-			let $task = this._desktop.iconifiedWindows.get(this);
+			let $task = Client.desktop.iconifiedWindows.get(this);
 
 			this.setVisible(true);
 			this.minimized = false;
@@ -348,7 +372,7 @@ class Window {
 		if (!icon) icon = '/res/img/apps/window64.png';
 		
 		let $task = $(`<div><img src=${icon}><span>${this.title}</span></div>`);
-		this._desktop.addCtxMenuOn($task, () => this.optionsCtxMenu);
+		Client.desktop.addCtxMenuOn($task, () => this.optionsCtxMenu);
 		$task.click(() => {
 			if (this.minimized) {
 				this.restore();
@@ -359,15 +383,15 @@ class Window {
 		});			
 		
 		this.$taskbarBtn = $task;
-		this._desktop.iconifiedWindows.set(this, $task);
-		this._desktop.$tasks.append($task);
+		Client.desktop.iconifiedWindows.set(this, $task);
+		Client.desktop.$tasks.append($task);
 	}
 
 	destroyTaskbarButton() {
 		if (!this.$taskbarBtn) return;
 		
 		this.$taskbarBtn.remove();
-		delete this._desktop.iconifiedWindows[this];
+		delete Client.desktop.iconifiedWindows[this];
 		this.$taskbarBtn = null;
 	}
 
@@ -376,7 +400,7 @@ class Window {
 			w.fire('closereq');
 		}
 		
-		this._desktop.destroyWindow(this);
+		Client.desktop.destroyWindow(this);
 	}
 
 	makeFullscreen() {
@@ -391,14 +415,14 @@ class Window {
 	}
 
 	on(evclass, callback) {
-		this.eventReactor.on(evclass, callback);
+		this.events.on(evclass, callback);
 	}
 
 	off(evclass, callback) {
-		this.eventReactor.off(evclass, callback);
+		this.events.off(evclass, callback);
 	}
 
 	dispatch(evclass, args) {
-		this.eventReactor.dispatch(evclass, args);
+		this.events.dispatch(evclass, args);
 	}
 }
