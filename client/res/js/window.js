@@ -24,16 +24,7 @@ class Window {
 
 		this.$window = null;
 	}
-	
-	setOwner(window) {
-		if (this.owner) {
-			arrErase(this.owner.children, this);
-		}
 		
-		if (window) window.children.push(this);
-		this.owner = window;
-	}
-	
 	init() {
 		if (this.$window) return;
 
@@ -58,13 +49,19 @@ class Window {
 			]
 		});
 		hammer.on('swipeleft', () => {
-			this.fire('backnav');
+			this.dispatch('backnav');
 		});
 
 		this.$window.on("mousedown", () => this.focus() );
 		this.$window.on("touchstart", () => this.focus() );
 
-		win.find('.close-btn').click(() => this.fire('closereq'));
+		win.find('.close-btn').click(() => {
+			let event = new ReactorEvent();
+			this.dispatch('closereq', event);
+			if (!event.canceled) {
+				Client.desktop.destroyWindow(this);
+			}
+		});
 		win.find('.minimize-btn').click(() => this.minimize());
 		win.find('.maxrestore-btn').click(() => {
 			if (this.maximized) this.restore();
@@ -84,6 +81,24 @@ class Window {
 		this.setDecorated(true);
 	}
 
+	dispose() {
+		if (!this.$window) return;	
+		
+		// Set src to null on every image this window contained, this cancels image fetches
+		this.$window.find("img").attr("src", "");
+		this.$window.remove();
+		this.$window = null;
+	}
+
+	setOwner(window) {
+		if (this.owner) {
+			arrErase(this.owner.children, this);
+		}
+		
+		if (window) window.children.push(this);
+		this.owner = window;
+	}
+
 	makeOptionsCtxMenu() {
 		return CtxMenu([
 			CtxItem('Fullscreen', () => this.makeFullscreen()),
@@ -91,7 +106,7 @@ class Window {
 			CtxItem('Minimize', () => this.minimize()),
 			CtxItem('Restore', () => this.restore()),
 			'-',
-			CtxItem('Close', () => this.fire('closereq'))
+			CtxItem('Close', () => this.dispatch('closereq'))
 		]);
 	}
 
@@ -197,7 +212,7 @@ class Window {
 			this.$window[0].style.width = this.width + "px";
 			this.$window[0].style.height = this.height + "px";
 
-			this.fire('resize');
+			this.dispatch('resize');
 		}
 	}
 
@@ -361,21 +376,7 @@ class Window {
 			w.fire('closereq');
 		}
 		
-		this.destroyTaskbarButton();
-		arrErase(this._desktop.windows, this);
-
-		if (this.minimized) {
-			this._desktop.iconifiedWindows.get(this).remove();
-			this._desktop.iconifiedWindows.delete(this);
-		}
-		
-		if (!this.$window) return;
-		
-		
-		// Set src to null on every image this window contained, this cancels image fetches
-		this.$window.find("img").attr("src", "");
-		this.$window.remove();
-		this.$window = null;
+		this._desktop.destroyWindow(this);
 	}
 
 	makeFullscreen() {
@@ -397,7 +398,7 @@ class Window {
 		this.eventReactor.off(evclass, callback);
 	}
 
-	fire(evclass, args) {
-		this.eventReactor.fire(evclass, args);
+	dispatch(evclass, args) {
+		this.eventReactor.dispatch(evclass, args);
 	}
 }

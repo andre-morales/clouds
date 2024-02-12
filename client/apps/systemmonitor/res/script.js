@@ -8,7 +8,10 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/monitor128.png');
-		this.window.on('closereq', () => this.close());
+		this.window.on('closereq', () => {
+			this.window.close();
+			this.exit();
+		});
 		this.window.setTitle('System Monitor');
 
 		let $win = this.window.$window;
@@ -32,23 +35,22 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 			$appTab.empty();
 			for (let app of WebSys.runningApps) {
 				let $app = $(`<div class='app'>${app.classId}</div>`);
-				let $endBtn = $('<button>End</button>');
+				let $endBtn = $('<button class="button">End</button>');
 				$endBtn.click(() => {
-					app.close();
+					app.exit();
 				});
 				$app.append($endBtn);
 				$appTab.append($app);
 			}
 		};
-		makeAppEntries();
-		WebSys.on('apps-add', makeAppEntries);
-		WebSys.on('apps-rem', makeAppEntries);
 
+		makeAppEntries();
+		Client.on('apps-add', makeAppEntries);
+		Client.on('apps-rem', makeAppEntries);
+		//Client.desktop.on('windows-create', makeWindowsEntries);
+		//Client.desktop.on('windows-destroy', makeWindowsEntries);
+		
 		// Make the window visible
 		this.window.setVisible(true);
-	}
-
-	onClose() {
-		this.window.close();
 	}
 }

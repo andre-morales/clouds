@@ -2,6 +2,7 @@ class Desktop {
 	constructor() {
 		this.windows = [];
 		this.dwm = new App("dwm");
+		this.dwm.events.register("windows-create", "windows-destroy");
 		this.configs = [];
 		this.iconifiedWindows = new Map();
 		this.iconifiedGroups = {};
@@ -70,8 +71,6 @@ class Desktop {
 		// Ready fullscreen system
 		Fullscreen.init();
 		this._queryBounds();	
-
-
 	}
 
 	async start() {
@@ -98,10 +97,25 @@ class Desktop {
 		let win = new Window(this, app);
 		this.windows.push(win);
 
+		app.windows.push(win);
 		//this.iconifiedGroups[app.id];
 
 		win.init();
 		return win;
+	}
+
+	destroyWindow(win) {
+		win.dispose();
+
+		win.destroyTaskbarButton();
+		arrErase(this.windows, win);
+
+		if (win.minimized) {
+			iconifiedWindows.get(win).remove();
+			iconifiedWindows.delete(win);
+		}
+		
+		arrErase(win.app.windows, win);
 	}
 
 	bringWindowToFront(win) {

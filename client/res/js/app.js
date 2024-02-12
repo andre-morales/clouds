@@ -4,6 +4,26 @@ class App {
 		this.classId = classId;
 		this.buildArgs = (args) ? args : [];
 		this.loadedResources = [];
+		this.windows = [];
+		this.events = new Reactor();
+		this.events.register("exit");
+	}
+
+	exit(code) {
+		Client.endApp(this, code);
+	}
+
+	_dispose(code) {
+		this.dispatch("exit", code);
+
+		for (let win of this.windows) {
+			Client.desktop.destroyWindow(win);
+		}
+
+		// Release app resources
+		for (let res of this.loadedResources) {
+			Client.releaseResource(res, this);
+		}
 	}
 
 	requireScript(url) {
@@ -41,12 +61,18 @@ class App {
 		return false;
 	}
 
-	onClose() {}
-	
-	close() {
-		this.onClose();
-		WebSys.endApp(this);
+	on(evclass, callback) {
+		this.events.on(evclass, callback);
 	}
+
+	off(evclass, callback) {
+		this.events.off(evclass, callback);
+	}
+
+	dispatch(evclass, args) {
+		this.events.dispatch(evclass, args);
+	}
+
 }
 
 class Resource {

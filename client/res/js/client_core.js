@@ -5,6 +5,7 @@ async function main() {
 	let scriptsP = Promise.all([
 		addScript('/res/js/lib/zepto.min.js'),
 		addScript('/res/js/lib/hammer.min.js'),
+		addScript('/res/js/events.js'),
 		addScript('/res/js/app.js'),
 		addScript('/res/js/desktop.js'),
 		addScript('/res/js/window.js'),
@@ -36,7 +37,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.002';
+		this.CLIENT_VERSION = '1.0.005';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -48,8 +49,8 @@ class ClientClass {
 		// Create main structures
 		this.runningApps = [];
 		this.loadedResources = {};
-		this.reactor = new Reactor();
-		this.reactor.register('log', 'apps-add', 'apps-rem');
+		this._reactor = new Reactor();
+		this._reactor.register('log', 'apps-add', 'apps-rem');
 
 		// Create desktop subsystem
 		this.desktop = new Desktop();
@@ -162,7 +163,7 @@ class ClientClass {
 
 			// Save the app in the running array and fire any events
 			this.runningApps.push(app);
-			this.reactor.fire('apps-add');
+			this.dispatch('apps-add');
 
 			// Fire the app initialization and return its instance
 			await app.init();
@@ -180,14 +181,11 @@ class ClientClass {
 		var i = arr.indexOf(instance);
 		if (i == -1) return;
 
-		// Release app resources
-		for (let res of instance.loadedResources) {
-			this.releaseResource(res, instance);
-		}
+		instance._dispose();
 
 		// Remove app from app list
 		arr.splice(i, 1); 
-		this.reactor.fire('apps-rem');
+		this.dispatch('apps-rem');
 	}
 
 	// Loads the script with the given url and registers a user.
@@ -203,7 +201,7 @@ class ClientClass {
 			// The resource hasn't been loaded yet, let's create it and load the script
 			let resId = btoa(url);
 			resource = new Resource();
-			resource.permanent = true;
+			resource.permanent = false;
 			resource.id = resId;
 			resource.users = [user];
 			resource.fnUnload = () => {
@@ -239,7 +237,7 @@ class ClientClass {
 			resource.fnUnload = () => {
 				destroyElementById(resId);
 			};
-			resource.permanent = true;
+			resource.permanent = false;
 			this.loadedResources[url] = resource;
 
 			await addStylesheet(url, resId);
@@ -310,7 +308,7 @@ class ClientClass {
 	log(msg) {
 		this.logHistory += msg + '\n';
 		try {
-			this.reactor.fire('log')
+			this._reactor.dispatch('log')
 		} catch (err) {
 			this.showErrorDialog(err);
 		}
@@ -344,12 +342,16 @@ class ClientClass {
 	}
 
 	on(evclass, callback) {
-		this.reactor.on(evclass, callback);
+		this._reactor.on(evclass, callback);
 		return callback;
 	}
 
 	off(evclass, callback) {
-		this.reactor.off(evclass, callback);
+		this._reactor.off(evclass, callback);
+	}
+
+	dispatch(evclass, args) {
+		this._reactor.dispatch(evclass, args);
 	}
 }
 
@@ -376,55 +378,6 @@ class FileTypes {
 	
 	static isMedia(path) {
 		return FileTypes.isVideo(path) || FileTypes.isPicture(path) || FileTypes.isAudio(path);
-	}
-}
-
-class Reactor {
-	constructor() {
-		this.evclasses = {};
-	}
-
-	register() {
-		for (let name of arguments) {
-			this.evclasses[name] = [];
-		}
-	}
-
-	unregister(name) {
-		delete this.evclasses[name];
-	}
-
-	on(name, callback) {
-		let list = this.evclasses[name];
-		if (!list) throw Error(`No class ${name} registered.`);
-
-		list.push(callback);
-		return callback;
-	}
-
-	off(name, callback) {
-		let list = this.evclasses[name];
-		if (!list) return;
-		arrErase(list, callback);
-	}
-
-	fire(name, args) {
-		let list = this.evclasses[name];
-		if (!list) return;
-
-		for (let fn of list) {
-			if (args) fn(...args);
-			else fn();
-		}
-	}
-}
-
-class Deferred {
-	constructor() {
-		this.promise = new Promise((resolve, reject) => {
-			this.reject = reject
-			this.resolve = resolve
-		})
 	}
 }
 

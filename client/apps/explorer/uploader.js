@@ -6,7 +6,7 @@ window.ExplorerUploader = class ExplorerUploader {
 	}
 
 	async open() {
-		let helperWin = WebSys.desktop.createWindow();
+		let helperWin = Client.desktop.createWindow(this.explorer);
 		helperWin.setOwner(this.explorer.window);
 		helperWin.on('closereq', () => helperWin.close());
 		

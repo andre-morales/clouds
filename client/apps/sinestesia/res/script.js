@@ -12,16 +12,24 @@ window.SinesApp = class SinesApp extends App {
 	}
 
 	async init() {
+		this.on('exit', () => {
+			this.playlist = null;
+			this.playlistI = 0;
+			this.cancelPauseEvents = false;
+			this.stop();
+			this.saveAppWindowState(this.window);
+		});
+
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/picture128.png');
-		this.window.on('closereq', () => this.close());
+		this.window.on('closereq', () => this.exit());
 		this.window.on('backnav', () => {
 			if (this.fullscreen && Fullscreen.element == this.fullscreen) {
 				Fullscreen.rewind();
 				this.fullscreen = null;
 			} else {
-				this.close();
+				this.exit();
 			}
 		});
 		this.window.setTitle('Sinestesia');
@@ -353,14 +361,5 @@ window.SinesApp = class SinesApp extends App {
 		this.transform.y = 0;
 		this.transform.scale = 1;	
 		this.updateTransform();
-	}
-
-	onClose() {
-		this.playlist = null;
-		this.playlistI = 0;
-		this.cancelPauseEvents = false;
-		this.stop();
-		this.saveAppWindowState(this.window);
-		this.window.close();
 	}
 }

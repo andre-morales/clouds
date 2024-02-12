@@ -11,7 +11,7 @@ window.AudioConf = class AudioConf extends App {
 		this.requireStyle('/app/audioconf/res/style.css');
 
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow();
+		this.window = WebSys.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/audio128.png');
 		this.window.on('closereq', () => this.close());
 		

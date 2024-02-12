@@ -3,7 +3,7 @@ class Dialogs {
 	static showError(title, msg) {
 		if (!title) title = 'Error';
 
-		let win = WebSys.desktop.createWindow();
+		let win = Client.desktop.createWindow(Client.desktop.dwm);
 		win.$window.addClass('error-dialog');
 		win.setTitle(title);
 		let $body = win.$window.find('.window-body');
@@ -12,7 +12,6 @@ class Dialogs {
 		let html = msg.toString().replaceAll('\n', '<br>');
 
 		$body.append($('<span>' + html + '</span>'))
-		win.on('closereq', () => win.close());
 		win.setSize(380, 200);
 		win.bringToCenter();
 		win.bringToFront();
@@ -23,7 +22,7 @@ class Dialogs {
 	static showOptions(title, msg, options) {
 		let deferred = new Deferred();
 
-		let win = WebSys.desktop.createWindow();
+		let win = WebSys.desktop.createWindow(Client.desktop.dwm);
 		win.$window.addClass('dialog');
 		win.setTitle(title);
 		let $body = win.$window.find('.window-body');
@@ -44,7 +43,6 @@ class Dialogs {
 		}
 		win.on('closereq', () => {
 			deferred.resolve(-1);
-			win.close();
 		});
 		win.setSize(380, 200);
 		win.bringToCenter();

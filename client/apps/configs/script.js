@@ -6,11 +6,11 @@ window.ConfigsApp = class ConfigsApp extends App {
 
 	async init() {
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow(this);
+		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/config128.png');
 		this.window.setHeight(200);
 		this.window.setTitle('Configs');
-		this.window.on('closereq', () => this.close());
+		this.window.on('closereq', () => this.exit());
 		
 		let $win = this.window.$window;
 		$win.addClass('app-configs');

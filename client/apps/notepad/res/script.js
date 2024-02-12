@@ -11,13 +11,15 @@ window.NotepadApp = class NotepadApp extends App {
 		}
 	
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow(this);
+		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/log128.png');
-		this.window.on('closereq', () => {
+		this.window.on('closereq', (ev) => {
 			if (!this.edited) {
-				this.close();
+				this.exit();
 				return;
 			}
+
+			ev.cancel();
 
 			let [win, promise] = Dialogs.showOptions('Notepad', 'Do you want to save?', [
 				"Save", "Don't save", "Cancel"]);
@@ -27,13 +29,13 @@ window.NotepadApp = class NotepadApp extends App {
 				if (r == 0) {
 					let saved = await this.save();
 					if (saved) {
-						this.close();	
+						this.exit();	
 					}
 					
 				}
 
 				// Don't save
-				if (r == 1) this.close() // Don't save
+				if (r == 1) this.exit() // Don't save
 			})
 		});
 		this.window.setTitle('Notepad');
