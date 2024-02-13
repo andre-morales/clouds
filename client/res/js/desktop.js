@@ -2,7 +2,8 @@ class Desktop {
 	constructor() {
 		this.windows = [];
 		this.dwm = new App("dwm");
-		this.dwm.events.register("windows-create", "windows-destroy");
+		this.events = new Reactor();
+		this.events.register("window-created", "windows-destroyed");
 		this.configs = [];
 		this.iconifiedWindows = new Map();
 		this.iconifiedGroups = {};
@@ -99,6 +100,7 @@ class Desktop {
 		app.windows.push(win);
 
 		win.init();
+		events.dispatch('window-created');
 		return win;
 	}
 
@@ -130,6 +132,8 @@ class Desktop {
 		if (win.app.exitMode == 'last-win-closed') {
 			setTimeout(() => win.app.exit());
 		}
+
+		events.dispatch('window-destroyed');
 	}
 
 	bringWindowToFront(win) {
