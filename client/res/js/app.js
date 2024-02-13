@@ -5,6 +5,8 @@ class App {
 		this.buildArgs = (args) ? args : [];
 		this.loadedResources = [];
 		this.windows = [];
+		this.mainWindow = null;
+		this.exitMode = 'main-win-close';
 		this.events = new Reactor();
 		this.events.register("exit");
 	}
@@ -25,6 +27,13 @@ class App {
 
 	exit(code) {
 		Client.endApp(this, code);
+	}
+
+	// explicit: Only exit the app upon calling App.Exit,
+	// main-win-close: Exits the app when the main window closes.
+	// last-win-close: Exits the app once all windows are closed.
+	setExitMode(mode) {
+		this.exitMode = mode;
 	}
 
 	requireScript(url) {

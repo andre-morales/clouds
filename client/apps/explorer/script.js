@@ -51,15 +51,17 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow(this);
-		this.window.bringToCenter();
-		this.restoreAppWindowState(this.window);
-		
+
 		this.window.setIcon('/res/img/ftypes/folder128.png');
 		this.window.setTitle('File Explorer');
 		this.window.setVisible(true);
 
 		this.window.on('closereq', () => this.exit());
 		this.window.on('backnav', () => this.goUp());
+
+		this.on('exit', () => {
+			this.closingDeferred.resolve();
+		});
 
 		let $app = this.window.$window.find('.window-body');
 		this.$app = $app;
@@ -224,7 +226,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 			$win.find('.choose-options').removeClass('d-none');
 			$win.find('.select').click(() => {
 				this.doneClicked = true;
-				this.close();
+				this.window.close();
+				this.exit();
 			});
 		}
 		if (mode == 'save') {
@@ -234,7 +237,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 				
 				this.selectedFiles = [this.cwd + fileName];
 				this.doneClicked = true;
-				this.close();
+				this.window.close();
+				this.exit();
 			});
 		}
 	}
@@ -725,12 +729,6 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 	openFileExt(path) {
 		window.open('/fs/q' + path, '_blank').focus();
-	}
-
-	onClose() {
-		this.saveAppWindowState(this.window);
-		this.window.close();
-		this.closingDeferred.resolve();
 	}
 
 	closePromise() {

@@ -96,7 +96,6 @@ class Desktop {
 	createWindow(app) {
 		let win = new Window(app);
 		this.windows.push(win);
-
 		app.windows.push(win);
 
 		win.init();
@@ -104,8 +103,18 @@ class Desktop {
 	}
 
 	destroyWindow(win) {
+		// Dispatch closed event
+		win.events.dispatch('closed');
+
+		// Destroy all children windows
+		for (let c of win.children) {
+			Client.desktop.destroyWindow(c);
+		}
+
+		// Relase window resources
 		win._dispose();
 
+		// Remove desktop integration buttons and stuffs
 		win.destroyTaskbarButton();
 		arrErase(this.windows, win);
 
@@ -114,7 +123,13 @@ class Desktop {
 			iconifiedWindows.delete(win);
 		}
 		
+		// Remove window from list
 		arrErase(win.app.windows, win);
+
+		// If this was the main window, exit the owner app
+		if (win.app.exitMode == 'last-win-closed') {
+			setTimeout(() => win.app.exit());
+		}
 	}
 
 	bringWindowToFront(win) {

@@ -145,7 +145,7 @@ window.SinesApp = class SinesApp extends App {
 		$video.on('ended', (ev)=>{
 			if (this.playlist) {
 				this.playlistI++;
-				this.openFile('/fs/q' + this.url + this.playlist[this.playlistI]);
+				this.openFile('/fs/q' + this.url + this.playlist[this.playlistI][0]);
 
 				setTimeout(()=>{
 					this.play();
@@ -197,7 +197,7 @@ window.SinesApp = class SinesApp extends App {
 			}),
 			CtxCheck('Allow zoom/pan', (v) => {
 				this.lockedZoomPan = !v;
-			}, true),
+			}, false),
 			CtxItem('Reset transform', () => this.resetZoomPan()),
 		]);
 		WebSys.desktop.addCtxMenuOn($win.find('.window-body'), () => ctxMenu);
@@ -252,7 +252,7 @@ window.SinesApp = class SinesApp extends App {
 		this.playlist = files;
 		this.playlistI = 0;
 		this.url = url;
-		this.openFile('/fs/q' + url + this.playlist[0]);
+		this.openFile('/fs/q' + url + this.playlist[0][0]);
 	}
 
 	openPicture(url) {

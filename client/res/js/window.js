@@ -19,14 +19,24 @@ class Window {
 		this.restoredBounds = [8, 8, 600, 400];
 
 		this.events = new Reactor();
-		this.events.register('closing', 'closereq', 'backnav', 'resize');
+		this.events.register('closing', 'closed', 'backnav', 'resize', 'closereq');
 
 		// None | Close | Exit
-		this._defaultCloseAction = 'none';
+		this._defaultCloseAction = 'close';
 
 		this.$window = null;
 	}
+
+	_dispose() {
+		if (!this.$window) return;	
 		
+		// Optimization: Set src to null on every image this window contained,
+		// this reinforces interruption of image fetches on the browser
+		this.$window.find("img").attr("src", "");
+		this.$window.remove();
+		this.$window = null;
+	}
+
 	init() {
 		if (this.$window) return;
 
@@ -73,7 +83,7 @@ class Window {
 				this.app.exit();
 				break;
 			case 'close':
-				this.destroy();
+				Client.desktop.destroyWindow(this);
 				break;
 			}
 		});
@@ -97,17 +107,9 @@ class Window {
 		this.setDecorated(true);
 	}
 
-	_dispose() {
-		if (!this.$window) return;	
-		
-		// Set src to null on every image this window contained, this cancels image fetches
-		this.$window.find("img").attr("src", "");
-		this.$window.remove();
-		this.$window = null;
-	}
-
-	destroy() {
-		Client.desktop.destroyWindow(this);
+	// Requests this window to close. This invokes the closing event on the window.
+	close() {
+		this.events.dispatch('closing');
 	}
 
 	setOwner(window) {
@@ -126,7 +128,7 @@ class Window {
 			CtxItem('Minimize', () => this.minimize()),
 			CtxItem('Restore', () => this.restore()),
 			'-',
-			CtxItem('Close', () => this.dispatch('closereq'))
+			CtxItem('Close', () => this.dispatch('closing'))
 		]);
 	}
 
@@ -393,14 +395,6 @@ class Window {
 		this.$taskbarBtn.remove();
 		delete Client.desktop.iconifiedWindows[this];
 		this.$taskbarBtn = null;
-	}
-
-	close() {
-		for (let w of this.children) {
-			w.fire('closereq');
-		}
-		
-		Client.desktop.destroyWindow(this);
 	}
 
 	makeFullscreen() {
