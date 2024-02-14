@@ -227,7 +227,6 @@ window.SinesApp = class SinesApp extends App {
 		// Set window title
 		let fname = path.replace(/\/+$/, ''); // Remove trailing slash
 		fname = fname.slice(fname.lastIndexOf('/') + 1);
-		console.log(path);
 		this.window.setTitle(fname);
 
 		this.stop();

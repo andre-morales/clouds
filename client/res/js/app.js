@@ -18,7 +18,8 @@ class App {
 
 		try {
 			this.dispatch("exit", code);
-		} catch (error) {
+		} catch (err) {
+			console.error(err);
 			Client.showErrorDialog("Bad App", "An app exit() handler threw an exception.");
 		}
 

@@ -37,7 +37,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.006';
+		this.CLIENT_VERSION = '1.0.010';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -170,7 +170,7 @@ class ClientClass {
 			return app;
 		} catch (err) {
 			console.error(err);	
-			this.showErrorDialog(err, 'App Initialization');
+			this.showErrorDialog('App Initialization', err);
 		}
 		return null;
 	}

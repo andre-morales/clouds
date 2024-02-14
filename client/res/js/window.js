@@ -198,7 +198,7 @@ class Window {
 	}
 
 	setDefaultCloseAction(action) {
-		this.defaultCloseAction = action;
+		this._defaultCloseAction = action;
 	}
 
 	setTitle(title) {
