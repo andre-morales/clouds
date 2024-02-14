@@ -19,7 +19,7 @@ window.NotepadApp = class NotepadApp extends App {
 				return;
 			}
 
-			let [win, promise] = Dialogs.showOptions(this, 'Notepad', 'Do you want to save?', [
+			let [win, promise] = Dialogs.showOptions(this, 'Notepad', 'Do you want to save before closing?', [
 				"Save", "Don't save", "Cancel"]);
 			
 			promise.then(async (r) => {
@@ -51,14 +51,14 @@ window.NotepadApp = class NotepadApp extends App {
 		this.$textArea.on('change', () => this.edited = true);
 	
 		let fileMenu = CtxMenu([
-			CtxItem('Save...', () => { this.save(); }),
+			CtxItem('Save', () => { this.save(); }),
 			CtxItem('Save as...', () => { this.save(); }),
 		
 			CtxCheck('Dark theme', (v) => { 
 				this.setDarkTheme(v);
 			}, true),
 			'-',
-			CtxItem('Exit', () => { this.window.fire('closereq'); })
+			CtxItem('Exit', () => { this.window.close(); })
 		]);
 	
 		$app.find('.file-menu').click((ev) => {
@@ -73,7 +73,6 @@ window.NotepadApp = class NotepadApp extends App {
 		}
 
 		// Make the window visible
-		this.restoreAppWindowState(this.window);
 		this.window.setVisible(true);
 	}
 

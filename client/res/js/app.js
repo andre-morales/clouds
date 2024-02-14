@@ -1,6 +1,7 @@
 class App {
 	constructor(classId, args) {
 		if (!classId) throw new InternalFault("Apps need a unique id");
+		this.state = 'starting';
 		this.classId = classId;
 		this.buildArgs = (args) ? args : [];
 		this.loadedResources = [];
@@ -9,12 +10,11 @@ class App {
 		this.exitMode = 'main-win-close';
 		this.events = new Reactor();
 		this.events.register("exit");
-		this._disposed = false;
 	}
 
 	_dispose(code) {
-		if (this._disposed) return;
-		this._disposed = true;
+		
+		this.state = 'dying';
 
 		try {
 			this.dispatch("exit", code);
@@ -78,6 +78,10 @@ class App {
 			}
 		} catch (e) {}
 		return false;
+	}
+
+	canEnd() {
+		return this.state != 'dying' && this.state != 'dead';
 	}
 
 	on(evclass, callback) {

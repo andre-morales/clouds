@@ -158,11 +158,29 @@ class Desktop {
 	getDefaultWindowBounds() {
 		let rect = this.$desktop[0].getBoundingClientRect();
 
+		let x = 32;
+		let y = 32;
+		let w = 640;
+		let h = 600;
+
 		if (rect.width < 720) {
-			return [10, 10, 300, 600];
-		} else {
-			return [32, 32, 640, 600];
+			x = 16; y = 16;
+			w = 300; h = 600;
 		}
+
+		let tries = this.windows.length;
+
+		for (let i = 0; i < this.windows.length; i++) {
+			let win = this.windows[i];
+			if (Math.abs(win.x - x) > 32 && Math.abs(win.y - y) > 32) break;
+
+			x += 32;
+			y += 32;
+			i = 0;
+			if (tries-- <= 0) break;
+		}
+
+		return [x, y, w, h];
 	}
 
 	setBackground(url, save) {

@@ -45,7 +45,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.029';
+		this.CLIENT_VERSION = '1.0.032';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -172,6 +172,7 @@ class ClientClass {
 			// Save the app in the running array and fire any events
 			this.runningApps.push(app);
 			this.dispatch('apps-add');
+			app.state = 'alive';
 
 			// Fire the app initialization and return its instance
 			await app.init();
@@ -185,14 +186,14 @@ class ClientClass {
 
 	async endApp(instance) {
 		// Check if app is on the list
-		let arr = this.runningApps;
-		var i = arr.indexOf(instance);
-		if (i == -1) return;
+		if (!this.runningApps.includes(instance)) return;
 
+		// If it is on a valid state, dispose of it
+		if (!instance.canEnd()) return;
 		instance._dispose();
 
 		// Remove app from app list
-		arr.splice(i, 1); 
+		arrErase(this.runningApps, instance);
 		this.dispatch('apps-rem');
 	}
 

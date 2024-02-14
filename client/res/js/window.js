@@ -102,14 +102,13 @@ class Window {
 
 		// Styling
 		this.setBoundsA(Client.desktop.getDefaultWindowBounds());
-		this.setPosition(this.posX, this.posY);
-		this.setSize(this.width, this.height);
 		this.setDecorated(true);
+		this.bringToFront();
 	}
 
 	// Requests this window to close. This invokes the closing event on the window.
 	close() {
-		this.events.dispatch('closing');
+		this.events.dispatch('closing', new ReactorEvent());
 	}
 
 	setOwner(window) {
