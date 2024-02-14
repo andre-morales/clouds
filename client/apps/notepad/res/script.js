@@ -19,7 +19,7 @@ window.NotepadApp = class NotepadApp extends App {
 				return;
 			}
 
-			let [win, promise] = Dialogs.showOptions('Notepad', 'Do you want to save?', [
+			let [win, promise] = Dialogs.showOptions(this, 'Notepad', 'Do you want to save?', [
 				"Save", "Don't save", "Cancel"]);
 			
 			promise.then(async (r) => {

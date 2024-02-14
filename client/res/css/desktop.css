@@ -262,31 +262,41 @@ body {
 }
 
 /* Dialogs */
-.error-dialog .window-body {
-	padding: 1rem 0.4rem;
-}
-.error-dialog .window-body img {
-	float: left;
-	width: 64px;
-	margin: 0.5rem 1rem 0 0;
-}
-
 .window.dialog .window-body {
 	display: flex;
-	flex-wrap: wrap;
+	flex-direction: column;
 	padding-top: 1rem;
 }
 
-.window.dialog .window-body span {
-	display: flex;
-	flex-wrap: wrap;
-	padding-top: 1rem;
+.window.dialog .dialog-icon {
+	float: left;
+	width: 64px;
+	height: 100%;
+	margin: 0 1rem 0 .5rem;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-clip: padding-box;
 }
 
-.window.dialog .window-body img {
-	max-height: 64px;
-	max-width: 64px;
-	margin: 0.5rem 1rem 0 0;
+.window.dialog .info-icon {
+	background-image: url('/res/img/icons/info.png');
+}
+
+.window.dialog .error-icon {
+	background-image: url('/res/img/icons/error.png');
+}
+
+.window.dialog .warning-icon {
+	background-image: url('/res/img/icons/warning.png');
+}
+
+.window.dialog .choice-icon {
+	background-image: url('/res/img/icons/choice.png');
+}
+
+.window.dialog .message {
+	flex-grow: 1;
+	overflow: auto;
 }
 
 .window.dialog .options {
@@ -294,11 +304,6 @@ body {
 	align-self: flex-end;
 	text-align: right;
 	background: rgba(20, 20, 20, 0.4);
-}
-
-.window.dialog .options .btn {
-	margin: .2rem;
-	font-size: 12pt;
 }
 
 /* Context menu */
