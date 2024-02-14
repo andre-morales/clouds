@@ -1,9 +1,9 @@
-
 class Dialogs {
-	static showError(title, msg) {
+	static showError(app, title, msg) {
+		if (!app) app = Client.desktop.dwm;
 		if (!title) title = 'Error';
 
-		let win = Client.desktop.createWindow(Client.desktop.dwm);
+		let win = Client.desktop.createWindow(app);
 		win.$window.addClass('error-dialog');
 		win.setTitle(title);
 		let $body = win.$window.find('.window-body');
@@ -19,7 +19,9 @@ class Dialogs {
 		return win;
 	}
 
-	static showOptions(title, msg, options) {
+	static showOptions(app, title, msg, options) {
+		if (!app) app = Client.desktop.dwm;
+
 		let deferred = new Deferred();
 
 		let win = WebSys.desktop.createWindow(Client.desktop.dwm);

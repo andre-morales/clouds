@@ -2,17 +2,25 @@ var Client;
 var WebSys;
 
 async function main() {
+	// Load jquery compatible lib
+	await addScript('/res/js/lib/zepto.min.js');
+
+	window.onerror = ((err) => {
+		_systemPanic("Unhandled error", err, true);
+	});
+
+	// Schedule loading of main system scripts
 	let scriptsP = Promise.all([
-		addScript('/res/js/lib/zepto.min.js'),
-		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/events.js'),
 		addScript('/res/js/app.js'),
 		addScript('/res/js/desktop.js'),
 		addScript('/res/js/window.js'),
+		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/dialogs.js'),
 		addScript('/res/js/audiosystem.js')
 	]);
 
+	// Load style
 	addStylesheet('/res/css/desktop.css');
 
 	// Fetch desktop page
@@ -259,38 +267,13 @@ class ClientClass {
 
 	showErrorDialog(title, msg) {
 		try {
-			let win = this.desktop.createWindow(this.desktop.dwm);
-			win.$window.addClass('error-dialog');
-			win.setTitle(title);
-			let $body = win.$window.find('.window-body');
-			$body.append($('<img src="/res/img/icons/error.png">'))
-
-			let html = msg.toString().replaceAll('\n', '<br>');
-
-			$body.append($('<span>' + html + '</span>'))
-			win.on('closereq', () => win.close());
-			win.setSize(380, 200);
-			win.bringToCenter();
-			win.bringToFront();
-			win.setVisible(true);
+			Dialogs.showError(this.desktop.dwm, title, msg);
 		} catch (err) {
-			console.log("Couldn't display error message!");
-
-			this.critFaultMsg( "No Error Display", `Couldn't show [${title}]: "${msg}"`);
+			console.log("---- Couldn't display error message ----");
+			console.error(err);
+			console.log("----------------------------------------")
+			_systemPanic("No Error Display", `Couldn't show [${title}]: "${msg}", due to "${err}"`);
 		}
-	}
-
-	critFaultMsg(title, msg) {
-		let index = 1024;
-
-		let $desktop = $('.desktop');
-		let $box = $(`<div class='crit-fault' style="z-index: ${index};"> <h1>Critical Fault: ${title}</h1> <p>${msg}</p>`);
-		let $dismiss = $("<button>Dismiss</button>");
-		$dismiss.click(() => {
-			$box.remove();
-		});
-		$desktop.append($box);
-		$box.append($dismiss);
 	}
 
 	downloadUrl(path) {
@@ -377,6 +360,34 @@ class FileTypes {
 	static isMedia(path) {
 		return FileTypes.isVideo(path) || FileTypes.isPicture(path) || FileTypes.isAudio(path);
 	}
+}
+
+function _systemPanic(title, msg, mode) {
+	let index = 1024;
+
+	let $box = $(`<div class='panic-screen' style="z-index: ${index};">`);
+	let $title;
+	if (mode) {
+		$title = $("<h1>-- Startup Failed --</h1>");
+	} else {
+		$title = $("<h1>-- System Panic --</h1>");
+	}
+
+	let $text = $(`<p>Reason: ${title}</p><p>Detail: ${msg}</p>`);
+
+	let $dismiss = $("<button>Dismiss</button>");
+	$dismiss.click(() => {
+		$box.remove();
+	});
+	
+	if (mode) {
+		$box.css('background-color', '#503');
+	}
+
+	$box.append($title);
+	$box.append($text);
+	$box.append($dismiss);
+	$('body').append($box);
 }
 
 function klog(msg) {

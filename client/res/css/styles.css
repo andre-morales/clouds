@@ -46,7 +46,7 @@ body {
 	display: block;
 }
 
-.crit-fault {
+.panic-screen {
 	position: absolute;
 	left: 0%;
 	top: 0%;
@@ -54,20 +54,21 @@ body {
 	height: 100%;
 	overflow: auto;
 	text-align: center;
-	background: #58A;	
+	background: #58A;
+	color: white;
 }
 
-.crit-fault h1 {
+.panic-screen h1 {
 	margin: 1em 0;
 	font: 18pt monospace;
 }
 
-.crit-fault p {
+.panic-screen p {
 	margin: 1em 0;
 	font: 14pt monospace;
 }
 
-.crit-fault button {
+.panic-screen button {
 	font: 18pt monospace;
 	padding: .5em;
 }
