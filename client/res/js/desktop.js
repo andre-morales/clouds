@@ -1,3 +1,4 @@
+
 class Desktop {
 	constructor() {
 		this.windows = [];

@@ -68,8 +68,8 @@
 .app-sinestesia .controls .center {
 	display: flex;
 	flex-grow: 1;
-	justify-content: center;
 	align-items: center;
+	justify-content: space-around;
 }
 
 .app-sinestesia .controls.visible {
@@ -85,12 +85,36 @@
 	color: white;
 }
 
+.app-sinestesia .prev-btn {
+	border: none;
+	width: 60px;
+	height: 60px;
+	background-size: 42px;
+	background-color: rgba(0, 0, 0, 0.2);
+	background-image: url('/res/img/icons/previous.png');
+	border-radius: 50%;
+	pointer-events: all;
+}
+
+.app-sinestesia .next-btn {
+	border: none;
+	width: 60px;
+	height: 60px;
+	background-size: 42px;
+	background-color: rgba(0, 0, 0, 0.2);
+	background-image: url('/res/img/icons/next.png');
+	border-radius: 50%;
+	pointer-events: all;
+}
+
 .app-sinestesia .play-btn {
 	border: none;
-	width: 48px;
-	height: 48px;
-	background-color: transparent;
+	width: 60px;
+	height: 60px;
+	background-size: 42px;
+	background-color: rgba(0, 0, 0, 0.2);
 	background-image: url('/res/img/icons/play.png');
+	border-radius: 50%;
 	pointer-events: all;
 }
 

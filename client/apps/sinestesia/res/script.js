@@ -78,6 +78,14 @@ window.SinesApp = class SinesApp extends App {
 			}
 		});
 
+		$win.find('.prev-btn').click(() => {
+			this.goPrevious();
+		});
+
+		$win.find('.next-btn').click(() => {
+			this.goNext();
+		});
+
 		$videoc.dblclick(() => {
 			if (Fullscreen.element == $videoc[0]) {
 				Fullscreen.rewind();
@@ -142,15 +150,8 @@ window.SinesApp = class SinesApp extends App {
 			if (this.lockedPlayback) this.cancelPauseEvents = true;
 		});
 
-		$video.on('ended', (ev)=>{
-			if (this.playlist) {
-				this.playlistI++;
-				this.openFile('/fs/q' + this.url + this.playlist[this.playlistI][0]);
-
-				setTimeout(()=>{
-					this.play();
-				}, 100);
-			}
+		$video.on('ended', (ev) => {
+			setTimeout(() => this.goNext(), 500);
 		});
 
 		let fnTwo = (n) => {
@@ -310,6 +311,28 @@ window.SinesApp = class SinesApp extends App {
 		$win.find('.contentw').removeClass('enabled');
 		$win.find('.contentw.picture').empty();
 		$win.find('.contentw.video video').empty();
+	}
+
+	goNext() {
+		if (this.playlist && this.playlistI < this.playlist.length - 1) {
+			this.playlistI++;
+			this.openFile('/fs/q' + this.url + this.playlist[this.playlistI][0]);
+
+			setTimeout(()=>{
+				this.play();
+			}, 100);
+		}
+	}
+
+	goPrevious() {
+		if (this.playlist && this.playlistI > 0) {
+			this.playlistI--;
+			this.openFile('/fs/q' + this.url + this.playlist[this.playlistI][0]);
+
+			setTimeout(()=>{
+				this.play();
+			}, 100);
+		}
 	}
 
 	updateTransform() {

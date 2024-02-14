@@ -45,7 +45,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.020';
+		this.CLIENT_VERSION = '1.0.028';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -363,9 +363,14 @@ class FileTypes {
 }
 
 function _systemPanic(title, msg, mode) {
-	let index = 1024;
+	// Initialize a counter to keep incrementing the z-index
+	let self = _systemPanic;
+	self.counter = self.counter || 1024;
 
-	let $box = $(`<div class='panic-screen' style="z-index: ${index};">`);
+	let index = self.counter++;
+
+	let $box = $(`<div class='panic-screen' style="z-index: ${index}; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: black; color: white;">`);
+
 	let $title;
 	if (mode) {
 		$title = $("<h1>-- Startup Failed --</h1>");
@@ -381,7 +386,9 @@ function _systemPanic(title, msg, mode) {
 	});
 	
 	if (mode) {
-		$box.css('background-color', '#503');
+		$box.css('background', '#503');
+	} else {
+		$box.css('background', '#58A');
 	}
 
 	$box.append($title);
