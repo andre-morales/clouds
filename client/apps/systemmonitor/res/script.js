@@ -20,6 +20,7 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 		// Fetch app body
 		await this.window.setContentToUrl('/app/systemmonitor/res/main.html');
 
+		// Tab pane behavior
 		let $tabPane = $win.find('.tabpane');
 		$tabPane.find('button').click((ev) => {
 			let tab = ev.target.getAttribute('data-tab');
@@ -30,10 +31,11 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 			$tabPane.find(`.tab[data-tab='${tab}']`).addClass('visible');
 		});
 
+		// Apps tab
 		let $appTab = $win.find('.tab[data-tab="apps"]');
 		let makeAppEntries = () => {
 			$appTab.empty();
-			for (let app of WebSys.runningApps) {
+			for (let app of Client.runningApps) {
 				let $app = $(`<div class='app'>${app.classId}</div>`);
 				let $endBtn = $('<button class="button">End</button>');
 				$endBtn.click(() => {
@@ -44,11 +46,38 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 			}
 		};
 
-		makeAppEntries();
 		Client.on('apps-add', makeAppEntries);
 		Client.on('apps-rem', makeAppEntries);
-		//Client.desktop.on('windows-create', makeWindowsEntries);
-		//Client.desktop.on('windows-destroy', makeWindowsEntries);
+
+		// Windows tab
+		let $windowsTab = $win.find('.tab[data-tab="windows"]');
+		let makeWindowsEntries = () => {
+			$windowsTab.empty();
+			for (let win of Client.desktop.windows) {
+
+				let $win = $(`<div class='win'>${win.title}</div>`);
+
+				let $closeBtn = $('<button class="button">Close</button>');
+				$closeBtn.click(() => {
+					win.close();
+				});
+				$win.append($closeBtn);
+
+				let $destroyBtn = $('<button class="button">Destroy</button>');
+				$destroyBtn.click(() => {
+					Client.desktop.destroyWindow(win);
+				});
+				$win.append($destroyBtn);
+
+				$windowsTab.append($win);
+			}
+		};
+
+		Client.desktop.events.on('window-created', makeWindowsEntries);
+		Client.desktop.events.on('window-destroyed', makeWindowsEntries);
+
+		makeAppEntries();
+		makeWindowsEntries();
 		
 		// Make the window visible
 		this.window.setVisible(true);

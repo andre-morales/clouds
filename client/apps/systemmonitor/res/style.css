@@ -29,7 +29,12 @@
 	display: block;
 }
 
-.app-sysmonitor .apps-tab .app {
+.app-sysmonitor .app {
 	padding: 4px;
-	border: solid 1px lightblue;
+	border: inset 1px #25A;
+}
+
+.app-sysmonitor .win {
+	padding: 4px;
+	border: inset 1px #25A;
 }

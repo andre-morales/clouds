@@ -9,10 +9,18 @@ class App {
 		this.exitMode = 'main-win-close';
 		this.events = new Reactor();
 		this.events.register("exit");
+		this._disposed = false;
 	}
 
 	_dispose(code) {
-		this.dispatch("exit", code);
+		if (this._disposed) return;
+		this._disposed = true;
+
+		try {
+			this.dispatch("exit", code);
+		} catch (error) {
+			Client.showErrorDialog("Bad App", "An app exit() handler threw an exception.");
+		}
 
 		// Destroy all windows owned by this app
 		for (let win of this.windows) {

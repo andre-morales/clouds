@@ -257,9 +257,7 @@ class ClientClass {
 		}
 	}
 
-	showErrorDialog(msg, title) {
-		if (!title) title = 'System Error';
-
+	showErrorDialog(title, msg) {
 		try {
 			let win = this.desktop.createWindow(this.desktop.dwm);
 			win.$window.addClass('error-dialog');
@@ -278,11 +276,11 @@ class ClientClass {
 		} catch (err) {
 			console.log("Couldn't display error message!");
 
-			this.critFaultMsg(`Couldn't show [${title}]: "${msg}"`, "No Error Display");
+			this.critFaultMsg( "No Error Display", `Couldn't show [${title}]: "${msg}"`);
 		}
 	}
 
-	critFaultMsg(msg, title) {
+	critFaultMsg(title, msg) {
 		let index = 1024;
 
 		let $desktop = $('.desktop');
@@ -332,12 +330,12 @@ class ClientClass {
 
 		window.onerror = (ev) => {
 			this.log(`[Error] '${ev.message}' at ${ev.filename}:${ev.lineno}`);
-			this.showErrorDialog(`Unhandled error: ${ev}`, "Fault");
+			this.showErrorDialog("Fault", `Unhandled error: ${ev}`);
 		};
 
 		window.onunhandledrejection = (ev) => {
 			this.log(`[PromErr] '${ev.reason}'`);
-			this.showErrorDialog(`Unhandled internal rejection: ${event.reason}`, "Fault");
+			this.showErrorDialog( "Fault", `Unhandled internal rejection: ${event.reason}`);
 		};
 	}
 

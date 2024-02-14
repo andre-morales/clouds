@@ -56,7 +56,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.window.setTitle('File Explorer');
 		this.window.setVisible(true);
 
-		this.window.on('closereq', () => this.exit());
+		this.window.on('closed', () => this.exit());
 		this.window.on('backnav', () => this.goUp());
 
 		this.on('exit', () => {

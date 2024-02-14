@@ -3,7 +3,7 @@ class Desktop {
 		this.windows = [];
 		this.dwm = new App("dwm");
 		this.events = new Reactor();
-		this.events.register("window-created", "windows-destroyed");
+		this.events.register("window-created", "window-destroyed");
 		this.configs = [];
 		this.iconifiedWindows = new Map();
 		this.iconifiedGroups = {};
@@ -100,11 +100,14 @@ class Desktop {
 		app.windows.push(win);
 
 		win.init();
-		events.dispatch('window-created');
+		this.events.dispatch('window-created');
 		return win;
 	}
 
 	destroyWindow(win) {
+		// Remove window from windows list
+		if (arrErase(this.windows, win) < 0) return;
+
 		// Dispatch closed event
 		win.events.dispatch('closed');
 
@@ -118,7 +121,7 @@ class Desktop {
 
 		// Remove desktop integration buttons and stuffs
 		win.destroyTaskbarButton();
-		arrErase(this.windows, win);
+		
 
 		if (win.minimized) {
 			iconifiedWindows.get(win).remove();
@@ -133,7 +136,7 @@ class Desktop {
 			setTimeout(() => win.app.exit());
 		}
 
-		events.dispatch('window-destroyed');
+		this.events.dispatch('window-destroyed');
 	}
 
 	bringWindowToFront(win) {

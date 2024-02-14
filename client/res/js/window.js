@@ -76,9 +76,9 @@ class Window {
 		});
 
 		this.events.default('closing', (ev) => {
-			if (ev.canceled) return;
-			
-			switch (this.defaultCloseAction) {
+			if (ev && ev.canceled) return;
+	
+			switch (this._defaultCloseAction) {
 			case 'exit':
 				this.app.exit();
 				break;

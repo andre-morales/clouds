@@ -28,13 +28,14 @@ window.NotepadApp = class NotepadApp extends App {
 					let saved = await this.save();
 					if (saved) {
 						this.exit();	
-					}
-					
+					}	
 				}
 
 				// Don't save
 				if (r == 1) this.exit() // Don't save
 			})
+
+			ev.cancel();
 		});
 		this.window.setTitle('Notepad');
 

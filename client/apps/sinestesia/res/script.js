@@ -181,7 +181,7 @@ window.SinesApp = class SinesApp extends App {
 		let $win = this.window.$window;
 		let ctxMenu = CtxMenu([
 			CtxItem('Open...', () => this.showOpenDialog()),
-			CtxItem('Open Folder...', () => this.showOpenFolderDialog()),
+			CtxItem('Open folder...', () => this.showOpenFolderDialog()),
 			'-',
 			CtxCheck('Lock playback', (v) => {
 				this.lockedPlayback = v;
@@ -217,7 +217,7 @@ window.SinesApp = class SinesApp extends App {
 		let app = await WebSys.runApp('explorer');
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
-		if (!result.length) return;
+		if (!result || !result.length) return;
 
 		let folder = result[0];
 		this.openFolder(folder);
