@@ -33,6 +33,8 @@ class Window {
 		// Optimization: Set src to null on every image this window contained,
 		// this reinforces interruption of image fetches on the browser
 		this.$window.find("img").attr("src", "");
+		this.$window.find("source").attr("src", "");
+		this.$window.find("video").attr("src", "");
 		this.$window.remove();
 		this.$window = null;
 	}
