@@ -91,7 +91,7 @@
 	height: 60px;
 	background-size: 42px;
 	background-color: rgba(0, 0, 0, 0.2);
-	background-image: url('/res/img/icons/previous.png');
+	background-image: url('/app/sinestesia/res/previous.png');
 	border-radius: 50%;
 	pointer-events: all;
 }
@@ -102,7 +102,7 @@
 	height: 60px;
 	background-size: 42px;
 	background-color: rgba(0, 0, 0, 0.2);
-	background-image: url('/res/img/icons/next.png');
+	background-image: url('/app/sinestesia/res/next.png');
 	border-radius: 50%;
 	pointer-events: all;
 }
@@ -113,13 +113,13 @@
 	height: 60px;
 	background-size: 42px;
 	background-color: rgba(0, 0, 0, 0.2);
-	background-image: url('/res/img/icons/play.png');
+	background-image: url('/app/sinestesia/res/play.png');
 	border-radius: 50%;
 	pointer-events: all;
 }
 
 .app-sinestesia .video-container.playing .play-btn {
-	background-image: url('/res/img/icons/pause.png');
+	background-image: url('/app/sinestesia/res/pause.png');
 }
 
 .app-sinestesia video {

@@ -45,7 +45,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.028';
+		this.CLIENT_VERSION = '1.0.029';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 

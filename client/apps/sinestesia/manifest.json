@@ -1,10 +1,10 @@
 {
-	"id": "sines",
-	"builder": "SinesApp",
+	"id": "sinestesia",
+	"builder": "SinestesiaApp",
 	"scripts": [
-		"/app/sinestesia/res/script.js"	
+		"/app/sinestesia/script.js"	
 	],
 	"styles": [
-		"/app/sinestesia/res/style.css"
+		"/app/sinestesia/style.css"
 	]
 }

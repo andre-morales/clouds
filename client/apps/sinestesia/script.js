@@ -1,14 +1,15 @@
-window.SinesApp = class SinesApp extends App {
+window.SinestesiaApp = class SinestesiaApp extends App {
 	constructor(...args) {
 		super(...args);
 		
 		this.window = null;
-		this.$mediaElement = null;
-		this.$video = null;
 		this.contentType = '';
+		this.allowZoomPan = false;
 		this.transform = {
 			scale: 1, x: 0, y: 0, rotation: 0
 		};
+		this.$mediaElement = null;
+		this.$video = null;
 	}
 
 	async init() {
@@ -38,7 +39,7 @@ window.SinesApp = class SinesApp extends App {
 		$win.find('.window-body').addClass('app-sinestesia');
 		
 		// Fetch explorer body
-		await this.window.setContentToUrl('/app/sinestesia/res/main.html');
+		await this.window.setContentToUrl('/app/sinestesia/main.html');
 
 		// Behaviour
 		this.createContextMenu();
@@ -197,7 +198,7 @@ window.SinesApp = class SinesApp extends App {
 				this.updateTransform();
 			}),
 			CtxCheck('Allow zoom/pan', (v) => {
-				this.lockedZoomPan = !v;
+				this.allowZoomPan = !v;
 			}, false),
 			CtxItem('Reset transform', () => this.resetZoomPan()),
 		]);
@@ -295,6 +296,7 @@ window.SinesApp = class SinesApp extends App {
 		this.setupZoomPanGestures();
 	}
 
+	// -- Media Controls --
 	play() {
 		if (this.contentType != 'video') return;
 
@@ -335,6 +337,7 @@ window.SinesApp = class SinesApp extends App {
 		}
 	}
 
+	// -- Gestures and transformation --
 	updateTransform() {
 		let t = this.transform;
 		let css = `scale(${t.scale}) translate(${t.x}px, ${t.y}px) rotate(${t.rotation}deg)`;
@@ -359,7 +362,7 @@ window.SinesApp = class SinesApp extends App {
 			_lscale = trans.scale;
 		});
 		hammer.on('pinch', (ev) => {
-			if (this.lockedZoomPan) return;
+			if (!this.allowZoomPan) return;
 
 			trans.scale = _lscale * ev.scale; 
 			this.updateTransform();
@@ -370,7 +373,7 @@ window.SinesApp = class SinesApp extends App {
 			_ly = trans.y;
 		});
 		hammer.on('pan', (ev) => {
-			if (this.lockedZoomPan) return;
+			if (!this.allowZoomPan) return;
 
 			trans.x = _lx + ev.deltaX / trans.scale;
 			trans.y = _ly + ev.deltaY / trans.scale;
