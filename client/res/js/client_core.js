@@ -292,7 +292,8 @@ class ClientClass {
 		try {
 			this._reactor.dispatch('log')
 		} catch (err) {
-			this.showErrorDialog(err);
+			console.error(err);
+			this.showErrorDialog("Log failure", err);
 		}
 	}
 
@@ -367,7 +368,6 @@ function _systemPanic(title, msg, mode) {
 	// Initialize a counter to keep incrementing the z-index
 	let self = _systemPanic;
 	self.counter = self.counter || 1024;
-
 	let index = self.counter++;
 
 	let $box = $(`<div class='panic-screen' style="z-index: ${index}; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: black; color: white;">`);

@@ -1,5 +1,8 @@
 class Dialogs {
 	static showOptions(app, title, msg, options) {
+		console.trace();
+		if (!msg) msg = "";
+
 		let deferred = new Deferred();
 
 		let win = WebSys.desktop.createWindow(app);
