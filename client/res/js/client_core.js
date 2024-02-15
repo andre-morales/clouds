@@ -12,10 +12,11 @@ async function main() {
 	// Schedule loading of main system scripts
 	let scriptsP = Promise.all([
 		addScript('/res/js/events.js'),
+		addScript('/res/js/filesystem.js'),
 		addScript('/res/js/app.js'),
+		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/desktop.js'),
 		addScript('/res/js/window.js'),
-		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/dialogs.js'),
 		addScript('/res/js/audiosystem.js')
 	]);
@@ -45,7 +46,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.033';
+		this.CLIENT_VERSION = '1.0.035';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 

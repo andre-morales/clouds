@@ -8,7 +8,6 @@ window.ExplorerUploader = class ExplorerUploader {
 	async open() {
 		let helperWin = Client.desktop.createWindow(this.explorer);
 		helperWin.setOwner(this.explorer.window);
-		helperWin.on('closereq', () => helperWin.close());
 		
 		await helperWin.setContentToUrl('/app/explorer/res/upload-helper.html');
 		helperWin.setTitle('Upload to: ' + this.explorer.cwd);

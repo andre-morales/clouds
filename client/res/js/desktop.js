@@ -18,7 +18,7 @@ class Desktop {
 		this.mouseY = 0;
 		this.contextMenuOpen = false;
 
-		this._configsProm = fetch("/fs/q/usr/desktop.json").then(res => res.json());
+		this._configsProm = Files.getJson('/usr/desktop.json');
 
 		this.$taskBar.find('.fullscreen-btn').click(() => {
 			let body = $('body')[0];
@@ -85,14 +85,7 @@ class Desktop {
 
 	async saveConfigs() {
 		let data = JSON.stringify(this.configs);
-		
-		await fetch('/fs/ud/usr/desktop.json', {
-			method: 'POST',
-			body: data,
-			headers: {
-				'Content-Type': 'text/plain'
-			}
-		});
+		Files.upText('/usr/desktop.json', data);
 	}
 
 	createWindow(app) {
