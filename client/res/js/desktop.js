@@ -533,7 +533,7 @@ class Fullscreen {
 		// Otherwise, schedule the callback and request DOM fullscreen on the whole document
 		if (callback) this.fullscreenCallbacks.push(callback);
 		document.body.requestFullscreen().then(() => {
-			console.log("fullscr promise");
+			
 		});
 	}
 	

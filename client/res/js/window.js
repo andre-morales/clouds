@@ -175,11 +175,11 @@ class Window {
 		let $doc = $(document);
 		let $wh = this.$windowHeader;
 
-		let $titlebox = this.$window.find(".window-title-box");
-		$titlebox.on("mousedown", (e) => {
+		let $title = this.$windowTitle;
+		$title.on("mousedown", (e) => {
 			dragStart(e.pageX, e.pageY);
 		});
-		$titlebox.on("touchstart", (e) => {
+		$title.on("touchstart", (e) => {
 			let mx = e.changedTouches[0].pageX;
 			let my = e.changedTouches[0].pageY;
 			dragStart(mx, my);

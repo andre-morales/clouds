@@ -11,20 +11,17 @@ html {
 }
 
 body {
+	display: block;
+	width: 100%;
+	height: 100%;
 	position: relative;
 	width: 100%;
 	height: 100%;
 	touch-action: none;
 }
 
-#body {
-	display: block;
-	width: 100%;
-	height: 100%;
-}
-
 /* Desktop and backplane */
-#body .desktop {
+.desktop {
 	display: flex;
 	flex-direction: column;
 	position: relative;
@@ -220,16 +217,10 @@ body {
 	background-color: rgba(0, 0, 0, 0.2);
 }
 
-.window.decorated > .window-head .window-title-box {
-	display: flex;
-	overflow: hidden;
+.window.decorated > .window-head .window-title {
+	line-height: var(--titlebar-height);
 	flex-grow: 1;
 	flex-shrink: 1;
-	padding-left: 2px;
-}
-
-.window.decorated > .window-head .window-title {
-	margin: auto 0;
 	overflow: hidden;
 	font-size: 11pt;
 	text-overflow: ellipsis;

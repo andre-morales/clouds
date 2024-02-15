@@ -22,7 +22,7 @@ async function initLogin() {
 
 	// Fetch login page
 	let res = await fetch('/page/login');
-	document.getElementById('body').innerHTML = await res.text();
+	document.body.innerHTML = await res.text();
 
 	// Add login script
 	addScript('/res/js/login.js', 'login-script');

@@ -1,5 +1,5 @@
 {
-	"noauth": "test",
+	
 	"http_port": 8000,
 	"https_port": 8100
 }

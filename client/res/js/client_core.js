@@ -30,7 +30,7 @@ async function main() {
 		console.error('Forbidden.');
 		return;
 	}
-	document.getElementById('body').innerHTML = await fres.text();
+	document.body.innerHTML = await fres.text();
 
 	// Wait for all scripts to load
 	await scriptsP;
