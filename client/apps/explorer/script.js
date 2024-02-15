@@ -34,6 +34,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 			'jpeg': 'sinestesia',
 			'webp': 'sinestesia',
 
+			'json': 'notepad',
 			'txt': 'notepad',
 			'ini': 'notepad',
 			'log': 'notepad',

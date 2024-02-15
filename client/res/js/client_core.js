@@ -357,7 +357,7 @@ class FileTypes {
 	}
 	
 	static isText(path) {
-		return endsWithArr(path, ['.txt']);
+		return endsWithArr(path, ['.txt', '.json']);
 	}
 	
 	static isMedia(path) {
