@@ -7,15 +7,15 @@ function entry() {
 }
 
 function runInSelf(args) {
-	console.log('Launching in self.');
+	console.log('Entry: Launching in self.');
 
-	import('./api_core.js').then((mod) => {
+	import('./api_core.mjs').then((mod) => {
 		mod.main(args);
 	});
 }
 
 function runAttachedProc(){
-	console.log('Launching in attached process.');
+	console.log('Entry: Launching in attached process.');
 
 	var opt = {
 		detached: false,
@@ -32,7 +32,7 @@ function runAttachedProc(){
 }
 
 function runDetachedProc() {
-	console.log('Launching in detached process.');
+	console.log('Entry: Launching in detached process.');
 
 	var opt = {
 		detached: true,

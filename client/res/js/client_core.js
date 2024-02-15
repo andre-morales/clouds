@@ -301,19 +301,6 @@ class ClientClass {
 	setupLogging() {
 		let self = this;
 
-		// Hijack console
-		/*let conLog = window.console.log;
-		window.console.log = function() {
-			self.logHistory += [...arguments].join(' ') + '\n';
-			self.reactor.fire('log');
-			conLog(...arguments);
-		}
-
-		let conError = window.console.error;
-		window.console.error = function() {
-			conError(...arguments);
-		}*/
-
 		window.onerror = (ev) => {
 			this.log(`[Error] '${ev.message}' at ${ev.filename}:${ev.lineno}`);
 			this.showErrorDialog("Fault", `Unhandled error: ${ev}`);
@@ -481,12 +468,6 @@ function getURLParams() {
 	return new Proxy(new URLSearchParams(window.location.search), {
  		get: (searchParams, prop) => searchParams.get(prop),
 	});
-}
-
-function clampf(value, min, max) {
-	if (value > max) return max;
-	if (value < min) return min;
-	return value;
 }
 
 class Clipboard {

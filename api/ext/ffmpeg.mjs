@@ -1,6 +1,6 @@
 import * as CProc from 'child_process';
 
-const Files = await import('./../files.js');
+const Files = await import('./../files.mjs');
 
 export class FFmpeg {
 	init(config) {

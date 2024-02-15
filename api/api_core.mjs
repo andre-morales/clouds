@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.4';
+const KAPI_VERSION = '0.5.5';
 
 // Lib imports
 import Util from 'util';
@@ -11,12 +11,14 @@ import Cors from 'cors';
 import Express from 'express';
 
 // Local imports
-const VFSM = await import('./vfs.js')
-const Files = await import('./files.js');
-const FFmpegM = await import('./ext/ffmpeg.js');
-const ShellMgr = await import ('./ext/rshell.js');
-const MediaStr = await import ('./ext/mediastr.js');
-const FetchProxy = await import ('./fetchproxy.js');
+import config, * as Config from './config.mjs';
+import * as Auth from './auth.mjs';
+import * as VFSM from './vfs.mjs';
+import * as Files from './files.mjs';
+import * as FFmpegM from './ext/ffmpeg.mjs';
+import * as ShellMgr from './ext/rshell.mjs';
+import * as MediaStr from './ext/mediastr.mjs';
+import * as FetchProxy from './fetchproxy.mjs';
 
 // Lib requires
 import { createRequire } from "module";
@@ -31,14 +33,13 @@ const FileUpload = require('express-fileupload');
 
 var progArgs = null;
 var profile = 'default';
-var config = null;
 var app = null;
 var logins = null;
 var userDefs = null;
 var vfs = null;
 
 export async function main(args) {
-	console.log('KAPI Version: ' + KAPI_VERSION);
+	console.log('--- KAPI Version: ' + KAPI_VERSION);
 	progArgs = args;
 
 	initConfig();
@@ -80,15 +81,7 @@ function initExpress() {
 }
 
 function initConfig() {
-	let i = progArgs.indexOf('--profile');
-	if (i >= 0) profile = progArgs[i + 1];
-	console.log('Profile: ' + profile);
-	
-	let allConfig = JSON.parse(FS.readFileSync(`config/profiles/all.json`));
-	let profConfig = JSON.parse(FS.readFileSync(`config/profiles/${profile}.json`));
-	config = Object.assign({}, allConfig, profConfig);
-	
-	console.log(config);
+	Config.init(progArgs);
 	
 	ShellMgr.loadDefs(config.extensions.shell);
 }
