@@ -22,14 +22,14 @@ import * as ShellMgr from './ext/rshell.mjs';
 import * as MediaStr from './ext/mediastr.mjs';
 import * as FetchProxy from './fetchproxy.mjs';
 
+// Module instances
 let FFmpeg = null;
+var vfs = null;
 
 var progArgs = null;
-var profile = 'default';
 var app = null;
 var logins = null;
 var userDefs = null;
-var vfs = null;
 
 export async function main(args) {
 	console.log('--- KAPI Version: ' + KAPI_VERSION);

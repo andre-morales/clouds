@@ -1,5 +1,2 @@
-import * as Config from './config.mjs';
+import config from './config.mjs';
 
-export function print() {
-	Config.print();
-}
