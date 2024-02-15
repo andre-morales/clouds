@@ -414,11 +414,11 @@ function startExpress() {
 		cert: httpsCert
 	}, app);
 
-	http.listen(9200, () => {
-		console.log('Listening on port 9200.');
+	http.listen(config.http_port, () => {
+		console.log('Listening on port ' + config.http_port);
 	});
-	https.listen(9100, () => {
-		console.log('Listening on port 9100.');
+	https.listen(config.https_port, () => {
+		console.log('Listening on port ' + config.https_port);
 	});
 }
 

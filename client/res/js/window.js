@@ -99,7 +99,7 @@ class Window {
 			Client.desktop.openCtxMenuAt(this.optionsCtxMenu, ev.clientX, ev.clientY);
 		});
 		Client.desktop.addCtxMenuOn(this.$windowHeader, () => this.optionsCtxMenu)
-		this.$windowTitle.dblclick(() => this.setMaximized(!this.maximized));
+		this.$windowTitle.parent().dblclick(() => this.setMaximized(!this.maximized));
 		this.setupDragListeners();
 
 		// Styling
