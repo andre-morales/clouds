@@ -2,6 +2,7 @@ const KAPI_VERSION = '0.5.5';
 
 // Lib imports
 import Util from 'util';
+import Path from 'path';
 import FS from 'fs';
 import HTTP from 'http';
 import HTTPS from 'https';
@@ -9,6 +10,7 @@ import Compression from 'compression';
 import CookieParser from 'cookie-parser';
 import Cors from 'cors';
 import Express from 'express';
+import FileUpload from 'express-fileupload';
 
 // Local imports
 import config, * as Config from './config.mjs';
@@ -20,16 +22,7 @@ import * as ShellMgr from './ext/rshell.mjs';
 import * as MediaStr from './ext/mediastr.mjs';
 import * as FetchProxy from './fetchproxy.mjs';
 
-// Lib requires
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
-const WebSocket = require('ws');
-const Path = require('path');
 let FFmpeg = null;
-
-const CProc = require('child_process');
-const FileUpload = require('express-fileupload');
 
 var progArgs = null;
 var profile = 'default';
@@ -459,22 +452,6 @@ async function handleThumbRequest(_abs, res){
 	} else {
 		res.status(404).end();
 	}
-}
-
-function execute(file, args, options){
-	return new Promise((resolve, reject) => {
-		let proc;
-		let callback = (err, sout, serr) => {
-			if(err){
-				reject(err);
-			} else {
-				resolve({'app': app, 'stdout': sout, 'stderr': serr});
-			}
-		};
-		
-		proc = CProc.execFile(file, args, options, callback);
-		
-	});
 }
 
 class Except {
