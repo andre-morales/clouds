@@ -254,7 +254,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 	getNavPath(path) {
 		if (path == '.') return this.cwd;
 
-		let p = pathJoin(this.cwd, path);
+		let p = Paths.join(this.cwd, path);
 		if (p == '/..') return '/';
 		return p;
 	}
@@ -369,7 +369,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		// Absolute path of the entry
 		let absPath;
 		if (!this.cwd.startsWith('$')) {
-			absPath = pathJoin(this.cwd, fpath);
+			absPath = Paths.join(this.cwd, fpath);
 		} else {
 			absPath = fpath;
 		}

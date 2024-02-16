@@ -10,12 +10,18 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		};
 		this.$mediaElement = null;
 		this.$video = null;
+		this.currentUrl = null;
+		this.autoPlay = false;
+		this.playlist = {
+			dir: null,
+			index: 0,
+			list: null
+		};
 	}
 
 	async init() {
 		this.on('exit', () => {
 			this.playlist = null;
-			this.playlistI = 0;
 			this.cancelPauseEvents = false;
 			this.stop();
 			this.saveAppWindowState(this.window);
@@ -225,6 +231,19 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		this.openFolder(folder);
 	}
 
+	async openFolder(url) {
+		let fres = await fetch('/fs/ls' + url);
+		if (fres.status != 200) return;
+
+		let files = await fres.json();
+
+		this.playlist.list = files;
+		this.playlist.index = 0;
+		this.playlist.dir = url;
+		this.autoPlay = true;
+		this.openFile('/fs/q' + url + this.playlist.list[0][0]);
+	}
+
 	openFile(path) {	
 		// Set window title
 		let fname = path.replace(/\/+$/, ''); // Remove trailing slash
@@ -244,20 +263,9 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		}
 	}
 
-	async openFolder(url) {
-		let fres = await fetch('/fs/ls' + url);
-		if (fres.status != 200)  return;
-
-		let files = await fres.json();
-
-		this.playlist = files;
-		this.playlistI = 0;
-		this.url = url;
-		this.openFile('/fs/q' + url + this.playlist[0][0]);
-	}
-
 	openPicture(url) {
 		this.contentType = 'image';
+		this.currentUrl = url;
 
 		let $img = $(`<img src="${url}" draggable="false"></img>`);
 		this.$mediaElement = $img;
@@ -279,6 +287,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 
 	openVideo(url) {
 		this.contentType = 'video';
+		this.currentUrl = url;
 
 		let $win = this.window.$window;
 		let $video = $win.find('video');
@@ -315,10 +324,29 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		$win.find('.contentw.video video').empty();
 	}
 
-	goNext() {
-		if (this.playlist && this.playlistI < this.playlist.length - 1) {
-			this.playlistI++;
-			this.openFile('/fs/q' + this.url + this.playlist[this.playlistI][0]);
+	async goNext() {
+		// If there is no playlist, convert the current play into a playlist
+		/*if (!this.playlist) {
+
+
+			let fres = await fetch('/fs/ls' + url);
+			if (fres.status != 200) return;
+
+			let files = await fres.json();
+
+			this.playlist.files = files;
+
+
+			this.playlistI = 0;
+			this.url = url;
+			this.openFile('/fs/q' + url + this.playlist[0][0]);
+		}*/
+
+		if (this.playlist && this.playlist.index < this.playlist.list.length - 1) {
+			this.playlist.index++;
+			let nextFile = this.playlist.list[this.playlist.index][0];
+			let nextUrl = '/fs/q' + this.playlist.dir + nextFile;
+			this.openFile(nextUrl);
 
 			setTimeout(()=>{
 				this.play();
@@ -327,9 +355,13 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	}
 
 	goPrevious() {
-		if (this.playlist && this.playlistI > 0) {
-			this.playlistI--;
-			this.openFile('/fs/q' + this.url + this.playlist[this.playlistI][0]);
+		if (this.playlist && this.playlist.index > 0) {
+			this.playlist.index--;
+
+			let prevFile = this.playlist.list[this.playlist.index][0];
+			let prevUrl = '/fs/q' + this.playlist.dir + prevFile;
+
+			this.openFile(prevUrl);
 
 			setTimeout(()=>{
 				this.play();

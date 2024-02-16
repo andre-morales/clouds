@@ -58,11 +58,11 @@
 } 
 
 .app-sinestesia .controls .bottom .progressbar {
-	height: 12px;
-	margin: 0 .5rem;
+	height: 14px;
+	margin: 0 4px;
 	flex-grow: 1;
 	border: none;
-	border-radius: 1px;
+	border-radius: 4px;
 }
 
 .app-sinestesia .controls .center {
@@ -77,8 +77,9 @@
 }
 
 .app-sinestesia .video-time {
-	font-size: 11pt;
+	font-size: 10pt;
 	color: lightgray;
+	white-space: nowrap;
 }
 
 .app-sinestesia .time {

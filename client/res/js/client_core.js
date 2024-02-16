@@ -326,32 +326,6 @@ class ClientClass {
 	}
 }
 
-class FileTypes {
-	static isDir(path) {
-		return path.endsWith('/');
-	}
-
-	static isVideo(path) {
-		return endsWithArr(path, ['.mp4', '.mkv', '.webm', '.m4v']);
-	}
-
-	static isPicture(path) {
-		return endsWithArr(path, ['.png', '.jpg', '.jpeg', '.webp']);
-	}
-
-	static isAudio(path) {
-		return endsWithArr(path, ['.mp3', '.ogg', 'm4a', '.opus', '.weba']);
-	}
-	
-	static isText(path) {
-		return endsWithArr(path, ['.txt', '.json']);
-	}
-	
-	static isMedia(path) {
-		return FileTypes.isVideo(path) || FileTypes.isPicture(path) || FileTypes.isAudio(path);
-	}
-}
-
 function _systemPanic(title, msg, mode) {
 	// Initialize a counter to keep incrementing the z-index
 	let self = _systemPanic;
@@ -405,48 +379,6 @@ function getObjectByName(name) {
 function cloneTemplate(id) {
 	let el = document.getElementById('t_' + id);
 	return el.content.cloneNode(true);
-}
-
-function pathJoin(base, child) {
-	let path = "";
-
-	if (child.startsWith("/")) {
-		path = child;
-	} else if (base.endsWith("/")) {
-		path = base + child;
-	} else {
-		path = base + "/" + child;
-	}
-
-	return pathResolve(path);
-}
-
-function pathResolve(path) {
-	path = path.replaceAll('/./', '/');
-	if (path.endsWith('/.')) path = path.slice(0, -1);
-
-	while (true) {
-		let ellipsis = path.indexOf("/..", 1);
-		if (ellipsis == -1) break;
-
-		let slash = path.lastIndexOf("/", ellipsis - 1);
-		if (slash < 0) {
-			path = "./" + path.slice(ellipsis + 4);
-			break;
-		}
-
-		let base_ = path.slice(0, slash + 1);
-		let child_ = path.slice(ellipsis + 4);
-		if (base_ == "/") {
-			path = base_ + child_;
-			break;
-		} else if (base_ == "") {
-			path = "./" + child_;
-			break;
-		}
-		path = base_ + child_;
-	}
-	return path;
 }
 
 function arrErase(arr, val) {

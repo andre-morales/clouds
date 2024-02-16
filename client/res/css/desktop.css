@@ -464,8 +464,6 @@ body {
 	/*transform: none !important;*/
 }
 
-
-
 /* ----- */
 .Slider {
 	--thumb-size: 18px;
@@ -500,6 +498,7 @@ body {
 	background: #00B6FF;
 	background-clip: content-box;
 }
+
 .Slider .thumb {
 	position: absolute;
 	display: block;
@@ -516,17 +515,10 @@ body {
 	user-select: none;
 	background: white;
 }
+
 .Slider .thumb:hover {
 	background: #00B6FF;
 }
-/*.Slider .Upper {
-	position: absolute;
-	right: 0;
-	top: 0;
-	bottom: 0;
-	left: 50%;
-	background: white;
-}*/
 
 .hidden_ {
 	display: none !important; 
