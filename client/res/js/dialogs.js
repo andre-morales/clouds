@@ -16,7 +16,7 @@ class Dialogs {
 		$msg.append($('<i class="dialog-icon info-icon">'))
 		
 		let html = msg.toString().replaceAll('\n', '<br>');
-		$msg.append($('<span><br/>' + html + '</span>'));
+		$msg.append($('<span class="dialog-text"><br/>' + html + '</span>'));
 		$body.append($msg);
 
 		let $options = $('<div class="options"></div>');
@@ -33,7 +33,7 @@ class Dialogs {
 		win.on('closed', () => {
 			deferred.resolve(-1);
 		});
-		win.setSize(400, 220);
+		win.setSize(360, 220);
 		win.bringToCenter();
 		win.bringToFront();
 		win.setVisible(true);

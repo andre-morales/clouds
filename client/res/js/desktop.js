@@ -151,8 +151,8 @@ class Desktop {
 	getDefaultWindowBounds() {
 		let rect = this.$desktop[0].getBoundingClientRect();
 
-		let x = 32;
-		let y = 32;
+		let x = 64;
+		let y = 64;
 		let w = 640;
 		let h = 600;
 

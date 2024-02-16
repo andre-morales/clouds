@@ -269,8 +269,9 @@ body {
 .window.dialog .dialog-icon {
 	float: left;
 	width: 64px;
-	height: 100%;
-	margin: 0 1rem 0 .5rem;
+	min-width: 64px;
+	height: 64px;
+	margin: 0 .5rem;
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-clip: padding-box;
@@ -295,6 +296,8 @@ body {
 .window.dialog .message {
 	flex-grow: 1;
 	overflow: auto;
+	white-space: nowrap;
+	display: flex;
 }
 
 .window.dialog .options {
@@ -302,6 +305,10 @@ body {
 	align-self: flex-end;
 	text-align: right;
 	background: rgba(20, 20, 20, 0.4);
+}
+
+.window.dialog .dialog-text {
+	white-space: normal;
 }
 
 /* Context menu */
