@@ -92,8 +92,8 @@ class Desktop {
 		let win = new Window(app);
 		this.windows.push(win);
 		app.windows.push(win);
-
 		win.init();
+
 		this.events.dispatch('window-created');
 		return win;
 	}
