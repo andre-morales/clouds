@@ -325,10 +325,12 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	}
 
 	async goNext() {
-		// If there is no playlist, convert the current play into a playlist
-		/*if (!this.playlist) {
+		/*// If there is no playlist, convert the current play into a playlist
+		if (!this.playlist) {
+			// Files outside the filesystem can't be converted to playlists
+			if (!Paths.isFS(this.currentUrl)) return;
 
-
+			//Files.list(this.currentUrl);
 			let fres = await fetch('/fs/ls' + url);
 			if (fres.status != 200) return;
 
@@ -342,7 +344,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			this.openFile('/fs/q' + url + this.playlist[0][0]);
 		}*/
 
-		if (this.playlist && this.playlist.index < this.playlist.list.length - 1) {
+		if (this.playlist.list && this.playlist.index < this.playlist.list.length - 1) {
 			this.playlist.index++;
 			let nextFile = this.playlist.list[this.playlist.index][0];
 			let nextUrl = '/fs/q' + this.playlist.dir + nextFile;
@@ -355,7 +357,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	}
 
 	goPrevious() {
-		if (this.playlist && this.playlist.index > 0) {
+		if (this.playlist.list && this.playlist.index > 0) {
 			this.playlist.index--;
 
 			let prevFile = this.playlist.list[this.playlist.index][0];

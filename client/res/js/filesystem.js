@@ -26,9 +26,49 @@ class Files {
 			}
 		});
 	}
+
+	static async list(path) {
+		// Convert the path to a list op path
+		let cmd = Paths.toFS(path, 'ls');
+
+		let fres = await fetch(cmd);
+		if (fres.status != 200) {
+			throw new FileSystemException(`List operation failed with status ${fres.status}`);
+		}
+
+		let result = await fres.json();
+		return result;
+	}
 }
 
 class Paths {
+	static isFS(path) {
+		return path.startsWith('/fs/');
+	}
+
+	static toFS(path, op) {
+		// If it is already a FS path, replace the op	
+		if (Paths.isFS(path)) {
+			// Remove fs-op prefix and add new one
+			let p = path.substring(path.indexOf(path, 4));
+			return `/fs/${op}${p}`;
+		} else {
+			// Make sure path is absolute
+			if (!path.startsWith('/')) {
+				throw new BadParameterFault("FS path doesn't start with /. Paths must be absolute before being converted.");
+			}
+			return `/fs/${op}${path}`
+		}
+	}
+
+	static parent(path) {
+		if (path.endsWith('/')) {
+			return path.substring(0, path.lastIndexOf('/', path.length - 2) + 1);	
+		} else {
+			return path.substring(0, path.lastIndexOf('/') + 1);
+		}
+	}
+
 	static join(base, child) {
 		let path = "";
 
@@ -103,5 +143,12 @@ class FileTypes {
 	
 	static isMedia(path) {
 		return FileTypes.isVideo(path) || FileTypes.isPicture(path) || FileTypes.isAudio(path);
+	}
+}
+
+class FileSystemException extends Exception {
+	constructor(message) {
+		super(message);
+		this.name = "FileSystemException";
 	}
 }

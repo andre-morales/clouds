@@ -11,6 +11,7 @@ async function main() {
 
 	// Schedule loading of main system scripts
 	let scriptsP = Promise.all([
+		addScript('/res/js/faults.js'),
 		addScript('/res/js/events.js'),
 		addScript('/res/js/filesystem.js'),
 		addScript('/res/js/app.js'),
@@ -46,7 +47,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.035';
+		this.CLIENT_VERSION = '1.0.037';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -423,15 +424,7 @@ class Mathx {
 	}	
 }
 
-class InternalFault extends Error {
-	constructor(message) {
-		super(message);
-		this.name = "InternalFault";
-	}
-}
-
 main();
-
 
 function createSlider(slider){
 	if (slider.attr('data-ready')) return;
