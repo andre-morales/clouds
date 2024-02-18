@@ -195,6 +195,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 				this.lockedPlayback = v;
 				this.cancelPauseEvents = v;
 			}),
+			'-',
 			CtxItem('Rotate right', () => {
 				this.transform.rotation += 90;
 				this.updateTransform();
@@ -204,7 +205,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 				this.updateTransform();
 			}),
 			CtxCheck('Allow zoom/pan', (v) => {
-				this.allowZoomPan = !v;
+				this.allowZoomPan = v;
 			}, false),
 			CtxItem('Reset transform', () => this.resetZoomPan()),
 		]);
