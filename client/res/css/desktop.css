@@ -1,6 +1,9 @@
 :root {
 	--dark-window-bg: hsla(220, 5%, 10%, 0.8);
 	--taskbar-height: 32px;
+	--fullscreen-filter-on: blur(2px);
+	--fullscreen-filter-off: none;
+	--fullscreen-filter: var(--fullscreen-filter-on);
 }
 
 html {
@@ -173,7 +176,7 @@ body {
 	width: 1280px;
 	height: 720px;
 	overflow: hidden;
-	box-shadow: 0px 0px 8px black;
+	box-shadow: 0px 0px 4px black;
 }
 
 .window.maximized {
@@ -187,6 +190,7 @@ body {
 
 .window.decorated.focused {
 	border-color: #25E;
+	box-shadow: 0px 0px 8px black;
 }
 
 .window.visible {
@@ -456,7 +460,7 @@ body {
 	max-width: calc(100vw - 0.1px) !important;
 	max-height: calc(100vh - 0.1px) !important;
 	flex-shrink: 0;
-	backdrop-filter: blur(2px);
+	backdrop-filter: var(--fullscreen-filter);
 }
 
 .fscr-parent {
