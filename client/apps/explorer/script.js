@@ -288,14 +288,13 @@ window.ExplorerApp = class ExplorerApp extends App {
 					msg = "Failed to query."; break;
 			}
 
-			WebSys.showErrorDialog(`${msg}\nPath: "${path}"`);
+			Dialogs.showError(this, "Explorer", `${msg}\nPath: "${path}"`);
 			this.$addressField.val(this.cwd);
 			return code;
 		}
 
 		this.cwd = path;
 		
-
 		// UI changes		
 		this.refreshCollections();
 

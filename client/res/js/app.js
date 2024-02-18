@@ -7,7 +7,7 @@ class App {
 		this.buildArgs = (args) ? args : [];
 		this.loadedResources = [];
 		this.windows = [];
-		this.mainWindow = null;
+		this.mainWindow = undefined;
 		this.exitMode = 'main-win-close';
 		this.events = new Reactor();
 		this.events.register("exit");

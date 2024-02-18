@@ -6,12 +6,13 @@ class Window {
 
 		this.owner = null;
 		this.children = [];
-		
+		this.icon = '';
+		if (app.mainWindow === undefined) app.mainWindow = this;
+
 		this.visible = false;
 		this.maximized = false;
 		this.title = 'Window';
-		this.icon = (app.icon) ? app.icon : '';
-
+		
 		this.posX  = 8,   this.posY = 8;
 		this.width = 600, this.height = 400;
 		this.minWidth = 116;
@@ -23,6 +24,10 @@ class Window {
 
 		// None | Close | Exit
 		this._defaultCloseAction = 'close';
+
+		if (app.icon && app.mainWindow == this) {
+			this.icon = app.icon;	
+		}
 
 		this.$window = null;
 	}
