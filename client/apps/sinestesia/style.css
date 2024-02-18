@@ -17,14 +17,22 @@
 	display: flex;
 }
 
+.app-sinestesia .container.fullscreened {
+	background: rgba(0, 0, 0, 0.5);
+}
+
+.app-sinestesia .image-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
 .app-sinestesia img {
 	width: 100%;
 	height: 100%;
 	object-fit: contain;
-}
-
-.app-sinestesia .video {
-	
 }
 
 .app-sinestesia .video-container {

@@ -10,6 +10,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		};
 		this.$mediaElement = null;
 		this.$video = null;
+		this.$image = null;
 		this.currentUrl = null;
 		this.autoPlay = false;
 		this.playlist = {
@@ -23,12 +24,12 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		this.on('exit', () => {
 			this.playlist = null;
 			this.cancelPauseEvents = false;
-			this.stop();
+			this.unload();
 			this.saveAppWindowState(this.window);
 		});
 
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow(this);
+		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/picture128.png');
 		this.window.setDefaultCloseAction('exit');
 		this.window.on('backnav', () => {
@@ -50,6 +51,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		// Behaviour
 		this.createContextMenu();
 		this.setupVideoContainer();
+		this.setupImageContainer();
 
 		// Make the window visible
 		this.restoreAppWindowState(this.window);
@@ -67,14 +69,16 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		let progressbarHeld = false;
 
 		let $win = this.window.$window;
-		let $videoc = $win.find('.video-container');
-		let $video = $videoc.find('video');
+		let $container = $win.find('.video-container');
+		let $video = $container.find('video');
 		this.$video = $video;
 		let video = $video[0];
-		let $time = $videoc.find('.time');
-		let $duration = $videoc.find('.duration');
+		
+		let $controls = $container.find('.controls');
+		let $time = $container.find('.time');
+		let $duration = $container.find('.duration');
 
-		$win.find('.play-btn').click(() => {
+		$controls.find('.play-btn').click(() => {
 			let el = this.$mediaElement[0];
 			if (el.paused) {
 				WebSys.audio.context.resume();
@@ -85,26 +89,26 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			}
 		});
 
-		$win.find('.prev-btn').click(() => {
+		$controls.find('.prev-btn').click(() => {
 			this.goPrevious();
 		});
 
-		$win.find('.next-btn').click(() => {
+		$controls.find('.next-btn').click(() => {
 			this.goNext();
 		});
 
-		$videoc.dblclick(() => {
-			if (Fullscreen.element == $videoc[0]) {
+		$container.dblclick(() => {
+			if (Fullscreen.element == $container[0]) {
 				Fullscreen.rewind();
 				this.fullscreen = null;
 			} else {
-				this.fullscreen = $videoc[0];
-				Fullscreen.on($videoc[0]);
+				this.fullscreen = $container[0];
+				Fullscreen.on($container[0]);
 			}
 		});
 
-		let $controls = $win.find('.controls');
-		$win.find('video').click(() => {
+		
+		$video.click(() => {
 			$controls.toggleClass('visible');
 		});
 		
@@ -145,14 +149,14 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		});
 
 		$video.on('play', (ev) => {
-			$videoc.addClass('playing');
+			$container.addClass('playing');
 		});
 
 		$video.on('pause', (ev) => {
 			if (this.cancelPauseEvents) {
 				video.play();
 			} else {
-				$videoc.removeClass('playing');
+				$container.removeClass('playing');
 			}
 			if (this.lockedPlayback) this.cancelPauseEvents = true;
 		});
@@ -183,6 +187,34 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 
 		let track = WebSys.audio.context.createMediaElementSource($video[0]);
 		track.connect(WebSys.audio.destination);
+	}
+
+	setupImageContainer() {
+		let $container = this.window.$window.find('.image-container');
+
+		this.$image = $container.find("img");
+		$container.dblclick(() => {
+			if (Fullscreen.element == $container[0]) {
+				Fullscreen.rewind();
+				this.fullscreen = null;
+			} else {
+				this.fullscreen = $container[0];
+				Fullscreen.on($container[0]);
+			}
+		});
+
+		let $controls = $container.find('.controls');
+		this.$image.click(() => {
+			$controls.toggleClass('visible');
+		});
+
+		$controls.find('.prev-btn').click(() => {
+			this.goPrevious();
+		});
+
+		$controls.find('.next-btn').click(() => {
+			this.goNext();
+		});
 	}
 
 	createContextMenu() {
@@ -251,7 +283,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		fname = fname.slice(fname.lastIndexOf('/') + 1);
 		this.window.setTitle(fname);
 
-		this.stop();
+		this.unload();
 
 		// Judge filetype and play accordingly
 		let url = encodeURI(path);
@@ -267,23 +299,13 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	openPicture(url) {
 		this.contentType = 'image';
 		this.currentUrl = url;
-
-		let $img = $(`<img src="${url}" draggable="false"></img>`);
-		this.$mediaElement = $img;
-		$img.dblclick(() => {
-			if (Fullscreen.element == $img[0]) {
-				Fullscreen.rewind();
-				this.fullscreen = null;
-			} else {
-				this.fullscreen = $img[0];
-				Fullscreen.on($img[0]);
-			}
-		});
+		this.$image.attr("src", url);
+		this.$mediaElement = this.$image;
 
 		let $container = this.window.$window.find('.contentw.img')
-		$container.append($img).addClass('enabled');
+		$container.addClass('enabled');
 
-		this.setupZoomPanGestures();
+		this.setupZoomPanGestures(this.$image[0]);
 	}
 
 	openVideo(url) {
@@ -303,7 +325,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		$container.addClass('enabled');
 
 		// Setup touch gestures
-		this.setupZoomPanGestures();
+		this.setupZoomPanGestures($video[0]);
 	}
 
 	// -- Media Controls --
@@ -315,13 +337,13 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	}
 
 	// Stops all playback and unloads the current file.
-	stop() {
+	unload() {
 		let $win = this.window.$window;
 
 		// Clear all content containers
 		this.contentType = '';
 		$win.find('.contentw').removeClass('enabled');
-		$win.find('.contentw.picture').empty();
+		$win.find('.contentw.picture img').attr("src", "");
 		$win.find('.contentw.video video').empty();
 	}
 
@@ -397,14 +419,17 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		this.$mediaElement.css('transform', css);
 	}
 
-	setupZoomPanGestures() {
-		let $el = this.$mediaElement;
+	setupZoomPanGestures(element) {
+		// Prevent adding gestures more than once
+		if (element.getAttribute('data-has-gestures')) return;
+		element.setAttribute('data-has-gestures', true);
+
 		let trans = this.transform;
 		
 		let _lx = 0, _ly = 0;
 		let _lscale = 1;
 		
-		let hammer = new Hammer.Manager($el[0], {
+		let hammer = new Hammer.Manager(element, {
 			recognizers: [
 				[Hammer.Pinch, {}],
 				[Hammer.Pan, {}]
