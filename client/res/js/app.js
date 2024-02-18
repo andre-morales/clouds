@@ -1,8 +1,9 @@
 class App {
-	constructor(classId, args) {
-		if (!classId) throw new InternalFault("Apps need a unique id");
+	constructor(manifest, args) {
+		if (!manifest) throw new InternalFault("Apps need a manifest");
 		this.state = 'starting';
-		this.classId = classId;
+		this.classId = manifest.id;
+		this.icon = (manifest.icon) ? manifest.icon : "";
 		this.buildArgs = (args) ? args : [];
 		this.loadedResources = [];
 		this.windows = [];
@@ -13,7 +14,6 @@ class App {
 	}
 
 	_dispose(code) {
-		
 		this.state = 'dying';
 
 		try {

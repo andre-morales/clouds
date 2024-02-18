@@ -10,7 +10,7 @@ class Window {
 		this.visible = false;
 		this.maximized = false;
 		this.title = 'Window';
-		this.icon = '';
+		this.icon = (app.icon) ? app.icon : '';
 
 		this.posX  = 8,   this.posY = 8;
 		this.width = 600, this.height = 400;
@@ -103,6 +103,7 @@ class Window {
 		this.setupDragListeners();
 
 		// Styling
+		if (this.icon) this.setIcon(this.icon);
 		this.setBoundsA(Client.desktop.getDefaultWindowBounds());
 		this.setDecorated(true);
 		this.bringToFront();

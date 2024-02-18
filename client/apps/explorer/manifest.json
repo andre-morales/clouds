@@ -1,6 +1,7 @@
 {
 	"id": "explorer",
 	"builder": "ExplorerApp",
+	"icon": "/app/explorer/icon64.png",
 	"scripts": [
 		"/app/explorer/script.js",
 		"/app/explorer/uploader.js",

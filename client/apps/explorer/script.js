@@ -52,8 +52,6 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow(this);
-
-		this.window.setIcon('/res/img/ftypes/folder128.png');
 		this.window.setTitle('File Explorer');
 		this.window.setVisible(true);
 

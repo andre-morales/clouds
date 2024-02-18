@@ -52,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.045';
+		this.CLIENT_VERSION = '1.0.046';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -161,8 +161,7 @@ class ClientClass {
 
 			// Instantiate the app object with any passed arguments
 			if (!buildArgs) buildArgs = [];
-
-			let app = new AppClass(manifest.id, buildArgs);
+			let app = new AppClass(manifest, buildArgs);
 
 			// Replace the temporary user and set the app as a user of its own script resources
 			for (let res of loadedScriptResources) {
