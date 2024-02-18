@@ -135,7 +135,7 @@ class Window {
 			CtxItem('Minimize', () => this.minimize()),
 			CtxItem('Restore', () => this.restore()),
 			'-',
-			CtxItem('Close', () => this.dispatch('closing'))
+			CtxItem('Close', () => this.dispatch('closing', new ReactorEvent()))
 		]);
 	}
 
