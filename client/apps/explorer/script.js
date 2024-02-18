@@ -490,13 +490,17 @@ window.ExplorerApp = class ExplorerApp extends App {
 		// Query file extension if it has one
 		let i = path.lastIndexOf('.');
 		if (i != -1) {
+			// Find the app associated based on the extension
 			let ext = path.substring(i + 1);
-
 			let appId = this.typeAssociations[ext];
+
 			if (appId) {
 				let app = await WebSys.runApp(appId, [qPath]);
-				if (!app.window) return;
+				
+				// If the app launch failed, do nothing
+				if (!app) return;
 
+				if (!app.window) return;
 				app.window.bringToFront();
 				app.window.focus();
 				return;

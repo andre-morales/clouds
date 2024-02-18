@@ -5,9 +5,14 @@ async function main() {
 	// Load jquery compatible lib
 	await addScript('/res/js/lib/zepto.min.js');
 
-	window.onerror = ((err) => {
+	// Early unhandled errors and rejections should bring immediate user attention
+	window.onerror = (err) => {
 		_systemPanic("Unhandled error", err, true);
-	});
+	};
+
+	window.onunhandledrejection = (err) => {
+		_systemPanic("Unhandled promise error", err, true);
+	};
 
 	// Schedule loading of main system scripts
 	let scriptsP = Promise.all([
@@ -47,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.037';
+		this.CLIENT_VERSION = '1.0.045';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -395,6 +400,10 @@ function endsWithArr(str, arr) {
 		if (str.endsWith(end)) return true;
 	}
 	return false;
+}
+
+function sleep(ms) {
+	return new Promise(res => setTimeout(res, ms));
 }
 
 function getURLParams() {

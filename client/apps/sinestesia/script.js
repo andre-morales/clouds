@@ -231,17 +231,17 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		this.openFolder(folder);
 	}
 
-	async openFolder(url) {
-		let fres = await fetch('/fs/ls' + url);
+	async openFolder(dir) {
+		let fres = await fetch('/fs/ls' + dir);
 		if (fres.status != 200) return;
 
 		let files = await fres.json();
 
 		this.playlist.list = files;
 		this.playlist.index = 0;
-		this.playlist.dir = url;
+		this.playlist.dir = dir;
 		this.autoPlay = true;
-		this.openFile('/fs/q' + url + this.playlist.list[0][0]);
+		this.openFile('/fs/q' + dir + this.playlist.list[0][0]);
 	}
 
 	openFile(path) {	
@@ -325,24 +325,9 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	}
 
 	async goNext() {
-		/*// If there is no playlist, convert the current play into a playlist
-		if (!this.playlist) {
-			// Files outside the filesystem can't be converted to playlists
-			if (!Paths.isFS(this.currentUrl)) return;
-
-			//Files.list(this.currentUrl);
-			let fres = await fetch('/fs/ls' + url);
-			if (fres.status != 200) return;
-
-			let files = await fres.json();
-
-			this.playlist.files = files;
-
-
-			this.playlistI = 0;
-			this.url = url;
-			this.openFile('/fs/q' + url + this.playlist[0][0]);
-		}*/
+		if (!this.playlist.list) {
+			await this.convertToPlaylist();
+		}
 
 		if (this.playlist.list && this.playlist.index < this.playlist.list.length - 1) {
 			this.playlist.index++;
@@ -350,13 +335,16 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			let nextUrl = '/fs/q' + this.playlist.dir + nextFile;
 			this.openFile(nextUrl);
 
-			setTimeout(()=>{
-				this.play();
-			}, 100);
+			await sleep(100);
+			this.play();
 		}
 	}
 
-	goPrevious() {
+	async goPrevious() {
+		if (!this.playlist.list) {
+			await this.convertToPlaylist();
+		}
+
 		if (this.playlist.list && this.playlist.index > 0) {
 			this.playlist.index--;
 
@@ -365,9 +353,39 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 
 			this.openFile(prevUrl);
 
-			setTimeout(()=>{
-				this.play();
-			}, 100);
+			await sleep(100);
+			this.play();
+		}
+	}
+
+	// Convert the current playthrough into a playlist
+	async convertToPlaylist() {
+		if (this.playlist.list) return;
+
+		// Files outside the filesystem can't be converted to playlists
+		if (!Paths.isFS(this.currentUrl)) return;
+
+		// Convert the URL back to path form and remove FS prefix
+		let currentPath = Paths.removeFSPrefix(decodeURI(this.currentUrl));
+
+		// List all files in the same folder, and set them as the playlist
+		let folder = Paths.parent(currentPath);
+		let files = await Files.list(folder);
+		this.playlist.dir = folder;
+		this.playlist.list = files;
+
+		// Find current file in the listing, if for some reason it can't be found,
+		// use the first file as index
+		let currentFile = Paths.file(currentPath);
+		let index = files.findIndex((f) => f[0] == currentFile);
+
+		if (index != -1) {
+			this.playlist.index = index;
+		} else {
+			this.playlist.index = 0;
+			console.warn("Could't find the file itself in the playlist?");
+			console.warn("Files:", files);
+			console.warn("Path:", currentPath); 	
 		}
 	}
 

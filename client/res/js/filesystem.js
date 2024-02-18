@@ -50,7 +50,7 @@ class Paths {
 		// If it is already a FS path, replace the op	
 		if (Paths.isFS(path)) {
 			// Remove fs-op prefix and add new one
-			let p = path.substring(path.indexOf(path, 4));
+			let p = path.substring(path.indexOf('/', 4));
 			return `/fs/${op}${p}`;
 		} else {
 			// Make sure path is absolute
@@ -61,11 +61,26 @@ class Paths {
 		}
 	}
 
+	static removeFSPrefix(path) {
+		if (!Paths.isFS(path)) return path;
+
+		// Remove fs-op prefix
+		return path.substring(path.indexOf('/', 4));
+	}
+
 	static parent(path) {
 		if (path.endsWith('/')) {
 			return path.substring(0, path.lastIndexOf('/', path.length - 2) + 1);	
 		} else {
 			return path.substring(0, path.lastIndexOf('/') + 1);
+		}
+	}
+
+	static file(path) {
+		if (path.endsWith('/')) {
+			return path.substring(path.lastIndexOf('/', path.length - 2) + 1);	
+		} else {
+			return path.substring(path.lastIndexOf('/') + 1);
 		}
 	}
 
