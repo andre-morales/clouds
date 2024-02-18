@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.5';
+const KAPI_VERSION = '0.5.5b';
 
 // Lib imports
 import Util from 'util';
@@ -39,7 +39,6 @@ export async function main(args) {
 	initFS();
 	initUsers();
 	initExpress();
-	startExpress();
 	await FetchProxy.init();
 	FetchProxy.start();
 }
@@ -71,6 +70,35 @@ function initExpress() {
 		MediaStr.init(config.extensions.mediastr);
 		app.use('/mstr', MediaStr.getExpressRouter());
 	}
+
+	app.use((err, req, res, next) => {
+		if (err instanceof BadAuthExecpt) {
+			denyRequest(res);
+			return;
+		}
+
+		next(err);
+	});
+
+	app.set('view engine', 'ejs');
+	app.set('views', 'api/pages');
+	app.disable('x-powered-by');
+
+	let httpsKey = FS.readFileSync('ssl/key.key');
+	let httpsCert = FS.readFileSync('ssl/cert.crt');
+
+	let http = HTTP.createServer(app);
+	let https = HTTPS.createServer({
+		key: httpsKey,
+		cert: httpsCert
+	}, app);
+
+	http.listen(config.http_port, () => {
+		console.log('Listening on port ' + config.http_port);
+	});
+	https.listen(config.https_port, () => {
+		console.log('Listening on port ' + config.https_port);
+	});
 }
 
 function initConfig() {
@@ -220,7 +248,7 @@ function apiSetupApps() {
 }
 
 function apiSetupFS() {
-	app.get('/fs/q/*', async (req, res) => {	
+	app.get('/fs/q/*', routew(async (req, res) => {	
 		let userId = getGuardedReqUser(req);
 
 		// Translate the virtual path to a real one
@@ -239,7 +267,7 @@ function apiSetupFS() {
 				res.status(404).end();
 			}
 		});
-	});	
+	}));	
 
 	app.post('/fs/u/*', async (req, res) => {	
 		let userId = getGuardedReqUser(req);
@@ -377,36 +405,21 @@ function denyRequest(res) {
 	res.send('BAD_AUTH: Authentication required.');
 }
 
-function startExpress() {
-	app.use((err, req, res, next) => {
-		if (err instanceof BadAuthExecpt) {
-			denyRequest(res);
-			return;
+// Route wrapper for error handling
+function routew(fn) {
+	return async (req, res) => {
+		try {
+			await fn(req, res);
+		} catch (err) {
+			if (err instanceof BadAuthExecpt) {
+				denyRequest(res);
+			} else {
+				throw err;
+			}
 		}
-
-		next(err);
-	});
-
-	app.set('view engine', 'ejs');
-	app.set('views', 'api/pages');
-	app.disable('x-powered-by');
-
-	let httpsKey = FS.readFileSync('ssl/key.key');
-	let httpsCert = FS.readFileSync('ssl/cert.crt');
-
-	let http = HTTP.createServer(app);
-	let https = HTTPS.createServer({
-		key: httpsKey,
-		cert: httpsCert
-	}, app);
-
-	http.listen(config.http_port, () => {
-		console.log('Listening on port ' + config.http_port);
-	});
-	https.listen(config.https_port, () => {
-		console.log('Listening on port ' + config.https_port);
-	});
+	};
 }
+
 
 function getRandomInt(min, max) {
     min = Math.ceil(min);
