@@ -73,8 +73,9 @@ class Window {
 			this.dispatch('backnav');
 		});
 
-		this.$window.on("mousedown", () => this.focus() );
-		this.$window.on("touchstart", () => this.focus() );
+		this.$window.on("mousedown", () => this.focus());
+		this.$window.on("touchstart", () => this.focus());
+		this.$window.on("focusin", () => this.focus());
 
 		$win.find('.close-btn').click(() => {
 			let closingev = new ReactorEvent();

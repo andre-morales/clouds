@@ -66,6 +66,8 @@ window.ConsoleApp = class ConsoleApp extends App {
 		Client.log("> " + cmd);
 		
 		this.commandHistory.push(cmd);
+		this.commandHistoryIndex = 0;
+		this.currentInput = '';
 		this.$cmdField.val("");
 		let result = eval(cmd);
 
@@ -110,7 +112,19 @@ window.ConsoleApp = class ConsoleApp extends App {
 			msg += '\n';
 		}
 		$span.text(msg);
+
+		let cont = this.$content[0];
+
+		// If the content is scrolled to the bottom, scroll it again with the new content
+		let scroll;
+		if (cont.scrollTop + cont.offsetHeight >= cont.scrollHeight - 2) {
+			scroll = true;
+		}
+
 		this.$content.append($span);
+		if (scroll) {
+			cont.scrollTo(0, cont.scrollHeight);
+		}
 	}
 
 	stringifyObject(obj) {

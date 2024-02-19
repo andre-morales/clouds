@@ -44,5 +44,6 @@ class Dialogs {
 		win.$window.find('.dialog-icon')
 			.removeClass('info-icon')
 			.addClass('error-icon');
+		return [win, prom];
 	}
 }

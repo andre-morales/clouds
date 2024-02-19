@@ -52,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.095';
+		this.CLIENT_VERSION = '1.0.097';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -274,7 +274,8 @@ class ClientClass {
 
 	showErrorDialog(title, msg) {
 		try {
-			Dialogs.showError(this.desktop.dwm, title, msg);
+			let [win, p] = Dialogs.showError(this.desktop.dwm, title, msg);
+			win.$window.find('.options button').focus();
 		} catch (err) {
 			console.log("---- Couldn't display error message ----");
 			console.error(err);
