@@ -1,5 +1,9 @@
-.app-configs .body {
-	padding: 0.5rem;
+.app-configs .window-body {
+	padding: 0 .5rem;
+}
+
+.app-configs .row {
+	margin: .5em 0;
 }
 
 .app-configs .input {
@@ -11,4 +15,15 @@
 	flex: 1;
 	margin-left: 1rem;
 	align-self: stretch;
+}
+
+.app-configs .bottom {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: 0;
+	padding: .25em;
+	text-align: right;
+	background: rgba(255, 255, 255, 0.05);
 }

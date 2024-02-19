@@ -1,8 +1,17 @@
-<div class='input input-bg'>
+<div class='row input'>
 	<span>Background: </span>
-	<input class='field'/>
+	<input class='field background-input'/>
 	<button class='button find'>Find...</button>
 </div>
-<br>
-<button class='button' onclick='authLogout();'>Delete Auth Key</button>
-<button class='button logout'>Logout Session</button>
+<label class='row'>
+	<input type="checkbox" class='checkbox fullscr-filter-toggle'/>
+	<span>Disable fullscreen filter</span>
+</label>
+<div class='row'>
+	<button class='button' onclick='authLogout();'>Delete Auth Key</button>
+	<button class='button logout'>Logout Session</button>
+</div>
+<nav class="row bottom">
+	<button class='button reload'>Reload</button>
+	<button class='button save'>Save</button>
+</nav>

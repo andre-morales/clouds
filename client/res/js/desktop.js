@@ -17,7 +17,7 @@ class Desktop {
 		this.mouseY = 0;
 		this.contextMenuOpen = false;
 
-		this._configsProm = Files.getJson('/usr/desktop.json');
+		this._configsProm = this.loadConfigs();
 
 		this.$taskBar.find('.fullscreen-btn').click(() => {
 			let body = $('body')[0];
@@ -75,7 +75,17 @@ class Desktop {
 	}
 
 	async start() {
-		this.configs = await this._configsProm;
+		await this._configsProm;
+	}
+
+	async saveConfigs() {
+		let data = JSON.stringify(this.configs);
+		console.log('saved:', data);
+		await Files.upText('/usr/desktop.json', data);
+	}
+
+	async loadConfigs() {
+		this.configs = await Files.getJson('/usr/desktop.json');
 
 		let bg = this.configs.background;
 		if (bg) this.setBackground(bg);
@@ -83,12 +93,9 @@ class Desktop {
 
 		if (this.configs['fullscreen-filter'] === false) {
 			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-off)');
+		} else {
+			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-on)');
 		}
-	}
-
-	async saveConfigs() {
-		let data = JSON.stringify(this.configs);
-		Files.upText('/usr/desktop.json', data);
 	}
 
 	createWindow(app) {
@@ -173,12 +180,9 @@ class Desktop {
 		return [x, y, w, h];
 	}
 
-	setBackground(url, save) {
+	setBackground(url) {
 		this.$desktop.css('background-image', 'url("' + url + '")');
-		if (save) {
-			this.configs.background = url;
-			this.saveConfigs();
-		}
+		this.configs.background = url;
 	}
 
 	openCtxMenuAt(menu, x, y) {
