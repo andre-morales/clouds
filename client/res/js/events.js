@@ -46,16 +46,24 @@ class Reactor {
 		evclass.defaultHandler = callback;
 	}
 
-	dispatch(name, event) {
+	dispatch(name, event, handler) {
 		let evclass = this.classes[name];
 		if (!evclass) throw Error(`No class ${name} registered.`);
 
-		for (let fn of evclass.listeners) {
-			fn(event);
+		// If a handler was provided, call it with each listener and the same event
+		// Otherwise, invoke all listeners directly
+		if (handler) {
+			for (let fn of evclass.listeners) {
+				handler(fn, event);
+			}
+		} else {
+			for (let fn of evclass.listeners) {
+				fn(event);
+			}
 		}
-
+		
+		// If an event object was provided and it wasn't canceled, call default behavior
 		if (event && event.canceled) return;
-
 		if (evclass.defaultHandler) {
 			evclass.defaultHandler(event);
 		}

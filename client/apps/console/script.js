@@ -19,8 +19,7 @@ window.ConsoleApp = class ConsoleApp extends App {
 			this.updateLog();
 		});
 		this.on('exit', () => {	
-			//Client.off('log', this.logListener);
-			console.log('removed!');
+			Client.off('log', this.logListener);
 		});
 
 		this.updateLog();
@@ -38,7 +37,7 @@ window.ConsoleApp = class ConsoleApp extends App {
 
 	updateLog() {
 		if (this.disabled) return;
-		
+
 		try {
 			let html = WebSys.logHistory.replaceAll('\n', '<br>');
 			this.window.$window.find('.content').html(html);
