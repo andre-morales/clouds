@@ -27,7 +27,7 @@
 	"systemlog": {
 		"name": "System Log",
 		"icon": "/app/systemlog/icon128.png",
-		"flags": ["desk"]
+		"flags": []
 	},
 	"configs": {
 		"name": "Configuration",

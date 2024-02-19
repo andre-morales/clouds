@@ -298,10 +298,11 @@ body {
 }
 
 .window.dialog .message {
+	display: flex;
 	flex-grow: 1;
 	overflow: auto;
 	white-space: nowrap;
-	display: flex;
+	padding-right: .5rem;
 }
 
 .window.dialog .options {

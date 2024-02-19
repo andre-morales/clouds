@@ -36,14 +36,7 @@ window.ConsoleApp = class ConsoleApp extends App {
 	}
 
 	updateLog() {
-		if (this.disabled) return;
-
-		try {
-			let html = WebSys.logHistory.replaceAll('\n', '<br>');
-			this.window.$window.find('.content').html(html);
-		} catch (err) {
-			this.disabled = true;
-			throw new IllegalStateFault("Log updater failed. Logger disabled.", err);
-		}
+		let html = WebSys.logHistory.replaceAll('\n', '<br>');
+		this.window.$window.find('.content').html(html);
 	}
 }
