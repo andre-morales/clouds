@@ -10,8 +10,8 @@ async function main() {
 		_systemPanic("Unhandled error", err, true);
 	};
 
-	window.onunhandledrejection = (err) => {
-		_systemPanic("Unhandled promise error", err, true);
+	window.onunhandledrejection = (ev) => {
+		_systemPanic("Unhandled promise error", ev.reason, true);
 	};
 
 	// Schedule loading of main system scripts
@@ -20,8 +20,8 @@ async function main() {
 		addScript('/res/js/events.js'),
 		addScript('/res/js/filesystem.js'),
 		addScript('/res/js/app.js'),
-		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/desktop.js'),
+		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/window.js'),
 		addScript('/res/js/dialogs.js'),
 		addScript('/res/js/audiosystem.js')
@@ -33,8 +33,7 @@ async function main() {
 	// Fetch desktop page
 	let fres = await fetch('/page/desktop');
 	if (fres.status != 200) {
-		console.error('Forbidden.');
-		return;
+		throw new IllegalStateFault('Desktop paged could not be accessed.');
 	}
 	document.body.innerHTML = await fres.text();
 
@@ -52,7 +51,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.097';
+		this.CLIENT_VERSION = '1.0.098';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -67,9 +66,6 @@ class ClientClass {
 		this._reactor = new Reactor();
 		this._reactor.register('log', 'apps-add', 'apps-rem');
 
-		// Create desktop subsystem
-		this.desktop = new Desktop();
-
 		// Display version on ui
 		fetch('/version').then(async (fres) => {
 			let apiv = await fres.text();
@@ -78,6 +74,9 @@ class ClientClass {
 			$('.desktop .backplane .text').html(vtext);
 		})
 		
+		// Create desktop subsystem
+		this.desktop = new Desktop();
+
 		// Save current page on history
 		history.pushState(null, null, location.href);
 
@@ -92,9 +91,6 @@ class ClientClass {
 			history.go(1);
 		});
 
-		// Initialize audio subsystem
-		this.audio = new AudioSystem();
-		
 		// Fetch app definitions from the user profile
 	 	let fres = await fetch('/fs/q/usr/apps.json');
 		this.registeredApps = await fres.json();
@@ -106,6 +102,9 @@ class ClientClass {
 		
 		// Let the desktop prepare app icons and behavior
 		this.desktop.setupApps();
+
+		// Initialize audio subsystem
+		this.audio = new AudioSystem();
 	}
 
 	async start(args) {
@@ -296,19 +295,24 @@ class ClientClass {
 
 	log(msg) {
 		console.log(msg);
-		this.logHistory += msg + '\n';
-		this._reactor.dispatch('log', undefined, (fn) => {
-			if (fn.disabled) return;
 
-			try {
-				fn(msg);
-			} catch (err) {
-				fn.disabled = true;
-				this.showErrorDialog("Log failure", `A log event handler threw an exception and was disabled.\n\n${err}`);
-				Client.logError(err);
-				console.error('Error thrown in log listener:', err);
-			}
-		});
+		try {
+			this.logHistory += msg + '\n';
+			this._reactor.dispatch('log', undefined, (fn) => {
+				if (fn.disabled) return;
+
+				try {
+					fn(msg);
+				} catch (err) {
+					fn.disabled = true;
+					this.showErrorDialog("Log failure", `A log event handler threw an exception and was disabled.\n\n${err}`);
+					Client.logError(err);
+					console.error('Error thrown in log listener:', err);
+				}
+			});
+		} catch (err) {
+			this.showErrorDialog("Log failure", `Log system failure.`);
+		}
 	}
 
 	logError(err) {

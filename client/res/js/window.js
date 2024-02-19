@@ -226,10 +226,13 @@ class Window {
 
 		if (!this.$window) return;
 
+		// Don't allow window on fractional pixel (reduces blurring)
+		x = Math.trunc(x);
+		y = Math.trunc(y);
 
 	//	this.$window[0].style.left = `${x}px`;
 	//	this.$window[0].style.top = `${y}px`;
-
+		
 		this.$window[0].style.transform = `translate(${x}px, ${y}px)`;
 	}
 
