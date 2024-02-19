@@ -1,0 +1,22 @@
+.app-console {
+	display: flex;
+	flex-direction: column;
+}
+
+.app-console .content {
+	overflow: auto;
+	flex-grow: 1;
+	font: 10pt monospace;
+	white-space: pre;
+}
+
+.app-console .input {
+	display: flex;
+}
+
+.app-console .cmd-field {
+	flex-grow: 1;
+}
+
+.app-console .send-btn {
+}

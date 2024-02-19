@@ -52,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.081';
+		this.CLIENT_VERSION = '1.0.087';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -297,10 +297,10 @@ class ClientClass {
 		console.log(msg);
 		this.logHistory += msg + '\n';
 		try {
-			this._reactor.dispatch('log')
+			this._reactor.dispatch('log');
 		} catch (err) {
+			this.showErrorDialog("Log failure", `A log event handler threw an exception.\n\n${err}`);
 			Client.logError(err);
-			this.showErrorDialog("Log failure", err);
 		}
 	}
 
@@ -322,6 +322,7 @@ class ClientClass {
 			} else {
 				lmsg += 'unavailable';
 			}
+			console.error(err);
 			this.log(lmsg);
 			this.showErrorDialog("Error", `Unhandled error\n\n${msg}`);
 		};

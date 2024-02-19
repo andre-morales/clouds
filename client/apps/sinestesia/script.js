@@ -31,7 +31,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/picture128.png');
-		this.window.setDefaultCloseAction('exit');
+		this.window.setCloseBehavior('exit');
 		this.window.on('backnav', () => {
 			if (this.fullscreen && Fullscreen.element == this.fullscreen) {
 				Fullscreen.rewind();

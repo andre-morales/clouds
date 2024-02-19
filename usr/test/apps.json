@@ -34,6 +34,11 @@
 		"icon": "/res/img/apps/config128.png",
 		"flags": ["desk"]
 	},
+	"console": {
+		"name": "Console",
+		"icon": "/app/console/icon128.png",
+		"flags": ["desk"]
+	},
 	"remoteshell": {
 		"name": "Remote Shell",
 		"icon": "/res/img/apps/terminal128.png",

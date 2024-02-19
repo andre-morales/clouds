@@ -7,6 +7,8 @@ class Window {
 		this.owner = null;
 		this.children = [];
 		this.icon = '';
+
+		// If the owner app has no main window yet, this will be its main window
 		if (app.mainWindow === undefined) app.mainWindow = this;
 
 		this.visible = false;
@@ -23,7 +25,7 @@ class Window {
 		this.events.register('closing', 'closed', 'backnav', 'resize', 'closereq');
 
 		// None | Close | Exit
-		this._defaultCloseAction = 'close';
+		this._closeBehavior = 'close';
 
 		if (app.icon && app.mainWindow == this) {
 			this.icon = app.icon;	
@@ -85,7 +87,7 @@ class Window {
 		this.events.default('closing', (ev) => {
 			if (ev && ev.canceled) return;
 	
-			switch (this._defaultCloseAction) {
+			switch (this._closeBehavior) {
 			case 'exit':
 				this.app.exit();
 				break;
@@ -204,8 +206,8 @@ class Window {
 		$doc.on("touchend", dragEnd);
 	}
 
-	setDefaultCloseAction(action) {
-		this._defaultCloseAction = action;
+	setCloseBehavior(action) {
+		this._closeBehavior = action;
 	}
 
 	setTitle(title) {
