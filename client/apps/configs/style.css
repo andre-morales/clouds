@@ -4,9 +4,11 @@
 
 .app-configs .input {
 	display: flex;
+	align-items: center;
 }
 
 .app-configs .input .field {
 	flex: 1;
 	margin-left: 1rem;
+	align-self: stretch;
 }

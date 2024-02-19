@@ -4,11 +4,6 @@
 		"icon": "/res/img/ftypes/folder128.png",
 		"flags": ["desk"]
 	},
-	"configs": {
-		"name": "System Config",
-		"icon": "/res/img/apps/config128.png",
-		"flags": []
-	},
 	"sinestesia": {
 		"name": "Sinestesia",
 		"icon": "/res/img/apps/picture128.png",
@@ -32,6 +27,11 @@
 	"systemlog": {
 		"name": "System Log",
 		"icon": "/app/systemlog/icon128.png",
+		"flags": ["desk"]
+	},
+	"configs": {
+		"name": "Configuration",
+		"icon": "/res/img/apps/config128.png",
 		"flags": ["desk"]
 	},
 	"remoteshell": {
