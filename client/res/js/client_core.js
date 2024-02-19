@@ -52,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.066';
+		this.CLIENT_VERSION = '1.0.068';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -126,10 +126,10 @@ class ClientClass {
 			// Fetch manifest
 			let fres = await fetch(manifestURL);
 			if (fres.status == 404) {
-				throw Error('Failed to instantiate "' + manifestURL + '", manifest not found.');
+				throw new Error('Failed to instantiate "' + manifestURL + '", manifest not found.');
 			}
 			if (fres.status == 403) {
-				throw Error('Failed to instantiate "' + manifestURL + '", access denied.');
+				throw new Error('Failed to instantiate "' + manifestURL + '", access denied.');
 			}
 
 			// Await for manifest
@@ -184,7 +184,7 @@ class ClientClass {
 			await app.init();
 			return app;
 		} catch (err) {
-			console.error(err);	
+			Client.logError(err);	
 			this.showErrorDialog('App Initialization', err);
 		}
 		return null;
@@ -294,26 +294,41 @@ class ClientClass {
 	}
 
 	log(msg) {
+		console.log(msg);
 		this.logHistory += msg + '\n';
 		try {
 			this._reactor.dispatch('log')
 		} catch (err) {
-			console.error(err);
+			Client.logError(err);
 			this.showErrorDialog("Log failure", err);
 		}
 	}
 
-	setupLogging() {
-		let self = this;
+	logError(err) {
+		let msg = `${err}\n stack: `;
+		if (err.stack) {
+			msg += err.stack;
+		} else {
+			msg += 'unavailable';
+		};
+		Client.log("[Error] " + msg);
+	}
 
-		window.onerror = (ev) => {
-			this.log(`[Error] '${ev.message}' at ${ev.filename}:${ev.lineno}`);
-			this.showErrorDialog("Fault", `Unhandled error: ${ev}`);
+	setupLogging() {
+		window.onerror = (msg, file, line, col, err) => {
+			let lmsg = `[Error] Unhandled error "${msg}"\n    at: ${file}:${line}\n  says: ${err}\n stack: `;
+			if (err.stack) {
+				lmsg += err.stack;
+			} else {
+				lmsg += 'unavailable';
+			}
+			this.log(lmsg);
+			this.showErrorDialog("Error", `Unhandled error\n\n${msg}`);
 		};
 
 		window.onunhandledrejection = (ev) => {
-			this.log(`[PromErr] '${ev.reason}'`);
-			this.showErrorDialog( "Fault", `Unhandled internal rejection: ${event.reason}`);
+			this.log(`[Error] Unhandled rejection: ${ev.reason}`);
+			this.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}`);
 		};
 	}
 

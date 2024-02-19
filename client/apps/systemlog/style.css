@@ -3,4 +3,5 @@
 	width: 100%;
 	height: 100%;
 	font: 10pt monospace;
+	white-space: pre;
 }
