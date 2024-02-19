@@ -44,7 +44,7 @@ window.NotepadApp = class NotepadApp extends App {
 		$app.addClass('app-notepad');
 
 		// Fetch application body
-		await this.window.setContentToUrl('/app/notepad/res/main.html');
+		await this.window.setContentToUrl('/app/notepad/main.html');
 		this.setDarkTheme(true);
 		
 		this.$textArea = $app.find('textarea');
