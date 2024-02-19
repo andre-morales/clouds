@@ -29,11 +29,10 @@
 		"icon": "/res/img/apps/browser128.png",
 		"flags": ["tool"]
 	},
-
 	"systemlog": {
 		"name": "System Log",
-		"icon": "/res/img/apps/log128.png",
-		"flags": []
+		"icon": "/app/systemlog/icon128.png",
+		"flags": ["desk"]
 	},
 	"remoteshell": {
 		"name": "Remote Shell",

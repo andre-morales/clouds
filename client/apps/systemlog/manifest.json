@@ -1,7 +1,11 @@
 {
 	"id": "systemlog",
 	"builder": "SystemLogApp",
+	"icon": "/app/systemlog/icon128.png",
 	"scripts": [
-		"/app/systemlog/res/script.js"	
+		"/app/systemlog/script.js"	
+	],
+	"styles": [
+		"/app/systemlog/style.css"
 	]
 }

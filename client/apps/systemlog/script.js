@@ -5,19 +5,13 @@ window.SystemLogApp = class SystemLogApp extends App {
 	}
 
 	async init() {
-		// Require resources
-		await this.requireStyle('/app/systemlog/res/style.css');
-
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow(this);
-		this.window.setIcon('/res/img/apps/log128.png');
-		this.window.on('closereq', () => this.close());
-		
 		this.window.setTitle('System Log');
 		let $win = this.window.$window;
 
 		// Fetch explorer body
-		await this.window.setContentToUrl('/app/systemlog/res/main.html');
+		await this.window.setContentToUrl('/app/systemlog/main.html');
 
 		this.logListener = WebSys.on('log', () => {
 			this.updateLog();
@@ -35,7 +29,7 @@ window.SystemLogApp = class SystemLogApp extends App {
 	}
 
 	onClose() {
-		WebSys.off('log', this.logListener);
+		Client.off('log', this.logListener);
 		this.window.close();
 	}
 }
