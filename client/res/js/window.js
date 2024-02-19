@@ -353,11 +353,8 @@ class Window {
 
 	restore() {
 		if (this.minimized) {
-			let $task = Client.desktop.iconifiedWindows.get(this);
-
 			this.setVisible(true);
 			this.minimized = false;
-			//this.destroyTaskbarButton();
 			return;
 		}
 
@@ -392,7 +389,6 @@ class Window {
 		});			
 		
 		this.$taskbarBtn = $task;
-		Client.desktop.iconifiedWindows.set(this, $task);
 		Client.desktop.$tasks.append($task);
 	}
 
@@ -400,7 +396,6 @@ class Window {
 		if (!this.$taskbarBtn) return;
 		
 		this.$taskbarBtn.remove();
-		delete Client.desktop.iconifiedWindows[this];
 		this.$taskbarBtn = null;
 	}
 

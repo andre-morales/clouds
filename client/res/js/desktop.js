@@ -6,7 +6,6 @@ class Desktop {
 		this.events = new Reactor();
 		this.events.register("window-created", "window-destroyed");
 		this.configs = [];
-		this.iconifiedWindows = new Map();
 		this.iconifiedGroups = {};
 		this.$desktop = $('.desktop');
 		this.$windows = $('.windows');
@@ -119,12 +118,6 @@ class Desktop {
 
 		// Remove desktop integration buttons and stuffs
 		win.destroyTaskbarButton();
-		
-
-		if (win.minimized) {
-			iconifiedWindows.get(win).remove();
-			iconifiedWindows.delete(win);
-		}
 		
 		// Remove window from list
 		arrErase(win.app.windows, win);
