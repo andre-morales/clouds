@@ -402,7 +402,6 @@ body {
 	outline: none;
 }
 
-
 .window-body .menu-bar {
 	border: none;
 	border-bottom: solid 1px rgb(127, 127, 127);
@@ -442,6 +441,30 @@ body {
 .field:focus {
 	outline: none;
 	border-bottom-color: hsl(320, 70%, 60%);
+}
+
+.checkbox {
+	display: inline-grid;
+	appearance: none;
+	width: 20px;
+	height: 20px;
+	margin: .15em;
+	border: solid 1px #124;
+	outline: solid 1px #18F;
+	vertical-align: middle;
+	place-content: center;
+}
+
+.checkbox:checked::before {
+	content: "";
+	width: 16px;
+	height: 16px;
+	background: linear-gradient(45deg, #D4A, #18F);
+}
+
+
+.checkbox:hover {
+	outline: solid 1px #D4A;
 }
 
 .noselect {
