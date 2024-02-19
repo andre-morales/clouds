@@ -1,11 +1,17 @@
 
 class AudioSystem {
 	constructor() {
+		this.enabled = false;
+		this.initialized = false;
+	}
+
+	init() {
+		this.initialized = true;
 		this.context = new AudioContext();
 		this.destination = this.context.createGain();
 		
 		// -- Eq Creator
-		this.eqPoints = [];
+		/*this.eqPoints = [];
 		let pointsc = 6;
 		let filter;
 		for (let i = 0; i < pointsc; i++) {
@@ -77,25 +83,40 @@ class AudioSystem {
 		//]);
 
 		//this.connectArr([delayNode, this.reverbWetGain]);
-		//this.connectArr([delayNode, this.reverbDryGain]);
+		//this.connectArr([delayNode, this.reverbDryGain]);*/
 
 		// Master pipeline without reverb effect
 		this.connectArr([
 			this.destination,
-			...this.eqPoints,
+			/*...this.eqPoints,
 			this.reverbDryGain,
 			this.final,
-			clipper,
+			clipper,*/
 			this.context.destination
 		]);
 
 		// Extra pipe with reverb
-		this.connectArr([
+		/*this.connectArr([
 			lastEqPoint,
 			reverbNode,
 			this.reverbWetGain,
 			this.final,
-		]);
+		]);*/
+	}
+
+	isEnabled() {
+		return this.enabled;
+	}
+
+	begin() {
+		if (!this.enabled) return false;
+		if (!this.initialized) this.init();
+		return true;
+	}
+
+	resume() {
+		if (!this.enabled) return;
+		this.context.resume();
 	}
 
 	setReverbBalance(b) {

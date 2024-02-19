@@ -81,7 +81,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		$controls.find('.play-btn').click(() => {
 			let el = this.$mediaElement[0];
 			if (el.paused) {
-				WebSys.audio.context.resume();
+				Client.audio.resume();
 				el.play();
 			} else {
 				this.cancelPauseEvents = false;
@@ -185,8 +185,10 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			}
 		};
 
-		let track = WebSys.audio.context.createMediaElementSource($video[0]);
-		track.connect(WebSys.audio.destination);
+		if (Client.audio.begin()) {
+			let track = WebSys.audio.context.createMediaElementSource($video[0]);
+			track.connect(WebSys.audio.destination);
+		}
 	}
 
 	setupImageContainer() {
@@ -332,7 +334,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	play() {
 		if (this.contentType != 'video') return;
 
-		WebSys.audio.context.resume();
+		Client.audio.resume();
 		this.$mediaElement[0].play();
 	}
 
