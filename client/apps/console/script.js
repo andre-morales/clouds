@@ -2,6 +2,9 @@ window.ConsoleApp = class ConsoleApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;
+		this.commandHistory = [];
+		this.commandHistoryIndex = 0;
+		this.currentInput = "";
 	}
 
 	async init() {
@@ -10,33 +13,113 @@ window.ConsoleApp = class ConsoleApp extends App {
 		this.window.setTitle('Console');
 		this.window.setCloseBehavior('exit');
 
-		// Fetch explorer body
+		// Fetch app body
 		await this.window.setContentToUrl('/app/console/main.html');
 		let $app = this.window.$window.find('.window-body');
+		this.$app = $app;
 		$app.addClass('app-console');
 
-		this.logListener = Client.on('log', () => {
-			this.updateLog();
+		this.createContextMenu();
+		this.$content = $app.find('.content');
+		this.$cmdField = $app.find('.cmd-field');
+
+		this.logListener = Client.on('log', (msg) => {
+			this.updateLog(msg);
 		});
 		this.on('exit', () => {	
 			Client.off('log', this.logListener);
 		});
 
-		this.updateLog();
+		this.updateLog(Client.logHistory);
 
 		$app.find('.send-btn').click(() => {
-			let cmd = $app.find('.cmd-field').val();
-			Client.log("> " + cmd);
-			let result = eval(cmd);
-			Client.log("< " + JSON.stringify(result));
+			this.sendCmd();
+		});
+		this.$cmdField.on('keydown', (ev) => {
+			if (ev.key == 'ArrowUp') {
+				this.goBackHistory();
+				ev.preventDefault();
+			} else if (ev.key == 'ArrowDown'){
+				this.goForwardHistory();
+				ev.preventDefault();
+			}
+		});
+		this.$cmdField.on('keypress', (ev) => {
+			if (ev.key == 'Enter') {
+				this.sendCmd();
+			}
 		});
 
 		// Make the window visible
 		this.window.setVisible(true);
 	}
 
-	updateLog() {
-		let html = WebSys.logHistory.replaceAll('\n', '<br>');
-		this.window.$window.find('.content').html(html);
+	createContextMenu() {
+		let ctxMenu = CtxMenu([
+			CtxItem('Clear', () => this.clear())
+		]);
+		WebSys.desktop.addCtxMenuOn(this.$app, () => ctxMenu);
+	}
+
+	sendCmd() {
+		let cmd = this.$cmdField.val();
+		Client.log("> " + cmd);
+		
+		this.commandHistory.push(cmd);
+		this.$cmdField.val("");
+		let result = eval(cmd);
+
+		let msg = "< " + this.stringifyObject(result);
+		this.updateLog(msg);
+	}
+
+	goBackHistory() {
+		if (this.commandHistoryIndex == this.commandHistory.length) return;
+
+		this.commandHistoryIndex++;
+		if (this.commandHistoryIndex == 1) {
+			this.currentInput = this.$cmdField.val();
+		}
+
+		let cmd = this.commandHistory[this.commandHistory.length - this.commandHistoryIndex];
+		this.$cmdField.val(cmd);
+	}
+
+	goForwardHistory() {
+		if (this.commandHistoryIndex == 0) return;
+
+		this.commandHistoryIndex--;
+
+		let cmd;
+		if (this.commandHistoryIndex == 0) {
+			cmd = this.currentInput;
+		} else {
+			cmd = this.commandHistory[this.commandHistory.length - this.commandHistoryIndex];
+		}
+
+		this.$cmdField.val(cmd);
+	}
+
+	clear() {
+		this.$content.empty();
+	}
+
+	updateLog(msg) {
+		let $span = $('<span>');
+		$span.text(msg + '\n');
+
+		this.$content.append($span);
+	}
+
+	stringifyObject(obj) {
+		if (obj === undefined) return "undefined";
+		if (obj === null) return "null";
+
+		let properties = "";
+		for (let property in obj) {
+			properties += `\n${property}: ${obj[property]}`;
+		}
+		properties = properties.replaceAll('\n', '\n  ');
+		return `${obj.constructor.name}: {${properties}\n}`;
 	}
 }

@@ -52,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.089';
+		this.CLIENT_VERSION = '1.0.094';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -300,7 +300,7 @@ class ClientClass {
 			if (fn.disabled) return;
 
 			try {
-				fn();
+				fn(msg);
 			} catch (err) {
 				fn.disabled = true;
 				this.showErrorDialog("Log failure", `A log event handler threw an exception and was disabled.\n\n${err}`);
