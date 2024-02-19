@@ -30,7 +30,7 @@ window.ConsoleApp = class ConsoleApp extends App {
 			Client.off('log', this.logListener);
 		});
 
-		this.updateLog(Client.logHistory);
+		this.updateLog(Client.logHistory, true);
 
 		$app.find('.send-btn').click(() => {
 			this.sendCmd();
@@ -104,10 +104,12 @@ window.ConsoleApp = class ConsoleApp extends App {
 		this.$content.empty();
 	}
 
-	updateLog(msg) {
-		let $span = $('<span>');
-		$span.text(msg + '\n');
-
+	updateLog(msg, noNewLine) {
+		let $span = $('<span class="msg">');
+		if (!noNewLine) {
+			msg += '\n';
+		}
+		$span.text(msg);
 		this.$content.append($span);
 	}
 

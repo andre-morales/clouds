@@ -7,7 +7,6 @@
 	overflow: auto;
 	flex-grow: 1;
 	font: 10pt monospace;
-	white-space: pre;
 }
 
 .app-console .input {
@@ -18,5 +17,6 @@
 	flex-grow: 1;
 }
 
-.app-console .send-btn {
+.app-console .msg {
+	white-space: pre;
 }

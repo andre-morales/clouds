@@ -396,11 +396,11 @@ body {
 
 .button:active {
 	background-color: rgba(0, 0, 0, 0.2);
-	outline: none;
+	outline: solid 1px #18F;
 }
 
 .button:focus {
-	outline: none;
+	outline: solid 1px #D4A;
 }
 
 .window-body .menu-bar {
