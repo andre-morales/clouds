@@ -75,7 +75,7 @@ window.ConfigsApp = class ConfigsApp extends App {
 
 		// Logout
 		$win.find('.logout').click(() => {
-			authLogout();
+			Client.logout();
 			window.location.href = "/";
 		})
 

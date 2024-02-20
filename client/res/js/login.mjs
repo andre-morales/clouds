@@ -1,3 +1,5 @@
+import * as Entry from './entry.mjs';
+
 function initLogin() {
 	// Set title
 	document.title = 'Auth - Clouds';
@@ -42,7 +44,7 @@ async function authSuccess(key) {
 
 	setCookie('authkey', key);
 
-	initDesktop();
+	Entry.initDesktop();
 }
 
 function authFail() {

@@ -44,14 +44,15 @@ async function main() {
 	Client = new ClientClass();
 	WebSys = Client;
 	await Client.init();
-	endTransition();
+
+	destroyElementById('loading-screen');
 
 	Client.start(getURLParams());
 }
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.099';
+		this.CLIENT_VERSION = '1.0.100';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -114,6 +115,10 @@ class ClientClass {
 			let app = await this.runApp('explorer');
 			app.go(args.loc);
 		}
+	}
+
+	logout() {
+		setCookie('authkey', '');
 	}
 
 	async runApp(name, buildArgs) {
@@ -271,17 +276,6 @@ class ClientClass {
 		}
 	}
 
-	showErrorDialog(title, msg) {
-		try {
-			let [win, p] = Dialogs.showError(this.desktop.dwm, title, msg);
-			win.$window.find('.options button').focus();
-		} catch (err) {
-			console.log("---- Couldn't display error message ----");
-			console.error(err);
-			console.log("----------------------------------------")
-			_systemPanic("No Error Display", `Couldn't show [${title}]: "${msg}", due to "${err}"`);
-		}
-	}
 
 	downloadUrl(path) {
 		let link = document.createElement('a');
@@ -291,6 +285,25 @@ class ClientClass {
 		document.body.appendChild(link);
 		link.click();
 		link.remove();
+	}
+
+	// -- Logging --
+	setupLogging() {
+		window.onerror = (msg, file, line, col, err) => {
+			let lmsg = `[Error] Unhandled error "${msg}"\n    at: ${file}:${line}\n  says: ${err}\n stack: `;
+			if (err.stack) {
+				lmsg += err.stack;
+			} else {
+				lmsg += 'unavailable';
+			}
+			this.log(lmsg);
+			this.showErrorDialog("Error", `Unhandled error\n\n${msg}`);
+		};
+
+		window.onunhandledrejection = (ev) => {
+			this.log(`[Error] Unhandled rejection: ${ev.reason}`);
+			this.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}`);
+		};
 	}
 
 	log(msg) {
@@ -325,24 +338,19 @@ class ClientClass {
 		Client.log("[Error] " + msg);
 	}
 
-	setupLogging() {
-		window.onerror = (msg, file, line, col, err) => {
-			let lmsg = `[Error] Unhandled error "${msg}"\n    at: ${file}:${line}\n  says: ${err}\n stack: `;
-			if (err.stack) {
-				lmsg += err.stack;
-			} else {
-				lmsg += 'unavailable';
-			}
-			this.log(lmsg);
-			this.showErrorDialog("Error", `Unhandled error\n\n${msg}`);
-		};
-
-		window.onunhandledrejection = (ev) => {
-			this.log(`[Error] Unhandled rejection: ${ev.reason}`);
-			this.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}`);
-		};
+	showErrorDialog(title, msg) {
+		try {
+			let [win, p] = Dialogs.showError(this.desktop.dwm, title, msg);
+			win.$window.find('.options button').focus();
+		} catch (err) {
+			console.log("---- Couldn't display error message ----");
+			console.error(err);
+			console.log("----------------------------------------")
+			_systemPanic("No Error Display", `Couldn't show [${title}]: "${msg}", due to "${err}"`);
+		}
 	}
 
+	// -- Reactor aliases --
 	on(evclass, callback) {
 		this._reactor.on(evclass, callback);
 		return callback;
