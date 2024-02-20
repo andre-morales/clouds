@@ -19,6 +19,12 @@ export function init(args) {
 	print();
 }
 
+export function isExtensionEnabled(ext) {
+	return config.extensions
+		&& config.extensions[ext]
+		&& config.extensions[ext].enabled;
+}
+
 export function print() {
 	console.log("Config:", config);
 }

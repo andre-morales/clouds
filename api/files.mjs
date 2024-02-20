@@ -44,3 +44,9 @@ export function isFileExtPicture(path) {
 	return false;
 }
 
+export function hashPath(path) {
+	return path
+	.replaceAll('/', '_')
+	.replaceAll('\\', '_')
+	.replaceAll(':', '_');
+}

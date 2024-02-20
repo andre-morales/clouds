@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.5b';
+const KAPI_VERSION = '0.5.6';
 
 // Lib imports
 import Util from 'util';
@@ -13,64 +13,66 @@ import Express from 'express';
 import FileUpload from 'express-fileupload';
 
 // Local imports
+import './errors.mjs';
 import config, * as Config from './config.mjs';
 import * as Auth from './auth.mjs';
 import * as VFSM from './vfs.mjs';
 import * as Files from './files.mjs';
 import * as FFmpegM from './ext/ffmpeg.mjs';
 import * as ShellMgr from './ext/rshell.mjs';
-import * as MediaStr from './ext/mediastr.mjs';
+//import * as MediaStr from './ext/mediastr.mjs';
 //import * as FetchProxy from './fetchproxy.mjs';
 
 // Module instances
 let FFmpeg = null;
 var vfs = null;
-
 var progArgs = null;
 var app = null;
-var logins = null;
-var userDefs = null;
 
 export async function main(args) {
 	console.log('--- KAPI Version: ' + KAPI_VERSION);
 	progArgs = args;
 
 	initConfig();
+	Auth.init();
 	initFS();
-	initUsers();
 	initExpress();
 	//await FetchProxy.init();
 	//FetchProxy.start();
 }
 
 function initExpress() {
-	if (isExtEnabled('ffmpeg')) {
+	if (Config.isExtensionEnabled('ffmpeg')) {
 		FFmpeg = new FFmpegM.FFmpeg();
 		FFmpeg.init(config.extensions.ffmpeg);
 	}
 
 	app = Express();
+	
+	// Core request handlers
 	app.use(Cors());
 	app.use(Compression());
-	
+
+	// Body parsers
 	app.use(Express.json());
 	app.use(Express.text());
 	app.use(FileUpload({ createParentPath: true }));
 	app.use(CookieParser());
 
+	// API routes
 	app.use('/res', Express.static('client/res')); // Static public resources
+	app.use('/auth', Auth.getRouter());            // Auth system 
+	apiSetupPages();     			    		   // Entry, Auth and Desktop
+	apiSetupFS();         						   // File system
+	apiSetupApps();								   // Apps service
+	apiSetupRShell();     						   // Remote console
 
-	apiSetupAuth();       // Auth system
-	apiSetupPages();      // Entry, Auth and Desktop
-	apiSetupFS();         // File system
-	apiSetupApps();       // Apps service
-	apiSetupRShell();     // Remote console
+	//if (isExtEnabled('mediastr')) {
+	//	MediaStr.init(config.extensions.mediastr);
+	//	app.use('/mstr', MediaStr.getExpressRouter());
+	//}
 
-	if (isExtEnabled('mediastr')) {
-		MediaStr.init(config.extensions.mediastr);
-		app.use('/mstr', MediaStr.getExpressRouter());
-	}
-
+	// General error handler
 	app.use((err, req, res, next) => {
 		if (err instanceof BadAuthExecpt) {
 			denyRequest(res);
@@ -110,17 +112,6 @@ function initConfig() {
 function initFS() {
 	vfs = new VFSM.VFS();
 	vfs.loadDefs(config.fs);
-}
-
-function initUsers() {
-	userDefs = JSON.parse(FS.readFileSync('config/users.json'));
-	logins = {};
-}
-
-function isExtEnabled(ext) {
-	return config.extensions
-		&& config.extensions[ext]
-		&& config.extensions[ext].enabled;
 }
 
 function apiSetupRShell() {
@@ -357,23 +348,7 @@ function apiSetupFS() {
 }
 
 function apiSetupAuth() {
-	app.post('/auth', (req, res) => {
-		let id = req.body.id;
-		let pass = req.body.pass;
-		if ((id in userDefs) && (userDefs[id].pass === pass)) {
-			let newKey = getRandomInt(1, 32768);
-			logins[id] = newKey;
-			res.json({ ok: true, key: newKey });
-			return;
-		}
-
-		res.json({ ok: false, key: 0 });
-	});
-
-	app.get('/auth/test', (req, res) => {
-		let result = getReqUser(req) != null;
-		res.json({ 'ok': result });
-	});
+	
 }
 
 function getGuardedReqUser(req) {
@@ -385,17 +360,9 @@ function getGuardedReqUser(req) {
 function getReqUser(req, autoDeny, res) {
 	let key = req.cookies.authkey;
 	
-	// Iterate over logged in users and compare authentication key
-	for (let user in logins) {
-		if (logins[user] == key) return user;
-	}
+	let user = Auth.getUser(req);
+	if (user) return user;
 
-	// If the key isn't registered, check if we have a no-auth user configured
-	if (config.noauth) {
-		return config.noauth
-	}
-	
-	// Otherwise, just deny the request
 	if (autoDeny) denyRequest(res);
 	return null;
 }
@@ -420,26 +387,11 @@ function routew(fn) {
 	};
 }
 
-
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-/* -- Thumbnail handling -- */
-function hashPathStr(str) {
-	return str
-	.replaceAll('/', '_')
-	.replaceAll('\\', '_')
-	.replaceAll(':', '_');
-}
-
 async function handleThumbRequest(_abs, res){
 	let absFilePath = Files.toFullSystemPath(_abs);
 	var thumbfolder = Files.toFullSystemPath(`./.thumbnails/`);
 
-	let fthname = hashPathStr(_abs);
+	let fthname = Files.hashPath(_abs);
 	var thumbpath = `${thumbfolder}/${fthname}.thb`;
 
 	if(FS.existsSync(thumbpath)){
@@ -464,17 +416,5 @@ async function handleThumbRequest(_abs, res){
 		res.sendFile(thumbpath);
 	} else {
 		res.status(404).end();
-	}
-}
-
-class Except {
-	constructor(type) {
-		this.type = type;
-	}
-};
-
-class BadAuthExecpt extends Except {
-	constructor() {
-		super('BadAuthExecpt');
 	}
 }
