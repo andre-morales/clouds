@@ -9,6 +9,9 @@ function initLogin() {
 	document.getElementById('pass-field').addEventListener('keypress', (ev) => {
 		if (ev.key == 'Enter') authSubmit();
 	});
+	document.getElementById('login-btn').addEventListener('click', (ev) => {
+		authSubmit();
+	});
 }
 
 async function authSubmit() {

@@ -7,7 +7,7 @@ async function entry() {
 		document.body.innerHTML = await res.text();
 
 		// Add login script
-		addScript('/res/js/login.js', 'login-script');
+		addModule('/res/js/login.mjs', 'login-script');
 	}
 }
 
@@ -51,13 +51,27 @@ async function authIsKeyValid() {
 }
 
 function addScript(src, id) {
-	var scr = document.createElement('script');
-	if (id) scr.setAttribute('id', id);
-	scr.setAttribute('src', src);
-	document.head.appendChild(scr);
+	var elem = document.createElement('script');
+	if (id) elem.setAttribute('id', id);
+	elem.setAttribute('src', src);
+
+	document.head.appendChild(elem);
 
 	return new Promise((resolve) => {
-		scr.addEventListener('load', resolve);
+		elem.addEventListener('load', resolve);
+	});
+}
+
+function addModule(src, id) {
+	var elem = document.createElement('script');
+	if (id) elem.setAttribute('id', id);
+	elem.setAttribute('type', 'module');
+	elem.setAttribute('src', src);
+	
+	document.head.appendChild(elem);
+
+	return new Promise((resolve) => {
+		elem.addEventListener('load', resolve);
 	});
 }
 
