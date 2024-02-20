@@ -30,7 +30,7 @@ body {
 
 .window button {
 	border: solid 2px rgb(30, 30, 128);
-	padding: 4px;
+	padding: 8px 10px;
 	font: 14pt sans-serif;
 	background: none;
 	color: white;

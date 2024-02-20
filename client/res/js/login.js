@@ -1,4 +1,17 @@
-async function auth() {
+function initLogin() {
+	// Set title
+	document.title = 'Auth - Clouds';
+
+	// Enter on any of the inputs submits the login form
+	document.getElementById('id-field').addEventListener('keypress', (ev) => {
+		if (ev.key == 'Enter') authSubmit();
+	});
+	document.getElementById('pass-field').addEventListener('keypress', (ev) => {
+		if (ev.key == 'Enter') authSubmit();
+	});
+}
+
+async function authSubmit() {
 	let id = document.getElementById('id-field').value;
 	let pass = document.getElementById('pass-field').value;
 
@@ -33,3 +46,5 @@ function authFail() {
 	let el = document.querySelector('#login-screen .status');
 	el.innerHTML = 'Auth failed.';
 }
+
+initLogin();

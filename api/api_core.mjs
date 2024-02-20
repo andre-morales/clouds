@@ -20,7 +20,7 @@ import * as Files from './files.mjs';
 import * as FFmpegM from './ext/ffmpeg.mjs';
 import * as ShellMgr from './ext/rshell.mjs';
 import * as MediaStr from './ext/mediastr.mjs';
-import * as FetchProxy from './fetchproxy.mjs';
+//import * as FetchProxy from './fetchproxy.mjs';
 
 // Module instances
 let FFmpeg = null;
@@ -39,8 +39,8 @@ export async function main(args) {
 	initFS();
 	initUsers();
 	initExpress();
-	await FetchProxy.init();
-	FetchProxy.start();
+	//await FetchProxy.init();
+	//FetchProxy.start();
 }
 
 function initExpress() {

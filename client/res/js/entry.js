@@ -1,31 +1,14 @@
 async function entry() {
-	if (await testAuthkey()) {
+	if (await authIsKeyValid()) {
 		initDesktop();
 	} else {
-		initLogin();
+		// Fetch login page
+		let res = await fetch('/page/login');
+		document.body.innerHTML = await res.text();
+
+		// Add login script
+		addScript('/res/js/login.js', 'login-script');
 	}
-}
-
-function authLogout() {
-	setCookie('authkey', '');
-}
-
-async function testAuthkey() {
-	let fres = await fetch('/auth/test');
-	let res = await fres.json();
-	return res.ok;
-}
-
-async function initLogin() {
-	// Set title
-	document.title = 'Auth - Clouds';
-
-	// Fetch login page
-	let res = await fetch('/page/login');
-	document.body.innerHTML = await res.text();
-
-	// Add login script
-	addScript('/res/js/login.js', 'login-script');
 }
 
 function initTransition() {
@@ -53,8 +36,18 @@ async function initDesktop() {
 	// Destroy login script if any
 	destroyElementById('login-script');
 
-	// Add system script
+	// Add system script and let it do the setup
 	addScript('/res/js/client_core.js');
+}
+
+function authLogout() {
+	setCookie('authkey', '');
+}
+
+async function authIsKeyValid() {
+	let fres = await fetch('/auth/test');
+	let res = await fres.json();
+	return res.ok;
 }
 
 function addScript(src, id) {
