@@ -9,15 +9,6 @@ class Fault extends Error {
 	}
 }
 
-// Exceptions describe common program situations such as a failed request.
-// These require immediate attention but should be handled gracefully. 
-class Exception extends Error {
-	constructor(message) {
-		super(message);
-		this.name = "Exception";
-	}
-}
-
 class InternalFault extends Fault {
 	constructor(message) {
 		super(message);
@@ -39,3 +30,18 @@ class BadParameterFault extends Fault {
 	}
 }
 
+// Exceptions describe common program situations such as a failed request.
+// These require immediate attention but should be handled gracefully. 
+class Exception extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "Exception";
+	}
+}
+
+class FetchException extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "FetchException";
+	}
+}

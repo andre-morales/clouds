@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.008';
+const KAPI_VERSION = '0.5.10';
 
 // Lib imports
 import Util from 'util';
@@ -24,7 +24,7 @@ import * as ShellMgr from './ext/rshell.mjs';
 //import * as FetchProxy from './fetchproxy.mjs';
 
 // Module instances
-let FFmpeg = null;
+export var FFmpeg = null;
 var progArgs = null;
 var app = null;
 
@@ -61,8 +61,8 @@ function initExpress() {
 	// API routes
 	app.use('/res', Express.static('client/res')); // Static public resources
 	app.use('/auth', Auth.getRouter());            // Auth system 
+	app.use('/fs', VFS.getRouter());			   // File system
 	apiSetupPages();     			    		   // Entry, Auth and Desktop
-	apiSetupFS();         						   // File system
 	apiSetupApps();								   // Apps service
 	apiSetupRShell();     						   // Remote console
 
@@ -85,8 +85,8 @@ function initExpress() {
 	app.set('views', 'api/pages');
 	app.disable('x-powered-by');
 
-	let httpsKey = FS.readFileSync('ssl/key.key');
-	let httpsCert = FS.readFileSync('ssl/cert.crt');
+	let httpsKey = FS.readFileSync('config/ssl/key.key');
+	let httpsCert = FS.readFileSync('config/ssl/cert.crt');
 
 	let http = HTTP.createServer(app);
 	let https = HTTPS.createServer({
@@ -232,148 +232,9 @@ function apiSetupApps() {
 	});
 }
 
-function apiSetupFS() {
-	app.get('/fs/q/*', asyncRoute(async (req, res) => {	
-		let userId = Auth.getUserGuard(req);
-
-		// Translate the virtual path to a real one
-		let vpath = '/' + req.params[0];
-		let fpath = VFS.translate(userId, vpath);
-		if (!fpath) {
-			res.status(404).end();
-			return;
-		}
-		
-		// Resolve the path and send the file. If an error occurs,
-		// answer with a 404 error code.
-		let absPath = Path.resolve(fpath);
-		res.sendFile(absPath, (err) => {
-			if (err) {
-				res.status(404).end();
-			}
-		});
-	}));	
-
-	app.post('/fs/u/*', asyncRoute(async (req, res) => {	
-		let userId = Auth.getUserGuard(req);
-
-		let vpath = '/' + req.params[0];
-		let fpath = VFS.translate(userId, vpath);
-
-		if (!req.files) {
-			console.log('no files');
-			res.status(500).end();
-			return;
-		}
-
-		if (!req.files.upload) {
-			console.log('no uploaded files');
-			res.status(500).end();
-			return;
-		}
-		
-		let upload = req.files.upload;
-		var files = upload;
-		if(!Array.isArray(upload)){
-			files = [files];
-		}
-
-		for(let file of files){
-			file.mv(Path.join(fpath, file.name));
-		}	
-
-		res.end();
-	}));	
-
-	app.post('/fs/ud/*', asyncRoute(async (req, res) => {
-		let user = Auth.getUserGuard(req);
-
-		let path = VFS.translate(user, '/' + req.params[0]);
-
-		try {
-			await FS.promises.writeFile(path, req.body);
-		} catch (err) {
-			res.status(500);
-		}
-		res.end();
-	}));
-
-	app.get('/fs/ls/*', asyncRoute(async(req, res) => {
-		let userId = Auth.getUserGuard(req);
-
-		// If the virtual path is root '/', list the virtual mounting points
-		let vpath = '/' + req.params[0];
-		if (vpath == '/') {
-			res.json(VFS.listVMPoints(userId));
-			return;
-		}
-
-		// Translate the virtual path to the machine physical path
-		let fpath = VFS.translate(userId, vpath);
-		if (!fpath) {
-			res.status(400).end();
-			return;
-		}
-
-		// List the directory, and return the json results
-		try {
-			let results = await VFS.listPDir(fpath);
-			res.json(results);
-		} catch(err) {
-			res.status(err).end();
-		}
-	}));
-
-	app.get('/fs/thumb/*', async (req, res) => {	
-		let userId = Auth.getUserGuard(req);
-
-		let vpath = '/' + req.params[0];
-
-		let fpath = VFS.translate(userId, vpath);
-
-		if (Files.isFileExtVideo(fpath) || Files.isFileExtPicture(fpath)) {
-			await handleThumbRequest(fpath, res);
-		} else {
-			res.sendFile(fpath);
-		}
-	});	
-}
-
 function denyRequest(res) {
 	res.status(403);
 	res.send('BAD_AUTH: Authentication required.');
-}
-
-async function handleThumbRequest(_abs, res){
-	let absFilePath = Files.toFullSystemPath(_abs);
-	var thumbfolder = Files.toFullSystemPath(`./.thumbnails/`);
-
-	let fthname = Files.hashPath(_abs);
-	var thumbpath = `${thumbfolder}/${fthname}.thb`;
-
-	if(FS.existsSync(thumbpath)){
-		res.sendFile(thumbpath);
-		return;
-	}
-
-	if(FFmpeg) {
-		if(!FS.existsSync(thumbfolder)) FS.mkdirSync(thumbfolder);
-
-		if(!FS.existsSync(thumbpath)){
-			let result = await FFmpeg.createThumbOf(absFilePath, thumbpath);
-
-			if(!result){
-				let f = await FS.promises.open(thumbpath, 'w');
-				f.close();
-				//res.status(404).end();
-				//return;
-			}	
-		} 
-
-		res.sendFile(thumbpath);
-	} else {
-		res.status(404).end();
-	}
 }
 
 // Route wrapper for async routes

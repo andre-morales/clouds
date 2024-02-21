@@ -4,8 +4,13 @@ class Files {
 	}
 
 	static async getJson(path) {
-		let res = await fetch(Files.getPath(path));
-		return await res.json();
+		let url = Files.getPath(path);
+		try {
+			let res = await fetch(url);
+			return await res.json();
+		} catch (err) {
+			throw new FetchException(err);
+		}
 	}
 
 	static async getText(path) {

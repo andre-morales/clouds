@@ -52,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.100';
+		this.CLIENT_VERSION = '1.0.102';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -93,8 +93,7 @@ class ClientClass {
 		});
 
 		// Fetch app definitions from the user profile
-	 	let fres = await fetch('/fs/q/usr/apps.json');
-		this.registeredApps = await fres.json();
+		this.registeredApps = await Files.getJson('/usr/apps.json');
 		
 		// Remove disabled apps
 		for (let app of Object.keys(this.registeredApps)) {
@@ -366,6 +365,7 @@ class ClientClass {
 }
 
 function _systemPanic(title, msg, mode) {
+	console.error('--- SYSTEM PANIC ---');
 	// Initialize a counter to keep incrementing the z-index
 	let self = _systemPanic;
 	self.counter = self.counter || 1024;

@@ -4,4 +4,4 @@ usr/test/collections.json
 usr/test/favorites.json
 usr/test/desktop.json
 client/apps/_graveyard/*
-ssl/*
+config/ssl/*

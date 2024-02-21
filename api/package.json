@@ -1,8 +1,8 @@
 {
-  "name": "websys",
+  "name": "clouds",
   "version": "1.0.0",
   "description": "",
-  "main": "entry.mjs",
+  "main": "modules/entry.mjs",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

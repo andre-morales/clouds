@@ -80,7 +80,6 @@ class Desktop {
 
 	async saveConfigs() {
 		let data = JSON.stringify(this.configs);
-		console.log('saved:', data);
 		await Files.upText('/usr/desktop.json', data);
 	}
 
