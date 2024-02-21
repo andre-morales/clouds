@@ -186,9 +186,13 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		};
 
 		if (Client.audio.begin()) {
-			let track = WebSys.audio.context.createMediaElementSource($video[0]);
-			track.connect(WebSys.audio.destination);
+			let track = Client.audio.context.createMediaElementSource($video[0]);
+			track.connect(Client.audio.destination);
 		}
+
+		let media = Client.registerMediaElement($video[0]);
+		media.nextTrackCallback = () => { this.goNext() };
+		media.previousTrackCallback = () => { this.goPrevious() };
 	}
 
 	setupImageContainer() {

@@ -24,7 +24,8 @@ async function main() {
 		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/window.js'),
 		addScript('/res/js/dialogs.js'),
-		addScript('/res/js/audiosystem.js')
+		addScript('/res/js/audiosystem.js'),
+		addModule('/res/js/media_sess_bridge.mjs')
 	]);
 
 	// Load style
@@ -52,7 +53,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.102';
+		this.CLIENT_VERSION = '1.0.114';
 		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
 	}
 
@@ -77,6 +78,10 @@ class ClientClass {
 		
 		// Create desktop subsystem
 		this.desktop = new Desktop();
+
+		// Media Session bridge
+		this.mediaSessionBridge = await import('modules/media_sess_bridge.mjs');
+		this.mediaSessionBridge.init();
 
 		// Save current page on history
 		history.pushState(null, null, location.href);
@@ -284,6 +289,10 @@ class ClientClass {
 		document.body.appendChild(link);
 		link.click();
 		link.remove();
+	}
+
+	registerMediaElement(elem) {
+		return this.mediaSessionBridge.registerMediaElement(elem);
 	}
 
 	// -- Logging --
