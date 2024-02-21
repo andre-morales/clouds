@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.7';
+const KAPI_VERSION = '0.5.008';
 
 // Lib imports
 import Util from 'util';
@@ -16,7 +16,7 @@ import FileUpload from 'express-fileupload';
 import { BadAuthException } from './errors.mjs';
 import config, * as Config from './config.mjs';
 import * as Auth from './auth.mjs';
-import * as VFSM from './vfs.mjs';
+import * as VFS from './vfs.mjs';
 import * as Files from './files.mjs';
 import * as FFmpegM from './ext/ffmpeg.mjs';
 import * as ShellMgr from './ext/rshell.mjs';
@@ -25,7 +25,6 @@ import * as ShellMgr from './ext/rshell.mjs';
 
 // Module instances
 let FFmpeg = null;
-var vfs = null;
 var progArgs = null;
 var app = null;
 
@@ -35,7 +34,7 @@ export async function main(args) {
 
 	initConfig();
 	Auth.init();
-	initFS();
+	VFS.init();
 	initExpress();
 	//await FetchProxy.init();
 	//FetchProxy.start();
@@ -107,11 +106,6 @@ function initConfig() {
 	Config.init(progArgs);
 	
 	ShellMgr.loadDefs(config.extensions.shell);
-}
-
-function initFS() {
-	vfs = new VFSM.VFS();
-	vfs.loadDefs(config.fs);
 }
 
 function apiSetupRShell() {
@@ -244,7 +238,7 @@ function apiSetupFS() {
 
 		// Translate the virtual path to a real one
 		let vpath = '/' + req.params[0];
-		let fpath = vfs.translate(userId, vpath);
+		let fpath = VFS.translate(userId, vpath);
 		if (!fpath) {
 			res.status(404).end();
 			return;
@@ -264,7 +258,7 @@ function apiSetupFS() {
 		let userId = Auth.getUserGuard(req);
 
 		let vpath = '/' + req.params[0];
-		let fpath = vfs.translate(userId, vpath);
+		let fpath = VFS.translate(userId, vpath);
 
 		if (!req.files) {
 			console.log('no files');
@@ -294,7 +288,7 @@ function apiSetupFS() {
 	app.post('/fs/ud/*', asyncRoute(async (req, res) => {
 		let user = Auth.getUserGuard(req);
 
-		let path = vfs.translate(user, '/' + req.params[0]);
+		let path = VFS.translate(user, '/' + req.params[0]);
 
 		try {
 			await FS.promises.writeFile(path, req.body);
@@ -310,12 +304,12 @@ function apiSetupFS() {
 		// If the virtual path is root '/', list the virtual mounting points
 		let vpath = '/' + req.params[0];
 		if (vpath == '/') {
-			res.json(vfs.listVMPoints(userId));
+			res.json(VFS.listVMPoints(userId));
 			return;
 		}
 
 		// Translate the virtual path to the machine physical path
-		let fpath = vfs.translate(userId, vpath);
+		let fpath = VFS.translate(userId, vpath);
 		if (!fpath) {
 			res.status(400).end();
 			return;
@@ -323,7 +317,7 @@ function apiSetupFS() {
 
 		// List the directory, and return the json results
 		try {
-			let results = await vfs.listPDir(fpath);
+			let results = await VFS.listPDir(fpath);
 			res.json(results);
 		} catch(err) {
 			res.status(err).end();
@@ -335,7 +329,7 @@ function apiSetupFS() {
 
 		let vpath = '/' + req.params[0];
 
-		let fpath = vfs.translate(userId, vpath);
+		let fpath = VFS.translate(userId, vpath);
 
 		if (Files.isFileExtVideo(fpath) || Files.isFileExtPicture(fpath)) {
 			await handleThumbRequest(fpath, res);
