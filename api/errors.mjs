@@ -1,11 +1,6 @@
-export class Except {
-	constructor(type) {
-		this.type = type;
-	}
-};
-
-export class BadAuthExecpt extends Except {
-	constructor() {
-		super('BadAuthExecpt');
+export class BadAuthException extends Error {
+	constructor(message = "Request to resource requires an authenticated user.") {
+		super(message);
+		this.name = "BadAuthException";
 	}
 }

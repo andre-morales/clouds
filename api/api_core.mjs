@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.6';
+const KAPI_VERSION = '0.5.7';
 
 // Lib imports
 import Util from 'util';
@@ -13,7 +13,7 @@ import Express from 'express';
 import FileUpload from 'express-fileupload';
 
 // Local imports
-import './errors.mjs';
+import { BadAuthException } from './errors.mjs';
 import config, * as Config from './config.mjs';
 import * as Auth from './auth.mjs';
 import * as VFSM from './vfs.mjs';
@@ -48,7 +48,7 @@ function initExpress() {
 	}
 
 	app = Express();
-	
+
 	// Core request handlers
 	app.use(Cors());
 	app.use(Compression());
@@ -74,7 +74,7 @@ function initExpress() {
 
 	// General error handler
 	app.use((err, req, res, next) => {
-		if (err instanceof BadAuthExecpt) {
+		if (err instanceof BadAuthException) {
 			denyRequest(res);
 			return;
 		}
@@ -116,7 +116,7 @@ function initFS() {
 
 function apiSetupRShell() {
 	app.get('/shell/0/init', (req, res) => {
-		getGuardedReqUser(req);
+		Auth.getUserGuard(req);
 
 		let shell = ShellMgr.create();
 		if (!shell) {
@@ -129,7 +129,7 @@ function apiSetupRShell() {
 	});
 
 	app.post('/shell/:id/send', (req, res) => {
-		getGuardedReqUser(req);
+		Auth.getUserGuard(req);
 
 		let shell = ShellMgr.shells[req.params.id]
 		if (!shell) {
@@ -142,7 +142,7 @@ function apiSetupRShell() {
 	});
 
 	app.get('/shell/:id/stdout', (req, res) => {
-		getGuardedReqUser(req);
+		Auth.getUserGuard(req);
 		let shell = ShellMgr.shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
@@ -153,7 +153,7 @@ function apiSetupRShell() {
 	});
 
 	app.get('/shell/:id/stdout_new', async (req, res) => {
-		getGuardedReqUser(req);
+		Auth.getUserGuard(req);
 		res.set('Cache-Control', 'no-store');
 
 		let shell = ShellMgr.shells[req.params.id]
@@ -174,7 +174,7 @@ function apiSetupRShell() {
 	});
 
 	app.get('/shell/:id/kill', (req, res) => {
-		getGuardedReqUser(req);
+		Auth.getUserGuard(req);
 		
 		let id = req.params.id;
 		
@@ -188,7 +188,7 @@ function apiSetupRShell() {
 	});
 
 	app.get('/shell/:id/ping', (req, res) => {
-		getGuardedReqUser(req);
+		Auth.getUserGuard(req);
 		let shell = ShellMgr.shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
@@ -218,7 +218,7 @@ function apiSetupPages() {
 
 	// - Desktop page
 	app.get('/page/desktop', (req, res) => {
-		getGuardedReqUser(req);
+		Auth.getUserGuard(req);
 		res.render('desktop');
 	});
 
@@ -229,7 +229,7 @@ function apiSetupPages() {
 
 function apiSetupApps() {
 	app.get('/app/:app/*', (req, res) => {
-		getGuardedReqUser(req);
+		Auth.getUserGuard(req);
 		
 		let app = req.params.app;
 		let path = req.params[0];	
@@ -239,8 +239,8 @@ function apiSetupApps() {
 }
 
 function apiSetupFS() {
-	app.get('/fs/q/*', routew(async (req, res) => {	
-		let userId = getGuardedReqUser(req);
+	app.get('/fs/q/*', asyncRoute(async (req, res) => {	
+		let userId = Auth.getUserGuard(req);
 
 		// Translate the virtual path to a real one
 		let vpath = '/' + req.params[0];
@@ -260,8 +260,8 @@ function apiSetupFS() {
 		});
 	}));	
 
-	app.post('/fs/u/*', async (req, res) => {	
-		let userId = getGuardedReqUser(req);
+	app.post('/fs/u/*', asyncRoute(async (req, res) => {	
+		let userId = Auth.getUserGuard(req);
 
 		let vpath = '/' + req.params[0];
 		let fpath = vfs.translate(userId, vpath);
@@ -289,10 +289,10 @@ function apiSetupFS() {
 		}	
 
 		res.end();
-	});	
+	}));	
 
-	app.post('/fs/ud/*', async (req, res) => {
-		let user = getGuardedReqUser(req);
+	app.post('/fs/ud/*', asyncRoute(async (req, res) => {
+		let user = Auth.getUserGuard(req);
 
 		let path = vfs.translate(user, '/' + req.params[0]);
 
@@ -302,12 +302,10 @@ function apiSetupFS() {
 			res.status(500);
 		}
 		res.end();
-	});
+	}));
 
-	app.get('/fs/ls/*', async(req, res) => {
-		// User authentication
-		let userId = getReqUser(req, true, res);
-		if (!userId) return;
+	app.get('/fs/ls/*', asyncRoute(async(req, res) => {
+		let userId = Auth.getUserGuard(req);
 
 		// If the virtual path is root '/', list the virtual mounting points
 		let vpath = '/' + req.params[0];
@@ -330,10 +328,10 @@ function apiSetupFS() {
 		} catch(err) {
 			res.status(err).end();
 		}
-	});
+	}));
 
 	app.get('/fs/thumb/*', async (req, res) => {	
-		let userId = getGuardedReqUser(req);
+		let userId = Auth.getUserGuard(req);
 
 		let vpath = '/' + req.params[0];
 
@@ -347,44 +345,9 @@ function apiSetupFS() {
 	});	
 }
 
-function apiSetupAuth() {
-	
-}
-
-function getGuardedReqUser(req) {
-	let user = getReqUser(req);
-	if (!user) throw new BadAuthExecpt();
-	return user;
-}
-
-function getReqUser(req, autoDeny, res) {
-	let key = req.cookies.authkey;
-	
-	let user = Auth.getUser(req);
-	if (user) return user;
-
-	if (autoDeny) denyRequest(res);
-	return null;
-}
-
 function denyRequest(res) {
 	res.status(403);
 	res.send('BAD_AUTH: Authentication required.');
-}
-
-// Route wrapper for error handling
-function routew(fn) {
-	return async (req, res) => {
-		try {
-			await fn(req, res);
-		} catch (err) {
-			if (err instanceof BadAuthExecpt) {
-				denyRequest(res);
-			} else {
-				throw err;
-			}
-		}
-	};
 }
 
 async function handleThumbRequest(_abs, res){
@@ -417,4 +380,15 @@ async function handleThumbRequest(_abs, res){
 	} else {
 		res.status(404).end();
 	}
+}
+
+// Route wrapper for async routes
+export function asyncRoute(fn) {
+	return async (req, res, next) => {
+		try {
+			await fn(req, res, next);
+		} catch (err) {
+			next(err);
+		}
+	};
 }

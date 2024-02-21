@@ -1,6 +1,7 @@
 import FS from 'fs';
 import Express from 'express';
 import config from './config.mjs';
+import { BadAuthException } from './errors.mjs';
 
 export var logins = null;
 var userDefs = null;
@@ -22,7 +23,7 @@ export function login(id, pass) {
 	return 0;
 }
 
-// Returns the user associated with the a request.
+// Returns the user associated with the request.
 // If no-auth was set in config, returns the no-auth user.
 // Returns null if the request has no user or an invalid one associated with it.
 export function getUser(req) {
@@ -40,6 +41,14 @@ export function getUser(req) {
 	
 	// If no user, return null
 	return null;
+}
+
+// Returns the user associated with the request.
+// If no user is associated or if it's an invalid user, throws a BadAuthException
+export function getUserGuard(req) {
+	let user = getUser(req);
+	if (!user) throw new BadAuthException();
+	return user;
 }
 
 export function getRouter() {
