@@ -80,6 +80,11 @@ function setCurrentMedia(media) {
 	let mdata = {};
 
 	let fileName = Paths.file(srcUrlString);
+	// If filename has an extension, remove it
+	let i = fileName.lastIndexOf('.');
+	if (i != -1) {
+		fileName = fileName.substring(0, i);
+	}
 	let thumb;
 
 	// Check if the origin of the media and our app origin is the same

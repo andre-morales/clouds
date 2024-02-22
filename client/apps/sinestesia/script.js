@@ -162,6 +162,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		});
 
 		$video.on('ended', (ev) => {
+			if (!this.autoPlay) return;
 			setTimeout(() => this.goNext(), 500);
 		});
 
@@ -350,7 +351,10 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		this.contentType = '';
 		$win.find('.contentw').removeClass('enabled');
 		$win.find('.contentw.picture img').attr("src", "");
-		$win.find('.contentw.video video').empty();
+		let $video = $win.find('.contentw.video video');
+		$video.empty();
+		$video[0].load();
+
 	}
 
 	async goNext() {
