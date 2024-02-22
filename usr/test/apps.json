@@ -24,11 +24,6 @@
 		"icon": "/res/img/apps/browser128.png",
 		"flags": ["tool"]
 	},
-	"systemlog": {
-		"name": "System Log",
-		"icon": "/app/systemlog/icon128.png",
-		"flags": []
-	},
 	"configs": {
 		"name": "Configuration",
 		"icon": "/res/img/apps/config128.png",
@@ -38,37 +33,5 @@
 		"name": "Console",
 		"icon": "/app/console/icon128.png",
 		"flags": ["desk"]
-	},
-	"remoteshell": {
-		"name": "Remote Shell",
-		"icon": "/res/img/apps/terminal128.png",
-		"flags": []
-	},
-	"audioconf": {
-		"name": "Audio System",
-		"icon": "/res/img/apps/audio128.png",
-		"flags": []
-	},
-
-	"-soundgraph": {
-		"name": "Sound Graph",
-		"icon": "/res/img/apps/log128.png",
-		"flags": []
-	},
-	"-vttable": {
-		"name": "Virtual Turn Table",
-		"icon": "/res/img/apps/vttable128.png",
-		"flags": []
-	},
-	"-browser": {
-		"name": "Browser",
-		"icon": "/res/img/apps/browser128.png",
-		"flags": []
-	},
-	"-flight": {
-		"name": "Flight",
-		"icon": "/res/img/apps/log128.png",
-		"flags": []
 	}
-	
 }
