@@ -1,6 +1,7 @@
 {
 	"id": "webview",
 	"builder": "WebViewApp",
+	"icon": "/app/webview/icon128.png",
 	"scripts": [
 		"/app/webview/script.js"	
 	],

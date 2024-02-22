@@ -36,6 +36,7 @@ window.ConsoleApp = class ConsoleApp extends App {
 			this.sendCmd();
 		});
 		this.$cmdField.on('keydown', (ev) => {
+			//Client.log('kd: ' + ev.key);
 			if (ev.key == 'ArrowUp') {
 				this.goBackHistory();
 				ev.preventDefault();
@@ -45,6 +46,7 @@ window.ConsoleApp = class ConsoleApp extends App {
 			}
 		});
 		this.$cmdField.on('keypress', (ev) => {
+			//Client.log('kp: ' + ev.key);
 			if (ev.key == 'Enter') {
 				this.sendCmd();
 			}
@@ -127,9 +129,28 @@ window.ConsoleApp = class ConsoleApp extends App {
 		}
 	}
 
-	stringifyObject(obj) {
+	stringifyObject(obj, depth = 1) {	
 		if (obj === undefined) return "undefined";
+
 		if (obj === null) return "null";
+
+		if (Array.isArray(obj)) {
+			let str = "["
+			for (let i = 0; i < obj.length; i++) {
+				str += this.stringifyObject(obj[i], depth - 1);
+				if (i < obj.length - 1) {
+					str += ', ';
+				}
+			}
+			str += ']';
+			return str;
+		}
+
+		if (typeof obj === 'string') return `"${obj}"`;
+		
+		if (!isNaN(obj)) return "" + obj;
+
+		if (depth <= 0) return obj.constructor.name;
 
 		let properties = "";
 		for (let property in obj) {

@@ -5,15 +5,8 @@ window.WebViewApp = class WebViewApp extends App {
 	}
 
 	async init() {
-		// If notepad was launched with a path (opening a file)
-		if (this.buildArgs.length > 0) {
-			this.path = this.buildArgs[0].substring('/fs/q'.length);
-		}
-
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow(this);
-		this.window.setIcon('/res/img/apps/log128.png');
-		this.window.on('closereq', () => this.close());
 		this.window.setTitle('WebView');
 
 		let $app = this.window.$window.find('.window-body');
@@ -23,26 +16,47 @@ window.WebViewApp = class WebViewApp extends App {
 		// Fetch application body
 		await this.window.setContentToUrl('/app/webview/main.html');
 		
-		this.$iframe = $app.find("iframe");
+		let fileMenu = CtxMenu([
+			CtxItem('Open...', () => { this.showOpenDialog(); }),
+			'-',
+			CtxItem('Exit', () => { this.window.close(); })
+		]);
+	
+		$app.find('.file-menu').click((ev) => {
+			WebSys.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
+		});
 
-		// Load the text from the argument path (if present)
-		if (this.path) {
-			//let freq = await fetch('/fs/q' + this.path);
-			//let text = await freq.text();
-			//this.$iframe.contents().find("html").html(text);
-			this.$iframe[0].src = '/fs/q' + this.path;
-		}
+		this.$iframe = $app.find("iframe");
 
 		// Make the window visible
 		this.restoreAppWindowState(this.window);
 		this.window.setVisible(true);
+
+		// If notepad was launched with a path (opening a file)
+		if (this.buildArgs.length > 0) {
+			this.setPath(this.buildArgs[0]);
+		}
 	}
 
+	async showOpenDialog() {
+		let app = await WebSys.runApp('explorer');
+		app.asFileSelector('open', 'one');
+		let result = await app.waitFileSelection();
+		if (!result || !result.length) return;
+
+		let file = result[0];
+		this.setPath('/fs/q' + file);
+	}
 	
 	setPath(path) {
 		this.path = path;
-		
-		this.window.setTitle(path);
+		if (!path) {
+			this.window.setTitle('WebView');
+			return;
+		}
+
+		this.window.setTitle(Paths.file(path));
+		this.$iframe[0].src = path;
 	}
 		
 	onClose() {
