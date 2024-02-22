@@ -71,8 +71,6 @@ export function registerMediaElement(elem) {
 }
 
 function setCurrentMedia(media) {
-	Client.log('c-elem');
-
 	currentMedia = media;
 	let elem = media.element;
 
@@ -106,10 +104,19 @@ function setCurrentMedia(media) {
 }
 
 function updatePosition() {
+	let mElem = currentMedia.element;
+
+	// If duration is not a number, the media probably got unloaded,
+	// so we remove the position state.
+	if (isNaN(mElem.duration)) {
+		navigator.mediaSession.setPositionState();
+		return;
+	}
+
 	navigator.mediaSession.setPositionState({
-		duration: currentMedia.element.duration,
-		playbackRate: currentMedia.element.playbackRate,
-		position: currentMedia.element.currentTime
+		duration: mElem.duration,
+		playbackRate: mElem.playbackRate,
+		position: mElem.currentTime
 	});
 }
 
