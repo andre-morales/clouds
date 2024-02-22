@@ -53,8 +53,9 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.116';
-		this.BUILD_TEXT = `Clouds ${this.CLIENT_VERSION} Early Test 1`;
+		this.CLIENT_VERSION = '1.0.117';
+		this.BUILD_STRING = `${this.CLIENT_VERSION} Early Test 1`
+		this.BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	}
 
 	async init() {
@@ -71,6 +72,8 @@ class ClientClass {
 		// Display version on ui
 		fetch('/version').then(async (fres) => {
 			let apiv = await fres.text();
+			this.API_VERSION = apiv;
+
 			let sysv = Client.BUILD_TEXT;
 			let vtext = `${sysv}<br>API v${apiv}`; 
 			$('.desktop .backplane .text').html(vtext);

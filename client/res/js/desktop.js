@@ -37,6 +37,9 @@ class Desktop {
 		let menu = CtxMenu([
 			CtxItem("System Settings", () => {
 				Client.runApp('configs');
+			}),
+			CtxItem("About", () => {
+				Client.runApp('about');
 			})
 		]);
 		this.addCtxMenuOn(this.$desktop.find('.backplane'), () => menu);

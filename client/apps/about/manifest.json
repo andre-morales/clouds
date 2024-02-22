@@ -1,0 +1,11 @@
+{
+	"id": "about",
+	"builder": "AboutApp",
+	"icon": "/app/about/icon64.png",
+	"scripts": [
+		"/app/about/script.js"	
+	],
+	"styles": [
+		"/app/about/style.css"
+	]
+}
