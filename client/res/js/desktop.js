@@ -283,7 +283,7 @@ class Desktop {
 
 					resWin = win;
 					startMX = mx,       startMY = my;
-					startB = win.getBoundsA();
+					startB = win.getBounds();
 					ev.stopPropagation();
 					return;
 				} else {

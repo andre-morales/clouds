@@ -125,12 +125,14 @@ class Window {
 	// Determine initial window position
 	initPosition() {
 		this.bringToFront();
-		if (this.app.mainWindow == this) {
+		if (this.app.mainWindow === this) {
 			this.restoreState();
 		}
 
-		// Makes a limited amount of tries to reposition the window so that it doesn't stay directly
-		// on top of any other window
+		// Confirm own dimensions to align css properties
+		this.setSize(this.width, this.height);
+
+		// Reposition the window so that it doesn't stay directly on top of any other window
 		Client.desktop.realignWindow(this);
 	}
 
@@ -216,6 +218,33 @@ class Window {
 		this.events.dispatch('closing', new ReactorEvent());
 	}
 
+	// Resizes this window to fit its content
+	pack() {
+		// If the window isn't visible, insert it into the layout but don't display its contents.
+		// This has to be done, otherwise its dimensions won't be calculated.
+		if (!this.visible) {
+			this.$window.css('visibility', 'hidden');
+			this.$window.css('display', 'flex');
+		}
+
+		// Remove any hard with/height properties
+		this.$window.css('width', '');
+		this.$window.css('height', '');
+
+		// Get computed dimensions and compensate 2px for borders		
+		let ow = this.$window.width() + 2;
+		let oh = this.$window.height() + 2;
+
+		// Set the size back with the computed values
+		this.setSize(ow, oh);
+
+		// If the window is invisible, restore its old status
+		if (!this.visible) {
+			this.$window.css('visibility', '');
+			this.$window.css('display', '');
+		}
+	}
+
 	setOwner(window) {
 		if (this.owner) {
 			arrErase(this.owner.children, this);
@@ -230,7 +259,7 @@ class Window {
 		if (this.maximized) {
 			state = [this.maximized, this.restoreBounds];
 		} else {
-			state = [this.maximized, this.getBoundsA()];
+			state = [this.maximized, this.getBounds()];
 		}
 
 		let regname = 'app.' + this.app.classId + '.winstate';
@@ -245,8 +274,8 @@ class Window {
 		let state = JSON.parse(item);
 		if (!state) return false;
 
-		this.setBoundsA(state[1]);
 		this.setMaximized(state[0]);
+		this.setBounds(state[1]);
 		return true;
 	}
 
@@ -301,8 +330,6 @@ class Window {
 			return;
 		}
 
-		if (this.width == w && this.height == h) return;
-
 		this.width = w;
 		this.height = h;
 
@@ -314,23 +341,20 @@ class Window {
 		}
 	}
 
-	setHeight(h) {
-		this.setSize(this.width, h);
-	}
-
 	setBounds(x, y, w, h) {
-		this.setPosition(x, y);
-		this.setSize(w, h);
-	}
-
-	setBoundsA(arr) {
-		this.setPosition(arr[0], arr[1]);
-		this.setSize(arr[2], arr[3]);
+		if (Array.isArray(x)) {
+			this.setPosition(x[0], x[1]);
+			this.setSize(x[2], x[3]);	
+		} else {
+			this.setPosition(x, y);
+			this.setSize(w, h);
+		}
 	}
 
 	setVisible(visible) {
 		this.visible = visible;
 		if (visible) {
+
 			this.$window.addClass('visible');
 			
 			if (!this.$taskbarBtn) this.createTaskbarButton();
@@ -356,7 +380,7 @@ class Window {
 		}
 	}
 
-	getBoundsA() {
+	getBounds() {
 		return [this.posX, this.posY, this.width, this.height];
 	}
 
@@ -406,7 +430,7 @@ class Window {
 		if (this.maximized == max) return;
 
 		if (max) {
-			this.restoreBounds = this.getBoundsA();
+			this.restoreBounds = this.getBounds();
 
 			let rect = Client.desktop.getWindowingArea();
 			this.setPosition(0, 0);
@@ -416,7 +440,7 @@ class Window {
 			this.$window.addClass('maximized');
 		} else {
 			this.maximized = false;
-			this.setBoundsA(this.restoreBounds);
+			this.setBounds(this.restoreBounds);
 
 			this.$window.removeClass('maximized');
 		}

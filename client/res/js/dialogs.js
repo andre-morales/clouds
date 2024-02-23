@@ -1,5 +1,5 @@
 class Dialogs {
-	static showOptions(app, title, msg, options) {
+	static showOptions(app, title, msg, options, settings = {}) {
 		if (!msg) msg = "";
 
 		let deferred = new Deferred();
@@ -10,9 +10,10 @@ class Dialogs {
 		
 		let $body = win.$window.find('.window-body');
 		
-		// Create message box		
+		// Create message box
+		let icon = (settings.icon) ? settings.icon : 'info';
 		let $msg = $("<div class='message'>");
-		$msg.append($('<i class="dialog-icon info-icon">'))
+		$msg.append($(`<i class='dialog-icon ${icon}-icon'>`))
 		
 		let html = msg.toString().replaceAll('\n', '<br>');
 		$msg.append($('<span class="dialog-text"><br/>' + html + '</span>'));
@@ -35,15 +36,16 @@ class Dialogs {
 		win.setSize(360, 220);
 		win.bringToCenter();
 		win.bringToFront();
+		win.pack();
 		win.setVisible(true);
+
 		return [win, deferred.promise];
 	}
 
 	static showError(app, title, msg) {
-		let [win, prom] = Dialogs.showOptions(app, title, msg, ["OK"]);
-		win.$window.find('.dialog-icon')
-			.removeClass('info-icon')
-			.addClass('error-icon');
+		let [win, prom] = Dialogs.showOptions(app, title, msg, ["OK"], {
+			icon: 'error'
+		});
 		return [win, prom];
 	}
 }
