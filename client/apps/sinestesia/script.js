@@ -228,6 +228,9 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			CtxItem('Open...', () => this.showOpenDialog()),
 			CtxItem('Open folder...', () => this.showOpenFolderDialog()),
 			'-',
+			CtxCheck('Autoplay', (v) => {
+				this.autoPlay = v;
+			}),
 			CtxCheck('Lock playback', (v) => {
 				this.lockedPlayback = v;
 				this.cancelPauseEvents = v;
@@ -409,6 +412,9 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		// use the first file as index
 		let currentFile = Paths.file(currentPath);
 		let index = files.findIndex((f) => f[0] == currentFile);
+
+		// Enable auto play when doing playlist conversions
+		this.autoPlay = true;
 
 		if (index != -1) {
 			this.playlist.index = index;

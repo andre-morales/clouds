@@ -14,7 +14,12 @@ export function init() {
 	defs = config.fs;
 }
 
-export function translate(userid, vpath) {
+// Translate a virtual path into a physical one.
+// Loops over all mounting points checking if the virtual path belongs to one of them.
+// If so, does the mapping. If no mapping was found, returns null.
+// This function performs no checks if the path provided is valid,
+// it only performs a substitution.
+function translate(userid, vpath) {
 	for (let mountp in defs) {
 		if (vpath.startsWith(mountp)) {
 			let phyPoint = defs[mountp].path;
@@ -26,7 +31,9 @@ export function translate(userid, vpath) {
 	return null;
 }
 
-export function listVMPoints(userid) {
+// Lists all virtual mounting points accessible to the user as configured in the
+// config/profiles/[user].json
+function listVMPoints(userid) {
 	return Object.keys(defs)
 	.filter((vmp) => {
 		return !defs[vmp].hidden;
@@ -36,7 +43,8 @@ export function listVMPoints(userid) {
 	});
 }
 
-export async function listPDir(path) {
+// List all files present in a PHYSICAL path
+async function listPDir(path) {
 	if (!path.endsWith('/')) path += '/';
 
 	let files;
@@ -82,9 +90,15 @@ export async function listPDir(path) {
 	return results; 
 }
 
+// Moves the file in the PHYSICAL path to the trash folder configured.
+async function trash(path) {
+	
+}
+
 export function getRouter() {
 	var router = Express.Router();
 
+	// Query route
 	router.get('/q/*', asyncRoute(async (req, res) => {	
 		let userId = Auth.getUserGuard(req);
 
@@ -106,40 +120,47 @@ export function getRouter() {
 		});
 	}));	
 
+	// Upload files trough upload form
 	router.post('/u/*', asyncRoute(async (req, res) => {	
 		let userId = Auth.getUserGuard(req);
 
-		let vpath = '/' + req.params[0];
-		let fpath = translate(userId, vpath);
-
+		// Sanity check
 		if (!req.files) {
 			console.log('no files');
 			res.status(500).end();
 			return;
 		}
 
+		// Sanity check 2
 		if (!req.files.upload) {
 			console.log('no uploaded files');
 			res.status(500).end();
 			return;
 		}
 		
-		let upload = req.files.upload;
-		var files = upload;
-		if(!Array.isArray(upload)){
+		// Translate target directory to physical
+		let vdir = '/' + req.params[0];
+		let fdir = translate(userId, vdir);
+
+		// Make sure uploaded files are in an array
+		var files = req.files.upload;
+		if(!Array.isArray(files)){
 			files = [files];
 		}
 
+		// Move the uploaded files into their target path
 		for(let file of files){
-			file.mv(Path.join(fpath, file.name));
+			file.mv(Path.join(fdir, file.name));
 		}	
 
 		res.end();
 	}));	
 
+	// Upload data to new or existing file
 	router.post('/ud/*', asyncRoute(async (req, res) => {
 		let user = Auth.getUserGuard(req);
 
+		// Phyisical target path
 		let path = translate(user, '/' + req.params[0]);
 
 		try {
@@ -150,6 +171,7 @@ export function getRouter() {
 		res.end();
 	}));
 
+	// List files in directory
 	router.get('/ls/*', asyncRoute(async(req, res) => {
 		let userId = Auth.getUserGuard(req);
 
@@ -176,11 +198,16 @@ export function getRouter() {
 		}
 	}));
 
+	// Delete file (move to trash)
+	router.get('/del/*', asyncRoute(async(req, res) => {
+		// Not implemented yet.
+	}));
+
+	// Query thumbnail for media file
 	router.get('/thumb/*', async (req, res) => {	
 		let userId = Auth.getUserGuard(req);
 
 		let vpath = '/' + req.params[0];
-
 		let fpath = translate(userId, vpath);
 
 		if (Files.isFileExtVideo(fpath) || Files.isFileExtPicture(fpath)) {

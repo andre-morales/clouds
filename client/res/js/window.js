@@ -261,7 +261,6 @@ class Window {
 	}
 
 	setPosition(x, y) {
-		debugger;
 		if (!isFinite(x) || !isFinite(y)) return;
 		if (y < 0) y = 0;
 

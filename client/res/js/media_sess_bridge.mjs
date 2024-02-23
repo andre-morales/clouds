@@ -8,14 +8,19 @@ export function init() {
 	enabled = true;
 	activeMediaElements = [];
 
-	navigator.mediaSession.setActionHandler("play", () => {
+	navigator.mediaSession.setActionHandler("play", async () => {
 	    navigator.mediaSession.playbackState = 'playing';
 	    //console.log('m-play');
 
 	    let media = getMediaToPlay();
 	    if (!media) return;
 
-	    media.element.play();
+	    try {
+			await media.element.play();
+		} catch (err) {
+			console.log(media);
+			console.log(err);
+		}
 	});
 
 	navigator.mediaSession.setActionHandler("pause", () => {
@@ -125,8 +130,24 @@ function updatePosition() {
 	});
 }
 
+function refreshActiveMedia() {
+	// Prune active media elements that aren't valid anymore
+	for (let i = 0; i < activeMediaElements.length; i++) {
+		let me = activeMediaElements[i];
+		if (me.valid()) continue;
+
+		arrErase(activeMediaElements, me);
+		if (currentMedia === me) {
+			currentMedia = null;
+		}
+		i--;
+	}
+}
+
 function getMediaToPlay() {
 	if (activeMediaElements.length == 0) return;
+
+	refreshActiveMedia();
 
 	// Return the media contained in the focused window
 	for (let i = 0; i < activeMediaElements.length; i++) {
@@ -145,5 +166,9 @@ class ActiveMedia {
 		this.element = elem;
 		this.nextTrackCallback = null;
 		this.previousTrackCallback = null;
+	}
+
+	valid() {
+		return document.body.contains(this.element);
 	}
 }

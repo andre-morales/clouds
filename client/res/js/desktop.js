@@ -260,7 +260,10 @@ class Desktop {
 			let newZ = index++;
 			if (win.zIndex != newZ) {
 				win.zIndex = newZ;
-				win.$window.css('z-index', newZ);
+
+				if (win.$window) {
+					win.$window.css('z-index', newZ);
+				}
 			}
 		}
 	}

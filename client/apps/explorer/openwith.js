@@ -6,7 +6,7 @@ window.ExplorerOpenWith = class ExplorerOpenWith {
 	}
 
 	async open(path) {
-		this.window = Client.desktop.createWindow(this);
+		this.window = Client.desktop.createWindow(this.explorer);
 		this.window.on('closereq', () => this.window.close());
 		
 		await this.window.setContentToUrl('/app/explorer/res/openwith-helper.html');
