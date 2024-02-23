@@ -55,31 +55,6 @@ class App {
 		this.loadedResources.push(url);
 	}
 
-	saveAppWindowState(win) {
-		let state;
-		if (win.maximized) {
-			state = [win.maximized, win.restoredBounds];
-		} else {
-			state = [win.maximized, win.getBoundsA()];
-		}
-
-		let regname = 'app.' + this.classId + '.winstate';
-		localStorage.setItem(regname, JSON.stringify(state));
-	}
-
-	restoreAppWindowState(win) {
-		let regname = 'app.' + this.classId + '.winstate';
-		try {
-			let state = JSON.parse(localStorage.getItem(regname));
-			if (state) {
-				win.setBoundsA(state[1]);
-				win.setMaximized(state[0]);
-				return true;
-			}
-		} catch (e) {}
-		return false;
-	}
-
 	canEnd() {
 		return this.state != 'dying' && this.state != 'dead';
 	}

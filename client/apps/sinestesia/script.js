@@ -25,7 +25,6 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			this.playlist = null;
 			this.cancelPauseEvents = false;
 			this.unload();
-			this.saveAppWindowState(this.window);
 		});
 
 		// Create window and fetch app body
@@ -54,7 +53,6 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		this.setupImageContainer();
 
 		// Make the window visible
-		this.restoreAppWindowState(this.window);
 		this.window.setVisible(true);
 
 		prepareSliders();

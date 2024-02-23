@@ -16,10 +16,10 @@ class Window {
 		this.title = 'Window';
 		
 		this.posX  = 8,   this.posY = 8;
-		this.width = 600, this.height = 400;
+		this.width = 340, this.height = 200;
 		this.minWidth = 116;
 		this.minHeight = 28;
-		this.restoredBounds = [8, 8, 600, 400];
+		this.restoreBounds = [8, 8, 600, 400];
 
 		this.events = new Reactor();
 		this.events.register('closing', 'closed', 'backnav', 'resize', 'closereq');
@@ -35,10 +35,15 @@ class Window {
 	}
 
 	_dispose() {
-		if (!this.$window) return;	
-		
-		// Optimization: Set src to null on every image this window contained,
-		// this reinforces interruption of image fetches on the browser
+		if (this.destroyed) return;	
+		this.destroyed = true;
+
+		if (this.app.mainWindow == this) {
+			this.saveState();
+		}	
+
+		// Optimization: Nullify all sources of media this window contained.
+		// This cancels the fetch of any resources this window could make
 		this.$window.find("img").attr("src", "");
 		this.$window.find("source").attr("src", "");
 		this.$window.find("video").attr("src", "");
@@ -112,34 +117,21 @@ class Window {
 
 		// Styling
 		if (this.icon) this.setIcon(this.icon);
-		this.setBoundsA(Client.desktop.getDefaultWindowBounds());
 		this.setDecorated(true);
-		this.bringToFront();
-	}
-
-	// Requests this window to close. This invokes the closing event on the window.
-	close() {
-		this.events.dispatch('closing', new ReactorEvent());
-	}
-
-	setOwner(window) {
-		if (this.owner) {
-			arrErase(this.owner.children, this);
-		}
 		
-		if (window) window.children.push(this);
-		this.owner = window;
+		this.initPosition();
 	}
 
-	makeOptionsCtxMenu() {
-		return CtxMenu([
-			CtxItem('Fullscreen', () => this.makeFullscreen()),
-			CtxItem('Maximize', () => this.setMaximized(true)),
-			CtxItem('Minimize', () => this.minimize()),
-			CtxItem('Restore', () => this.restore()),
-			'-',
-			CtxItem('Close', () => this.dispatch('closing', new ReactorEvent()))
-		]);
+	// Determine initial window position
+	initPosition() {
+		this.bringToFront();
+		if (this.app.mainWindow == this) {
+			this.restoreState();
+		}
+
+		// Makes a limited amount of tries to reposition the window so that it doesn't stay directly
+		// on top of any other window
+		Client.desktop.realignWindow(this);
 	}
 
 	setupDragListeners() {
@@ -162,12 +154,12 @@ class Window {
 
 			if (this.maximized) {
 				if (dy > 8) {
-					let wb = this.restoredBounds;
+					let wb = this.restoreBounds;
 					let nx = mx - wb[2] * startMX / this.width;
 					let ny = my - wb[3] * startMY / this.height;
 					
-					this.restoredBounds[0] = nx;
-					this.restoredBounds[1] = ny;
+					this.restoreBounds[0] = nx;
+					this.restoreBounds[1] = ny;
 					this.restore();
 
 					startX  = nx, startY  = ny;
@@ -207,6 +199,56 @@ class Window {
 		$doc.on("touchend", dragEnd);
 	}
 
+	makeOptionsCtxMenu() {
+		return CtxMenu([
+			CtxItem('Fullscreen', () => this.makeFullscreen()),
+			CtxItem('Maximize', () => this.setMaximized(true)),
+			CtxItem('Minimize', () => this.minimize()),
+			CtxItem('Restore', () => this.restore()),
+			'-',
+			CtxItem('Close', () => this.dispatch('closing', new ReactorEvent()))
+		]);
+	}
+
+	// Requests this window to close. This invokes the closing event on the window.
+	close() {
+		this.events.dispatch('closing', new ReactorEvent());
+	}
+
+	setOwner(window) {
+		if (this.owner) {
+			arrErase(this.owner.children, this);
+		}
+		
+		if (window) window.children.push(this);
+		this.owner = window;
+	}
+
+	saveState() {
+		let state;
+		if (this.maximized) {
+			state = [this.maximized, this.restoreBounds];
+		} else {
+			state = [this.maximized, this.getBoundsA()];
+		}
+
+		let regname = 'app.' + this.app.classId + '.winstate';
+		localStorage.setItem(regname, JSON.stringify(state));
+	}
+
+	restoreState() {
+		let regname = 'app.' + this.app.classId + '.winstate';
+		let item = localStorage.getItem(regname);
+		if (!item) return false;
+
+		let state = JSON.parse(item);
+		if (!state) return false;
+
+		this.setBoundsA(state[1]);
+		this.setMaximized(state[0]);
+		return true;
+	}
+
 	setCloseBehavior(action) {
 		this._closeBehavior = action;
 	}
@@ -218,9 +260,18 @@ class Window {
 	}
 
 	setPosition(x, y) {
+		debugger;
 		if (!isFinite(x) || !isFinite(y)) return;
-
 		if (y < 0) y = 0;
+
+		// If the window is maximized, these changes will be applied to
+		// the restoreBounds of the window
+		if (this.maximized) {
+			this.restoreBounds[0] = x;
+			this.restoreBounds[1] = y;
+			return;
+		}
+
 		this.posX = x;
 		this.posY = y;
 
@@ -241,6 +292,14 @@ class Window {
 
 		if (w < this.minWidth) w = this.minWidth;
 		if (h < this.minHeight) h = this.minHeight;
+
+		// If the window is maximized, these changes will be applied to
+		// the restoreBounds of the window
+		if (this.maximized) {
+			this.restoreBounds[2] = w;
+			this.restoreBounds[3] = h;
+			return;
+		}
 
 		if (this.width == w && this.height == h) return;
 
@@ -286,7 +345,6 @@ class Window {
 		if (this.$taskbarBtn) {
 			this.$taskbarBtn.find("img").src = icon;
 		}
-		
 	}
 
 	setDecorated(decorated) {
@@ -340,19 +398,20 @@ class Window {
 
 	setMaximized(max) {
 		if (this.maximized == max) return;
-		this.maximized = max;
 
 		if (max) {
-			this.restoredBounds = this.getBoundsA();
+			this.restoreBounds = this.getBoundsA();
 
-			let rect = Client.desktop.$windows[0].getBoundingClientRect();
+			let rect = Client.desktop.getDimensions();
 			this.setPosition(0, 0);
-			this.setSize(rect.width, rect.height);
+			this.setSize(rect[0], rect[1]);
+			this.maximized = true;
 
 			this.$window.addClass('maximized');
-			
 		} else {
-			this.setBoundsA(this.restoredBounds);
+			this.maximized = false;
+			this.setBoundsA(this.restoreBounds);
+
 			this.$window.removeClass('maximized');
 		}
 	}

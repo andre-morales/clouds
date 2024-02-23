@@ -154,32 +154,29 @@ class Desktop {
 		}
 	}
 
-	getDefaultWindowBounds() {
+	getDimensions() {
 		let rect = this.$desktop[0].getBoundingClientRect();
+		return [rect.width, rect.height];
+	}
 
-		let x = 64;
-		let y = 64;
-		let w = 640;
-		let h = 600;
+	// Repositions the window so that it doesn't stay directly on top of any other window
+	realignWindow(win) {
+		if (win.maximized) return;
 
-		if (rect.width < 720) {
-			x = 16; y = 16;
-			w = 300; h = 600;
-		}
-
-		let tries = this.windows.length;
+		let x = win.posX;
+		let y = win.posY;
 
 		for (let i = 0; i < this.windows.length; i++) {
-			let win = this.windows[i];
-			if (Math.abs(win.x - x) > 32 && Math.abs(win.y - y) > 32) break;
+			let w = this.windows[i];
+			if (win === w) continue;
+			if (Math.abs(w.posX - x) > 31 && Math.abs(w.posY - y) > 31) continue;
 
 			x += 32;
 			y += 32;
-			i = 0;
-			if (tries-- <= 0) break;
+			i = -1;
 		}
 
-		return [x, y, w, h];
+		win.setPosition(x, y);
 	}
 
 	setBackground(url) {
