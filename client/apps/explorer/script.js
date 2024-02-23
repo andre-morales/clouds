@@ -29,6 +29,8 @@ window.ExplorerApp = class ExplorerApp extends App {
 			'mp3': 'sinestesia',
 			'wav': 'sinestesia',
 			'ogg': 'sinestesia',
+			'opus': 'sinestesia',
+
 			'png': 'sinestesia',
 			'jpg': 'sinestesia',
 			'jpeg': 'sinestesia',

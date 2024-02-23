@@ -28,11 +28,9 @@ window.WebViewApp = class WebViewApp extends App {
 
 		this.$iframe = $app.find("iframe");
 
-		// Make the window visible
-		this.restoreAppWindowState(this.window);
 		this.window.setVisible(true);
 
-		// If notepad was launched with a path (opening a file)
+		// If launched with a path (opening a file)
 		if (this.buildArgs.length > 0) {
 			this.setPath(this.buildArgs[0]);
 		}
