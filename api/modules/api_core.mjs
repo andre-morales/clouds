@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.5.10';
+const KAPI_VERSION = '0.5.11';
 
 // Lib imports
 import Util from 'util';

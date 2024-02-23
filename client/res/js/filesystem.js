@@ -44,6 +44,17 @@ class Files {
 		let result = await fres.json();
 		return result;
 	}
+
+	static async erase(path) {
+		// Convert the path to a erase op path
+		let cmd = Paths.toFS(path, 'erase');
+
+		// Perform the operation
+		let fres = await fetch(cmd);
+		if (fres.status != 200) {
+			throw new FileSystemException(`Erase operation of "${path}" failed with status ${fres.status}.`);
+		}
+	} 
 }
 
 class Paths {

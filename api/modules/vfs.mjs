@@ -90,9 +90,12 @@ async function listPDir(path) {
 	return results; 
 }
 
-// Moves the file in the PHYSICAL path to the trash folder configured.
-async function trash(path) {
-	
+// Erases completely the given file or folder in the PHYSICAL path
+async function erasePath(path) { 
+	console.log(`Erasing '${path}'`);
+	await FS.promises.rm(path, {
+		recursive: true
+	});
 }
 
 export function getRouter() {
@@ -198,9 +201,13 @@ export function getRouter() {
 		}
 	}));
 
-	// Delete file (move to trash)
-	router.get('/del/*', asyncRoute(async(req, res) => {
-		// Not implemented yet.
+	// Delete file completely (no trash)
+	router.get('/erase/*', asyncRoute(async(req, res) => {
+		let userId = Auth.getUserGuard(req);
+
+		let fpath = translate(userId, '/' + req.params[0]);
+		await erasePath(fpath);
+		res.end();
 	}));
 
 	// Query thumbnail for media file

@@ -83,7 +83,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		});
 		$app.find('.back-btn').click(() => this.goBack());
 		$app.find('.up-btn').click(() => this.goUp());
-		$app.find('.refresh-btn').click(() => this.navigate('.'));
+		$app.find('.refresh-btn').click(() => this.refresh());
 		$app.find('.favorites-btn').click(() => {
 			$app.find('aside').toggleClass('hidden');
 			this.recalculateIcons();
@@ -183,6 +183,10 @@ window.ExplorerApp = class ExplorerApp extends App {
 		let path = this.getNavPath('..');
 		this.go(path);
 		this.history.save(path);
+	}
+
+	refresh() {
+		this.navigate('.');
 	}
 
 	recalculateIcons() {
@@ -567,7 +571,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 				Clipboard.copyObject(qPath, 'cutfile');
 			}),
 			CtxItem('Copy', () => Clipboard.copyText(qPath)),
-			CtxItem('Delete')
+			CtxItem('Erase', () => { this.erase(absPath) })
 		);
 		return CtxMenu(menu);
 	}
@@ -724,6 +728,28 @@ window.ExplorerApp = class ExplorerApp extends App {
 		
 		coll.files.push(file);
 		this.saveCollections();
+	}
+
+	async erase(path) {
+		let file = Paths.file(path);
+		let msg;
+		if (path.endsWith('/')) {
+			msg = `This will permanently delete:\n"${file}"\n and everything inside of it.\n\nAre you sure?`;
+		} else {
+			msg = `This will permanently delete:\n"${file}".\n\nAre you sure?`;
+		}
+
+		let [win, prom] = Dialogs.showOptions(this, "Erase", msg, ['Yes', 'No'], {
+			icon: 'warning'
+		});
+
+		//win.pack();
+
+		let opt = await prom;
+		if (opt === 0) {
+			await Files.erase(path);
+			this.refresh();
+		}
 	}
 
 	async openFileWith(path) {
