@@ -17,8 +17,8 @@ class Window {
 		
 		this.posX  = 8,   this.posY = 8;
 		this.width = 340, this.height = 200;
-		this.minWidth = 116;
-		this.minHeight = 28;
+		this.minWidth = 130;
+		this.minHeight = 30;
 		this.restoreBounds = [8, 8, 600, 400];
 
 		this.events = new Reactor();
@@ -462,10 +462,10 @@ class Window {
 			height = scrHeight - 32;
 		}
 
-		if (x + width > scrWidth) {
+		if (x < 0 || x + width > scrWidth) {
 			x = (scrWidth - width) / 2;
 		}
-		if (y + height > scrHeight) {
+		if (y < 0 || y + height > scrHeight) {
 			y = (scrHeight - height) / 2;
 		}
 
