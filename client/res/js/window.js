@@ -113,7 +113,7 @@ class Window {
 		});
 		Client.desktop.addCtxMenuOn(this.$windowHeader, () => this.optionsCtxMenu)
 		this.$windowTitle.dblclick(() => this.setMaximized(!this.maximized));
-		this.setupDragListeners();
+		this.initDragListeners();
 
 		// Styling
 		if (this.icon) this.setIcon(this.icon);
@@ -134,7 +134,7 @@ class Window {
 		Client.desktop.realignWindow(this);
 	}
 
-	setupDragListeners() {
+	initDragListeners() {
 		let dragging = false;
 		let startX, startY;
 		let startMX, startMY;
@@ -201,10 +201,11 @@ class Window {
 
 	makeOptionsCtxMenu() {
 		return CtxMenu([
-			CtxItem('Fullscreen', () => this.makeFullscreen()),
+			CtxItem('Fullscreen', () => this.goFullscreen()),
 			CtxItem('Maximize', () => this.setMaximized(true)),
 			CtxItem('Minimize', () => this.minimize()),
 			CtxItem('Restore', () => this.restore()),
+			CtxItem('Refit', () => this.refit()),
 			'-',
 			CtxItem('Close', () => this.dispatch('closing', new ReactorEvent()))
 		]);
@@ -396,13 +397,19 @@ class Window {
 		this.setPosition(x, y);
 	}
 
+	goFullscreen() {
+		if (this.minimized) this.restore();
+
+		Fullscreen.on(this.$window.find('.window-body')[0]);
+	}
+
 	setMaximized(max) {
 		if (this.maximized == max) return;
 
 		if (max) {
 			this.restoreBounds = this.getBoundsA();
 
-			let rect = Client.desktop.getDimensions();
+			let rect = Client.desktop.getWindowingArea();
 			this.setPosition(0, 0);
 			this.setSize(rect[0], rect[1]);
 			this.maximized = true;
@@ -438,6 +445,33 @@ class Window {
 		this.setVisible(false);
 	}
 	
+	refit() {
+		if (this.maximized) return;
+
+		let [scrWidth, scrHeight] = Client.desktop.getWindowingArea();
+
+		let width = this.width;
+		let height = this.height;
+		let x = this.posX;
+		let y = this.posY;
+
+		if (width > scrWidth) {
+			width = scrWidth - 32;
+		}
+		if (height > scrHeight) {
+			height = scrHeight - 32;
+		}
+
+		if (x + width > scrWidth) {
+			x = (scrWidth - width) / 2;
+		}
+		if (y + height > scrHeight) {
+			y = (scrHeight - height) / 2;
+		}
+
+		this.setBounds(x, y, width, height);
+	}
+
 	createTaskbarButton() {
 		let icon = this.icon;
 		if (!icon) icon = '/res/img/apps/window64.png';
@@ -462,12 +496,6 @@ class Window {
 		
 		this.$taskbarBtn.remove();
 		this.$taskbarBtn = null;
-	}
-
-	makeFullscreen() {
-		if (this.minimized) this.restore();
-
-		Fullscreen.on(this.$window.find('.window-body')[0]);
 	}
 
 	async setContentToUrl(url) {

@@ -153,9 +153,9 @@ class Desktop {
 			this.focusedWindow.fire('backnav');
 		}
 	}
-
-	getDimensions() {
-		let rect = this.$desktop[0].getBoundingClientRect();
+	
+	getWindowingArea() {
+		let rect = this.$windows[0].getBoundingClientRect();
 		return [rect.width, rect.height];
 	}
 
