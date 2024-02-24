@@ -4,10 +4,6 @@
 			"path": "/",
 			"access": "@all"
 		},
-		"/d/": {
-			"path": "/",
-			"access": "@all"
-		},
 		"/usr/": {
 			"path": "./usr/$user/",
 			"acess": "@all"

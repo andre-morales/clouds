@@ -48,5 +48,6 @@ export function hashPath(path) {
 	return path
 	.replaceAll('/', '_')
 	.replaceAll('\\', '_')
+	.replaceAll('.', '_')
 	.replaceAll(':', '_');
 }

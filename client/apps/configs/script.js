@@ -10,7 +10,7 @@ window.ConfigsApp = class ConfigsApp extends App {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/config128.png');
-		this.window.setHeight(240);
+		
 		this.window.setTitle('Configs');
 		this.window.on('closing', (ev) => {
 			if (this.unsavedChanges) {
@@ -90,7 +90,6 @@ window.ConfigsApp = class ConfigsApp extends App {
 			this.unsavedChanges = false;
 		});
 
-		// Make the window visible
 		this.window.setVisible(true);
 	}
 }

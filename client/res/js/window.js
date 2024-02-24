@@ -52,7 +52,7 @@ class Window {
 	}
 
 	init() {
-		if (this.$window) return;
+		if (this.$window) throw IllegalStateFault('Double initialization of window object.');
 
 		// Instantiation
 		let $win = $(cloneTemplate('window')).find('.window');
@@ -128,12 +128,12 @@ class Window {
 		if (this.app.mainWindow === this) {
 			this.restoreState();
 		}
-
-		// Confirm own dimensions to align css properties
-		this.setSize(this.width, this.height);
-
+		
 		// Reposition the window so that it doesn't stay directly on top of any other window
 		Client.desktop.realignWindow(this);
+
+		// Apply position and size on CSS
+		this.setStyledSize(this.width, this.height);
 	}
 
 	initDragListeners() {
@@ -213,6 +213,15 @@ class Window {
 		]);
 	}
 
+	setOwner(window) {
+		if (this.owner) {
+			arrErase(this.owner.children, this);
+		}
+		
+		if (window) window.children.push(this);
+		this.owner = window;
+	}
+
 	// Requests this window to close. This invokes the closing event on the window.
 	close() {
 		this.events.dispatch('closing', new ReactorEvent());
@@ -245,15 +254,6 @@ class Window {
 		}
 	}
 
-	setOwner(window) {
-		if (this.owner) {
-			arrErase(this.owner.children, this);
-		}
-		
-		if (window) window.children.push(this);
-		this.owner = window;
-	}
-
 	saveState() {
 		let state;
 		if (this.maximized) {
@@ -274,8 +274,8 @@ class Window {
 		let state = JSON.parse(item);
 		if (!state) return false;
 
-		this.setMaximized(state[0]);
 		this.setBounds(state[1]);
+		this.setMaximized(state[0]);
 		return true;
 	}
 
@@ -304,15 +304,19 @@ class Window {
 		this.posX = x;
 		this.posY = y;
 
+		this.setStyledPosition(x, y);
+	}
+
+	setStyledPosition(x, y) {
 		if (!this.$window) return;
 
 		// Don't allow window on fractional pixel (reduces blurring)
 		x = Math.trunc(x);
 		y = Math.trunc(y);
 
-	//	this.$window[0].style.left = `${x}px`;
-	//	this.$window[0].style.top = `${y}px`;
-		
+		//	this.$window[0].style.left = `${x}px`;
+		//	this.$window[0].style.top = `${y}px`;
+
 		this.$window[0].style.transform = `translate(${x}px, ${y}px)`;
 	}
 
@@ -333,12 +337,15 @@ class Window {
 		this.width = w;
 		this.height = h;
 
-		if (this.$window) {
-			this.$window[0].style.width = this.width + "px";
-			this.$window[0].style.height = this.height + "px";
+		this.setStyledSize(w, h);
+		this.dispatch('resize');
+	}
 
-			this.dispatch('resize');
-		}
+	setStyledSize(w, h) {
+		if (!this.$window) return;
+
+		this.$window[0].style.width = w + "px";
+		this.$window[0].style.height = h + "px";
 	}
 
 	setBounds(x, y, w, h) {
@@ -349,6 +356,10 @@ class Window {
 			this.setPosition(x, y);
 			this.setSize(w, h);
 		}
+	}
+
+	getBounds() {
+		return [this.posX, this.posY, this.width, this.height];
 	}
 
 	setVisible(visible) {
@@ -378,10 +389,6 @@ class Window {
 		} else {
 			this.$window.removeClass('decorated');
 		}
-	}
-
-	getBounds() {
-		return [this.posX, this.posY, this.width, this.height];
 	}
 
 	isPointInside(x, y) {
