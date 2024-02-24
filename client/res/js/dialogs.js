@@ -34,9 +34,9 @@ class Dialogs {
 			deferred.resolve(-1);
 		});
 		win.setSize(360, 220);
-		win.bringToCenter();
-		win.bringToFront();
 		win.pack();
+		win.bringToFront();
+		win.bringToCenter();
 		win.setVisible(true);
 
 		return [win, deferred.promise];

@@ -734,7 +734,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		let file = Paths.file(path);
 		let msg;
 		if (path.endsWith('/')) {
-			msg = `This will permanently delete:\n"${file}"\n and everything inside of it.\n\nAre you sure?`;
+			msg = `This will permanently delete the folder:\n"${file}"\n and everything inside of it.\n\nAre you sure?`;
 		} else {
 			msg = `This will permanently delete:\n"${file}".\n\nAre you sure?`;
 		}
