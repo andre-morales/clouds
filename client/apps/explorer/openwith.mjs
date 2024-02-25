@@ -1,6 +1,4 @@
-'use strict'
-
-window.ExplorerOpenWith = class ExplorerOpenWith {
+export default class ExplorerOpenWith {
 	constructor(explorer) {
 		this.explorer = explorer;
 	}

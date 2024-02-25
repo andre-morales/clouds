@@ -52,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.140';
+		this.CLIENT_VERSION = '1.0.141';
 		this.BUILD_STRING = `${this.CLIENT_VERSION} Early Test 1`
 		this.BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	}
@@ -82,7 +82,7 @@ class ClientClass {
 		this.desktop = new Desktop();
 
 		// Media Session bridge
-		this.mediaSessionBridge = await import('modules/media_sess_bridge.mjs');
+		this.mediaSessionBridge = await import('@client/media_sess_bridge.mjs');
 		this.mediaSessionBridge.init();
 
 		// Save current page on history

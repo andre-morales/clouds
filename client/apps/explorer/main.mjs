@@ -1,6 +1,7 @@
-'use strict';
+import ExplorerUploader from './uploader.mjs';
+import ExplorerOpenWith from './openwith.mjs';
 
-window.ExplorerApp = class ExplorerApp extends App {
+export default class ExplorerApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;
@@ -48,9 +49,6 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 	async init() {
 		if (this.window) return;
-
-		// Require resources
-		this.requireStyle('/app/explorer/res/style.css');
 
 		// Create window and fetch app body
 		this.window = WebSys.desktop.createWindow(this);

@@ -1,10 +1,12 @@
 {
 	"id": "explorer",
-	"builder": "ExplorerApp",
 	"icon": "/app/explorer/icon64.png",
-	"scripts": [
-		"/app/explorer/script.js",
-		"/app/explorer/uploader.js",
-		"/app/explorer/openwith.js"
+	"modules" : [
+		"/app/explorer/main.mjs",
+		"/app/explorer/uploader.mjs",
+		"/app/explorer/openwith.mjs"
+	],
+	"styles": [
+		"/app/explorer/res/style.css"
 	]
 }

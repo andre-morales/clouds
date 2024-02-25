@@ -1,6 +1,4 @@
-'use strict'
-
-window.ExplorerUploader = class ExplorerUploader {
+export default class ExplorerUploader {
 	constructor(explorer) {
 		this.explorer = explorer;
 	}
