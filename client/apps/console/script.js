@@ -9,7 +9,7 @@ window.ConsoleApp = class ConsoleApp extends App {
 
 	async init() {
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow(this);
+		this.window = Client.desktop.createWindow(this);
 		this.window.setTitle('Console');
 		this.window.setCloseBehavior('exit');
 
@@ -60,7 +60,7 @@ window.ConsoleApp = class ConsoleApp extends App {
 		let ctxMenu = CtxMenu([
 			CtxItem('Clear', () => this.clear())
 		]);
-		WebSys.desktop.addCtxMenuOn(this.$app, () => ctxMenu);
+		Client.desktop.addCtxMenuOn(this.$app, () => ctxMenu);
 	}
 
 	sendCmd() {

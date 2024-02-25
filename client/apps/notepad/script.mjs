@@ -62,13 +62,12 @@ export default class NotepadApp extends App {
 		]);
 	
 		$app.find('.file-menu').click((ev) => {
-			WebSys.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
+			Client.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
 		});
 	
 		// Load the text from the argument path (if present)
 		if (this.path) {
-			let freq = await fetch('/fs/q' + this.path);
-			let text = await freq.text();
+			let text = await Files.readText(this.path);
 			this.$textArea.val(text);
 		}
 
@@ -89,7 +88,7 @@ export default class NotepadApp extends App {
 	
 	async saveAs() {
 		// Choose file location
-		let app = await WebSys.runApp('explorer');
+		let app = await Client.runApp('explorer');
 		app.asFileSelector('save', 'one');
 		
 		let result = await app.waitFileSelection();

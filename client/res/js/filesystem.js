@@ -62,6 +62,19 @@ class FileSystem {
 		}
 	}
 
+	static async copy(from, to) {
+		let fromPath = Paths.toFSV(from);
+		let toPath = Paths.removeFSPrefix(to);
+
+		let cmd = fromPath + "?copy=" + encodeURIComponent(toPath);
+		let res = await fetch(cmd, {
+			method: 'PATCH'
+		});
+		if (res.status != 200) {
+			throw new FileSystemException(`Copy operation of "${from}" failed with status ${res.status}.`);
+		}
+	}
+
 	static async erase(path) {
 		// Convert the path
 		let cmd = Paths.toFSV(path);

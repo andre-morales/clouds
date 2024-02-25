@@ -6,7 +6,7 @@ window.WebViewApp = class WebViewApp extends App {
 
 	async init() {
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow(this);
+		this.window = Client.desktop.createWindow(this);
 		this.window.setTitle('WebView');
 
 		let $app = this.window.$window.find('.window-body');
@@ -23,7 +23,7 @@ window.WebViewApp = class WebViewApp extends App {
 		]);
 	
 		$app.find('.file-menu').click((ev) => {
-			WebSys.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
+			Client.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
 		});
 
 		this.$iframe = $app.find("iframe");
@@ -37,13 +37,13 @@ window.WebViewApp = class WebViewApp extends App {
 	}
 
 	async showOpenDialog() {
-		let app = await WebSys.runApp('explorer');
+		let app = await Client.runApp('explorer');
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
 		if (!result || !result.length) return;
 
 		let file = result[0];
-		this.setPath('/fs/q' + file);
+		this.setPath(Paths.toFSV(file));
 	}
 	
 	setPath(path) {

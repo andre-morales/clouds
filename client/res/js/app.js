@@ -46,12 +46,12 @@ class App {
 	}
 
 	requireScript(url) {
-		WebSys.requestScript(url, this);
+		Client.requestScript(url, this);
 		this.loadedResources.push(url);
 	}
 
 	requireStyle(url) {
-		WebSys.requestStyle(url, this);
+		Client.requestStyle(url, this);
 		this.loadedResources.push(url);
 	}
 

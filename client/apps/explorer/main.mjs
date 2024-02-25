@@ -558,6 +558,7 @@ export default class ExplorerApp extends App {
 
 		menu.push(
 			'-',
+			CtxItem('Copy', () => { this.copy(absPath) }),
 			CtxItem('Cut', () => { this.cut(absPath) }),
 			CtxItem('Erase', () => { this.erase(absPath) })
 		);
@@ -707,6 +708,13 @@ export default class ExplorerApp extends App {
 		this.saveCollections();
 	}
 
+	copy(path) {
+		LocalClipboard.saveObject('path', { 
+			operation: "copy",
+			path: path
+		});
+	}
+
 	cut(path) {
 		LocalClipboard.saveObject('path', { 
 			operation: "cut",
@@ -727,6 +735,13 @@ export default class ExplorerApp extends App {
 			LocalClipboard.clear();
 
 			await FileSystem.rename(from, to);
+			this.refresh();
+		} else if (op.operation == 'copy') {
+			let from = op.path;
+			let fileName = Paths.file(from);
+			let to = this.cwd + fileName;
+
+			await FileSystem.copy(from, to);
 			this.refresh();
 		}
 	}

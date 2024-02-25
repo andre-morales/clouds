@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.6.02';
+const KAPI_VERSION = '0.6.05';
 
 // Lib imports
 import Path from 'path';
@@ -59,7 +59,6 @@ function initExpress() {
 	// API routes
 	app.use('/res', Express.static('client/res')); // Static public resources
 	app.use('/auth', Auth.getRouter());            // Auth system 
-	app.use('/fs', VFS.getRouter());			   // File system
 	app.use('/fsv', VFS.getRouterV());			   // Extended file system with HTTP verbs
 	apiSetupPages();     			    		   // Entry, Auth and Desktop
 	apiSetupApps();								   // Apps service

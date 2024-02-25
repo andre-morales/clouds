@@ -55,7 +55,7 @@ window.ConfigsApp = class ConfigsApp extends App {
 			let result = await app.waitFileSelection();
 			if (!result || !result.length) return;
 
-			let file = '/fs/q' + result[0];
+			let file = Paths.toFSV(result[0]);
 			$input.val(file);
 			Client.desktop.setBackground(file);
 			this.unsavedChanges = true;

@@ -115,20 +115,29 @@ async function eraseVirtual(user, path) {
 
 	console.log(`Erasing '${fpath}'`);
 
-	await FS.promises.rm(fpath, {
-		recursive: true
-	});
+	await FS.promises.rm(fpath, { recursive: true });
 }
 
-// Moves a given file or folder into a new folder
+// Moves a path to another, this can move files or folders and give them new names
 async function renameVirtual(user, path, newPath) {
 	let fPath = translate(user, path);
 	let fNewPath = translate(user, newPath);
 	if (!fPath || !fNewPath) return;
 
-	console.log(`Renamed "${fPath}" to ${fNewPath}`);
+	console.log(`Renaming "${fPath}" to ${fNewPath}`);
 
 	await FS.promises.rename(fPath, fNewPath);
+}
+
+// Copies a file to another path, if the target already exists, fails.
+async function copyVirtual(user, srcPath, dstPath) {
+	let fSource = translate(user, srcPath);
+	let fDestination = translate(user, dstPath);
+	if (!fSource || !fDestination) return;
+
+	console.log(`Copying "${fSource}" to ${fDestination}`);
+
+	await FS.promises.copyFile(fSource, fDestination, FS.constants.COPYFILE_EXCL);
 }
 
 async function listVirtual(user, path) {
@@ -149,7 +158,7 @@ async function listVirtual(user, path) {
 }
 
 // New router using HTTP verbs and unified resource path
-export function getRouterV() {
+export function getRouter() {
 	var router = Express.Router();
 
 	let getOperations = {};
@@ -322,6 +331,18 @@ export function getRouterV() {
 		res.end();
 	}
 
+	// PATCH/COPY: Copies a path from one place to another
+	patchOperations['copy'] = async (req, res) => {
+		let user = Auth.getUserGuard(req);
+
+		let from = '/' + req.params[0];
+		let target = decodeURIComponent(req.query['copy']);
+
+		await copyVirtual(user, from, target);
+
+		res.end();
+	}
+
 	// GET/THUMB Thumbnail GET request
 	getOperations['thumb'] = async (req, res) => {
 		let userId = Auth.getUserGuard(req);
@@ -369,135 +390,4 @@ async function handleThumbRequest(_abs, res){
 	} else {
 		res.status(404).end();
 	}
-}
-
-// Legacy routes through the /fs/ path
-export function getRouter() {
-	var router = Express.Router();
-
-	// Query route
-	router.get('/q/*', asyncRoute(async (req, res) => {	
-		let userId = Auth.getUserGuard(req);
-
-		// Translate the virtual path to a real one
-		let vpath = '/' + req.params[0];
-		let fpath = translate(userId, vpath);
-		if (!fpath) {
-			res.status(404).end();
-			return;
-		}
-		
-		// Resolve the path and send the file. If an error occurs,
-		// answer with a 404 error code.
-		let absPath = Path.resolve(fpath);
-		res.sendFile(absPath, (err) => {
-			if (err) {
-				res.status(404).end();
-			}
-		});
-	}));	
-
-	// Upload files trough upload form
-	router.post('/u/*', asyncRoute(async (req, res) => {	
-		let userId = Auth.getUserGuard(req);
-
-		// Sanity check
-		if (!req.files) {
-			console.log('no files');
-			res.status(500).end();
-			return;
-		}
-
-		// Sanity check 2
-		if (!req.files.upload) {
-			console.log('no uploaded files');
-			res.status(500).end();
-			return;
-		}
-		
-		// Translate target directory to physical
-		let vdir = '/' + req.params[0];
-		let fdir = translate(userId, vdir);
-
-		// Make sure uploaded files are in an array
-		var files = req.files.upload;
-		if(!Array.isArray(files)){
-			files = [files];
-		}
-
-		// Move the uploaded files into their target path
-		for(let file of files){
-			file.mv(Path.join(fdir, file.name));
-		}	
-
-		res.end();
-	}));	
-
-	// Upload data to new or existing file
-	router.post('/ud/*', asyncRoute(async (req, res) => {
-		let user = Auth.getUserGuard(req);
-
-		// Phyisical target path
-		let path = translate(user, '/' + req.params[0]);
-
-		try {
-			await FS.promises.writeFile(path, req.body);
-		} catch (err) {
-			res.status(500);
-		}
-		res.end();
-	}));
-
-	// List files in directory
-	router.get('/ls/*', asyncRoute(async(req, res) => {
-		let userId = Auth.getUserGuard(req);
-
-		// If the virtual path is root '/', list the virtual mounting points
-		let vpath = '/' + req.params[0];
-		if (vpath == '/') {
-			res.json(listVMPoints(userId));
-			return;
-		}
-
-		// Translate the virtual path to the machine physical path
-		let fpath = translate(userId, vpath);
-		if (!fpath) {
-			res.status(400).end();
-			return;
-		}
-
-		// List the directory, and return the json results
-		try {
-			let results = await listPDir(fpath);
-			res.json(results);
-		} catch(err) {
-			res.status(err).end();
-		}
-	}));
-
-	// Delete file completely (no trash)
-	router.get('/erase/*', asyncRoute(async(req, res) => {
-		let userId = Auth.getUserGuard(req);
-
-		let vpath = '/' + req.params[0];
-		await eraseVirtual(userId, vpath);
-
-		res.end();
-	}));
-
-	// Query thumbnail for media file
-	router.get('/thumb/*', async (req, res) => {	
-		let userId = Auth.getUserGuard(req);
-
-		let vpath = '/' + req.params[0];
-		let fpath = translate(userId, vpath);
-
-		if (Files.isFileExtVideo(fpath) || Files.isFileExtPicture(fpath)) {
-			await handleThumbRequest(fpath, res);
-		} else {
-			res.sendFile(fpath);
-		}
-	});	
-
-	return router;
 }

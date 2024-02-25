@@ -15,12 +15,12 @@ export default class ExplorerOpenWith {
 		let $win = this.window.$window;
 		$win.find('.window-body').addClass('openwith-helper');
 		let $list = $win.find('ul');
-		for (let [id, defs] of Object.entries(WebSys.registeredApps)) {
+		for (let [id, defs] of Object.entries(Client.registeredApps)) {
 			if (!defs.flags.includes('tool')) continue;
 
 			let $item = $(`<li>${defs.name}</li>`);
 			$item.click(async () => {
-				let app = await WebSys.runApp(id, [Paths.toFSV(path)]);
+				let app = await Client.runApp(id, [Paths.toFSV(path)]);
 				if (app.window) {
 					app.window.bringToFront();
 					app.window.focus();
