@@ -1,6 +1,6 @@
 class Files {
 	static getPath(path) {
-		return '/fs/q' + path;
+		return '/fsv' + path;
 	}
 
 	static async getJson(path) {
@@ -18,18 +18,18 @@ class Files {
 		return await res.text();
 	}
 
-	static upPath(path) {
-		return '/fs/ud' + path;
-	}
-
 	static async upText(path, text) {
-		await fetch(Files.upPath(path), {
-			method: 'POST',
+		await fetch(Paths.toFSV(path), {
+			method: 'PUT',
 			body: text,
 			headers: {
 				'Content-Type': 'text/plain'
 			}
 		});
+	}
+
+	static path(p) {
+		return Paths.toFSV(p);
 	}
 
 	static async list(path) {
@@ -84,13 +84,13 @@ class Paths {
 		if (Paths.isFS(path)) {
 			// Remove fs-op prefix
 			let p = path.substring(path.indexOf('/', 4));
-			return `/fsv/${p}`;
+			return `/fsv${p}`;
 		} else {
 			// Make sure path is absolute
 			if (!path.startsWith('/')) {
 				throw new BadParameterFault("FSV path doesn't start with /. Paths must be absolute before being converted.");
 			}
-			return `/fsv/${path}`
+			return `/fsv${path}`
 		}
 	}
 
@@ -102,12 +102,14 @@ class Paths {
 		return path.startsWith('/fsv/');
 	}
 
-
+	// Removes FS or FSV prefix
 	static removeFSPrefix(path) {
-		if (!Paths.isFS(path)) return path;
-
-		// Remove fs-op prefix
-		return path.substring(path.indexOf('/', 4));
+		if (Paths.isFSV(path)) {
+			return path.substring(path.indexOf('/', 1));		
+		} else if (Paths.isFS(path)) {
+			return path.substring(path.indexOf('/', 4));
+		}
+		return path;
 	}
 
 	static parent(path) {

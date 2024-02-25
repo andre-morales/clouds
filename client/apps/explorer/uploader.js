@@ -16,7 +16,7 @@ window.ExplorerUploader = class ExplorerUploader {
 		helperWin.bringToFront();
 
 		let uploadPath = this.explorer.cwd;
-		let url = '/fs/u' + uploadPath;
+		let url = Files.path(uploadPath);
 		
 		let $win = helperWin.$window.find(".window-body");
 		$win.addClass("fileupload-helper");

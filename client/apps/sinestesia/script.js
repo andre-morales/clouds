@@ -259,7 +259,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		if (!result || !result.length) return;
 
 		let file = result[0];
-		this.openFile('/fs/q' + file);
+		this.openFile('/fsv' + file);
 	}
 
 	async showOpenFolderDialog() {
@@ -273,16 +273,13 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	}
 
 	async openFolder(dir) {
-		let fres = await fetch('/fs/ls' + dir);
-		if (fres.status != 200) return;
-
-		let files = await fres.json();
+		let files = await Files.list(dir);
 
 		this.playlist.list = files;
 		this.playlist.index = 0;
 		this.playlist.dir = dir;
 		this.autoPlay = true;
-		this.openFile('/fs/q' + dir + this.playlist.list[0][0]);
+		this.openFile('/fsv' + dir + this.playlist.list[0][0]);
 	}
 
 	openFile(path) {	
@@ -366,7 +363,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		if (this.playlist.list && this.playlist.index < this.playlist.list.length - 1) {
 			this.playlist.index++;
 			let nextFile = this.playlist.list[this.playlist.index][0];
-			let nextUrl = '/fs/q' + this.playlist.dir + nextFile;
+			let nextUrl = '/fsv' + this.playlist.dir + nextFile;
 			this.openFile(nextUrl);
 
 			await sleep(100);
@@ -383,7 +380,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			this.playlist.index--;
 
 			let prevFile = this.playlist.list[this.playlist.index][0];
-			let prevUrl = '/fs/q' + this.playlist.dir + prevFile;
+			let prevUrl = '/fsv' + this.playlist.dir + prevFile;
 
 			this.openFile(prevUrl);
 
@@ -397,7 +394,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		if (this.playlist.list) return;
 
 		// Files outside the filesystem can't be converted to playlists
-		if (!Paths.isFS(this.currentUrl)) return;
+		if (!Paths.isFS(this.currentUrl) && !Paths.isFSV(this.currentUrl)) return;
 
 		// Convert the URL back to path form and remove FS prefix
 		let currentPath = Paths.removeFSPrefix(decodeURI(this.currentUrl));

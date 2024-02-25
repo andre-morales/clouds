@@ -320,14 +320,18 @@ export function getRouterV() {
 		let absPath = Path.resolve(fPath);
 		res.sendFile(absPath, (err) => {
 			if (!err) return;
-			if (err.code == 'EISDIR') {
-				// Tried to GET a directory.
+			
+			// Fetch interrupted. Do nothing.
+			if (err.code == 'ECONNABORTED') {
+				res.status(200).end();
+			// Tried to GET a directory.
+			} else if (err.code == 'EISDIR') {
 				res.sendStatus(400);
-				return;
+			// Unknown error, log it.
+			} else {
+				console.error("Send file failed with error: ", err);
+				res.status(500).end();
 			}
-
-			console.error(err);
-			res.sendStatus(500);
 		});
 	}));
 

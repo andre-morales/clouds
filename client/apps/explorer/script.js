@@ -279,7 +279,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		this.$addressField.val(path);
 
 		// Fetching and fetch error handling
-		let fres = await fetch('/fs/ls' + path);
+		let fres = await fetch('/fsv' + path);
 		if (fres.status != 200) {
 			let code = fres.status;
 			let msg = '';
@@ -472,23 +472,15 @@ window.ExplorerApp = class ExplorerApp extends App {
 		await this.go('/');
 	}
 
-	async pasteFile() {
-		let str = Clipboard.object;
-		let src = str.replace(/^(\/fs\/q\/\.)/,"");
-		let dst = this.cwd;
-
-		fetch(`/fs/cp?from=${encodeURIComponent(src)}&to=${encodeURIComponent(dst)}`);
-	}
-
 	async openHandler(path) {
-		let qPath = '/fs/q' + path;
-
 		// If it's a folder
 		if (path.endsWith('/')) {
 			this.go(path);
 			this.history.save(path);
 			return;
 		}
+
+		let fsPath = '/fsv' + path;
 
 		// Query file extension if it has one
 		let i = path.lastIndexOf('.');
@@ -498,14 +490,15 @@ window.ExplorerApp = class ExplorerApp extends App {
 			let appId = this.typeAssociations[ext];
 
 			if (appId) {
-				let app = await WebSys.runApp(appId, [qPath]);
+				let app = await WebSys.runApp(appId, [fsPath]);
 				
-				// If the app launch failed, do nothing
+				// If the app launch failed, do nothing, as the user will already be notified of any errors
 				if (!app) return;
 
-				if (!app.window) return;
-				app.window.bringToFront();
-				app.window.focus();
+				// If the app launched with a main window, bring it to front
+				if (!app.mainWindow) return;
+				app.mainWindow.bringToFront();
+				app.mainWindow.focus();
 				return;
 			}
 		}
@@ -516,7 +509,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 	makeFileMenu(absPath) {
 		let isDir = absPath.endsWith('/');
-		let qPath = '/fs/q' + absPath;
+		let fsPath = Files.getPath(absPath);
 
 		let menu = [
 			CtxItem('Open', () => this.openHandler(absPath)),
@@ -538,7 +531,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 					CtxItem('With',  () => this.openFileWith(absPath)),
 					CtxItem('Outside', () => this.openFileExt(absPath))
 				], 'Open...'),
-				CtxItem('Download', () => WebSys.downloadUrl(qPath))
+				CtxItem('Download', () => WebSys.downloadUrl(fsPath))
 			);
 		}
 
@@ -561,16 +554,12 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		if (FileTypes.isPicture(absPath)) {
 			menu.push(CtxItem('Set as background', () => {
-				WebSys.desktop.setBackground(qPath, true);
+				WebSys.desktop.setBackground(fsPath, true);
 			}));
 		}
 
 		menu.push(
 			'-',
-			CtxItem('Cut', () => {
-				Clipboard.copyObject(qPath, 'cutfile');
-			}),
-			CtxItem('Copy', () => Clipboard.copyText(qPath)),
 			CtxItem('Erase', () => { this.erase(absPath) })
 		);
 		return CtxMenu(menu);
@@ -610,24 +599,15 @@ window.ExplorerApp = class ExplorerApp extends App {
 	async saveFavorites() {
 		let data = JSON.stringify(this.favorites);
 
-		await fetch('/fs/ud/usr/favorites.json', {
-			method: 'POST',
-			body: data,
-			headers: {
-				'Content-Type': 'text/plain'
-			}
-		})
+		await Files.upText('/usr/favorites.json', data);
 	}
 
 	async loadFavorites() {
-		let freq = await fetch('/fs/q/usr/favorites.json');
-		if (freq.status == 404) {
+		try {
+			this.favorites = await Files.getJson('/usr/favorites.json');
+		} catch (err) {
 			this.favorites = [];
-			return;
 		}
-		
-		let data = await freq.text();
-		this.favorites = JSON.parse(data);
 	}
 
 	// Collections
@@ -758,7 +738,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	openFileExt(path) {
-		window.open('/fs/q' + path, '_blank').focus();
+		window.open(Files.getPath(path), '_blank').focus();
 	}
 
 	closePromise() {
