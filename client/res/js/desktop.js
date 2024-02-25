@@ -82,12 +82,11 @@ class Desktop {
 	}
 
 	async saveConfigs() {
-		let data = JSON.stringify(this.configs);
-		await Files.upText('/usr/desktop.json', data);
+		await FileSystem.saveJson('/usr/desktop.json', this.configs);
 	}
 
 	async loadConfigs() {
-		this.configs = await Files.getJson('/usr/desktop.json');
+		this.configs = await FileSystem.readJson('/usr/desktop.json');
 
 		let bg = this.configs.background;
 		if (bg) this.setBackground(bg);

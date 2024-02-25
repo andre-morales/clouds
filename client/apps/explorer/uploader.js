@@ -16,7 +16,6 @@ window.ExplorerUploader = class ExplorerUploader {
 		helperWin.bringToFront();
 
 		let uploadPath = this.explorer.cwd;
-		let url = Files.path(uploadPath);
 		
 		let $win = helperWin.$window.find(".window-body");
 		$win.addClass("fileupload-helper");
@@ -50,11 +49,8 @@ window.ExplorerUploader = class ExplorerUploader {
 		});
 		
 		$form.on('submit', (ev) => {
-			fetch(url, {
-		    	method: 'POST',
-		    	body: new FormData($form[0])
-		    });
-
+			FileSystem.writeUploadForm(uploadPath, $form[0]);
+			
 	    	ev.preventDefault();
 		});
 		helperWin.setVisible(true);

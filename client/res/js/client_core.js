@@ -1,5 +1,4 @@
 var Client;
-var WebSys;
 
 async function main() {
 	// Load jquery compatible lib
@@ -53,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.136';
+		this.CLIENT_VERSION = '1.0.137';
 		this.BUILD_STRING = `${this.CLIENT_VERSION} Early Test 1`
 		this.BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	}
@@ -101,7 +100,7 @@ class ClientClass {
 		});
 
 		// Fetch app definitions from the user profile
-		this.registeredApps = await Files.getJson('/usr/apps.json');
+		this.registeredApps = await FileSystem.readJson('/usr/apps.json');
 		
 		// Remove disabled apps
 		for (let app of Object.keys(this.registeredApps)) {

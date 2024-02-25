@@ -1,24 +1,20 @@
-class Files {
-	static getPath(path) {
-		return '/fsv' + path;
+class FileSystem {
+	static async readText(path) {
+		let res = await fetch(Paths.toFSV(path));
+		return await res.text();
 	}
 
-	static async getJson(path) {
-		let url = Files.getPath(path);
+	static async readJson(path) {
+		let url = Paths.toFSV(path);
 		try {
 			let res = await fetch(url);
 			return await res.json();
 		} catch (err) {
 			throw new FetchException(err);
 		}
-	}
+	}	
 
-	static async getText(path) {
-		let res = await fetch(Files.getPath(path));
-		return await res.text();
-	}
-
-	static async upText(path, text) {
+	static async writeText(path, text) {
 		await fetch(Paths.toFSV(path), {
 			method: 'PUT',
 			body: text,
@@ -28,8 +24,15 @@ class Files {
 		});
 	}
 
-	static path(p) {
-		return Paths.toFSV(p);
+	static async writeJson(path, obj) {
+		await FileSystem.writeText(path, JSON.stringify(obj));
+	}
+
+	static async writeUploadForm(path, form) {
+		await fetch(Paths.toFSV(path), {
+	    	method: 'POST',
+			body: new FormData(form)
+		});
 	}
 
 	static async list(path) {

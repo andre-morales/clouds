@@ -273,7 +273,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	}
 
 	async openFolder(dir) {
-		let files = await Files.list(dir);
+		let files = await FileSystem.list(dir);
 
 		this.playlist.list = files;
 		this.playlist.index = 0;
@@ -401,7 +401,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 
 		// List all files in the same folder, and set them as the playlist
 		let folder = Paths.parent(currentPath);
-		let files = await Files.list(folder);
+		let files = await FileSystem.list(folder);
 		this.playlist.dir = folder;
 		this.playlist.list = files;
 

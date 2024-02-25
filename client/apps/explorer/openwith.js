@@ -7,7 +7,6 @@ window.ExplorerOpenWith = class ExplorerOpenWith {
 
 	async open(path) {
 		this.window = Client.desktop.createWindow(this.explorer);
-		this.window.on('closereq', () => this.window.close());
 		
 		await this.window.setContentToUrl('/app/explorer/res/openwith-helper.html');
 		this.window.setTitle('Open: ' + path.substring(path.lastIndexOf('/') + 1));
@@ -23,7 +22,7 @@ window.ExplorerOpenWith = class ExplorerOpenWith {
 
 			let $item = $(`<li>${defs.name}</li>`);
 			$item.click(async () => {
-				let app = await WebSys.runApp(id, ['/fs/q' + path]);
+				let app = await WebSys.runApp(id, [Paths.toFSV(path)]);
 				if (app.window) {
 					app.window.bringToFront();
 					app.window.focus();

@@ -509,7 +509,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 	makeFileMenu(absPath) {
 		let isDir = absPath.endsWith('/');
-		let fsPath = Files.getPath(absPath);
+		let fsPath = Paths.toFSV(absPath);
 
 		let menu = [
 			CtxItem('Open', () => this.openHandler(absPath)),
@@ -597,14 +597,12 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	async saveFavorites() {
-		let data = JSON.stringify(this.favorites);
-
-		await Files.upText('/usr/favorites.json', data);
+		await FileSystem.writeJson('/usr/favorites.json', this.favorites);
 	}
 
 	async loadFavorites() {
 		try {
-			this.favorites = await Files.getJson('/usr/favorites.json');
+			this.favorites = await FileSystem.readJson('/usr/favorites.json');
 		} catch (err) {
 			this.favorites = [];
 		}
@@ -727,7 +725,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		let opt = await prom;
 		if (opt === 0) {
-			await Files.erase(path);
+			await FileSystem.erase(path);
 			this.refresh();
 		}
 	}
@@ -738,7 +736,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 	}
 
 	openFileExt(path) {
-		window.open(Files.getPath(path), '_blank').focus();
+		window.open(Paths.toFSV(path), '_blank').focus();
 	}
 
 	closePromise() {
