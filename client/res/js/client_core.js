@@ -52,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.138';
+		this.CLIENT_VERSION = '1.0.140';
 		this.BUILD_STRING = `${this.CLIENT_VERSION} Early Test 1`
 		this.BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	}
@@ -148,8 +148,13 @@ class ClientClass {
 			let tmpUserId = 'APP-CREATOR';
 
 			// Load required scripts and styles declared in the manifest
+			let modules = (manifest.modules) ? manifest.modules : [];
 			let scripts = (manifest.scripts) ? manifest.scripts : [];
 			let styles = (manifest.styles) ? manifest.styles : [];
+
+			let loadingModulesPromises = modules.map((url) => {
+				return this.requestModule(url, tmpUserId);
+			});
 
 			let loadingScriptsPromises = scripts.map((url) => {
 				return this.requestScript(url, tmpUserId);
@@ -161,10 +166,27 @@ class ClientClass {
 
 			// Wait for all scripts to load and save the resource objects.
 			// We don't wait for the styles to load since most of the time, its not necessary
+			let loadedModuleResources = await Promise.all(loadingModulesPromises);
 			let loadedScriptResources = await Promise.all(loadingScriptsPromises);
 
-			// Obtain the app class from manifest.
-			let AppClass = getObjectByName(manifest.builder);
+			let AppClass;
+
+			// Obtain the app class declared in the manifest from the global namespace
+			if (manifest.builder) {
+				AppClass = getObjectByName(manifest.builder)
+			// Obtain the app class as the default export of the first module
+			} else {
+				if (modules.length < 1) {
+					throw Error('Failed to instantiate "' + manifestURL + '", undisclosed builder and no modules declared.');
+				}
+
+				// Import first module
+				let moduleName = modules[0];
+				let namespace = await import(moduleName);
+
+				AppClass = namespace.default;
+			}
+			
 			if (!AppClass) {
 				throw Error('Failed to instantiate "' + manifestURL + '", builder unavailable.');
 			}
@@ -174,6 +196,10 @@ class ClientClass {
 			let app = new AppClass(manifest, buildArgs);
 
 			// Replace the temporary user and set the app as a user of its own script resources
+			for (let res of loadedModuleResources) {
+				res.users[res.users.indexOf(tmpUserId)] = app;
+			}
+
 			for (let res of loadedScriptResources) {
 				res.users[res.users.indexOf(tmpUserId)] = app;
 			}
@@ -211,6 +237,32 @@ class ClientClass {
 		// Remove app from app list
 		arrErase(this.runningApps, instance);
 		this.dispatch('apps-rem');
+	}
+
+	// Loads the module with the given url and registers a user.
+	// If the module is already loaded, just register another user for it. Otherwise, load it and register its first user.
+	// Returns the resource object that represents this module.
+	async requestModule(url, user) {
+		let resource = this.loadedResources[url];
+		if (resource) {
+			// The resource was already loaded, let's register
+			// another user of it.
+			resource.addUser(user);
+		} else {
+			// The resource hasn't been loaded yet, let's create it and load the script
+			let resId = btoa(url);
+			resource = new Resource();
+			resource.permanent = false;
+			resource.id = resId;
+			resource.users = [user];
+			resource.fnUnload = () => {
+				destroyElementById(resId);
+			};
+			this.loadedResources[url] = resource;
+
+			await addModule(url, resId);
+		}
+		return resource;
 	}
 
 	// Loads the script with the given url and registers a user.

@@ -1,8 +1,7 @@
 {
 	"id": "notepad",
-	"builder": "NotepadApp",
-	"scripts": [
-		"/app/notepad/script.js"	
+	"modules": [
+		"/app/notepad/script.mjs"	
 	],
 	"styles": [
 		"/app/notepad/style.css"

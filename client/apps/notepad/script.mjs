@@ -1,4 +1,4 @@
-window.NotepadApp = class NotepadApp extends App {
+export default class NotepadApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;
@@ -14,7 +14,7 @@ window.NotepadApp = class NotepadApp extends App {
 		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/log128.png');
 		this.window.on('closing', (ev) => {
-			if (!this.edited) {
+			if (!this.unsavedChanges) {
 				this.exit();
 				return;
 			}
@@ -48,7 +48,7 @@ window.NotepadApp = class NotepadApp extends App {
 		this.setDarkTheme(true);
 		
 		this.$textArea = $app.find('textarea');
-		this.$textArea.on('change', () => this.edited = true);
+		this.$textArea.on('change', () => this.unsavedChanges = true);
 	
 		let fileMenu = CtxMenu([
 			CtxItem('Save', () => { this.save(); }),
@@ -77,24 +77,13 @@ window.NotepadApp = class NotepadApp extends App {
 	}
 
 	async save() {
-		// If notepad was opening a file, save it
-		if (this.path) {
-			this.upload();
-			return true;
+		// If notepad hasn't set a path, invoke saveAs();
+		if (!this.path) {
+			return await this.saveAs();
 		}
 		
-		// Otherwise, let the user choose where to save the file and give it a name
-		let app = await WebSys.runApp('explorer');
-		app.asFileSelector('save', 'one');
-		
-		let result = await app.waitFileSelection();
-		
-		// No path chosen, cancel save
-		if (!result || !result.length) return false;
-		
-		// A path was chosen, set it and save the file
-		this.setPath(result[0]);
-		this.upload();
+		// Otherwise, just upload the current content
+		await this.upload();	
 		return true;
 	}
 	
@@ -120,22 +109,16 @@ window.NotepadApp = class NotepadApp extends App {
 		this.window.setTitle(path);
 	}
 	
-	upload() {
-		fetch('/fs/ud' + this.path, {
-			method: 'POST',
-			body: this.$textArea.val(),
-			headers: {
-				'Content-Type': 'text/plain'
-			}
-		})
+	async upload() {
+		try {
+			await FileSystem.writeText(this.path, this.$textArea.val());
+			this.unsavedChanges = false;
+		} catch (err) {
+			throw err;
+		}
 	}
 	
 	setDarkTheme(v) {
 		this.$app.toggleClass('dark', v);
-	}
-	
-	onClose() {
-		this.saveAppWindowState(this.window);
-		this.window.close();
 	}
 }

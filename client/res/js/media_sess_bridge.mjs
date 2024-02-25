@@ -96,9 +96,9 @@ function setCurrentMedia(media) {
 	if (srcUrl.origin === new URL(document.baseURI).origin) {
 		// Get path and check if it is a filesystem path
 		let filePath = srcUrl.pathname;
-		if (Paths.isFS(filePath)) {
+		if (Paths.isFSV(filePath)) {
 			// It is a fs path, use our thumbnail system
-			thumb = Paths.toFS(filePath, 'thumb');
+			thumb = filePath + "?thumb";
 		}
 	}
 		

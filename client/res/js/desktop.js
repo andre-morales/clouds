@@ -82,7 +82,7 @@ class Desktop {
 	}
 
 	async saveConfigs() {
-		await FileSystem.saveJson('/usr/desktop.json', this.configs);
+		await FileSystem.writeJson('/usr/desktop.json', this.configs);
 	}
 
 	async loadConfigs() {
@@ -149,7 +149,7 @@ class Desktop {
 
 	backButton() {
 		if (this.focusedWindow) {
-			this.focusedWindow.fire('backnav');
+			this.focusedWindow.dispatch('backnav');
 		}
 	}
 	
