@@ -7,7 +7,7 @@ window.NotepadApp = class NotepadApp extends App {
 	async init() {
 		// If notepad was launched with a path (opening a file)
 		if (this.buildArgs.length > 0) {
-			this.path = this.buildArgs[0].substring('/fs/q'.length);
+			this.path = Paths.removeFSPrefix(this.buildArgs[0]);
 		}
 	
 		// Create window and fetch app body

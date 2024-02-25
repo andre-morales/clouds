@@ -52,7 +52,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.137';
+		this.CLIENT_VERSION = '1.0.138';
 		this.BUILD_STRING = `${this.CLIENT_VERSION} Early Test 1`
 		this.BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	}
@@ -456,16 +456,23 @@ function getURLParams() {
 	});
 }
 
-class Clipboard {
-	static async copyText(text) {
-		this.object = text;
-		this.type = 'text';
-		await navigator.clipboard.writeText(text);
-	}
-
-	static async copyObject(object, type) {
+class LocalClipboard {
+	static async saveObject(type, object) {
 		this.object = object;
 		this.type = type;
+	}
+
+	static async getObject() {
+		return this.object;
+	}	
+
+	static async getType() {
+		return this.type;
+	}
+
+	static clear() {
+		this.object = null;
+		this.type = null;
 	}
 }
 

@@ -99,7 +99,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 				CtxItem('Date', () => this.sortBy('date'))
 			], "Sort by..."),
 			'-',
-			CtxItem('Paste', () => this.pasteFile()),
+			CtxItem('Paste', () => this.paste()),
 			CtxItem('Upload...', () => this.openUploadDialog())
 		]));
 
@@ -560,6 +560,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 
 		menu.push(
 			'-',
+			CtxItem('Cut', () => { this.cut(absPath) }),
 			CtxItem('Erase', () => { this.erase(absPath) })
 		);
 		return CtxMenu(menu);
@@ -706,6 +707,30 @@ window.ExplorerApp = class ExplorerApp extends App {
 		
 		coll.files.push(file);
 		this.saveCollections();
+	}
+
+	cut(path) {
+		LocalClipboard.saveObject('path', { 
+			operation: "cut",
+			path: path
+		});
+	}
+
+	async paste() {
+		let type = LocalClipboard.type;
+		if (type != 'path') return;
+
+		let op = LocalClipboard.object;
+		if (op.operation == 'cut') {
+			let from = op.path;
+			let fileName = Paths.file(from);
+			let to = this.cwd + fileName;
+
+			LocalClipboard.clear();
+
+			await FileSystem.rename(from, to);
+			this.refresh();
+		}
 	}
 
 	async erase(path) {

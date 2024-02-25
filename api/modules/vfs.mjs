@@ -18,12 +18,27 @@ export function init() {
 // If so, does the mapping. If no mapping was found, returns null.
 // This function performs no checks if the path provided is valid,
 // it only performs a substitution.
-function translate(userid, vpath) {
-	for (let mountp in defs) {
-		if (vpath.startsWith(mountp)) {
-			let phyPoint = defs[mountp].path;
+function translate(userid, vPath) {
+	for (let mPoint in defs) {
+		if (vPath.startsWith(mPoint)) {
+			// Normalize virtual path
+			let nPath = Path.posix.normalize(vPath);
+
+			// Trying to escape the mounting point?
+			if (nPath.indexOf(mPoint) == -1) {
+				return null;
+			}
+
+			// Remove mounting point from virtual path
+			nPath = nPath.replace(mPoint, "");
+
+			// Retrieve physical location of mounting point
+			let phyPoint = defs[mPoint].path;
 			phyPoint = phyPoint.replace('$user', userid);
-			return phyPoint + vpath.replace(mountp, "");
+
+			// Physical path
+			let jPath = Path.posix.join(phyPoint, nPath);
+			return jPath;
 		}
 	}
 
@@ -111,7 +126,7 @@ async function renameVirtual(user, path, newPath) {
 	let fNewPath = translate(user, newPath);
 	if (!fPath || !fNewPath) return;
 
-	console.log(`path-renamed "${fPath}" to ${fNewPath}`);
+	console.log(`Renamed "${fPath}" to ${fNewPath}`);
 
 	await FS.promises.rename(fPath, fNewPath);
 }
@@ -131,136 +146,6 @@ async function listVirtual(user, path) {
 	// List the directory
 	let results = await listPDir(fPath);
 	return results;
-}
-
-export function getRouter() {
-	var router = Express.Router();
-
-	// Query route
-	router.get('/q/*', asyncRoute(async (req, res) => {	
-		let userId = Auth.getUserGuard(req);
-
-		// Translate the virtual path to a real one
-		let vpath = '/' + req.params[0];
-		let fpath = translate(userId, vpath);
-		if (!fpath) {
-			res.status(404).end();
-			return;
-		}
-		
-		// Resolve the path and send the file. If an error occurs,
-		// answer with a 404 error code.
-		let absPath = Path.resolve(fpath);
-		res.sendFile(absPath, (err) => {
-			if (err) {
-				res.status(404).end();
-			}
-		});
-	}));	
-
-	// Upload files trough upload form
-	router.post('/u/*', asyncRoute(async (req, res) => {	
-		let userId = Auth.getUserGuard(req);
-
-		// Sanity check
-		if (!req.files) {
-			console.log('no files');
-			res.status(500).end();
-			return;
-		}
-
-		// Sanity check 2
-		if (!req.files.upload) {
-			console.log('no uploaded files');
-			res.status(500).end();
-			return;
-		}
-		
-		// Translate target directory to physical
-		let vdir = '/' + req.params[0];
-		let fdir = translate(userId, vdir);
-
-		// Make sure uploaded files are in an array
-		var files = req.files.upload;
-		if(!Array.isArray(files)){
-			files = [files];
-		}
-
-		// Move the uploaded files into their target path
-		for(let file of files){
-			file.mv(Path.join(fdir, file.name));
-		}	
-
-		res.end();
-	}));	
-
-	// Upload data to new or existing file
-	router.post('/ud/*', asyncRoute(async (req, res) => {
-		let user = Auth.getUserGuard(req);
-
-		// Phyisical target path
-		let path = translate(user, '/' + req.params[0]);
-
-		try {
-			await FS.promises.writeFile(path, req.body);
-		} catch (err) {
-			res.status(500);
-		}
-		res.end();
-	}));
-
-	// List files in directory
-	router.get('/ls/*', asyncRoute(async(req, res) => {
-		let userId = Auth.getUserGuard(req);
-
-		// If the virtual path is root '/', list the virtual mounting points
-		let vpath = '/' + req.params[0];
-		if (vpath == '/') {
-			res.json(listVMPoints(userId));
-			return;
-		}
-
-		// Translate the virtual path to the machine physical path
-		let fpath = translate(userId, vpath);
-		if (!fpath) {
-			res.status(400).end();
-			return;
-		}
-
-		// List the directory, and return the json results
-		try {
-			let results = await listPDir(fpath);
-			res.json(results);
-		} catch(err) {
-			res.status(err).end();
-		}
-	}));
-
-	// Delete file completely (no trash)
-	router.get('/erase/*', asyncRoute(async(req, res) => {
-		let userId = Auth.getUserGuard(req);
-
-		let vpath = '/' + req.params[0];
-		await eraseVirtual(userId, vpath);
-
-		res.end();
-	}));
-
-	// Query thumbnail for media file
-	router.get('/thumb/*', async (req, res) => {	
-		let userId = Auth.getUserGuard(req);
-
-		let vpath = '/' + req.params[0];
-		let fpath = translate(userId, vpath);
-
-		if (Files.isFileExtVideo(fpath) || Files.isFileExtPicture(fpath)) {
-			await handleThumbRequest(fpath, res);
-		} else {
-			res.sendFile(fpath);
-		}
-	});	
-
-	return router;
 }
 
 // New router using HTTP verbs and unified resource path
@@ -427,9 +312,14 @@ export function getRouterV() {
 
 	// PATCH/RENAME: Renames (moves) a path from one place to another
 	patchOperations['rename'] = async (req, res) => {
+		let user = Auth.getUserGuard(req);
+
+		let from = '/' + req.params[0];
 		let target = decodeURIComponent(req.query['rename']);
 
-		res.send(target);
+		await renameVirtual(user, from, target);
+
+		res.end();
 	}
 
 	// GET/THUMB Thumbnail GET request
@@ -479,4 +369,135 @@ async function handleThumbRequest(_abs, res){
 	} else {
 		res.status(404).end();
 	}
+}
+
+// Legacy routes through the /fs/ path
+export function getRouter() {
+	var router = Express.Router();
+
+	// Query route
+	router.get('/q/*', asyncRoute(async (req, res) => {	
+		let userId = Auth.getUserGuard(req);
+
+		// Translate the virtual path to a real one
+		let vpath = '/' + req.params[0];
+		let fpath = translate(userId, vpath);
+		if (!fpath) {
+			res.status(404).end();
+			return;
+		}
+		
+		// Resolve the path and send the file. If an error occurs,
+		// answer with a 404 error code.
+		let absPath = Path.resolve(fpath);
+		res.sendFile(absPath, (err) => {
+			if (err) {
+				res.status(404).end();
+			}
+		});
+	}));	
+
+	// Upload files trough upload form
+	router.post('/u/*', asyncRoute(async (req, res) => {	
+		let userId = Auth.getUserGuard(req);
+
+		// Sanity check
+		if (!req.files) {
+			console.log('no files');
+			res.status(500).end();
+			return;
+		}
+
+		// Sanity check 2
+		if (!req.files.upload) {
+			console.log('no uploaded files');
+			res.status(500).end();
+			return;
+		}
+		
+		// Translate target directory to physical
+		let vdir = '/' + req.params[0];
+		let fdir = translate(userId, vdir);
+
+		// Make sure uploaded files are in an array
+		var files = req.files.upload;
+		if(!Array.isArray(files)){
+			files = [files];
+		}
+
+		// Move the uploaded files into their target path
+		for(let file of files){
+			file.mv(Path.join(fdir, file.name));
+		}	
+
+		res.end();
+	}));	
+
+	// Upload data to new or existing file
+	router.post('/ud/*', asyncRoute(async (req, res) => {
+		let user = Auth.getUserGuard(req);
+
+		// Phyisical target path
+		let path = translate(user, '/' + req.params[0]);
+
+		try {
+			await FS.promises.writeFile(path, req.body);
+		} catch (err) {
+			res.status(500);
+		}
+		res.end();
+	}));
+
+	// List files in directory
+	router.get('/ls/*', asyncRoute(async(req, res) => {
+		let userId = Auth.getUserGuard(req);
+
+		// If the virtual path is root '/', list the virtual mounting points
+		let vpath = '/' + req.params[0];
+		if (vpath == '/') {
+			res.json(listVMPoints(userId));
+			return;
+		}
+
+		// Translate the virtual path to the machine physical path
+		let fpath = translate(userId, vpath);
+		if (!fpath) {
+			res.status(400).end();
+			return;
+		}
+
+		// List the directory, and return the json results
+		try {
+			let results = await listPDir(fpath);
+			res.json(results);
+		} catch(err) {
+			res.status(err).end();
+		}
+	}));
+
+	// Delete file completely (no trash)
+	router.get('/erase/*', asyncRoute(async(req, res) => {
+		let userId = Auth.getUserGuard(req);
+
+		let vpath = '/' + req.params[0];
+		await eraseVirtual(userId, vpath);
+
+		res.end();
+	}));
+
+	// Query thumbnail for media file
+	router.get('/thumb/*', async (req, res) => {	
+		let userId = Auth.getUserGuard(req);
+
+		let vpath = '/' + req.params[0];
+		let fpath = translate(userId, vpath);
+
+		if (Files.isFileExtVideo(fpath) || Files.isFileExtPicture(fpath)) {
+			await handleThumbRequest(fpath, res);
+		} else {
+			res.sendFile(fpath);
+		}
+	});	
+
+	return router;
 }
