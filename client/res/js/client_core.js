@@ -21,6 +21,7 @@ async function main() {
 		addScript('/res/js/app.js'),
 		addScript('/res/js/desktop.js'),
 		addScript('/res/js/lib/hammer.min.js'),
+		addScript('/res/js/context_menu.js'),
 		addScript('/res/js/window.js'),
 		addScript('/res/js/dialogs.js'),
 		addScript('/res/js/audiosystem.js'),
