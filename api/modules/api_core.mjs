@@ -1,7 +1,6 @@
-const KAPI_VERSION = '0.5.11';
+const KAPI_VERSION = '0.6.00';
 
 // Lib imports
-import Util from 'util';
 import Path from 'path';
 import FS from 'fs';
 import HTTP from 'http';
@@ -17,7 +16,6 @@ import { BadAuthException } from './errors.mjs';
 import config, * as Config from './config.mjs';
 import * as Auth from './auth.mjs';
 import * as VFS from './vfs.mjs';
-import * as Files from './files.mjs';
 import * as FFmpegM from './ext/ffmpeg.mjs';
 import * as ShellMgr from './ext/rshell.mjs';
 //import * as MediaStr from './ext/mediastr.mjs';
@@ -62,6 +60,7 @@ function initExpress() {
 	app.use('/res', Express.static('client/res')); // Static public resources
 	app.use('/auth', Auth.getRouter());            // Auth system 
 	app.use('/fs', VFS.getRouter());			   // File system
+	app.use('/fsv', VFS.getRouterV());			   // Extended file system with HTTP verbs
 	apiSetupPages();     			    		   // Entry, Auth and Desktop
 	apiSetupApps();								   // Apps service
 	apiSetupRShell();     						   // Remote console

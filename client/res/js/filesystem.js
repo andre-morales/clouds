@@ -33,8 +33,9 @@ class Files {
 	}
 
 	static async list(path) {
-		// Convert the path to a list op path
-		let cmd = Paths.toFS(path, 'ls');
+		// Convert the path to a list cmd
+		if (!path.endsWith('/')) path += '/';
+		let cmd = Paths.toFSV(path);
 
 		let fres = await fetch(cmd);
 		if (fres.status != 200) {
@@ -46,11 +47,13 @@ class Files {
 	}
 
 	static async erase(path) {
-		// Convert the path to a erase op path
-		let cmd = Paths.toFS(path, 'erase');
+		// Convert the path
+		let cmd = Paths.toFSV(path);
 
 		// Perform the operation
-		let fres = await fetch(cmd);
+		let fres = await fetch(cmd, {
+			method: 'DELETE'
+		});
 		if (fres.status != 200) {
 			throw new FileSystemException(`Erase operation of "${path}" failed with status ${fres.status}.`);
 		}
@@ -58,10 +61,6 @@ class Files {
 }
 
 class Paths {
-	static isFS(path) {
-		return path.startsWith('/fs/');
-	}
-
 	static toFS(path, op) {
 		// If it is already a FS path, replace the op	
 		if (Paths.isFS(path)) {
@@ -76,6 +75,33 @@ class Paths {
 			return `/fs/${op}${path}`
 		}
 	}
+
+	static toFSV(path) {
+		// If it is already a FSV path, don't alter anything
+		if (Paths.isFSV(path)) return path;
+
+		// If is a FS path, remove the op
+		if (Paths.isFS(path)) {
+			// Remove fs-op prefix
+			let p = path.substring(path.indexOf('/', 4));
+			return `/fsv/${p}`;
+		} else {
+			// Make sure path is absolute
+			if (!path.startsWith('/')) {
+				throw new BadParameterFault("FSV path doesn't start with /. Paths must be absolute before being converted.");
+			}
+			return `/fsv/${path}`
+		}
+	}
+
+	static isFS(path) {
+		return path.startsWith('/fs/');
+	}
+
+	static isFSV(path) {
+		return path.startsWith('/fsv/');
+	}
+
 
 	static removeFSPrefix(path) {
 		if (!Paths.isFS(path)) return path;

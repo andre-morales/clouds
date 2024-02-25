@@ -397,7 +397,7 @@ window.ExplorerApp = class ExplorerApp extends App {
 		let $img = null;
 		let hasThumb = FileTypes.isVideo(fname) || FileTypes.isPicture(fname);
 		if (hasThumb) {
-			$img = $(`<img src='/fs/thumb${absPath}' draggable='false'>`);
+			$img = $(`<img src='/fsv${absPath}?thumb' draggable='false'>`);
 			classes.push('thumbbed');
 		}
 

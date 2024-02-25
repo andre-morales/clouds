@@ -1,4 +1,3 @@
-import Util from 'util';
 import FS from 'fs';
 import Path from 'path';
 import Express from 'express';
@@ -55,7 +54,11 @@ async function listPDir(path) {
 	} catch (err) {
 		if (err.code == 'EPERM') throw 403;
 		if (err.code == 'ENOENT') throw 404;
-		throw 500;
+		if (err.code == 'ENOTDIR') throw 400;
+		else {
+			console.error(err);
+			throw 500;
+		}
 	}
 
 	let promises = files.map(async (entry) => {
@@ -90,12 +93,44 @@ async function listPDir(path) {
 	return results; 
 }
 
-// Erases completely the given file or folder in the PHYSICAL path
-async function erasePath(path) { 
-	console.log(`Erasing '${path}'`);
-	await FS.promises.rm(path, {
+// Erases completely the given file or folder
+async function eraseVirtual(user, path) { 
+	let fpath = translate(user, path);
+	if (!fpath) return;
+
+	console.log(`Erasing '${fpath}'`);
+
+	await FS.promises.rm(fpath, {
 		recursive: true
 	});
+}
+
+// Moves a given file or folder into a new folder
+async function renameVirtual(user, path, newPath) {
+	let fPath = translate(user, path);
+	let fNewPath = translate(user, newPath);
+	if (!fPath || !fNewPath) return;
+
+	console.log(`path-renamed "${fPath}" to ${fNewPath}`);
+
+	await FS.promises.rename(fPath, fNewPath);
+}
+
+async function listVirtual(user, path) {
+	// If the virtual path is root '/', list the virtual mounting points
+	if (path == '/') {
+		return listVMPoints(user);
+	}
+
+	// Translate the virtual path to the machine physical path
+	let fPath = translate(user, path);
+	if (!fPath) {
+		throw 404;
+	}
+
+	// List the directory
+	let results = await listPDir(fPath);
+	return results;
 }
 
 export function getRouter() {
@@ -205,8 +240,9 @@ export function getRouter() {
 	router.get('/erase/*', asyncRoute(async(req, res) => {
 		let userId = Auth.getUserGuard(req);
 
-		let fpath = translate(userId, '/' + req.params[0]);
-		await erasePath(fpath);
+		let vpath = '/' + req.params[0];
+		await eraseVirtual(userId, vpath);
+
 		res.end();
 	}));
 
@@ -223,6 +259,188 @@ export function getRouter() {
 			res.sendFile(fpath);
 		}
 	});	
+
+	return router;
+}
+
+// New router using HTTP verbs and unified resource path
+export function getRouterV() {
+	var router = Express.Router();
+
+	let getOperations = {};
+	let patchOperations = {};
+
+	// GET: Query route
+	router.get('/*', asyncRoute(async function (req, res) {
+		let userId = Auth.getUserGuard(req);
+		
+		// Get query parameters and check for special GET operations	
+		let queryParams = Object.keys(req.query);	
+		if (queryParams.length > 0) {
+			// Only one special query operation allowed
+			if (queryParams.length != 1) {
+				res.status(400).send("Only one query operation allowed.");
+				return;
+			}
+
+			// Get operation name, and throw error if no such operation
+			let operation = queryParams[0];
+			let handler = getOperations[operation];
+			if (!handler) {
+				res.sendStatus(400);
+				return;
+			}
+
+			await handler(...arguments);
+			return;
+		}
+
+		let vPath = '/' + req.params[0];
+
+		// If querying a path that ends in slash, perform a directory listing
+		if (vPath.endsWith('/')) {
+			try {
+				let results = await listVirtual(userId, vPath);
+				res.json(results);
+			} catch (errCode) {
+				res.status(errCode).end();
+			}
+			return;
+		}
+
+		// Translate the virtual path to a real one
+		let fPath = translate(userId, vPath);
+		if (!fPath) {
+			res.status(404).end();
+			return;
+		}
+		
+		// Resolve the path and send the file. If an error occurs,
+		// answer with a 500 error code and log the error.
+		let absPath = Path.resolve(fPath);
+		res.sendFile(absPath, (err) => {
+			if (!err) return;
+			if (err.code == 'EISDIR') {
+				// Tried to GET a directory.
+				res.sendStatus(400);
+				return;
+			}
+
+			console.error(err);
+			res.sendStatus(500);
+		});
+	}));
+
+	// POST: Upload files trough upload form
+	router.post('/*', asyncRoute(async (req, res) => {	
+		let userId = Auth.getUserGuard(req);
+
+		// Sanity check
+		if (!req.files) {
+			console.log('no files');
+			res.status(500).end();
+			return;
+		}
+
+		// Sanity check 2
+		if (!req.files.upload) {
+			console.log('no uploaded files');
+			res.status(500).end();
+			return;
+		}
+		
+		// Translate target directory to physical
+		let vdir = '/' + req.params[0];
+		let fdir = translate(userId, vdir);
+
+		// Make sure uploaded files are in an array
+		var files = req.files.upload;
+		if(!Array.isArray(files)){
+			files = [files];
+		}
+
+		// Move the uploaded files into their target path
+		for(let file of files){
+			file.mv(Path.join(fdir, file.name));
+		}	
+
+		res.end();
+	}));	
+
+	// PUT: Upload data to new or existing file
+	router.put('/*', asyncRoute(async (req, res) => {
+		let user = Auth.getUserGuard(req);
+
+		// Phyisical target path
+		let path = translate(user, '/' + req.params[0]);
+
+		try {
+			await FS.promises.writeFile(path, req.body);
+		} catch (err) {
+			res.status(500);
+		}
+		res.end();
+	}));
+
+	// DELETE: Delete file completely (no trash)
+	router.delete('/*', asyncRoute(async(req, res) => {
+		let userId = Auth.getUserGuard(req);
+
+		let vpath = '/' + req.params[0];
+		await eraseVirtual(userId, vpath);
+
+		res.end();
+	}));
+
+	// PATCH: General file operations without response and non-cacheable
+	router.patch('/*', asyncRoute(async function(req, res) {
+		let userId = Auth.getUserGuard(req);
+		
+		// Get query parameters and check for special operations	
+		let queryParams = Object.keys(req.query);	
+		if (queryParams.length > 0) {
+			// Only one special operation allowed
+			if (queryParams.length != 1) {
+				res.status(400).send("Only one operation allowed.");
+				return;
+			}
+
+			// Get operation name, and throw error if no such operation
+			let operation = queryParams[0];
+			let handler = patchOperations[operation];
+			if (!handler) {
+				res.sendStatus(400);
+				return;
+			}
+
+			await handler(...arguments);
+			return;
+		}
+
+		// Patch request without operation is malformed
+		res.sendStatus(400);
+	}));
+
+	// PATCH/RENAME: Renames (moves) a path from one place to another
+	patchOperations['rename'] = async (req, res) => {
+		let target = decodeURIComponent(req.query['rename']);
+
+		res.send(target);
+	}
+
+	// GET/THUMB Thumbnail GET request
+	getOperations['thumb'] = async (req, res) => {
+		let userId = Auth.getUserGuard(req);
+
+		let vpath = '/' + req.params[0];
+		let fpath = translate(userId, vpath);
+
+		if (Files.isFileExtVideo(fpath) || Files.isFileExtPicture(fpath)) {
+			await handleThumbRequest(fpath, res);
+		} else {
+			res.sendFile(fpath);
+		}
+	};
 
 	return router;
 }
