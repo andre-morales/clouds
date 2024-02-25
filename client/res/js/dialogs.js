@@ -4,7 +4,7 @@ class Dialogs {
 
 		let deferred = new Deferred();
 
-		let win = WebSys.desktop.createWindow(app);
+		let win = Client.desktop.createWindow(app);
 		win.$window.addClass('dialog');
 		win.setTitle(title);
 		

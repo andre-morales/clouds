@@ -491,7 +491,7 @@ body {
 }
 
 /* ----- */
-.Slider {
+.slider {
 	--thumb-size: 18px;
 
 	position: relative;
@@ -510,7 +510,7 @@ body {
 	background-clip: content-box;
 }
 
-.Slider .lower {
+.slider .lower {
 	position: absolute;
 	display: block;
 	height: 100%;
@@ -525,7 +525,7 @@ body {
 	background-clip: content-box;
 }
 
-.Slider .thumb {
+.slider .thumb {
 	position: absolute;
 	display: block;
 	top: calc(50% - var(--thumb-size)/2);
@@ -542,7 +542,7 @@ body {
 	background: white;
 }
 
-.Slider .thumb:hover {
+.slider .thumb:hover {
 	background: #00B6FF;
 }
 

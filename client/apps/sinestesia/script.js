@@ -249,11 +249,11 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			}, false),
 			CtxItem('Reset transform', () => this.resetZoomPan()),
 		]);
-		WebSys.desktop.addCtxMenuOn($win.find('.window-body'), () => ctxMenu);
+		Client.desktop.addCtxMenuOn($win.find('.window-body'), () => ctxMenu);
 	}
 
 	async showOpenDialog() {
-		let app = await WebSys.runApp('explorer');
+		let app = await Client.runApp('explorer');
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
 		if (!result || !result.length) return;
@@ -263,7 +263,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	}
 
 	async showOpenFolderDialog() {
-		let app = await WebSys.runApp('explorer');
+		let app = await Client.runApp('explorer');
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
 		if (!result || !result.length) return;

@@ -7,7 +7,6 @@ class Mathx {
 }
 
 function createSlider(slider){
-	if (slider.attr('data-ready')) return;
 	slider.attr('data-ready', true);
 
 	// Creating handles
@@ -92,11 +91,13 @@ function createSlider(slider){
 }
 
 function prepareSliders(){
-	var sliders = $(".Slider");
+	var sliders = $(".slider");
 
 	for(let i = 0; i < sliders.length; i++){
 		let $slider = $(sliders[i]);
 		
-		createSlider($slider);
+		if (!$slider.attr('data-ready')) {
+			createSlider($slider);	
+		}
 	}
 }
