@@ -17,6 +17,7 @@ async function main() {
 	let scriptsP = Promise.all([
 		addScript('/res/js/faults.js'),
 		addScript('/res/js/events.js'),
+		addScript('/res/js/util.js'),
 		addScript('/res/js/filesystem.js'),
 		addScript('/res/js/app.js'),
 		addScript('/res/js/desktop.js'),
@@ -25,6 +26,7 @@ async function main() {
 		addScript('/res/js/window.js'),
 		addScript('/res/js/dialogs.js'),
 		addScript('/res/js/audiosystem.js'),
+		addScript('/res/js/controls.js'),
 		addModule('/res/js/media_sess_bridge.mjs')
 	]);
 
@@ -43,7 +45,6 @@ async function main() {
 
 	// Instatiate system
 	Client = new ClientClass();
-	WebSys = Client;
 	await Client.init();
 
 	destroyElementById('loading-screen');
@@ -428,6 +429,26 @@ class ClientClass {
 	}
 }
 
+class LocalClipboard {
+	static async saveObject(type, object) {
+		this.object = object;
+		this.type = type;
+	}
+
+	static async getObject() {
+		return this.object;
+	}	
+
+	static async getType() {
+		return this.type;
+	}
+
+	static clear() {
+		this.object = null;
+		this.type = null;
+	}
+}
+
 function _systemPanic(title, msg, mode) {
 	console.error('--- SYSTEM PANIC ---');
 	// Initialize a counter to keep incrementing the z-index
@@ -463,173 +484,4 @@ function _systemPanic(title, msg, mode) {
 	$('body').append($box);
 }
 
-function klog(msg) {
-	Client.log(msg);
-}
-
-function getObjectByName(name) {
-    var nameParts = name.split('.');
-    var nameLength = nameParts.length;
-    var scope = window;
-
-    for (var i = 0; i < nameLength; ++i) {
-        scope = scope[nameParts[i]];
-    }
-
-    return scope;
-}
-
-function cloneTemplate(id) {
-	let el = document.getElementById('t_' + id);
-	return el.content.cloneNode(true);
-}
-
-function arrErase(arr, val) {
-	let i = arr.indexOf(val);
-	if (i >= 0) {
-		arr.splice(i, 1);
-	}
-	return i;
-}
-
-function endsWithArr(str, arr) {
-	for (let end of arr) {
-		if (str.endsWith(end)) return true;
-	}
-	return false;
-}
-
-function sleep(ms) {
-	return new Promise(res => setTimeout(res, ms));
-}
-
-function getURLParams() {
-	return new Proxy(new URLSearchParams(window.location.search), {
- 		get: (searchParams, prop) => searchParams.get(prop),
-	});
-}
-
-class LocalClipboard {
-	static async saveObject(type, object) {
-		this.object = object;
-		this.type = type;
-	}
-
-	static async getObject() {
-		return this.object;
-	}	
-
-	static async getType() {
-		return this.type;
-	}
-
-	static clear() {
-		this.object = null;
-		this.type = null;
-	}
-}
-
-class Mathx {
-	static clamp(value, min, max) {
-		if (value > max) return max;
-		if (value < min) return min;
-		return value;
-	}	
-}
-
 main();
-
-function createSlider(slider){
-	if (slider.attr('data-ready')) return;
-	slider.attr('data-ready', true);
-
-	// Creating handles
-	let $lower = slider.find('.lower');
-	if (!$lower.length) {
-		$lower = $('<span class="lower"></span>');
-		slider.append($lower);
-	}
-
-	let $thumb = slider.find('.thumb');
-	if (!$thumb.length) {
-		$thumb = $('<span class="thumb"></span>');
-		slider.append($thumb);
-	}
-
-	let attrOr = (elem, attr, def) => {
-		let v = elem.attr(attr);
-		if (v === 0) return 0;
-		if (!v) return def;
-		return v; 
-	};
-
-	let min = attrOr(slider, "data-min", 0);
-	let max = attrOr(slider, "data-max", 100);
-	
-	let valueChange = (coff, fireEv) => {
-		coff = Mathx.clamp(coff, 0, 1);
-		let value = min + (max - min) * coff;
-
-		if(slider[0].value == value) return;
-		slider[0].value = value;
-
-		$lower.css("width", `${coff * 100}%`);
-		$thumb.css("left", `${coff * slider.width() - $thumb.width()/2}px`);
-		
-		if(fireEv) slider.trigger('change');
-	};
-
-	let dragX = (ev) => {
-		let mx = ev.pageX;
-
-		let touches = ev.changedTouches;
-		if (touches && touches[0]) {
-			mx = touches[0].pageX;
-		}
-		return (mx - slider.offset().left) / slider.width();
-	};
-
-	// Event handling
-	let held = false;
-	$(document).on('mousemove touchmove', (ev) => {
-		if(!held) return
-
-		valueChange(dragX(ev), true);	
-	});
-	
-	slider.on('mousedown touchstart', (ev) => {
-		held = true;
-		valueChange(dragX(ev), true);
-	});
-	$thumb.on('mousedown touchstart', () => {
-		held = true;
-	});
-
-	$(document).on('mouseup', (ev) => {
-		if(!held) return;
-
-		valueChange(dragX(ev), true);
-		held = false;
-	});
-
-	// Properties
-	slider[0].setValue = (value, fireEv) => {
-		valueChange((value-min)/(max-min), fireEv);
-	};
-	
-	// Initial value
-	var initval = attrOr(slider, "data-value", 0);
-	setTimeout(() => {
-		valueChange(Mathx.clamp(initval, min, max));
-	}, 0)	
-}
-
-function prepareSliders(){
-	var sliders = $(".Slider");
-
-	for(let i = 0; i < sliders.length; i++){
-		let $slider = $(sliders[i]);
-		
-		createSlider($slider);
-	}
-}

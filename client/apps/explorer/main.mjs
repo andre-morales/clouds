@@ -51,7 +51,7 @@ export default class ExplorerApp extends App {
 		if (this.window) return;
 
 		// Create window and fetch app body
-		this.window = WebSys.desktop.createWindow(this);
+		this.window = Client.desktop.createWindow(this);
 		this.window.setTitle('File Explorer');
 		this.window.setVisible(true);
 
@@ -91,7 +91,7 @@ export default class ExplorerApp extends App {
 
 		// Context menus
 		let $filesContainer = $app.find('.files-container');
-		WebSys.desktop.addCtxMenuOn($filesContainer, () => CtxMenu([
+		Client.desktop.addCtxMenuOn($filesContainer, () => CtxMenu([
 			CtxMenu([
 				CtxItem('Name', () => this.sortBy('name')),
 				CtxItem('Date', () => this.sortBy('date'))
@@ -102,7 +102,7 @@ export default class ExplorerApp extends App {
 		]));
 
 		let $sidePanel = $app.find('aside');
-		WebSys.desktop.addCtxMenuOn($sidePanel, () => CtxMenu([
+		Client.desktop.addCtxMenuOn($sidePanel, () => CtxMenu([
 			CtxItem('Create collection...', () => this.openCreateCollectionDialog())
 		]));
 
@@ -110,7 +110,7 @@ export default class ExplorerApp extends App {
 		//$menubarView.click(() => {
 
 			//});
-		//WebSys.desktop.addCtxMenuOn($menubar, () => CtxMenu([
+		//Client.desktop.addCtxMenuOn($menubar, () => CtxMenu([
 		//	CtxMenu(['-', '-', '-'], "Sort by...")
 		//]));
 
@@ -149,7 +149,7 @@ export default class ExplorerApp extends App {
 	}
 
 	async openCreateCollectionDialog() {
-		let win = WebSys.desktop.createWindow();
+		let win = Client.desktop.createWindow();
 		win.on('closereq', () => win.close());
 		
 		let $body = win.$window.find('.window-body');
@@ -422,7 +422,7 @@ export default class ExplorerApp extends App {
 
 		// Clicking behaviour
 		$file.click(() => {
-			if (WebSys.desktop.contextMenuOpen) return;
+			if (Client.desktop.contextMenuOpen) return;
 			if (this.selectionMode == 'default') {
 				this.openHandler(absPath);
 				return;
@@ -460,7 +460,7 @@ export default class ExplorerApp extends App {
 				this.openHandler(absPath);
 			}
 		});
-		WebSys.desktop.addCtxMenuOn($file, () => this.makeFileMenu(absPath));
+		Client.desktop.addCtxMenuOn($file, () => this.makeFileMenu(absPath));
 		//$file.attr('draggable', 'true');
 		return $file;
 	}
@@ -488,7 +488,7 @@ export default class ExplorerApp extends App {
 			let appId = this.typeAssociations[ext];
 
 			if (appId) {
-				let app = await WebSys.runApp(appId, [fsPath]);
+				let app = await Client.runApp(appId, [fsPath]);
 				
 				// If the app launch failed, do nothing, as the user will already be notified of any errors
 				if (!app) return;
@@ -516,7 +516,7 @@ export default class ExplorerApp extends App {
 		if (isDir) {
 			menu.push(
 				CtxItem('Open in another window', async () => {
-					let app = await WebSys.runApp('explorer');
+					let app = await Client.runApp('explorer');
 					app.go(absPath);
 				}),
 				CtxItem('Add to favorites', () => {
@@ -529,7 +529,7 @@ export default class ExplorerApp extends App {
 					CtxItem('With',  () => this.openFileWith(absPath)),
 					CtxItem('Outside', () => this.openFileExt(absPath))
 				], 'Open...'),
-				CtxItem('Download', () => WebSys.downloadUrl(fsPath))
+				CtxItem('Download', () => Client.downloadUrl(fsPath))
 			);
 		}
 
@@ -552,7 +552,7 @@ export default class ExplorerApp extends App {
 
 		if (FileTypes.isPicture(absPath)) {
 			menu.push(CtxItem('Set as background', () => {
-				WebSys.desktop.setBackground(fsPath, true);
+				Client.desktop.setBackground(fsPath, true);
 			}));
 		}
 
@@ -588,7 +588,7 @@ export default class ExplorerApp extends App {
 			$item.click(() => {
 				this.openHandler(path);
 			});
-			WebSys.desktop.addCtxMenuOn($item, () => CtxMenu([
+			Client.desktop.addCtxMenuOn($item, () => CtxMenu([
 				CtxItem('Remove', () => this.removeFavorite(path))
 			]));
 			this.$favorites.append($item);
@@ -647,7 +647,7 @@ export default class ExplorerApp extends App {
 				this.openCollection(name);
 			});
 
-			WebSys.desktop.addCtxMenuOn($item, () => {
+			Client.desktop.addCtxMenuOn($item, () => {
 				return CtxMenu([
 					CtxCheck('Only show here', (c) => {
 						coll.exclusive = (c) ? self.cwd : null;

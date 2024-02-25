@@ -1,3 +1,4 @@
+"use strict"
 
 class CtxMenuClass {
 	constructor(entr, label) {
