@@ -67,7 +67,7 @@ export default class NotepadApp extends App {
 	
 		// Load the text from the argument path (if present)
 		if (this.path) {
-			let text = await Files.readText(this.path);
+			let text = await FileSystem.readText(this.path);
 			this.$textArea.val(text);
 		}
 

@@ -35,11 +35,7 @@ export default class ExplorerApp extends App {
 		super(...args);
 		this.window = null;
 		this.filesCount = 0;
-		this.$files = null;
 		this.cwd = null;
-		this.selectionMode = 'default';
-		this.selectedFiles = [];
-		this.selectedElems = [];
 		this.favorites = [];
 		this.collections = {};
 		this.collectionsMap = new Map();
@@ -47,8 +43,9 @@ export default class ExplorerApp extends App {
 		this.closingDeferred = new Deferred();
 		this.history = new History();
 		this.history.save();
-		this.panel = new FilePanel();
-		this.zoom = 1;
+		this.panel = new FilePanel(this);
+		this.cancelFetches = true;
+		this.canceledFetches = new Map();
 	}
 
 	async init() {
@@ -74,10 +71,12 @@ export default class ExplorerApp extends App {
 		await this.window.setContentToUrl('/app/explorer/res/main.html');
 
 		// Query DOM
-		this.$files = $app.find('.files');
 		this.$addressField = $app.find('.address-field');
 		this.$favorites = $app.find('.favorites');
 		this.$collections = $app.find('.collections');
+
+		// Setup file panel
+		this.panel.init();
 
 		// Setup events
 		this.$addressField.on('change', () => {
@@ -88,10 +87,10 @@ export default class ExplorerApp extends App {
 		$app.find('.refresh-btn').click(() => this.refresh());
 		$app.find('.favorites-btn').click(() => {
 			$app.find('aside').toggleClass('hidden');
-			this.recalculateIcons();
+			this.panel.recalculateIcons();
 		});
 		$app.find('.search-field').on('change', () => this.searchFiles());
-		this.window.on('resize', () => this.recalculateIcons());
+		this.window.on('resize', () => this.panel.recalculateIcons());
 
 		// Context menus
 		let $filesContainer = $app.find('.files-container');
@@ -183,33 +182,14 @@ export default class ExplorerApp extends App {
 		this.navigate('.');
 	}
 
-	recalculateIcons() {
-		let iw = 128 * this.zoom;
-
-		let w = this.$files.width();
-		let icons = Math.floor(w / iw); // How many icons fit vertically
-		let tm = w - icons * iw - 2;    // Remaining space
-		let m = tm / icons / 2;         // Divide remaining space as margin
-		this.$files.css('--icon-border', m + 'px');
-	}
-
 	searchFiles() {
 		let query = this.window.$window.find('.search-field').val();
 		if (query.length == 0) {
-			this.$files.children().removeClass('hidden');
+			this.panel.filter("");
 			return;
 		}
 
-		query = query.toLowerCase();
-		this.$files.children().each((i, el) => {
-			let $el = $(el);
-			let fname = $el.find('span').text().toLowerCase();
-			if (fname.includes(query)) {
-				$el.removeClass('hidden')
-			} else {
-				$el.addClass('hidden');
-			}
-		});
+		this.panel.filter(query.toLowerCase());
 	}
 
 	sortBy(what) {
@@ -218,7 +198,7 @@ export default class ExplorerApp extends App {
 	}
 
 	asFileSelector(mode, selectionMode) {
-		this.selectionMode = selectionMode;
+		this.panel.selectionMode = selectionMode;
 		let $win = this.window.$window;
 
 		if (mode == 'open') {
@@ -234,7 +214,7 @@ export default class ExplorerApp extends App {
 			$win.find('.save').click(() => {
 				let fileName = $win.find('.name-field').val();
 				
-				this.selectedFiles = [this.cwd + fileName];
+				this.panel.selectedFiles = [this.cwd + fileName];
 				this.doneClicked = true;
 				this.window.close();
 				this.exit();
@@ -245,7 +225,7 @@ export default class ExplorerApp extends App {
 	async waitFileSelection() {
 		await this.closingDeferred.promise;
 
-		if (this.doneClicked) return this.selectedFiles;
+		if (this.doneClicked) return this.panel.selectedFiles;
 		return null;
 	}
 
@@ -262,7 +242,15 @@ export default class ExplorerApp extends App {
 	}
 
 	async go(path) {
-		this.$files.find('img').attr('src', '');
+		// If cancel fetches is enabled, remove src attribute of every image
+		// but save the sources in another attribute in case the navigation fails.
+		if (this.cancelFetches) {
+			this.panel.$files.find('img').each((i, el) => {
+				let src = el.getAttribute('src');;
+				el.dataset.haltSrc = src;
+				el.setAttribute('src', '');
+			});
+		}
 		//this.$files.empty();
 		
 		if (path.startsWith('$')) {
@@ -290,9 +278,18 @@ export default class ExplorerApp extends App {
 
 			Dialogs.showError(this, "Explorer", `${msg}\nPath: "${path}"`);
 			this.$addressField.val(this.cwd);
+
+			// If cancel fetches was enabled, restore thumb image sources on navigation failure
+			if (this.cancelFetches) {
+				this.panel.$files.find('img').each((i, el) => {
+					let src = el.dataset.haltSrc;
+					el.setAttribute('src', src);
+				});
+			}
 			return code;
 		}
 
+		console.log('result');
 		this.cwd = path;
 		
 		// UI changes		
@@ -309,156 +306,7 @@ export default class ExplorerApp extends App {
 		}
 
 		let files = await fres.json();
-		this.setFilePanelContent(files);
-	}
-
-	async setFilePanelContent(files) {
-		this.files = files;
-		this.$files.addClass('d-none');
-		this.$files.empty();
-		this.filesCount = files.length;
-
-		// Sort files 
-		switch (this.sorting) {
-		case 'date':
-			files.sort((a, b) => {
-				let A = a[2];
-				let B = b[2];
-				return B - A;
-			});
-			break;
-
-		// By default, sort alphabetically
-		default:
-			let val = (e) => {
-				if (e.endsWith('/')) return 1;
-				return 0;
-			};
-
-			files.sort((a, b) => {
-				let A = val(a[0]);
-				let B = val(b[0]);
-				if (A == B) return a[0].localeCompare(b[0]);
-				return B - A;
-			});
-		}
-
-		// Make icons
-		for (let file of files) {
-			let $ic = this.makeFileIcon(file);
-			$ic.appendTo(this.$files);
-		}	
-
-		// Make the panel visible
-		this.$files.removeClass('d-none');
-		this.recalculateIcons();
-	}
-
-	makeFileIcon(fentry) {
-		let [fpath, ftags="", fcreation=0] = fentry;
-
-		// Get file name between slashes in the entry
-		let fname = fpath;
-		let ls = fpath.lastIndexOf('/', fpath.length-2);
-		if (ls != -1) fname = fpath.substring(ls + 1);
-		if (fname.endsWith('/')) fname = fname.slice(0, -1);
-
-		// Absolute path of the entry
-		let absPath;
-		if (!this.cwd.startsWith('$')) {
-			absPath = Paths.join(this.cwd, fpath);
-		} else {
-			absPath = fpath;
-		}
-
-		// Obtain file classes
-		let classes = ['file'];
-		if (fpath.endsWith('/')) {
-			classes.push('dir');
-		}
-		if (ftags.includes('i')) {
-			classes.push('blocked');
-		}
-		if (ftags.includes('s')) {
-			classes.push('symbolic');
-		}
-
-		// Get file type given file extension
-		let cl = this._getFileClassByExt(fpath);
-		if (cl) classes.push(cl);
-
-		// Create thumbnail image if needed
-		let $img = null;
-		let hasThumb = FileTypes.isVideo(fname) || FileTypes.isPicture(fname);
-		if (hasThumb) {
-			$img = $(`<img src='/fsv${absPath}?thumb' draggable='false'>`);
-			classes.push('thumbbed');
-		}
-
-		// Create file element itself
-		let iconText = fname;
-		if (fname.length > 20) {
-			iconText = fname.substring(0, 20) + "…";
-		}
-		
-		let $file = $(`<div><span>${iconText}</span></div>`, {
-			'class': classes.join(' ')
-		});
-
-		// Add thumbnail element
-		let $ic = $('<i></i>');
-		if ($img) {
-			$ic.append($img);
-			$img.on('error', () => {
-				$img.remove();
-				$file.removeClass('thumbbed');
-			});
-		}
-		$file.prepend($ic);
-
-		// Clicking behaviour
-		$file.click(() => {
-			if (Client.desktop.contextMenuOpen) return;
-			if (this.selectionMode == 'default') {
-				this.openHandler(absPath);
-				return;
-			}
-
-			switch(this.selectionMode) {
-			case 'one':
-				if ($file.hasClass('selected')) {
-					this.selectedFiles = [];
-					this.selectedElems = [];
-				} else {
-					for (let $el of this.selectedElems) {
-						$el.removeClass('selected');
-					};	
-					this.selectedFiles = [absPath];
-					this.selectedElems = [$file];
-				}
-				break;
-			case 'many':
-				let i = this.selectedFiles.indexOf(absPath);
-				if (i == -1) {
-					this.selectedFiles.push(absPath);
-					this.selectedElems.push($file);
-				} else {
-					this.selectedFiles.splice(i, 1);
-					this.selectedElems.splice(i, 1);
-				}
-				break;
-			}
-			$file.toggleClass('selected');
-		});
-
-		$file.dblclick(() => {
-			if (this.selectionMode != 'default') {
-				this.openHandler(absPath);
-			}
-		});
-		Client.desktop.addCtxMenuOn($file, () => this.makeFileMenu(absPath));
-		//$file.attr('draggable', 'true');
-		return $file;
+		this.panel.setContent(files);
 	}
 
 	async goHome() {
@@ -501,66 +349,6 @@ export default class ExplorerApp extends App {
 		this.openFileExt(path);	
 	}
 
-	makeFileMenu(absPath) {
-		let isDir = absPath.endsWith('/');
-		let fsPath = Paths.toFSV(absPath);
-
-		let menu = [
-			CtxItem('Open', () => this.openHandler(absPath)),
-		];
-
-		if (isDir) {
-			menu.push(
-				CtxItem('Open in another window', async () => {
-					let app = await Client.runApp('explorer');
-					app.go(absPath);
-				}),
-				CtxItem('Add to favorites', () => {
-					this.addFavorite(absPath)
-				})
-			);
-		} else {
-			menu.push(
-				CtxMenu([
-					CtxItem('With',  () => this.openFileWith(absPath)),
-					CtxItem('Outside', () => this.openFileExt(absPath))
-				], 'Open...'),
-				CtxItem('Download', () => Client.downloadUrl(fsPath))
-			);
-		}
-
-		if (this.cwd.startsWith('$')) {
-			menu.push(CtxItem('Remove from this collection', () => {
-				let colName = this.cwd.substring(1);
-				let coll = this.collections[colName];
-				arrErase(coll.files, absPath);
-
-				this.saveCollections();
-				this.navigate('.');
-			}));
-		}
-
-		menu.push(CtxMenu(
-			this.collectionsVisible.map((cname) => CtxItem(cname, () => {
-				this.addFileToCollection(cname, absPath);
-			}))
-		, 'Add to collection'));
-
-		if (FileTypes.isPicture(absPath)) {
-			menu.push(CtxItem('Set as background', () => {
-				Client.desktop.setBackground(fsPath, true);
-			}));
-		}
-
-		menu.push(
-			'-',
-			CtxItem('Copy', () => { this.copy(absPath) }),
-			CtxItem('Cut', () => { this.cut(absPath) }),
-			CtxItem('Erase', () => { this.erase(absPath) })
-		);
-		return CtxMenu(menu);
-	}
-
 	// Favorites 
 	addFavorite(path) {
 		this.favorites.push(path);
@@ -580,7 +368,7 @@ export default class ExplorerApp extends App {
 		this.$favorites.empty();
 
 		for (let path of this.favorites) {
-			let fname = this._getFileName(path);
+			let fname = Paths.file(path).replace('/', '');
 			let $item = $('<li>' + fname + '</li>');
 			$item.click(() => {
 				this.openHandler(path);
@@ -778,31 +566,7 @@ export default class ExplorerApp extends App {
 	closePromise() {
 		return this.closingDeferred.promise;
 	}
-
-	_getFileName(path) {
-		if (path.endsWith('/')) {
-			path = path.slice(0, -1);
-		}
-
-		let sl = path.lastIndexOf('/');
-		if (sl == -1) return path;
-		return path.slice(sl + 1);
-	}
-
-	_getFileClassByExt(file) {
-		if (FileTypes.isAudio(file)) return 'audio';
-		if (FileTypes.isVideo(file)) return 'video';
-		if (FileTypes.isText(file)) return 'text';
-		return null;
-	}
-
-	setZoom(v) {
-		this.zoom = v;
-		this.$files.css('--icon-width', 128 * v + 'px');
-		this.$files.css('--icon-height', 96 * v + 'px');
-		this.recalculateIcons();
-	}
-}
+}	
 
 class History {
 	constructor() {
