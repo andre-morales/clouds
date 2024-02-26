@@ -336,7 +336,11 @@ body {
 	font-style: inherit;
 }
 
-.context-menu i:hover {
+.context-menu i.disabled {
+	color: gray;
+}
+
+.context-menu i:not(.disabled):hover {
 	background-color: #35D;
 }
 

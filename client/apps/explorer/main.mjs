@@ -1,5 +1,34 @@
+import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
 import ExplorerOpenWith from './openwith.mjs';
+
+// App associated with each file extension. In the future will be a user configuration file
+const TYPE_ASSOCIATIONS = {
+	'mp4': 'sinestesia',
+	'webm': 'sinestesia',
+	'mkv': 'sinestesia',
+	'm4v': 'sinestesia',
+
+	'weba': 'sinestesia',
+	'm4a': 'sinestesia',
+	'mp3': 'sinestesia',
+	'wav': 'sinestesia',
+	'ogg': 'sinestesia',
+	'opus': 'sinestesia',
+
+	'png': 'sinestesia',
+	'jpg': 'sinestesia',
+	'jpeg': 'sinestesia',
+	'webp': 'sinestesia',
+
+	'json': 'notepad',
+	'txt': 'notepad',
+	'ini': 'notepad',
+	'log': 'notepad',
+
+	'html': 'webview',
+	'htm': 'webview'
+};
 
 export default class ExplorerApp extends App {
 	constructor(...args) {
@@ -16,35 +45,10 @@ export default class ExplorerApp extends App {
 		this.collectionsMap = new Map();
 		this.collectionsVisible = [];
 		this.closingDeferred = new Deferred();
-		this.subs();
+		this.history = new History();
 		this.history.save();
+		this.panel = new FilePanel();
 		this.zoom = 1;
-		this.typeAssociations = {
-			'mp4': 'sinestesia',
-			'webm': 'sinestesia',
-			'mkv': 'sinestesia',
-			'm4v': 'sinestesia',
-
-			'weba': 'sinestesia',
-			'm4a': 'sinestesia',
-			'mp3': 'sinestesia',
-			'wav': 'sinestesia',
-			'ogg': 'sinestesia',
-			'opus': 'sinestesia',
-
-			'png': 'sinestesia',
-			'jpg': 'sinestesia',
-			'jpeg': 'sinestesia',
-			'webp': 'sinestesia',
-
-			'json': 'notepad',
-			'txt': 'notepad',
-			'ini': 'notepad',
-			'log': 'notepad',
-
-			'html': 'webview',
-			'htm': 'webview'
-		}
 	}
 
 	async init() {
@@ -97,7 +101,7 @@ export default class ExplorerApp extends App {
 				CtxItem('Date', () => this.sortBy('date'))
 			], "Sort by..."),
 			'-',
-			CtxItem('Paste', () => this.paste()),
+			CtxItem('Paste', () => this.paste()).setEnabled(this.canPaste()),
 			CtxItem('Upload...', () => this.openUploadDialog())
 		]));
 
@@ -105,14 +109,6 @@ export default class ExplorerApp extends App {
 		Client.desktop.addCtxMenuOn($sidePanel, () => CtxMenu([
 			CtxItem('Create collection...', () => this.openCreateCollectionDialog())
 		]));
-
-		//let $menubarView = $app.find('.view-button');
-		//$menubarView.click(() => {
-
-			//});
-		//Client.desktop.addCtxMenuOn($menubar, () => CtxMenu([
-		//	CtxMenu(['-', '-', '-'], "Sort by...")
-		//]));
 
 		// Configure touch gestures
 		let hammer = new Hammer.Manager(this.$app.find('.body')[0], {
@@ -485,7 +481,7 @@ export default class ExplorerApp extends App {
 		if (i != -1) {
 			// Find the app associated based on the extension
 			let ext = path.substring(i + 1);
-			let appId = this.typeAssociations[ext];
+			let appId = TYPE_ASSOCIATIONS[ext];
 
 			if (appId) {
 				let app = await Client.runApp(appId, [fsPath]);
@@ -722,28 +718,32 @@ export default class ExplorerApp extends App {
 		});
 	}
 
-	async paste() {
+	// Returns whether there is a copy/cut operation in the clipboard
+	canPaste() {
 		let type = LocalClipboard.type;
-		if (type != 'path') return;
+		if (type != 'path') return false;
 
 		let op = LocalClipboard.object;
-		if (op.operation == 'cut') {
-			let from = op.path;
-			let fileName = Paths.file(from);
-			let to = this.cwd + fileName;
+		return op.operation == 'cut' || op.operation == 'copy';
+	}
 
+	async paste() {
+		if (!this.canPaste()) return;
+
+		let obj = LocalClipboard.object;
+		let from = obj.path;
+		let to = this.cwd + Paths.file(from);
+
+		let op = obj.operation;
+		if (op == 'cut') {
 			LocalClipboard.clear();
 
 			await FileSystem.rename(from, to);
-			this.refresh();
-		} else if (op.operation == 'copy') {
-			let from = op.path;
-			let fileName = Paths.file(from);
-			let to = this.cwd + fileName;
-
+		} else if (op == 'copy') {
 			await FileSystem.copy(from, to);
-			this.refresh();
 		}
+
+		this.refresh();
 	}
 
 	async erase(path) {
@@ -758,8 +758,6 @@ export default class ExplorerApp extends App {
 		let [win, prom] = Dialogs.showOptions(this, "Erase", msg, ['Yes', 'No'], {
 			icon: 'warning'
 		});
-
-		//win.pack();
 
 		let opt = await prom;
 		if (opt === 0) {
@@ -804,30 +802,28 @@ export default class ExplorerApp extends App {
 		this.$files.css('--icon-height', 96 * v + 'px');
 		this.recalculateIcons();
 	}
+}
 
-	subs() {
-		let self = this;
+class History {
+	constructor() {
+		this.log = [];
+		this.logIndex = -1;		
+	}
 
-		this.history = {
-			log: [],
-			logIndex: -1,
+	save(entry) {
+		this.logIndex++;
 
-			save(entry) {
-				this.logIndex++;
-
-				if (this.logIndex == this.log.length) {
-					this.log.push(entry);
-				} else {
-					this.log[this.logIndex] = entry;
-					this.log.length = this.logIndex+1;
-				}
-			},
-
-			goBack() {
-				if (this.logIndex <= 0) return null;
-
-				return this.log[--this.logIndex];
-			}
+		if (this.logIndex == this.log.length) {
+			this.log.push(entry);
+		} else {
+			this.log[this.logIndex] = entry;
+			this.log.length = this.logIndex+1;
 		}
+	}
+
+	goBack() {
+		if (this.logIndex <= 0) return null;
+
+		return this.log[--this.logIndex];
 	}
 }

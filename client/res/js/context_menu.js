@@ -16,6 +16,7 @@ class CtxMenuClass {
 			let $item;
 			let label = entry.label;
 			let action = entry.action;
+			let enabled = entry.enabled;
 
 			// Checkbox
 			if (entry instanceof CtxCheckClass) {
@@ -59,7 +60,10 @@ class CtxMenuClass {
 			// Regular item
 			} else {
 				$item = $(`<i>${label}</i>`)
+				if (!enabled) $item.addClass('disabled');
+
 				$item.on('click', () => {
+					if (!enabled) return;
 					if (action) action();
 					$rootMenu.removeClass('visible');
 				});
@@ -74,7 +78,12 @@ class CtxItemClass {
 	constructor(label, action) {
 		this.label = label;
 		this.action = action;
-		this.disabled = false;
+		this.enabled = true;
+	}
+
+	setEnabled(v) {
+		this.enabled = v;
+		return this;
 	}
 }
 
