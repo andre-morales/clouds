@@ -59,7 +59,8 @@ function initExpress() {
 	// API routes
 	app.use('/res', Express.static('client/res')); // Static public resources
 	app.use('/auth', Auth.getRouter());            // Auth system 
-	app.use('/fsv', VFS.getRouterV());			   // Extended file system with HTTP verbs
+	app.use('/fsv', VFS.getRouter());			   // Extended file system with HTTP verbs
+	
 	apiSetupPages();     			    		   // Entry, Auth and Desktop
 	apiSetupApps();								   // Apps service
 	apiSetupRShell();     						   // Remote console

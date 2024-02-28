@@ -28,11 +28,17 @@ class FileSystem {
 		await FileSystem.writeText(path, JSON.stringify(obj));
 	}
 
-	static async writeUploadForm(path, form) {
-		await fetch(Paths.toFSV(path), {
-	    	method: 'POST',
-			body: new FormData(form)
-		});
+	static writeUploadForm(path, form, listeners) {
+		let formData = new FormData(form);
+		let req = new XMLHttpRequest();
+		
+		if (listeners) listeners(req);
+
+		req.open('POST', Paths.toFSV(path));
+		req.timeout = 40000;
+		req.send(formData);
+
+		return req;
 	}
 
 	static async list(path) {

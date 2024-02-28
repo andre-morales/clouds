@@ -238,6 +238,19 @@
 	background-size: contain;
 }
 
+.fileupload-helper .progress-step {
+	display: flex;
+	height: 100%;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.fileupload-helper progress {
+	height: 1.25em;
+	border-radius: 0;
+}
+
 /* Open with helper window */
 .openwith-helper .list {
 	height: 100%;

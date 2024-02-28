@@ -3,6 +3,7 @@ export class FilePanel {
 		this.app = explorer;
 		this.zoom = 1;
 		this.$files = null;
+		this.sorting = '';
 		this.selectionMode = 'default';
 		this.selectedFiles = [];
 		this.selectedElems = [];
@@ -185,8 +186,8 @@ export class FilePanel {
 		} else {
 			menu.push(
 				CtxMenu([
-					CtxItem('With',  () => this.openFileWith(absPath)),
-					CtxItem('Outside', () => this.openFileExt(absPath))
+					CtxItem('With',  () => this.app.openFileWith(absPath)),
+					CtxItem('Outside', () => this.app.openFileExt(absPath))
 				], 'Open...'),
 				CtxItem('Download', () => Client.downloadUrl(fsPath))
 			);
@@ -256,6 +257,11 @@ export class FilePanel {
 				$el.addClass('hidden');
 			}
 		});
+	}
+
+	sortBy(what) {
+		this.sorting = what;
+		this.setContent(this.files);
 	}
 }
 

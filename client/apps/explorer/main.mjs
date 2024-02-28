@@ -96,8 +96,8 @@ export default class ExplorerApp extends App {
 		let $filesContainer = $app.find('.files-container');
 		Client.desktop.addCtxMenuOn($filesContainer, () => CtxMenu([
 			CtxMenu([
-				CtxItem('Name', () => this.sortBy('name')),
-				CtxItem('Date', () => this.sortBy('date'))
+				CtxItem('Name', () => this.panel.sortBy('name')),
+				CtxItem('Date', () => this.panel.sortBy('date'))
 			], "Sort by..."),
 			'-',
 			CtxItem('Paste', () => this.paste()).setEnabled(this.canPaste()),
@@ -192,11 +192,6 @@ export default class ExplorerApp extends App {
 		this.panel.filter(query.toLowerCase());
 	}
 
-	sortBy(what) {
-		this.sorting = what;
-		this.setFilePanelContent(this.files);
-	}
-
 	asFileSelector(mode, selectionMode) {
 		this.panel.selectionMode = selectionMode;
 		let $win = this.window.$window;
@@ -289,7 +284,6 @@ export default class ExplorerApp extends App {
 			return code;
 		}
 
-		console.log('result');
 		this.cwd = path;
 		
 		// UI changes		

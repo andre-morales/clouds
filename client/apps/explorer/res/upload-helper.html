@@ -13,10 +13,11 @@
 </div>
 
 <div class="progress-step d-none">
-	
+	<div class="status">Uploading...</div>
+	<progress value="0">prog</progress>
 </div>
 
-<form method="post" enctype="multipart/form-data" style="display: none">
+<form method="post" enctype="multipart/form-data" style="display: none" action="/test" target="_blank">
 	<input class="form-select" type="file" name="upload" multiple>
 	<input class="form-submit" type="submit">
 </form>
