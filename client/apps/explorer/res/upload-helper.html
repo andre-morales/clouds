@@ -1,23 +1,28 @@
-<div class="choose-step">
+<div class="step choose-step">
 	<button class="button select-btn">
 		<i></i>
 		<span>Click here to select files...</span>
 	</button>
 </div>
 
-<div class="upload-step d-none">
+<div class="step upload-step d-none">
 	<div class="upload-btns">
 		<button class="button clear-btn">Clear file selection</button>
 		<button class="button upload-btn">Upload files</button>
 	</div>
 </div>
 
-<div class="progress-step d-none">
-	<div class="status">Uploading...</div>
+<div class="step progress-step d-none">
+	<span>Uploading...</span>
 	<progress value="0">prog</progress>
 </div>
 
-<form method="post" enctype="multipart/form-data" style="display: none" action="/test" target="_blank">
+<div class="step finish-step d-none">
+	<div class="status"></div>
+	<button class='button ok-btn'>OK</button>
+</div>
+
+<form method="post" enctype="multipart/form-data" style="display: none">
 	<input class="form-select" type="file" name="upload" multiple>
 	<input class="form-submit" type="submit">
 </form>

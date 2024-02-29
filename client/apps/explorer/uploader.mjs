@@ -8,7 +8,7 @@ export default class ExplorerUploader {
 		helperWin.setOwner(this.explorer.window);
 		
 		await helperWin.setContentToUrl('/app/explorer/res/upload-helper.html');
-		helperWin.setTitle('Upload to: ' + this.explorer.cwd);
+		helperWin.setTitle('Upload to: ' + Paths.file(this.explorer.cwd));
 		helperWin.setSize(380, 270);
 		helperWin.bringToCenter();
 		helperWin.bringToFront();
@@ -16,21 +16,25 @@ export default class ExplorerUploader {
 		let uploadPath = this.explorer.cwd;
 		
 		let $win = helperWin.$window.find(".window-body");
+		this.$win = $win;
 		$win.addClass("fileupload-helper");
 		
-		let $chooseStep = $win.find(".choose-step");
-		let $uploadStep = $win.find(".upload-step");
-		let $progressStep = $win.find('.progress-step');
-		let $progressBar = $progressStep.find('progress');
-		let $uploadStatus = $progressStep.find('.status');
+		let $progressBar = $win.find('progress');
+		let $uploadStatus = $win.find('.status');
+		$win.find('.ok-btn').click(() => {
+			this.clearFiles();
+			this.setStep('choose');
+			this.explorer.refresh();
+		});
 
 		let filesChangedFn = () => {
 			let files = $formSelect[0].files;
 
-			let chosen = files.length > 0;
-			$chooseStep.toggleClass("d-none", chosen);
-			$uploadStep.toggleClass("d-none", !chosen);	
-			$progressStep.toggleClass("d-none", chosen);
+			if (files.length > 0) {
+				this.setStep('upload');
+			} else {
+				this.setStep('choose');
+			}
 		};
 		
 		let $form = $win.find('form');
@@ -39,7 +43,7 @@ export default class ExplorerUploader {
 		$formSelect.on("change", filesChangedFn);
 		
 		$win.find('.clear-btn').click(() => {
-			$formSelect[0].value = null;
+			this.clearFiles();
 			filesChangedFn();
 		});
 		
@@ -53,6 +57,9 @@ export default class ExplorerUploader {
 		
 		$form.on('submit', (ev) => {
 			FileSystem.writeUploadForm(uploadPath, $form[0], (req) => {
+				req.addEventListener('loadend', (ev) => {
+					this.setStep('finish');
+				});
 				req.upload.addEventListener('progress', (ev) => {
 					$progressBar.val(1.0 * ev.loaded / ev.total);
 				});
@@ -66,18 +73,23 @@ export default class ExplorerUploader {
 					$uploadStatus.text("Transfer canceled!");
 				});
 			});
-			
 
 			$uploadStatus.text("Uploading...");
 
-			$chooseStep.toggleClass("d-none", true);
-			$uploadStep.toggleClass("d-none", true);	
-			$progressStep.toggleClass("d-none", false);
-
+			this.setStep('progress');
 	    	ev.preventDefault();
 		});
 
 		$form.on('')
 		helperWin.setVisible(true);
+	}
+
+	clearFiles() {
+		this.$win.find(".form-select")[0].value = null;
+	}
+
+	setStep(name) {
+		this.$win.find('.step').addClass('d-none');
+		this.$win.find(`.${name}-step`).removeClass('d-none');
 	}
 }
