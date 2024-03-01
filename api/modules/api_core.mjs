@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.6.05';
+const KAPI_VERSION = '0.6.08';
 
 // Lib imports
 import Path from 'path';
@@ -93,12 +93,17 @@ function initExpress() {
 		cert: httpsCert
 	}, app);
 
-	http.listen(config.http_port, () => {
-		console.log('Listening on port ' + config.http_port);
-	});
-	https.listen(config.https_port, () => {
-		console.log('Listening on port ' + config.https_port);
-	});
+	if (config.http_port) {
+		http.listen(config.http_port, () => {
+			console.log('Listening on port ' + config.http_port);
+		});
+	}
+	
+	if (config.https_port) {
+		https.listen(config.https_port, () => {
+			console.log('Listening on port ' + config.https_port);
+		});
+	}
 }
 
 function initConfig() {

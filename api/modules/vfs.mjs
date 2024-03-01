@@ -157,12 +157,22 @@ async function listVirtual(user, path) {
 	return results;
 }
 
+async function mkdirVirtual(user, path) {
+	let fPath = translate(user, path);
+	if (!fPath) return;
+
+	console.log(`Directory in "${fPath}"`);
+
+	await FS.promises.mkdir(fPath);
+}
+
 // New router using HTTP verbs and unified resource path
 export function getRouter() {
 	var router = Express.Router();
 
 	let getOperations = {};
 	let patchOperations = {};
+	let putOperations = {};
 
 	// GET: Query route
 	router.get('/*', asyncRoute(async function (req, res) {
@@ -266,8 +276,29 @@ export function getRouter() {
 	}));	
 
 	// PUT: Upload data to new or existing file
-	router.put('/*', asyncRoute(async (req, res) => {
+	router.put('/*', asyncRoute(async function (req, res) {
 		let user = Auth.getUserGuard(req);
+
+		// Get query parameters and check for special GET operations	
+		let queryParams = Object.keys(req.query);	
+		if (queryParams.length > 0) {
+			// Only one special query operation allowed
+			if (queryParams.length != 1) {
+				res.status(400).send("Only one query operation allowed.");
+				return;
+			}
+
+			// Get operation name, and throw error if no such operation
+			let operation = queryParams[0];
+			let handler = putOperations[operation];
+			if (!handler) {
+				res.sendStatus(400);
+				return;
+			}
+
+			await handler(...arguments);
+			return;
+		}
 
 		// Phyisical target path
 		let path = translate(user, '/' + req.params[0]);
@@ -354,6 +385,17 @@ export function getRouter() {
 			await handleThumbRequest(fpath, res);
 		} else {
 			res.sendFile(fpath);
+		}
+	};
+
+	// PUT/MAKE
+	putOperations['make'] = async (req, res) => {
+		let userId = Auth.getUserGuard(req);
+
+		let target = '/' + req.params[0];
+
+		if (target.endsWith('/')) {
+			mkdirVirtual(userId, target);
 		}
 	};
 

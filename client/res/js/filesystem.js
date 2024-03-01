@@ -93,6 +93,19 @@ class FileSystem {
 			throw new FileSystemException(`Erase operation of "${path}" failed with status ${fres.status}.`);
 		}
 	} 
+
+	static async makeDirectory(path) {
+		// Convert the path
+		let cmd = Paths.toFSV(path) + '?make';
+
+		// Perform the operation
+		let fres = await fetch(cmd, {
+			method: 'PUT'
+		});
+		if (fres.status != 200) {
+			throw new FileSystemException(`Mkdir operation in "${path}" failed with status ${fres.status}.`);
+		}
+	}
 }
 
 class Paths {

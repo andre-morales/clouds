@@ -14,31 +14,34 @@ export class FilePanel {
 		this.$files = this.app.$app.find('.files');
 	}
 
-	async setContent(files) {
+	setContent(files) {
 		this.files = files;
 		this.$files.addClass('d-none');
 		this.$files.empty();
+
+		let isDir = (en) => {
+			return (en[0].endsWith('/'))? 1 : 0;
+		}
 
 		// Sort files 
 		switch (this.sorting) {
 		case 'date':
 			files.sort((a, b) => {
-				let A = a[2];
-				let B = b[2];
-				return B - A;
+				let dirA = isDir(a);
+				let dirB = isDir(b);
+				if (dirA == dirB) {
+					return b[2] - a[2];
+				} else {
+					return dirA ? -1 : 1;
+				}
 			});
 			break;
 
 		// By default, sort alphabetically
 		default:
-			let val = (e) => {
-				if (e.endsWith('/')) return 1;
-				return 0;
-			};
-
 			files.sort((a, b) => {
-				let A = val(a[0]);
-				let B = val(b[0]);
+				let A = isDir(a);
+				let B = isDir(b);
 				if (A == B) return a[0].localeCompare(b[0]);
 				return B - A;
 			});

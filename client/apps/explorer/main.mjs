@@ -98,10 +98,15 @@ export default class ExplorerApp extends App {
 			CtxMenu([
 				CtxItem('Name', () => this.panel.sortBy('name')),
 				CtxItem('Date', () => this.panel.sortBy('date'))
-			], "Sort by..."),
+			], "Sort by"),
 			'-',
 			CtxItem('Paste', () => this.paste()).setEnabled(this.canPaste()),
-			CtxItem('Upload...', () => this.openUploadDialog())
+			CtxItem('Upload...', () => this.openUploadDialog()),
+			'-',
+			CtxMenu([
+				CtxItem('Directory', () => this.create('dir')),
+				CtxItem('Text File', () => this.create('text'))
+			], "Create"),
 		]));
 
 		let $sidePanel = $app.find('aside');
@@ -192,8 +197,8 @@ export default class ExplorerApp extends App {
 		this.history.save(path);
 	}
 
-	refresh() {
-		this.navigate('.');
+	async refresh() {
+		await this.navigate('.');
 	}
 
 	searchFiles() {
@@ -247,7 +252,7 @@ export default class ExplorerApp extends App {
 	}
 
 	async navigate(path) {
-		this.go(this.getNavPath(path));
+		await this.go(this.getNavPath(path));
 	}
 
 	async go(path) {
@@ -540,6 +545,23 @@ export default class ExplorerApp extends App {
 		}
 
 		this.refresh();
+	}
+
+	async create(type) {
+		let fileName;
+
+		switch (type) {
+		case 'text':
+			fileName = 'New Text File.txt';
+			await FileSystem.writeText(this.cwd + fileName, '');
+			break;
+
+		case 'dir':
+			fileName = 'New Directory/';
+			await FileSystem.makeDirectory(this.cwd + fileName);
+			break;
+		}
+		await this.refresh();
 	}
 
 	async erase(path) {
