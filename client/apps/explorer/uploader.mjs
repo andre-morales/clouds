@@ -13,8 +13,6 @@ export default class ExplorerUploader {
 		helperWin.bringToCenter();
 		helperWin.bringToFront();
 
-		let uploadPath = this.explorer.cwd;
-		
 		let $win = helperWin.$window.find(".window-body");
 		this.$win = $win;
 		$win.addClass("fileupload-helper");
@@ -24,52 +22,48 @@ export default class ExplorerUploader {
 		$win.find('.ok-btn').click(() => {
 			this.clearFiles();
 			this.setStep('choose');
-			this.explorer.refresh();
 		});
-
-		let filesChangedFn = () => {
-			let files = $formSelect[0].files;
-
-			if (files.length > 0) {
-				this.setStep('upload');
-			} else {
-				this.setStep('choose');
-			}
-		};
 		
 		let $form = $win.find('form');
-		let $formSelect = $form.find(".form-select");
-		let $formSubmit = $form.find(".form-submit");
-		$formSelect.on("change", filesChangedFn);
+		this.$formSelect = $form.find(".form-select");
+		this.$formSelect.on("change", () => this.doFileSelect());
 		
 		$win.find('.clear-btn').click(() => {
 			this.clearFiles();
-			filesChangedFn();
+			this.doFileSelect();
 		});
 		
 		$win.find('.upload-btn').click(() => {
-			$formSubmit.click();
+			// Pretend the submit button was clicked
+			$form.find(".form-submit").click();
 		});
 		
 		$win.find('.select-btn').click(() => {
-			$formSelect.click();
+			// Select button emulated a click
+			this.$formSelect.click();
 		});
 		
 		$form.on('submit', (ev) => {
+			let uploadPath = this.explorer.cwd;
 			FileSystem.writeUploadForm(uploadPath, $form[0], (req) => {
-				req.addEventListener('loadend', (ev) => {
+				req.addEventListener('loadend', () => {
 					this.setStep('finish');
+					this.explorer.refresh();
 				});
+
 				req.upload.addEventListener('progress', (ev) => {
 					$progressBar.val(1.0 * ev.loaded / ev.total);
 				});
-				req.upload.addEventListener('load', (ev) => {
+
+				req.upload.addEventListener('load', () => {
 					$uploadStatus.text("Transfer complete.");
 				});
-				req.upload.addEventListener('error', (ev) => {
+
+				req.upload.addEventListener('error', () => {
 					$uploadStatus.text("Transfer failed!");
 				});
-				req.upload.addEventListener('abort', (ev) => {
+
+				req.upload.addEventListener('abort', () => {
 					$uploadStatus.text("Transfer canceled!");
 				});
 			});
@@ -82,6 +76,16 @@ export default class ExplorerUploader {
 
 		$form.on('')
 		helperWin.setVisible(true);
+	}
+
+	doFileSelect() {
+		let files = this.$formSelect[0].files;
+
+		if (files.length > 0) {
+			this.setStep('upload');
+		} else {
+			this.setStep('choose');
+		}
 	}
 
 	clearFiles() {

@@ -470,6 +470,22 @@ body {
 	outline: solid 1px #D4A;
 }
 
+progress {
+	width: 10em;
+	height: 1.3em;
+	border-radius: 0;
+	--color: linear-gradient(#FFF4, #FFF0), repeating-linear-gradient(135deg, #0003 0 10px, #0000 0 20px), #04B;
+	--background: #223;
+}
+
+progress::-webkit-progress-bar {
+	background: var(--background);
+}
+
+progress::-webkit-progress-value {
+	background: var(--color);
+}
+
 .noselect {
 	user-select: none;
 	-ms-user-select: none;

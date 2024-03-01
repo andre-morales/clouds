@@ -228,6 +228,10 @@
 	background-color: rgba(0, 0, 255, 0.1);
 }
 
+.fileupload-helper .ok-btn {
+	font-size: 14pt;
+}
+
 .fileupload-helper i {
 	display: block;
 	width: 128px;
@@ -244,11 +248,11 @@
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	font-size: 16pt;
 }
 
 .fileupload-helper progress {
-	height: 1.25em;
-	border-radius: 0;
+	width: 15em;
 }
 
 /* Open with helper window */

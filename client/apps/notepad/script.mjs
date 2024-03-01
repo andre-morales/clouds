@@ -5,12 +5,7 @@ export default class NotepadApp extends App {
 	}
 
 	async init() {
-		// If notepad was launched with a path (opening a file)
-		if (this.buildArgs.length > 0) {
-			this.path = Paths.removeFSPrefix(this.buildArgs[0]);
-		}
-	
-		// Create window and fetch app body
+		// Create window
 		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/log128.png');
 		this.window.on('closing', (ev) => {
@@ -43,6 +38,15 @@ export default class NotepadApp extends App {
 		this.$app = $app;
 		$app.addClass('app-notepad');
 
+		// If notepad was launched with a path (opening a file)
+		let fileTextProm;
+
+		// Load the text from the argument path (if present)
+		if (this.buildArgs.length > 0) {
+			this.setPath(Paths.removeFSPrefix(this.buildArgs[0]));
+			fileTextProm = FileSystem.readText(this.path);
+		}
+
 		// Fetch application body
 		await this.window.setContentToUrl('/app/notepad/main.html');
 		this.setDarkTheme(true);
@@ -51,8 +55,9 @@ export default class NotepadApp extends App {
 		this.$textArea.on('change', () => this.unsavedChanges = true);
 	
 		let fileMenu = CtxMenu([
+			CtxItem('Open...', () => { this.open(); }),
 			CtxItem('Save', () => { this.save(); }),
-			CtxItem('Save as...', () => { this.save(); }),
+			CtxItem('Save as...', () => { this.saveAs(); }),
 		
 			CtxCheck('Dark theme', (v) => { 
 				this.setDarkTheme(v);
@@ -65,14 +70,44 @@ export default class NotepadApp extends App {
 			Client.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
 		});
 	
-		// Load the text from the argument path (if present)
-		if (this.path) {
-			let text = await FileSystem.readText(this.path);
-			this.$textArea.val(text);
+		// Await for text
+		if (fileTextProm) {
+			this.$textArea.val(await fileTextProm);
 		}
 
 		// Make the window visible
 		this.window.setVisible(true);
+	}
+
+	async open() {
+		if (this.unsavedChanges) {
+			let [win, promise] = Dialogs.showOptions(this, 'Notepad', 'Do you want to save your changes', [
+				"Save", "Don't save", "Cancel"]);
+
+			let btn = await promise;
+
+			// If cancel or close was clicked, don't do anything
+			if (btn == -1 || btn == 2) return;
+
+			// Save clicked, if saved succesfully, proceed with the open.
+			if (btn == 0) {
+				let saved = await this.save();
+				if (!saved) return;
+			}
+		}
+
+		// Choose file location
+		let app = await Client.runApp('explorer');
+		app.asFileSelector('open', 'one');
+		let result = await app.waitFileSelection();
+		
+		// No path chosen, cancel open
+		if (!result || !result.length) return;
+		
+		// A path was chosen, set it and load the text
+		this.setPath(result[0]);
+		let text = await FileSystem.readText(this.path);
+		this.$textArea.val(text);	
 	}
 
 	async save() {
@@ -104,8 +139,7 @@ export default class NotepadApp extends App {
 	
 	setPath(path) {
 		this.path = path;
-		
-		this.window.setTitle(path);
+		this.window.setTitle(Paths.file(path) + ': Notepad');
 	}
 	
 	async upload() {
