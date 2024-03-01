@@ -34,7 +34,6 @@ export default class ExplorerApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;
-		this.filesCount = 0;
 		this.cwd = null;
 		this.favorites = [];
 		this.collections = {};
@@ -71,6 +70,7 @@ export default class ExplorerApp extends App {
 		await this.window.setContentToUrl('/app/explorer/res/main.html');
 
 		// Query DOM
+		this.$filePanel = $app.find('.files-container');
 		this.$addressField = $app.find('.address-field');
 		this.$favorites = $app.find('.favorites');
 		this.$collections = $app.find('.collections');
@@ -116,8 +116,22 @@ export default class ExplorerApp extends App {
 			]
 		});
 
+		let beginZoom = 1;
+		hammer.on('pinchstart', (ev) => {
+			beginZoom = this.panel.zoom;
+		});
+
 		hammer.on('pinch', (ev) => {
-			this.setZoom(ev.scale);
+			this.panel.setZoom(beginZoom * ev.scale);
+		});
+
+		this.$filePanel.on('wheel', (ev) => {
+			if (!ev.ctrlKey) return;
+			
+			let scale = ev.deltaY / 1000.0;
+			this.panel.setZoom(this.panel.zoom - scale);
+
+			ev.preventDefault();
 		});
 
 		// Final preparation

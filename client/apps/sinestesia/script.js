@@ -95,13 +95,25 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			this.goNext();
 		});
 
-		$container.dblclick(() => {
-			if (Fullscreen.element == $container[0]) {
-				Fullscreen.rewind();
-				this.fullscreen = null;
+		$container.dblclick((ev) => {
+			let cPos = $container.offset();
+			let x = 1.0 * (ev.pageX - cPos.left) / cPos.width;
+			
+			// Double tap on the left edge rewinds the video, on the right edge it forwards the video.
+			// If tapped on the center, toggle fullscreen.
+			if (x < 0.3) {
+				this.rewind();
+			} else if (x > 0.7) {
+				this.forward();
 			} else {
-				this.fullscreen = $container[0];
-				Fullscreen.on($container[0]);
+				// Toggle fullscreen
+				if (Fullscreen.element == $container[0]) {
+					Fullscreen.rewind();
+					this.fullscreen = null;
+				} else {
+					this.fullscreen = $container[0];
+					Fullscreen.on($container[0]);
+				}
 			}
 		});
 
@@ -357,7 +369,18 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		let $video = $win.find('.contentw.video video');
 		$video.empty();
 		$video[0].load();
+	}
 
+	forward() {
+		if (this.contentType != 'video') return;
+
+		this.$mediaElement[0].currentTime += 10;
+	}
+
+	rewind() {
+		if (this.contentType != 'video') return;
+
+		this.$mediaElement[0].currentTime -= 10;
 	}
 
 	async goNext() {

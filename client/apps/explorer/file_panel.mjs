@@ -2,6 +2,7 @@ export class FilePanel {
 	constructor(explorer) {
 		this.app = explorer;
 		this.zoom = 1;
+		this.files = null;
 		this.$files = null;
 		this.sorting = '';
 		this.selectionMode = 'default';
@@ -17,7 +18,6 @@ export class FilePanel {
 		this.files = files;
 		this.$files.addClass('d-none');
 		this.$files.empty();
-		this.filesCount = files.length;
 
 		// Sort files 
 		switch (this.sorting) {
@@ -161,11 +161,12 @@ export class FilePanel {
 				this.app.openHandler(absPath);
 			}
 		});
-		Client.desktop.addCtxMenuOn($file, () => this.makeFileMenu(absPath));
+
+		Client.desktop.addCtxMenuOn($file, () => this.makeFileMenu(absPath, $file));
 		return $file;
 	}
 
-	makeFileMenu(absPath) {
+	makeFileMenu(absPath, $file) {
 		let isDir = absPath.endsWith('/');
 		let fsPath = Paths.toFSV(absPath);
 
@@ -218,6 +219,7 @@ export class FilePanel {
 
 		menu.push(
 			'-',
+			CtxItem('Rename', () => { this.rename(absPath, $file) }),
 			CtxItem('Copy', () => { this.app.copy(absPath) }),
 			CtxItem('Cut', () => { this.app.cut(absPath) }),
 			CtxItem('Erase', () => { this.app.erase(absPath) })
@@ -236,6 +238,8 @@ export class FilePanel {
 	}
 
 	setZoom(v) {
+		if (v < 0.2) v = 0.2;
+		if (v > 5) v = 5;
 		this.zoom = v;
 		this.$files.css('--icon-width', 128 * v + 'px');
 		this.$files.css('--icon-height', 96 * v + 'px');
@@ -262,6 +266,80 @@ export class FilePanel {
 	sortBy(what) {
 		this.sorting = what;
 		this.setContent(this.files);
+	}
+
+	rename(path, $file) {
+		let removed = false;
+		let isFolder = path.endsWith('/');
+		let currentName = Paths.file(path).replace('/', '');
+
+		// Hide icon text with the file name
+		let $name = $file.find('span');
+		$name.addClass('d-none');
+
+		// Add a text input replacing the file name
+		let $nameContainer = $name.parent();
+		let $input = $(`<input class='field rename-field' value='${currentName}'/>`);
+		$nameContainer.append($input);
+		let input = $input[0];
+
+		// When clicking the field, do not open the file/folder
+		$input.click((ev) => {
+			ev.stopPropagation();
+		});
+
+		// Function that performs the actual renaming
+		let doRename = async () => {
+			// If the input was removed, do nothing
+			if (removed) return;
+			removed = true;
+
+			// Get new name, remove the field and redisplay the file label
+			let newName = $input.val();
+			$input.remove();
+			$name.removeClass('d-none');
+
+			// Do the actual path renaming
+			let newPath = Paths.parent(path) + newName + ((isFolder)?'/':'');
+			await FileSystem.rename(path, newPath);
+
+			// Set the new name on the span
+			$name.text(newName);
+
+			this.app.refresh();
+		};
+
+		// When leaving the input, perform the rename op
+		$input.on('focusout', () => {
+			doRename();
+		});
+
+		$input.on('keydown', (ev) => {
+			switch (ev.key) {
+			case 'Enter':
+				doRename();
+				break;
+			case 'Escape':
+				// Cancel renaming
+				removed = true;
+				$input.remove();
+				$name.removeClass('d-none');
+				break;
+			}
+		});
+
+		// Make the file name selected by default
+		$input.focus();
+		setTimeout(() => {
+			input.selectionStart = 0;
+			
+			let i = input.value.lastIndexOf('.');
+			if (!isFolder && i != -1) {
+				input.selectionEnd = i;
+			} else {
+				input.selectionEnd = input.value.length;
+			}
+		}, 0);
 	}
 }
 
