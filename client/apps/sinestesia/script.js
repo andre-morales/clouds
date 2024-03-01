@@ -80,7 +80,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 			let el = this.$mediaElement[0];
 			if (el.paused) {
 				Client.audio.resume();
-				el.play();
+				this.play();
 			} else {
 				this.cancelPauseEvents = false;
 				el.pause();
@@ -334,11 +334,16 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	}
 
 	// -- Media Controls --
-	play() {
+	async play() {
 		if (this.contentType != 'video') return;
 
 		Client.audio.resume();
-		this.$mediaElement[0].play();
+
+		// Play might throw if another video gets loaded before this one starts playing.
+		// This is not a problem, hence the silent error.
+		try {
+			await this.$mediaElement[0].play();
+		} catch (err) {}
 	}
 
 	// Stops all playback and unloads the current file.
