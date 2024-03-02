@@ -16,6 +16,7 @@ import { BadAuthException } from './errors.mjs';
 import config, * as Config from './config.mjs';
 import * as Auth from './auth.mjs';
 import * as VFS from './vfs.mjs';
+import * as Stats from './stats.mjs';
 import * as FFmpegM from './ext/ffmpeg.mjs';
 import * as ShellMgr from './ext/rshell.mjs';
 //import * as MediaStr from './ext/mediastr.mjs';
@@ -33,6 +34,7 @@ export async function main(args) {
 	initConfig();
 	Auth.init();
 	VFS.init();
+	Stats.init();
 	initExpress();
 	//await FetchProxy.init();
 	//FetchProxy.start();
@@ -46,6 +48,8 @@ function initExpress() {
 
 	app = Express();
 
+	
+
 	// Core request handlers
 	app.use(Cors());
 	app.use(Compression());
@@ -56,11 +60,13 @@ function initExpress() {
 	app.use(FileUpload({ createParentPath: true }));
 	app.use(CookieParser());
 
+	app.use(Stats.getTracker());
+	
 	// API routes
 	app.use('/res', Express.static('client/res')); // Static public resources
 	app.use('/auth', Auth.getRouter());            // Auth system 
 	app.use('/fsv', VFS.getRouter());			   // Extended file system with HTTP verbs
-	
+	app.use('/stat', Stats.getRouter());
 	apiSetupPages();     			    		   // Entry, Auth and Desktop
 	apiSetupApps();								   // Apps service
 	apiSetupRShell();     						   // Remote console

@@ -554,14 +554,17 @@ export default class ExplorerApp extends App {
 		case 'text':
 			fileName = 'New Text File.txt';
 			await FileSystem.writeText(this.cwd + fileName, '');
+			await this.refresh();
+			this.panel.enableRename(this.cwd + fileName);
 			break;
 
 		case 'dir':
 			fileName = 'New Directory/';
 			await FileSystem.makeDirectory(this.cwd + fileName);
+			await this.refresh();
+			this.panel.enableRename(this.cwd + fileName);
 			break;
 		}
-		await this.refresh();
 	}
 
 	async erase(path) {

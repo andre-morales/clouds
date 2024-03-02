@@ -27,6 +27,7 @@ export function login(id, pass) {
 // If no-auth was set in config, returns the no-auth user.
 // Returns null if the request has no user or an invalid one associated with it.
 export function getUser(req) {
+	if (!req.cookies) return null;
 	let key = req.cookies.authkey;
 	
 	// Iterate over logged in users and compare authentication key

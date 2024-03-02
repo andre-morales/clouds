@@ -395,8 +395,10 @@ export function getRouter() {
 		let target = '/' + req.params[0];
 
 		if (target.endsWith('/')) {
-			mkdirVirtual(userId, target);
+			await mkdirVirtual(userId, target);
 		}
+
+		res.end();
 	};
 
 	return router;

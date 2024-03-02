@@ -6,7 +6,8 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 		this.contentType = '';
 		this.allowZoomPan = false;
 		this.transform = {
-			scale: 1, x: 0, y: 0, rotation: 0
+			scale: 1, x: 0, y: 0, rotation: 0,
+			flipX: 1, flipY: 1
 		};
 		this.$mediaElement = null;
 		this.$video = null;
@@ -248,6 +249,14 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 				this.cancelPauseEvents = v;
 			}),
 			'-',
+			CtxItem('Flip horizontally', () => {
+				this.transform.flipX *= -1;
+				this.updateTransform();
+			}),
+			CtxItem('Flip vertically', () => {
+				this.transform.flipY *= -1;
+				this.updateTransform();
+			}),
 			CtxItem('Rotate right', () => {
 				this.transform.rotation += 90;
 				this.updateTransform();
@@ -454,7 +463,7 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 	// -- Gestures and transformation --
 	updateTransform() {
 		let t = this.transform;
-		let css = `scale(${t.scale}) translate(${t.x}px, ${t.y}px) rotate(${t.rotation}deg)`;
+		let css = `scale(${t.scale}, ${t.scale}) translate(${t.x}px, ${t.y}px) scale(${t.flipX}, ${t.flipY}) rotate(${t.rotation}deg)`;
 		this.$mediaElement.css('transform', css);
 	}
 

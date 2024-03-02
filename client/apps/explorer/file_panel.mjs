@@ -3,6 +3,7 @@ export class FilePanel {
 		this.app = explorer;
 		this.zoom = 1;
 		this.files = null;
+		this.fileIcons = {};
 		this.$files = null;
 		this.sorting = '';
 		this.selectionMode = 'default';
@@ -16,6 +17,7 @@ export class FilePanel {
 
 	setContent(files) {
 		this.files = files;
+		this.fileIcons = {};
 		this.$files.addClass('d-none');
 		this.$files.empty();
 
@@ -50,6 +52,7 @@ export class FilePanel {
 		// Make icons
 		for (let file of files) {
 			let $ic = this.makeFileIcon(file);
+			this.fileIcons[file[0]] = $ic;
 			$ic.appendTo(this.$files);
 		}	
 
@@ -216,13 +219,14 @@ export class FilePanel {
 
 		if (FileTypes.isPicture(absPath)) {
 			menu.push(CtxItem('Set as background', () => {
-				Client.desktop.setBackground(fsPath, true);
+				Client.desktop.setBackground(fsPath);
+				Client.desktop.saveConfigs();
 			}));
 		}
 
 		menu.push(
 			'-',
-			CtxItem('Rename', () => { this.rename(absPath, $file) }),
+			CtxItem('Rename', () => { this.enableRename(absPath) }),
 			CtxItem('Copy', () => { this.app.copy(absPath) }),
 			CtxItem('Cut', () => { this.app.cut(absPath) }),
 			CtxItem('Erase', () => { this.app.erase(absPath) })
@@ -271,10 +275,13 @@ export class FilePanel {
 		this.setContent(this.files);
 	}
 
-	rename(path, $file) {
+	enableRename(path) {
+		let file = Paths.file(path);
+		let $file = this.fileIcons[file];
+
 		let removed = false;
 		let isFolder = path.endsWith('/');
-		let currentName = Paths.file(path).replace('/', '');
+		let currentName = file.replace('/', '');
 
 		// Hide icon text with the file name
 		let $name = $file.find('span');

@@ -1,4 +1,3 @@
-
 class Desktop {
 	constructor() {
 		this.windows = [];
@@ -67,7 +66,8 @@ class Desktop {
 			this._queryBounds();
 			for (let w of this.windows) {
 				if (w.maximized) {
-					w.setSize(this.windowsWidth, this.windowsHeight);
+					w.setStyledSize(this.windowsWidth, this.windowsHeight);
+					w.dispatch('resize');
 				}
 			}
 		});	
@@ -78,6 +78,11 @@ class Desktop {
 	}
 
 	async start() {
+		navigator.connection.addEventListener("change", (e) =>{
+		    Client.log("Network status change: ");
+		    Client.log(navigator.connection.downlink);
+		})
+
 		await this._configsProm;
 	}
 
