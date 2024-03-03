@@ -3,6 +3,7 @@
 }
 
 .app-configs .row {
+	display: block;
 	margin: .5em 0;
 }
 

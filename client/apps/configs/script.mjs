@@ -62,15 +62,27 @@ export default class ConfigsApp extends App {
 
 		// Fullscreen filter
 		let $fullscrFilter = $win.find('.fullscr-filter-toggle');
-		$fullscrFilter.prop("checked", Client.desktop.configs['fullscreen-filter'] === false);
+		$fullscrFilter.prop("checked", Client.desktop.configs.fullscreen_filter === false);
 		$fullscrFilter.change(async function (){
 			if (this.checked) {
-				Client.desktop.configs['fullscreen-filter'] = false;
+				Client.desktop.configs.fullscreen_filter = false;
 			} else {
-				Client.desktop.configs['fullscreen-filter'] = true;
+				Client.desktop.configs.fullscreen_filter = true;
 			}
 			self.unsavedChanges = true;
-		})
+		});
+
+		// Fullscreen filter
+		let $winContents = $win.find('.drag-contents-toggle');
+		$winContents.prop("checked", Client.desktop.configs.show_dragged_window_contents);
+		$winContents.change(async function (){
+			if (this.checked) {
+				Client.desktop.configs.show_dragged_window_contents = true;
+			} else {
+				Client.desktop.configs.show_dragged_window_contents = false;
+			}
+			self.unsavedChanges = true;
+		});
 
 		// Logout
 		$win.find('.logout').click(() => {

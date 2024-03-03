@@ -261,7 +261,16 @@ body {
 	--icon: url("/res/img/icons/close.png");
 }
 
-/* Dialogs */
+#window-drag-rect {
+	position: absolute;
+	display: none;
+	pointer-events: none;
+	z-index: 999;
+	border: solid 4px white;
+	will-change: width, height, transform;
+}
+
+/* ---- Dialogs ---- */
 .window.dialog .window-body {
 	display: flex;
 	flex-direction: column;
@@ -448,6 +457,7 @@ body {
 
 .checkbox {
 	display: inline-grid;
+	-webkit-appearance: none;
 	appearance: none;
 	width: 20px;
 	height: 20px;

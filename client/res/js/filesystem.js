@@ -192,7 +192,6 @@ class Paths {
 
 	static resolve(path) {
 		// Remove redundant local references
-		//path = path.replaceAll('/./', '/');
 		path = strReplaceAll(path, '/./', '/');
 
 		// Remove redundant local ref

@@ -15,6 +15,7 @@ class Desktop {
 		this.mouseX = 0;
 		this.mouseY = 0;
 		this.contextMenuOpen = false;
+		this.dragRectState = {};
 
 		this._configsProm = this.loadConfigs();
 
@@ -92,7 +93,7 @@ class Desktop {
 		if (bg) this.setBackground(bg);
 		else this.setBackground('/res/img/background.png');
 
-		if (this.configs['fullscreen-filter'] === false) {
+		if (this.configs.fullscreen_filter === false) {
 			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-off)');
 		} else {
 			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-on)');
@@ -242,6 +243,36 @@ class Desktop {
 		}
 	}
 	
+	setDragRectangle(x, y, width, height) {
+		let style = $("#window-drag-rect")[0].style;
+		let lastTime;
+
+		window.requestAnimationFrame((time) => {
+			if (lastTime == time) return;
+			lastTime = time;
+
+			if (x === undefined || x === null) {
+				style.display = 'none';
+				this.dragRectState.display = 'none';
+				return;
+			}
+
+			if (this.dragRectState.display != 'block') {
+				this.dragRectState.display = 'block';
+				style.display = 'block';
+			}
+
+			if (this.dragRectState.width != width || this.dragRectState.height != height) {
+				this.dragRectState.width = width;
+				this.dragRectState.height = height;
+				style.width = width + "px";
+				style.height = height + "px";
+			}
+
+			style.transform = `translate(${x}px, ${y}px)`;
+		});		
+	}
+
 	// Updates desktop area to match client window area
 	_queryBounds() {
 		let bounds = this.$desktop[0].getBoundingClientRect();
@@ -272,6 +303,7 @@ class Desktop {
 		let startB;
 		let startMX, startMY;
 		let dragDir;
+		let wx, wy, ww, wh;
 
 		let dragStart = (mx, my, ev) => {
 			for(let win of this.windows.slice().reverse()) {
@@ -283,6 +315,7 @@ class Desktop {
 					resWin = win;
 					startMX = mx,       startMY = my;
 					startB = win.getBounds();
+					win.setPointerEvents(false);
 					ev.stopPropagation();
 					return;
 				} else {
@@ -316,8 +349,8 @@ class Desktop {
 			let dx = mx - startMX;
 			let dy = my - startMY;
 
-			let wx = startB[0], wy = startB[1];
-			let ww = startB[2], wh = startB[3];
+			wx = startB[0], wy = startB[1];
+			ww = startB[2], wh = startB[3];
 
 			ww += dx * dragDir[0];
 			wh += dy * dragDir[1];
@@ -334,7 +367,21 @@ class Desktop {
 
 			if (dragDir[0] < 0) { wx += dx; }
 			if (dragDir[1] < 0) { wy += dy; }
+
+			if (this.configs.show_dragged_window_contents) {
+				resWin.setBounds(wx, wy, ww, wh);
+			} else {
+				this.setDragRectangle(wx, wy, ww, wh);
+			}
+		};
+
+		let dragEnd = (mx, my) => {
+			if (!resWin) return;
+			doResize(mx, my);
 			resWin.setBounds(wx, wy, ww, wh);
+			this.setDragRectangle(null);
+			resWin.setPointerEvents(true);
+			resWin = null;
 		};
 
 		this.$desktop[0].addEventListener("mousedown", (ev) => {
@@ -342,25 +389,25 @@ class Desktop {
 			dragStart(mx, my, ev);
 		}, true);
 		this.$desktop[0].addEventListener("touchstart", (ev) => {
-			let mx = ev.changedTouches[0].pageX;
-			let my = ev.changedTouches[0].pageY;
-			dragStart(mx, my, ev);
+			let { pageX, pageY } = ev.changedTouches[0];
+			dragStart(pageX, pageY, ev);
 		}, true);
 
 		this.$desktop.on("mousemove", (ev) => {
 			let mx = ev.pageX, my = ev.pageY;	
 			dragMove(mx, my);
 		});
-		this.$desktop.on("touchmove", (e) => {
-			let mx = e.changedTouches[0].pageX;
-			let my = e.changedTouches[0].pageY;
-			dragMove(mx, my);
+		this.$desktop.on("touchmove", (ev) => {
+			let { pageX, pageY } = ev.changedTouches[0];
+			dragMove(pageX, pageY);
 		});
-		this.$desktop.on("mouseup", () => {
-			resWin = null;
+		this.$desktop.on("mouseup", (ev) => {
+			let mx = ev.pageX, my = ev.pageY;	
+			dragEnd(mx, my);
 		});
-		this.$desktop.on("touchend", () => {
-			resWin = null;
+		this.$desktop.on("touchend", (ev) => {
+			let { pageX, pageY } = ev.changedTouches[0];
+			dragEnd(pageX, pageY);
 		});
 	}
 

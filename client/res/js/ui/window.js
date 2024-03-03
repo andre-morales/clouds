@@ -146,6 +146,7 @@ class Window {
 
 			startMX = mx,        startMY = my;
 			startX  = this.posX, startY  = this.posY;
+			this.setPointerEvents(false);
 		};
 
 		let dragMove = (mx, my) => {
@@ -170,10 +171,21 @@ class Window {
 				return;
 			}
 
-			this.setPosition(startX + dx, startY + dy);
+			if (Client.desktop.configs.show_dragged_window_contents) {
+				this.setPosition(startX + dx, startY + dy);
+			} else {
+				Client.desktop.setDragRectangle(startX + dx, startY + dy, this.width, this.height);
+			}
 		};
 
-		let dragEnd = () => { dragging = false; };
+		let dragEnd = (mx, my) => {
+			if (!dragging) return;
+
+			dragging = false;
+			this.setPosition(startX + mx - startMX, startY + my - startMY);
+			this.setPointerEvents(true);
+			Client.desktop.setDragRectangle(null);
+		};
 
 		let $doc = $(document);
 		let $wh = this.$windowHeader;
@@ -197,8 +209,14 @@ class Window {
 			dragMove(mx, my);
 		});
 
-		$doc.on("mouseup", dragEnd);
-		$doc.on("touchend", dragEnd);
+		$doc.on("mouseup", (ev) => {
+			dragEnd(ev.pageX, ev.pageY);
+		});
+		$doc.on("touchend", (ev) => {
+			let mx = ev.changedTouches[0].pageX;
+			let my = ev.changedTouches[0].pageY;
+			dragEnd(mx, my);
+		});
 	}
 
 	makeOptionsCtxMenu() {
@@ -391,6 +409,10 @@ class Window {
 		}
 	}
 
+	setPointerEvents(val) {
+		this.$window.css('pointer-events', (val) ? '' : 'none');
+	}
+
 	isPointInside(x, y) {
 		return ((x >= this.posX)
 			&& (x <= this.posX + this.width)
@@ -504,7 +526,7 @@ class Window {
 
 	createTaskbarButton() {
 		let icon = this.icon;
-		if (!icon) icon = '/res/img/apps/window64.png';
+		if (!icon) icon = '/res/img/icons/windows64.png';
 		
 		let $task = $(`<div><img src=${icon}><span>${this.title}</span></div>`);
 		Client.desktop.addCtxMenuOn($task, () => this.optionsCtxMenu);

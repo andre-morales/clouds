@@ -156,7 +156,7 @@ export default class ConsoleApp extends App {
 		for (let property in obj) {
 			properties += `\n${property}: ${obj[property]}`;
 		}
-		properties = properties.replaceAll('\n', '\n  ');
+		properties = strReplaceAll(properties, '\n', '\n  ');
 		return `${obj.constructor.name}: {${properties}\n}`;
 	}
 }
