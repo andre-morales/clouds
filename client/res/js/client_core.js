@@ -54,7 +54,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.157';
+		this.CLIENT_VERSION = '1.0.158';
 		this.BUILD_STRING = `${this.CLIENT_VERSION} Early Test 1`
 		this.BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	}

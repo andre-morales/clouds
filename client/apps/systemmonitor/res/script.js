@@ -2,19 +2,24 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;
+		this.currentTab = '';
+		this.netPolling = false;
+		this.netPollTimeout = null;
 	}
 
 	async init() {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
 		this.window.setIcon('/res/img/apps/monitor128.png');
-		this.window.on('closereq', () => {
-			this.window.close();
+		this.window.on('closing', () => {
+			clearInterval(this.networkPollInterval);
+			this.dead = true;
 			this.exit();
 		});
 		this.window.setTitle('System Monitor');
 
 		let $win = this.window.$window;
+		this.$app = $win;
 		$win.find('.window-body').addClass('app-sysmonitor');
 
 		// Fetch app body
@@ -29,6 +34,12 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 
 			ev.target.classList.add('selected');
 			$tabPane.find(`.tab[data-tab='${tab}']`).addClass('visible');
+
+			if (tab == 'resources') {
+				this.setupNetworkMonitor();
+			} else {
+				this.stopNetPolling();
+			}
 		});
 
 		// Apps tab
@@ -78,8 +89,81 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 
 		makeAppEntries();
 		makeWindowsEntries();
-		
+		this.setupNetworkMonitor();
+
 		// Make the window visible
 		this.window.setVisible(true);
+	}
+
+	setupNetworkMonitor() {
+		if (this.netPolling) return;
+		this.netPolling = true;
+
+		let lastWrittenBytes = 0;
+		let lastReadBytes = 0;
+		let writtenBytesDelta = 0;
+		let readBytesDelta = 0;
+
+		let asMbits = (bytes) => {
+			let kbits = bytes / 125;
+			let mbits = kbits / 1000;
+
+			if (mbits > 1) {
+				return mbits.toFixed(1) + ' Mb';
+			} else {
+				return kbits.toFixed(1) + ' Kb';
+			}		
+		};
+
+		let asMiB = (bytes) => {
+			let kib = bytes / 1024;
+			let mib = kib / 1024;
+			
+			if (mib > 1) {
+				return mib.toFixed(1) + " MiB";
+			} else {
+				return kib.toFixed(1) + " KiB";
+			}
+		};
+
+		let networkPollCallback = async () => {
+			if (this.dead) return;
+			if (!this.netPolling) return;
+
+			const dataMul = 2;
+			const pollInterval = 500;
+
+			let fres;
+			try {
+				let freq = await fetch('/stat/net');
+				fres = await freq.json();
+			} catch(err) {
+				this.netPollTimeout = setTimeout(networkPollCallback, 3000);
+				return;
+			}
+
+			if (lastWrittenBytes != 0) {
+				writtenBytesDelta = fres.bytesWritten - lastWrittenBytes;
+				readBytesDelta = fres.bytesRead - lastReadBytes;
+
+				this.$app.find('.bytes-received').text(asMbits(writtenBytesDelta * dataMul) + 'ps');
+				this.$app.find('.bytes-sent').text(asMbits(readBytesDelta * dataMul) + 'ps');
+			}
+
+			lastWrittenBytes = fres.bytesWritten;
+			lastReadBytes = fres.bytesRead;
+
+			this.$app.find('.total-bytes-received').text(asMiB(fres.bytesWritten * dataMul));
+			this.$app.find('.total-bytes-sent').text(asMiB(fres.bytesRead * dataMul));
+
+			this.netPollTimeout = setTimeout(networkPollCallback, pollInterval);
+		}
+
+		this.netPollTimeout = setTimeout(networkPollCallback, 0)
+	}
+
+	stopNetPolling() {
+		clearTimeout(this.netPollTimeout);
+		this.netPolling = false;
 	}
 }

@@ -78,11 +78,6 @@ class Desktop {
 	}
 
 	async start() {
-		navigator.connection.addEventListener("change", (e) =>{
-		    Client.log("Network status change: ");
-		    Client.log(navigator.connection.downlink);
-		})
-
 		await this._configsProm;
 	}
 

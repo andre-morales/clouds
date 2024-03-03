@@ -177,7 +177,7 @@ export class FilePanel {
 		let fsPath = Paths.toFSV(absPath);
 
 		let menu = [
-			CtxItem('Open', () => this.openHandler(absPath)),
+			CtxItem('Open', () => this.app.openHandler(absPath)),
 		];
 
 		if (isDir) {

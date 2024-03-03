@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.6.08';
+const KAPI_VERSION = '0.7.00';
 
 // Lib imports
 import Path from 'path';
@@ -18,9 +18,6 @@ import * as Auth from './auth.mjs';
 import * as VFS from './vfs.mjs';
 import * as Stats from './stats.mjs';
 import * as FFmpegM from './ext/ffmpeg.mjs';
-import * as ShellMgr from './ext/rshell.mjs';
-//import * as MediaStr from './ext/mediastr.mjs';
-//import * as FetchProxy from './fetchproxy.mjs';
 
 // Module instances
 export var FFmpeg = null;
@@ -36,8 +33,6 @@ export async function main(args) {
 	VFS.init();
 	Stats.init();
 	initExpress();
-	//await FetchProxy.init();
-	//FetchProxy.start();
 }
 
 function initExpress() {
@@ -47,8 +42,6 @@ function initExpress() {
 	}
 
 	app = Express();
-
-	
 
 	// Core request handlers
 	app.use(Cors());
@@ -69,12 +62,6 @@ function initExpress() {
 	app.use('/stat', Stats.getRouter());
 	apiSetupPages();     			    		   // Entry, Auth and Desktop
 	apiSetupApps();								   // Apps service
-	apiSetupRShell();     						   // Remote console
-
-	//if (isExtEnabled('mediastr')) {
-	//	MediaStr.init(config.extensions.mediastr);
-	//	app.use('/mstr', MediaStr.getExpressRouter());
-	//}
 
 	// General error handler
 	app.use((err, req, res, next) => {
@@ -114,99 +101,6 @@ function initExpress() {
 
 function initConfig() {
 	Config.init(progArgs);
-	
-	ShellMgr.loadDefs(config.extensions.shell);
-}
-
-function apiSetupRShell() {
-	app.get('/shell/0/init', (req, res) => {
-		Auth.getUserGuard(req);
-
-		let shell = ShellMgr.create();
-		if (!shell) {
-			res.status(500).end();
-			return;
-		}
-
-		console.log('Created shell ' + shell.id);
-		res.json(shell.id);
-	});
-
-	app.post('/shell/:id/send', (req, res) => {
-		Auth.getUserGuard(req);
-
-		let shell = ShellMgr.shells[req.params.id]
-		if (!shell) {
-			res.status(404).end();
-			return;
-		}
-		let cmd = req.body.cmd;
-		shell.send(cmd);
-		res.end();
-	});
-
-	app.get('/shell/:id/stdout', (req, res) => {
-		Auth.getUserGuard(req);
-		let shell = ShellMgr.shells[req.params.id]
-		if (!shell) {
-			res.status(404).end();
-			return;
-		}
-
-		res.send(shell.stdout);
-	});
-
-	app.get('/shell/:id/stdout_new', async (req, res) => {
-		Auth.getUserGuard(req);
-		res.set('Cache-Control', 'no-store');
-
-		let shell = ShellMgr.shells[req.params.id]
-		if (!shell) {
-			res.status(404).end();
-			return;
-		}
-
-		try {
-			let result = await shell.newStdoutData();
-			res.send(result);
-		} catch(err) {
-			console.log(err);
-			res.status(500).end();
-			return;
-		}
-		
-	});
-
-	app.get('/shell/:id/kill', (req, res) => {
-		Auth.getUserGuard(req);
-		
-		let id = req.params.id;
-		
-		if(!ShellMgr.destroy(id)) {
-			res.status(404).end();
-			return;
-		}
-
-		console.log('Destroyed shell ' + id);
-		res.end();
-	});
-
-	app.get('/shell/:id/ping', (req, res) => {
-		Auth.getUserGuard(req);
-		let shell = ShellMgr.shells[req.params.id]
-		if (!shell) {
-			res.status(404).end();
-			return;
-		}
-
-		shell.ping();
-		res.end();
-	});
-
-
-	setInterval(() => {
-		ShellMgr.destroyOldShells(20);
-	}, 20000)
 }
 
 function apiSetupPages() {
