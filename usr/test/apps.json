@@ -33,5 +33,10 @@
 		"name": "Console",
 		"icon": "/app/console/icon128.png",
 		"flags": ["desk"]
+	},
+	"about": {
+		"name": "About",
+		"icon": "/app/about/icon64.png",
+		"flags": []
 	}
 }

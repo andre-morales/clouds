@@ -46,7 +46,8 @@ body {
 }
 
 .panic-screen {
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	text-align: center;
 	background: #115;
 	color: white;
@@ -59,10 +60,11 @@ body {
 
 .panic-screen p {
 	margin: 1em 0;
-	font: 14pt monospace;
+	white-space: pre-wrap;
+	font: 13pt monospace;
 }
 
 .panic-screen button {
 	font: 18pt monospace;
-	paddinfg: .5em;
+	padding: 0.1em .4em;
 }

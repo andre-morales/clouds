@@ -15,7 +15,8 @@ class Dialogs {
 		let $msg = $("<div class='message'>");
 		$msg.append($(`<i class='dialog-icon ${icon}-icon'>`))
 		
-		let html = msg.toString().replaceAll('\n', '<br>');
+		//let html = msg.toString().replaceAll('\n', '<br>');
+		let html = strReplaceAll(msg.toString(), '\n', '<br>');
 		$msg.append($('<span class="dialog-text"><br/>' + html + '</span>'));
 		$body.append($msg);
 

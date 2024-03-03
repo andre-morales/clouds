@@ -66,3 +66,10 @@ function getCookie(cname) {
 	}
 	return "";
 }
+
+function strReplaceAll(text, token, newToken) {
+	let escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	let regexp = new RegExp(escapedToken);
+
+	return text.replace(regexp, newToken);
+}

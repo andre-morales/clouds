@@ -20,13 +20,13 @@ async function main() {
 		addScript('/res/js/util.js'),
 		addScript('/res/js/filesystem.js'),
 		addScript('/res/js/app.js'),
-		addScript('/res/js/desktop.js'),
+		addScript('/res/js/ui/desktop.js'),
 		addScript('/res/js/lib/hammer.min.js'),
-		addScript('/res/js/context_menu.js'),
-		addScript('/res/js/window.js'),
-		addScript('/res/js/dialogs.js'),
+		addScript('/res/js/ui/context_menu.js'),
+		addScript('/res/js/ui/window.js'),
+		addScript('/res/js/ui/dialogs.js'),
 		addScript('/res/js/audiosystem.js'),
-		addScript('/res/js/controls.js'),
+		addScript('/res/js/ui/controls.js'),
 		addModule('/res/js/media_sess_bridge.mjs')
 	];
 
@@ -55,7 +55,7 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.158';
+		this.CLIENT_VERSION = '1.0.159';
 		this.BUILD_STRING = `${this.CLIENT_VERSION} Early Test 2`
 		this.BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	}
@@ -84,10 +84,6 @@ class ClientClass {
 		// Create desktop subsystem
 		this.desktop = new Desktop();
 
-		// Media Session bridge
-		this.mediaSessionBridge = await import('@client/media_sess_bridge.mjs');
-		this.mediaSessionBridge.init();
-
 		// Save current page on history
 		history.pushState(null, null, location.href);
 
@@ -112,6 +108,10 @@ class ClientClass {
 		
 		// Let the desktop prepare app icons and behavior
 		this.desktop.setupApps();
+
+		// Media Session bridge
+		this.mediaSessionBridge = await import('/res/js/media_sess_bridge.mjs');
+		this.mediaSessionBridge.init();
 
 		// Initialize audio subsystem
 		this.audio = new AudioSystem();
@@ -403,6 +403,11 @@ class ClientClass {
 		Client.log("[Error] " + msg);
 	}
 
+	stringifyError(err) {
+		if (err.stack)
+		return err.stack;
+	}
+
 	showErrorDialog(title, msg) {
 		try {
 			let [win, p] = Dialogs.showError(this.desktop.dwm, title, msg);
@@ -411,7 +416,9 @@ class ClientClass {
 			console.log("---- Couldn't display error message ----");
 			console.error(err);
 			console.log("----------------------------------------")
-			_systemPanic("No Error Display", `Couldn't show [${title}]: "${msg}", due to "${err}"`);
+			let causeString = (err.stack) ? err.stack : err;
+			let panicMsg = `Couldn't show [${title}]: "${msg}".\n\n<b>Cause: </b>${causeString}`;
+			_systemPanic("No Error Display", panicMsg);
 		}
 	}
 
@@ -466,7 +473,9 @@ function _systemPanic(title, msg, mode) {
 		$title = $("<h1>-- System Panic --</h1>");
 	}
 
-	let $text = $(`<p>Reason: ${title}</p><p>Detail: ${msg}</p>`);
+	let systemStr = navigator.userAgent;
+
+	let $text = $(`<p><b>Reason: </b>${title}</p> <p><b>Detail: </b>${msg}</p> <p><b>System: </b>${systemStr}</p>`);
 
 	let $dismiss = $("<button>Dismiss</button>");
 	$dismiss.click(() => {

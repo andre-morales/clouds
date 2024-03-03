@@ -8,7 +8,7 @@ export default class AboutApp extends App {
 	async init() {
 		this.window = Client.desktop.createWindow(this);
 		this.window.setTitle('About');
-		this.window.setSize(380, 240);
+		this.window.setSize(380, 360);
 		let $app = this.window.$window.find('.window-body');
 		$app.addClass('app-about');
 		await this.window.setContentToUrl('/app/about/body.html');
@@ -18,6 +18,9 @@ export default class AboutApp extends App {
 
 		let serverStr = `KAPI ${Client.API_VERSION}`;
 		$app.find('.api-version').text(serverStr);
+
+		let userAgentStr = navigator.userAgent;
+		$app.find('.user-agent').text("User Agent: " + userAgentStr);
 
 		this.window.setVisible(true);
 	}

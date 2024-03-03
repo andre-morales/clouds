@@ -5,6 +5,8 @@ var currentMedia = null;
 var enabled = false;
 
 export function init() {
+	if (!navigator.mediaSession) return;
+
 	enabled = true;
 	activeMediaElements = [];
 
@@ -114,6 +116,9 @@ function setCurrentMedia(media) {
 }
 
 function updatePosition() {
+	if (!enabled) return;
+	if (!navigator.mediaSession.setPositionState) return;
+	
 	let mElem = currentMedia.element;
 
 	// If duration is not a number, the media probably got unloaded,
