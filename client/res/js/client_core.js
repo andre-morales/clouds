@@ -4,17 +4,37 @@ async function main() {
 	// Load jquery compatible lib
 	await addScript('/res/js/lib/zepto.min.js');
 
-	// Early unhandled errors and rejections should bring immediate user attention
+	// Early unhandled errors and rejections should bring immediate user attention in the form
+	// of a system panic
 	window.onerror = (err) => {
 		_systemPanic("Unhandled error", err, true);
 	};
-
 	window.onunhandledrejection = (ev) => {
 		_systemPanic("Unhandled promise error", ev.reason, true);
 	};
 
+	// Fetch desktop page and display the system version on the page
+	let desktopPageProm = fetch('/page/desktop').then(fres => {
+		if (fres.status != 200) {
+			throw new IllegalStateFault('Desktop page could not be accessed.');
+		}
+
+		return fres.text();
+	}).then(text => {
+		document.body.innerHTML = text;
+
+		// Display client version
+		$('#client-ver').text(ClientClass.BUILD_TEXT);
+	});
+
+	// Load basic desktop page and style, this will bring the taskbar and system version
+	// on display
+	let desktopStyleProm = addStylesheet('/res/css/desktop.css');
+	await desktopPageProm;
+	await desktopStyleProm;
+
 	// Schedule loading of main system scripts
-	let scriptsArr = [
+	let scriptsPromises = Promise.all([
 		addScript('/res/js/faults.js'),
 		addScript('/res/js/events.js'),
 		addScript('/res/js/util.js'),
@@ -28,21 +48,17 @@ async function main() {
 		addScript('/res/js/audiosystem.js'),
 		addScript('/res/js/ui/controls.js'),
 		addModule('/res/js/media_sess_bridge.mjs')
-	];
+	]);
 
-	let scriptsP = Promise.all(scriptsArr);
+	// Schedule loading of main styles
+	let stylesPromises = Promise.all([
+		addStylesheet('/res/css/ui.css'),
+		addStylesheet('/res/css/controls.css')
+	]);
 
-	// Load style
-	addStylesheet('/res/css/desktop.css');
-
-	// Fetch desktop page
-	let fres = await fetch('/page/desktop');
-	if (fres.status != 200) {
-		throw new IllegalStateFault('Desktop page could not be accessed.');
-	}
-	document.body.innerHTML = await fres.text();
-
-	await scriptsP;
+	// Wait for scripts and styles
+	await scriptsPromises;
+	await stylesPromises;
 
 	// Instatiate system
 	Client = new ClientClass();
@@ -55,10 +71,14 @@ async function main() {
 
 class ClientClass {
 	constructor() {
-		this.CLIENT_VERSION = '1.0.160';
-		this.BUILD_STRING = `${this.CLIENT_VERSION} Early Test 2`
-		this.BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
+		this.CLIENT_VERSION = ClientClass.CLIENT_VERSION;
+		this.BUILD_STRING = ClientClass.BUILD_STRING;
+		this.BUILD_TEXT = ClientClass.BUILD_TEXT;
 	}
+
+	static get CLIENT_VERSION() { return '1.0.161'; }
+	static get BUILD_STRING() { return `${this.CLIENT_VERSION} Early Test 2`; }
+	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 
 	async init() {
 		// Start logging record
@@ -70,17 +90,15 @@ class ClientClass {
 		this.loadedResources = {};
 		this._reactor = new Reactor();
 		this._reactor.register('log', 'apps-add', 'apps-rem');
-
-		// Display version on ui
+		
+		// Display API version
 		fetch('/version').then(async (fres) => {
 			let apiv = await fres.text();
 			this.API_VERSION = apiv;
 
-			let sysv = Client.BUILD_TEXT;
-			let vtext = `${sysv}<br>API v${apiv}`; 
-			$('.desktop .backplane .text').html(vtext);
-		})
-		
+			$('#api-ver').text('API ' + apiv);
+		});
+
 		// Create desktop subsystem
 		this.desktop = new Desktop();
 

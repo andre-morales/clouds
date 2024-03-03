@@ -18,6 +18,10 @@
 	align-self: stretch;
 }
 
+.app-configs .row span {
+	vertical-align: middle;
+}
+
 .app-configs .bottom {
 	position: absolute;
 	bottom: 0;

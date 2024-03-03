@@ -346,6 +346,8 @@ class Desktop {
 		};
 
 		let doResize = (mx, my) => {
+			if (!dragDir) return;
+			
 			let dx = mx - startMX;
 			let dy = my - startMY;
 

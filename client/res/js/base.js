@@ -1,6 +1,7 @@
 function addScript(src, id) {
 	var elem = document.createElement('script');
 	if (id) elem.setAttribute('id', id);
+	elem.setAttribute('defer', '');
 	elem.setAttribute('src', src);
 
 	document.head.appendChild(elem);

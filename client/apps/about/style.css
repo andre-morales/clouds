@@ -1,3 +1,35 @@
+.app-about .tabpane {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.app-about .header {
+	font-size: 0;
+}
+
+.app-about .header button {
+	margin: 0;
+	border: solid 1px #34F;
+	border-left: none;
+	font-size: 13pt;
+	background-color: transparent;
+}
+
+.app-about .header button.selected {
+	border-bottom: solid 1px transparent;
+}
+
+.app-about .tab {
+	display: none;
+	flex-grow: 1;
+	overflow-y: auto;
+}
+
+.app-about .tab.visible {
+	display: block;
+}
+
 .app-about .banner {
 	display: flex;
 	height: 7rem;

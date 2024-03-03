@@ -1,10 +1,25 @@
-<div class='banner'>
-	Clouds
+<div class='tabpane'>
+	<div class='header'>
+		<button class='button selected' data-tab='client'>Client</button>
+		<button class='button' data-tab='platform'>Platform</button>
+	</div>
+	<div class='tab client-tab visible' data-tab='client'>
+		<div class='banner'>
+			Clouds
+		</div>
+		<div class='properties'>
+			<p class='version'></p>
+			<p class='api-version'></p>
+		</div>
+	</div>
+	<div class='tab platform-tab' data-tab='platform'>
+		<div class='properties'>
+			<p class='memory'></p>
+			<br/>
+			<p>PDF Viewing: <span class='pdfs'></span></p>
+			<br/>
+			<p class='user-agent'></p>
+		</div>
+	</div>
 </div>
-<div class='properties'>
-	<p>Clouds</p>
-	<p class='version'></p>
-	<p class='api-version'></p>
-	<br/>
-	<p class='user-agent'></p>
-</div>
+
