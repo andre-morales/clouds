@@ -1,4 +1,4 @@
-window.SinestesiaApp = class SinestesiaApp extends App {
+export default class SinestesiaApp extends App {
 	constructor(...args) {
 		super(...args);
 		
@@ -30,7 +30,6 @@ window.SinestesiaApp = class SinestesiaApp extends App {
 
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
-		this.window.setIcon('/res/img/apps/picture128.png');
 		this.window.setCloseBehavior('exit');
 		this.window.on('backnav', () => {
 			if (this.fullscreen && Fullscreen.element == this.fullscreen) {

@@ -1,4 +1,4 @@
-window.ConfigsApp = class ConfigsApp extends App {
+export default class ConfigsApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;
@@ -9,7 +9,6 @@ window.ConfigsApp = class ConfigsApp extends App {
 
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
-		this.window.setIcon('/res/img/apps/config128.png');
 		
 		this.window.setTitle('Configs');
 		this.window.on('closing', (ev) => {

@@ -1,8 +1,8 @@
 {
 	"id": "configs",
-	"builder": "ConfigsApp",
-	"scripts": [
-		"/app/configs/script.js"	
+	"icon": "/app/configs/icon128.png",
+	"modules": [
+		"/app/configs/script.mjs"	
 	],
 	"styles": [
 		"/app/configs/style.css"

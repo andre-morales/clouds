@@ -1,8 +1,8 @@
 {
 	"id": "sinestesia",
-	"builder": "SinestesiaApp",
-	"scripts": [
-		"/app/sinestesia/script.js"	
+	"icon": "/app/sinestesia/icon128.png",
+	"modules": [
+		"/app/sinestesia/script.mjs"	
 	],
 	"styles": [
 		"/app/sinestesia/style.css"

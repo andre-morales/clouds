@@ -1,8 +1,8 @@
 {
 	"id": "sysmonitor",
-	"builder": "SystemMonitorApp",
-	"scripts": [
-		"/app/systemmonitor/res/script.js"	
+	"icon": "/app/systemmonitor/icon128.png",
+	"modules": [
+		"/app/systemmonitor/res/script.mjs"	
 	],
 	"styles": [
 		"/app/systemmonitor/res/style.css"

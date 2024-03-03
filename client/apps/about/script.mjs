@@ -1,4 +1,4 @@
-window.AboutApp = class AboutApp extends App {
+export default class AboutApp extends App {
 	constructor(...args) {
 		super(...args);
 

@@ -1,9 +1,8 @@
 {
 	"id": "console",
-	"builder": "ConsoleApp",
 	"icon": "/app/console/icon128.png",
-	"scripts": [
-		"/app/console/script.js"	
+	"modules": [
+		"/app/console/script.mjs"	
 	],
 	"styles": [
 		"/app/console/style.css"

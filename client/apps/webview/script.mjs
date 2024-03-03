@@ -1,4 +1,4 @@
-window.WebViewApp = class WebViewApp extends App {
+export default class WebViewApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;

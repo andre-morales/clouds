@@ -14,7 +14,7 @@ async function main() {
 	};
 
 	// Schedule loading of main system scripts
-	let scriptsP = Promise.all([
+	let scriptsArr = [
 		addScript('/res/js/faults.js'),
 		addScript('/res/js/events.js'),
 		addScript('/res/js/util.js'),
@@ -28,7 +28,9 @@ async function main() {
 		addScript('/res/js/audiosystem.js'),
 		addScript('/res/js/controls.js'),
 		addModule('/res/js/media_sess_bridge.mjs')
-	]);
+	];
+
+	let scriptsP = Promise.all(scriptsArr);
 
 	// Load style
 	addStylesheet('/res/css/desktop.css');
@@ -36,11 +38,10 @@ async function main() {
 	// Fetch desktop page
 	let fres = await fetch('/page/desktop');
 	if (fres.status != 200) {
-		throw new IllegalStateFault('Desktop paged could not be accessed.');
+		throw new IllegalStateFault('Desktop page could not be accessed.');
 	}
 	document.body.innerHTML = await fres.text();
 
-	// Wait for all scripts to load
 	await scriptsP;
 
 	// Instatiate system

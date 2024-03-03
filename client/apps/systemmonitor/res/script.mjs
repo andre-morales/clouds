@@ -1,4 +1,4 @@
-window.SystemMonitorApp = class SystemMonitorApp extends App {
+export default class SystemMonitorApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;
@@ -10,7 +10,6 @@ window.SystemMonitorApp = class SystemMonitorApp extends App {
 	async init() {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
-		this.window.setIcon('/res/img/apps/monitor128.png');
 		this.window.on('closing', () => {
 			clearInterval(this.networkPollInterval);
 			this.dead = true;

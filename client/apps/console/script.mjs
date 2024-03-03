@@ -1,4 +1,4 @@
-window.ConsoleApp = class ConsoleApp extends App {
+export default class ConsoleApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;

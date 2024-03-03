@@ -7,7 +7,6 @@ export default class NotepadApp extends App {
 	async init() {
 		// Create window
 		this.window = Client.desktop.createWindow(this);
-		this.window.setIcon('/res/img/apps/log128.png');
 		this.window.on('closing', (ev) => {
 			if (!this.unsavedChanges) {
 				this.exit();

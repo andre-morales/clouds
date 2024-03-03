@@ -6,17 +6,17 @@
 	},
 	"sinestesia": {
 		"name": "Sinestesia",
-		"icon": "/res/img/apps/picture128.png",
+		"icon": "/app/sinestesia/icon128.png",
 		"flags": ["desk", "tool"]
 	},
 	"systemmonitor": {
 		"name": "System Monitor",
-		"icon": "/res/img/apps/monitor128.png",
+		"icon": "/app/systemmonitor/icon128.png",
 		"flags": []
 	},
 	"notepad": {
 		"name": "Notepad",
-		"icon": "/res/img/apps/log128.png",
+		"icon": "/app/notepad/icon96.png",
 		"flags": ["desk", "tool"]
 	},
 	"webview": {
@@ -26,7 +26,7 @@
 	},
 	"configs": {
 		"name": "Configuration",
-		"icon": "/res/img/apps/config128.png",
+		"icon": "/app/configs/icon128.png",
 		"flags": ["desk"]
 	},
 	"console": {
