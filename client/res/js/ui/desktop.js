@@ -91,7 +91,6 @@ class Desktop {
 
 		let bg = this.configs.background;
 		if (bg) this.setBackground(bg);
-		else this.setBackground('/res/img/background.png');
 
 		if (this.configs.fullscreen_filter === false) {
 			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-off)');
@@ -347,7 +346,7 @@ class Desktop {
 
 		let doResize = (mx, my) => {
 			if (!dragDir) return;
-			
+
 			let dx = mx - startMX;
 			let dy = my - startMY;
 

@@ -23,19 +23,15 @@ body {
 #loading-icon {
 	width: 60px;
 	height: 60px;
-	background: url('/res/favicon.png');
+	background: url('/res/img/logo64.png');
 	background-repeat: no-repeat;
 	background-size: contain;
-	animation: rotation 2s infinite ease-in-out;
+	animation: loading-animation 2.5s infinite ease-in-out;
 }
 
-@keyframes rotation {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(359.9deg);
-	}
+@keyframes loading-animation {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
 }
 
 .d-none {

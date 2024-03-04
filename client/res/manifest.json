@@ -1,0 +1,33 @@
+{
+	"id": "clouds",
+	"name": "Clouds",
+	"start_url": "/",
+	"display": "fullscreen",
+	"background_color": "#101116",
+	"icons": [
+		{
+			"src": "/res/img/logo192.png",
+			"type": "image/png",
+			"sizes" : "192x192"
+		},
+		{
+			"src": "/res/img/logo512.png",
+			"type": "image/png",
+			"sizes" : "512x512"
+		}
+	],
+	"screenshots": [
+		{
+			"src": "/res/img/screenshot-tall.jpg",
+			"type": "image/jpg",
+			"sizes": "768x1024",
+			"form_factor": "narrow"
+		},
+		{
+			"src": "/res/img/screenshot-wide.jpg",
+			"type": "image/jpg",
+			"sizes": "1920x1080",
+			"form_factor": "wide"
+		}
+	]
+}
