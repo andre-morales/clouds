@@ -35,13 +35,20 @@ export default class AboutApp extends App {
 		let userAgentStr = navigator.userAgent;
 		$app.find('.user-agent').text("User Agent: " + userAgentStr);
 		
-		let ram = performance.memory.jsHeapSizeLimit / 1024 / 1024;
-		let memoryStr = `Max JS RAM: ${ram.toFixed(0)} MiB`;
+		let memory = this.getRam();
+		let memoryStr = `Max JS RAM: ${memory} MiB`;
 		$app.find('.memory').text(memoryStr);
 
 		$app.find('.pdfs').text(this.isPDFViewingSupported());
 
 		this.window.setVisible(true);
+	}
+
+	getRam() {
+		if (!performance || !performance.memory) return '?';
+
+		let ram = performance.memory.jsHeapSizeLimit / 1024 / 1024;
+		return ram.toFixed(0);
 	}
 
 	isPDFViewingSupported() {

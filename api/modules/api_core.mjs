@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.7.00';
+const KAPI_VERSION = '0.7.01';
 
 // Lib imports
 import Path from 'path';
@@ -43,20 +43,23 @@ function initExpress() {
 
 	app = Express();
 
-	// Core request handlers
+	// Core request handlers.
 	app.use(Cors());
 	app.use(Compression());
 
-	// Body parsers
+	// Body type parsers
 	app.use(Express.json());
 	app.use(Express.text());
 	app.use(FileUpload({ createParentPath: true }));
 	app.use(CookieParser());
 
+	// Socket data stats tracker
 	app.use(Stats.getTracker());
 	
+	// Public resources
+	app.use('/res', Express.static('client/res')); 
+
 	// API routes
-	app.use('/res', Express.static('client/res')); // Static public resources
 	app.use('/auth', Auth.getRouter());            // Auth system 
 	app.use('/fsv', VFS.getRouter());			   // Extended file system with HTTP verbs
 	app.use('/stat', Stats.getRouter());
@@ -77,22 +80,22 @@ function initExpress() {
 	app.set('views', 'api/pages');
 	app.disable('x-powered-by');
 
-	let httpsKey = FS.readFileSync('config/ssl/key.key');
-	let httpsCert = FS.readFileSync('config/ssl/cert.crt');
-
-	let http = HTTP.createServer(app);
-	let https = HTTPS.createServer({
-		key: httpsKey,
-		cert: httpsCert
-	}, app);
-
 	if (config.http_port) {
+		let http = HTTP.createServer(app);
 		http.listen(config.http_port, () => {
 			console.log('Listening on port ' + config.http_port);
 		});
 	}
 	
 	if (config.https_port) {
+		let httpsKey = FS.readFileSync('config/ssl/key.key');
+		let httpsCert = FS.readFileSync('config/ssl/cert.crt');
+		
+		let https = HTTPS.createServer({
+			key: httpsKey,
+			cert: httpsCert
+		}, app);
+
 		https.listen(config.https_port, () => {
 			console.log('Listening on port ' + config.https_port);
 		});
