@@ -1,10 +1,11 @@
 .app-configs .window-body {
-	padding: 0 .5rem;
+	display: flex;
+	flex-direction: column;
 }
 
 .app-configs .row {
 	display: block;
-	margin: .5em 0;
+	margin: .5em .5rem;
 }
 
 .app-configs .input {
@@ -22,11 +23,11 @@
 	vertical-align: middle;
 }
 
+.app-configs .spacer {
+	flex-grow: 1;
+}
+
 .app-configs .bottom {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
 	margin: 0;
 	padding: .25em;
 	text-align: right;

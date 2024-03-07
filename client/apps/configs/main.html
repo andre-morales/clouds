@@ -15,6 +15,12 @@
 	<button class='button' onclick='Client.logout();'>Delete Auth Key</button>
 	<button class='button logout'>Logout Session</button>
 </div>
+<div class='row'>
+	<button class='button' onclick='throw new Fault("Manually triggered fault.")'>Throw Fault</button>
+	<button class='button' onclick='_systemPanic("Manually triggered panic")'>Trigger Panic</button>
+</div>
+<div class='spacer'>
+</div>
 <nav class="row bottom">
 	<button class='button reload'>Reload</button>
 	<button class='button save'>Save</button>

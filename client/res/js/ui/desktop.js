@@ -1,15 +1,17 @@
 class Desktop {
 	constructor() {
 		this.windows = [];
-		this.dwm = new App("dwm");
+		this.dwm = new App({
+			'id': 'dwm',
+			'noWindowGrouping': 'true'
+		});
 		this.events = new Reactor();
 		this.events.register("window-created", "window-destroyed");
 		this.configs = [];
 		this.iconifiedGroups = {};
 		this.$desktop = $('.desktop');
 		this.$windows = $('.windows');
-		this.$taskBar = $('.taskbar');
-		this.$tasks = $('.taskbar .tasks');
+		this.taskbar = new Taskbar();
 		this.$contextMenu = $('.context-menu');
 		this.focusedWindow = null;
 		this.mouseX = 0;
@@ -19,14 +21,14 @@ class Desktop {
 
 		this._configsProm = this.loadConfigs();
 
-		this.$taskBar.find('.fullscreen-btn').click(() => {
+		this.taskbar.$bar.find('.fullscreen-btn').click(() => {
 			let body = $('body')[0];
 			if (Fullscreen.element == body) {
 				Fullscreen.leave();
 			} else Fullscreen.on(body);
 		});
 
-		this.$taskBar.find('.apps-btn').click((ev) => {
+		this.taskbar.$bar.find('.apps-btn').click((ev) => {
 			let items = Object.keys(Client.registeredApps)
 				.map((id) => CtxItem(Client.registeredApps[id].name, () => Client.runApp(id)));
 			
@@ -123,9 +125,6 @@ class Desktop {
 
 		// Relase window resources
 		win._dispose();
-
-		// Remove desktop integration buttons and stuffs
-		win.destroyTaskbarButton();
 		
 		// Remove window from list
 		arrErase(win.app.windows, win);
@@ -167,7 +166,7 @@ class Desktop {
 
 		for (let i = 0; i < this.windows.length; i++) {
 			let w = this.windows[i];
-			if (win === w) continue;
+			if (w === win) continue;
 			if (Math.abs(w.posX - x) > 31 && Math.abs(w.posY - y) > 31) continue;
 
 			x += 32;

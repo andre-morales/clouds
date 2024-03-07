@@ -2,8 +2,12 @@ class App {
 	constructor(manifest, args) {
 		if (!manifest) throw new InternalFault("Apps need a manifest");
 		this.state = 'starting';
+
 		this.classId = manifest.id;
 		this.icon = (manifest.icon) ? manifest.icon : "";
+		this.displayName = manifest.displayName;
+		this.noWindowGrouping = manifest.noWindowGrouping;
+
 		this.buildArgs = (args) ? args : [];
 		this.loadedResources = [];
 		this.windows = [];

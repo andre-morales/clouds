@@ -111,8 +111,9 @@ body {
 	border-left: groove 2px #101018;
 }
 
-.taskbar .tasks div {
+.taskbar .task-button {
 	display: flex;
+	position: relative;
 	align-items: center;
 	height: 100%;
 	max-width: 8em;
@@ -123,7 +124,16 @@ body {
 	background: linear-gradient(to top, #333, #222);
 }
 
-.taskbar .tasks img {
+.taskbar .task-button .count {
+	position: absolute;
+	left: 2px;
+	bottom: 0px;
+	font-size: 8pt;
+	font-weight: bold;
+	color: hsl(230, 100%, 70%);
+}
+
+.taskbar .task-button img {
 	width: 40px;
 	height: 28px;
 	min-width: 32px;
@@ -132,11 +142,11 @@ body {
 	object-fit: contain;
 }
 
-.taskbar .tasks span {
-	text-overflow: ellipsis;
+.taskbar .task-button .text {
 	overflow: hidden;
-	white-space: nowrap;
+	text-overflow: ellipsis;
 	font: 10pt 'Tahoma';
+	white-space: nowrap;
 }
 
 .taskbar .fullscreen-btn {
@@ -153,6 +163,36 @@ body {
 	background-image: url('/res/img/icons/apps.png');
 	background-size: 26px;
 	flex-shrink: 0;
+}
+
+#taskbar-window-list {
+	z-index: 998;
+	display: none;
+	position: absolute;
+	z-index: 1000;
+	border: solid 1px #4AF;
+	padding: 2px 2px;
+	font-size: 13pt;
+	background: #202020;
+	box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+#taskbar-window-list li {
+	display: block;
+	padding: 4px 1em 4px .5em;
+	font-style: inherit;
+	vertical-align: middle;
+}
+
+#taskbar-window-list li:hover {
+	background-color: #35D;
+}
+
+#taskbar-window-list img {
+	width: 20px;
+	height: 20px;
+	margin: 0 .5em 0 0;
+	vertical-align: middle;
 }
 
 .noselect {

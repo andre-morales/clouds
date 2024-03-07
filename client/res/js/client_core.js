@@ -41,6 +41,7 @@ async function main() {
 		addScript('/res/js/filesystem.js'),
 		addScript('/res/js/app.js'),
 		addScript('/res/js/ui/desktop.js'),
+		addScript('/res/js/ui/taskbar.js'),
 		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/ui/context_menu.js'),
 		addScript('/res/js/ui/window.js'),
@@ -76,7 +77,7 @@ class ClientClass {
 		this.BUILD_TEXT = ClientClass.BUILD_TEXT;
 	}
 
-	static get CLIENT_VERSION() { return '1.0.165'; }
+	static get CLIENT_VERSION() { return '1.0.170'; }
 	static get BUILD_STRING() { return `${this.CLIENT_VERSION} Early Test 2`; }
 	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 
@@ -475,7 +476,7 @@ class LocalClipboard {
 	}
 }
 
-function _systemPanic(title, msg, mode) {
+function _systemPanic(reason, detail, mode) {
 	console.error('--- SYSTEM PANIC ---');
 	// Initialize a counter to keep incrementing the z-index
 	let self = _systemPanic;
@@ -491,9 +492,19 @@ function _systemPanic(title, msg, mode) {
 		$title = $("<h1>-- System Panic --</h1>");
 	}
 
-	let systemStr = navigator.userAgent;
+	let $text = $(`<div></div>`);
+	if (reason) {
+		$text.append(`<p><b>Reason: </b>${reason}</p>`);
+	}
+	if (detail) {
+		$text.append(`<p><b>Detail: </b>${detail}</p>`);
+	}
+	$text.append(`<p><b>System: </b>${navigator.userAgent}</p>`);
 
-	let $text = $(`<p><b>Reason: </b>${title}</p> <p><b>Detail: </b>${msg}</p> <p><b>System: </b>${systemStr}</p>`);
+	let stack = Error().stack;
+	if (stack) {
+		$text.append(`<p><b>Trigger Stack: </b>${stack}</p>`);
+	}
 
 	let $dismiss = $("<button>Dismiss</button>");
 	$dismiss.click(() => {

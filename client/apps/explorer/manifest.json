@@ -1,5 +1,6 @@
 {
 	"id": "explorer",
+	"displayName": "Files",
 	"icon": "/app/explorer/icon64.png",
 	"modules" : [
 		"/app/explorer/main.mjs",

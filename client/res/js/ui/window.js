@@ -49,6 +49,11 @@ class Window {
 		this.$window.find("video").attr("src", "");
 		this.$window.remove();
 		this.$window = null;
+
+		// Remove taskbar button
+		if (!this.taskButton) return;
+		this.taskButton.removeWindow(this);
+		this.taskButton = null;
 	}
 
 	init() {
@@ -124,7 +129,6 @@ class Window {
 
 	// Determine initial window position
 	initPosition() {
-		this.bringToFront();
 		if (this.app.mainWindow === this) {
 			this.restoreState();
 		}
@@ -134,6 +138,8 @@ class Window {
 
 		// Apply position and size on CSS
 		this.setStyledSize(this.width, this.height);
+		
+		this.bringToFront();
 	}
 
 	initDragListeners() {
@@ -304,7 +310,7 @@ class Window {
 	setTitle(title) {
 		this.title = title;
 		this.$windowTitle.text(title);
-		if (this.$taskbarBtn) this.$taskbarBtn.find("span").text(title);
+		if (this.taskButton && this.taskButton.single) this.taskButton.setText(title);
 	}
 
 	setPosition(x, y) {
@@ -383,10 +389,11 @@ class Window {
 	setVisible(visible) {
 		this.visible = visible;
 		if (visible) {
-
 			this.$window.addClass('visible');
 			
-			if (!this.$taskbarBtn) this.createTaskbarButton();
+			if (!this.taskButton) {
+				this.taskButton = Client.desktop.taskbar.addWindow(this);
+			}
 		} else {
 			this.$window.removeClass('visible');
 		}
@@ -395,8 +402,8 @@ class Window {
 	setIcon(icon) {
 		this.icon = icon;
 		this.$window.find('.options-btn').css('background-image', `url('${icon}')`);
-		if (this.$taskbarBtn) {
-			this.$taskbarBtn.find("img").src = icon;
+		if (this.taskButton) {
+			this.taskButton.$button.find("img").src = icon;
 		}
 	}
 
@@ -522,32 +529,6 @@ class Window {
 		}
 
 		this.setBounds(x, y, width, height);
-	}
-
-	createTaskbarButton() {
-		let icon = this.icon;
-		if (!icon) icon = '/res/img/icons/windows64.png';
-		
-		let $task = $(`<div><img src=${icon}><span>${this.title}</span></div>`);
-		Client.desktop.addCtxMenuOn($task, () => this.optionsCtxMenu);
-		$task.click(() => {
-			if (this.minimized) {
-				this.restore();
-			}
-			
-			this.bringToFront();
-			this.focus();
-		});			
-		
-		this.$taskbarBtn = $task;
-		Client.desktop.$tasks.append($task);
-	}
-
-	destroyTaskbarButton() {
-		if (!this.$taskbarBtn) return;
-		
-		this.$taskbarBtn.remove();
-		this.$taskbarBtn = null;
 	}
 
 	async setContentToUrl(url) {
