@@ -19,8 +19,9 @@ class Taskbar {
 	}
 
 	addWindow(win) {
-		// If grouping is enabled, try to find a taskbar button with the same app id
-		if (!this.noGrouping) {
+		// If grouping is enabled for the taskbar and the app try to find a taskbar button with
+		// the same app id
+		if (!this.noGrouping && !win.app.noWindowGrouping) {
 			for (let tb of this.buttons) {
 				if (tb.app.classId == win.app.classId) {
 					tb.addWindow(win);
@@ -46,6 +47,7 @@ class TaskbarButton {
 		this.app = app;
 		this.windows = [];
 		this.single = false;
+		this.icon = '/res/img/icons/windows64.png';
 		this.$button = null;
 
 		Client.desktop.taskbar.buttons.push(this);
@@ -92,11 +94,10 @@ class TaskbarButton {
 	}
 
 	createButton(win) {
-		let icon = win.icon;
-		if (!icon) icon = '/res/img/icons/windows64.png';
+		if (win.icon) this.icon = win.icon;
 
 		// Create taskbar button
-		this.$button = $(`<div class='task-button'><span class='count'>2</span><img src='${icon}'/><span class='text'>${win.title}</span></div>`);
+		this.$button = $(`<div class='task-button'><span class='count'>2</span><img src='${this.icon}'/><span class='text'>${win.title}</span></div>`);
 		this.$text = this.$button.find('.text');
 		this.$count = this.$button.find('.count');
 
@@ -134,7 +135,8 @@ class TaskbarButton {
 		let $list = Client.desktop.taskbar.$windowList;
 
 		for (let w of this.windows) {
-			let $item = $(`<li><img src='${w.icon}'/>${w.title}</li>`);
+			let icon = (w.icon) ? w.icon : this.icon;
+			let $item = $(`<li><img src='${icon}'/>${w.title}</li>`);
 			Client.desktop.addCtxMenuOn($item, () => w.optionsCtxMenu);
 			$item.click(() => {
 				if (w.minimized) {

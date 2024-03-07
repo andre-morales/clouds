@@ -1,4 +1,5 @@
 .*/*
+*.proto
 api/node_modules/*
 usr/test/collections.json
 usr/test/favorites.json

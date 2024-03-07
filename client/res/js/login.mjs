@@ -5,10 +5,14 @@ function initLogin() {
 	document.title = 'Auth - Clouds';
 
 	// Enter on any of the inputs submits the login form
-	document.getElementById('id-field').addEventListener('keypress', (ev) => {
-		if (ev.key == 'Enter') authSubmit();
+	let idField = document.getElementById('id-field');
+	let passField = document.getElementById('pass-field');
+	idField.addEventListener('keypress', (ev) => {
+		if (ev.key == 'Enter') {
+			passField.focus();
+		}
 	});
-	document.getElementById('pass-field').addEventListener('keypress', (ev) => {
+	passField.addEventListener('keypress', (ev) => {
 		if (ev.key == 'Enter') authSubmit();
 	});
 	document.getElementById('login-btn').addEventListener('click', (ev) => {

@@ -70,12 +70,13 @@
 }
 
 .window.decorated > .window-head .window-title {
-	line-height: var(--titlebar-height);
 	flex-grow: 1;
 	flex-shrink: 1;
 	overflow: hidden;
+	line-height: var(--titlebar-height);
 	font-size: 11pt;
 	text-overflow: ellipsis;
+	pointer-events: all;
 }
 
 .window-body {

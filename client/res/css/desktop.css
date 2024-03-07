@@ -100,7 +100,7 @@ body {
 	flex: 0 0 auto;
 	width: 100%;
 	height: var(--taskbar-height);
-	background: linear-gradient(to bottom, #333, #222);
+	background: linear-gradient(0deg, #111, 20%, #222, 60%, #444);
 }
 
 .desktop .taskbar .tasks {
@@ -121,7 +121,7 @@ body {
 	padding: 0 4px 0 0;
 	border-right: groove 2px #111;
 	overflow: hidden;
-	background: linear-gradient(to top, #333, #222);
+	background: linear-gradient(to top, #222, #555);
 }
 
 .taskbar .task-button .count {

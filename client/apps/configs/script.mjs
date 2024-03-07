@@ -87,7 +87,6 @@ export default class ConfigsApp extends App {
 		// Logout
 		$win.find('.logout').click(() => {
 			Client.logout();
-			window.location.href = "/";
 		})
 
 		$win.find('.reload').click(() => {

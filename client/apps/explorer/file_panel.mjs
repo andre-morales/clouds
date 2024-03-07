@@ -226,9 +226,10 @@ export class FilePanel {
 
 		menu.push(
 			'-',
-			CtxItem('Rename', () => { this.enableRename(absPath) }),
 			CtxItem('Copy', () => { this.app.copy(absPath) }),
 			CtxItem('Cut', () => { this.app.cut(absPath) }),
+			'-',
+			CtxItem('Rename', () => { this.enableRename(absPath) }),
 			CtxItem('Erase', () => { this.app.erase(absPath) })
 		);
 		return CtxMenu(menu);

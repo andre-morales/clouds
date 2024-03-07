@@ -26,6 +26,7 @@ const TYPE_ASSOCIATIONS = {
 	'ini': 'notepad',
 	'log': 'notepad',
 
+	'pdf': 'webview',
 	'html': 'webview',
 	'htm': 'webview'
 };

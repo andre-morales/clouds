@@ -32,6 +32,10 @@ class Desktop {
 			let items = Object.keys(Client.registeredApps)
 				.map((id) => CtxItem(Client.registeredApps[id].name, () => Client.runApp(id)));
 			
+			items.push('-');
+			items.push(CtxItem('Logout', () => {
+				Client.logout();
+			}));
 			let menu = CtxMenu(items);
 			this.openCtxMenuAt(menu, ev.clientX, ev.clientY);
 		});
@@ -40,9 +44,14 @@ class Desktop {
 			CtxItem("System Settings", () => {
 				Client.runApp('configs');
 			}),
+			'-',
+			CtxItem("Logout", () => {
+				Client.logout();
+			}),
+			'-',
 			CtxItem("About", () => {
 				Client.runApp('about');
-			})
+			}),
 		]);
 		this.addCtxMenuOn(this.$desktop.find('.backplane'), () => menu);
 
@@ -234,8 +243,12 @@ class Desktop {
 			let img = def.icon;
 			let name = def.name;
 			let $icon = $(`<div class='app-icon'> <img src='${img}'> <label>${name}</label> </div>`);
-			$icon.click(() => {
-				Client.runApp(id);
+			$icon.click(async () => {
+				let app = await Client.runApp(id);
+				if (app && app.mainWindow) {
+					app.mainWindow.focus();
+					app.mainWindow.bringToFront();
+				}
 			});
 			$apps.append($icon);
 		}

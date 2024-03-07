@@ -15,8 +15,9 @@ class Window {
 		this.maximized = false;
 		this.title = 'Window';
 		
-		this.posX  = 8,   this.posY = 8;
-		this.width = 340, this.height = 200;
+		this.firstShow = true;
+		this.posX  = 8, this.posY = 8;
+		this.width = 0, this.height = 0;
 		this.minWidth = 130;
 		this.minHeight = 30;
 		this.restoreBounds = [8, 8, 600, 400];
@@ -142,6 +143,21 @@ class Window {
 		this.bringToFront();
 	}
 
+	doFirstShowSetup() {
+		this.firstShow = false;
+		this.taskButton = Client.desktop.taskbar.addWindow(this);
+
+		// If no width or height has been set, pack by default
+		if (!this.width || !this.height) {
+			this.pack();
+		}
+
+		// If dimensions are still way too small, set them to a default reasonable amount
+		if (this.width < 32 || this.height < 32) {
+			this.setSize(360, 240);
+		}
+	}
+
 	initDragListeners() {
 		let dragging = false;
 		let startX, startY;
@@ -252,17 +268,20 @@ class Window {
 	}
 
 	// Resizes this window to fit its content
-	pack() {
+	async pack() {
 		// If the window isn't visible, insert it into the layout but don't display its contents.
 		// This has to be done, otherwise its dimensions won't be calculated.
 		if (!this.visible) {
-			this.$window.css('visibility', 'hidden');
+			this.$window.css('visibility', 'visible');
 			this.$window.css('display', 'flex');
 		}
 
 		// Remove any hard with/height properties
 		this.$window.css('width', '');
 		this.$window.css('height', '');
+
+		// Wait an engine cycle to update the layout
+		await sleep(0);
 
 		// Get computed dimensions and compensate 2px for borders		
 		let ow = this.$window.width() + 2;
@@ -273,7 +292,7 @@ class Window {
 
 		// If the window is invisible, restore its old status
 		if (!this.visible) {
-			this.$window.css('visibility', '');
+			this.$window.css('visibility', 'visible');
 			this.$window.css('display', '');
 		}
 	}
@@ -389,11 +408,11 @@ class Window {
 	setVisible(visible) {
 		this.visible = visible;
 		if (visible) {
-			this.$window.addClass('visible');
-			
-			if (!this.taskButton) {
-				this.taskButton = Client.desktop.taskbar.addWindow(this);
+			if (this.firstShow) {
+				this.doFirstShowSetup();
 			}
+
+			this.$window.addClass('visible');			
 		} else {
 			this.$window.removeClass('visible');
 		}

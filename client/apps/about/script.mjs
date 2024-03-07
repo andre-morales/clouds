@@ -8,7 +8,7 @@ export default class AboutApp extends App {
 	async init() {
 		this.window = Client.desktop.createWindow(this);
 		this.window.setTitle('About');
-		this.window.setSize(380, 270);
+		//this.window.setSize(380, 360);
 		let $app = this.window.$window.find('.window-body');
 		$app.addClass('app-about');
 		await this.window.setContentToUrl('/app/about/body.html');
@@ -32,14 +32,23 @@ export default class AboutApp extends App {
 		$app.find('.api-version').text(serverStr);
 
 		// Platform tab
-		let userAgentStr = navigator.userAgent;
-		$app.find('.user-agent').text("User Agent: " + userAgentStr);
+		let secure = window.isSecureContext;
+		$app.find('.secure-ctx').text((secure) ? 'Yes' : 'No');
 		
+		let devmem = navigator.deviceMemory;
+		if (devmem) {
+			let str = (devmem < 1) ? devmem * 1000 + ' MB' : devmem + ' GB';
+			$app.find('.dev-memory').text('Device Memory: ' + str);
+		}
+
 		let memory = this.getRam();
-		let memoryStr = `Max JS RAM: ${memory} MiB`;
-		$app.find('.memory').text(memoryStr);
+		let memoryStr = `Max JS Memory: ${memory} MiB`;
+		$app.find('.js-memory').text(memoryStr);
 
 		$app.find('.pdfs').text(this.isPDFViewingSupported());
+
+		let userAgentStr = navigator.userAgent;
+		$app.find('.user-agent').text("User Agent: " + userAgentStr);
 
 		this.window.setVisible(true);
 	}
