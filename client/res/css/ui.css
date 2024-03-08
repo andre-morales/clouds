@@ -109,7 +109,6 @@
 	position: absolute;
 	display: none;
 	pointer-events: none;
-	z-index: 999;
 	border: solid 4px white;
 	will-change: width, height, transform;
 }
@@ -171,12 +170,12 @@
 .context-menu {
 	display: none;
 	position: absolute;
-	z-index: 1000;
 	border: solid 1px #4AF;
 	padding: 2px 2px;
-	font-size: 13pt;
+	font: 13pt sans-serif;
 	background: #202020;
 	box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+	color: white;
 }
 
 .context-menu.visible {

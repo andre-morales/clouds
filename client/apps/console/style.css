@@ -20,3 +20,20 @@
 .app-console .msg {
 	white-space: pre;
 }
+
+.app-console .suggestions-box {
+	position: relative;
+}
+
+.app-console .suggestions {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	left: 0;
+	bottom: 0;
+	background: #334;
+}
+
+.app-console .suggestions span {
+	border: solid 1px black;
+}

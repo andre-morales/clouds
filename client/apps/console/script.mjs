@@ -22,6 +22,7 @@ export default class ConsoleApp extends App {
 		this.createContextMenu();
 		this.$content = $app.find('.content');
 		this.$cmdField = $app.find('.cmd-field');
+		this.$suggestions = $app.find('.suggestions');
 
 		this.logListener = Client.on('log', (msg) => {
 			this.updateLog(msg);
@@ -44,9 +45,10 @@ export default class ConsoleApp extends App {
 				this.goForwardHistory();
 				ev.preventDefault();
 			}
+
+			this.doSuggestions();
 		});
 		this.$cmdField.on('keypress', (ev) => {
-			//Client.log('kp: ' + ev.key);
 			if (ev.key == 'Enter') {
 				this.sendCmd();
 			}
@@ -54,6 +56,48 @@ export default class ConsoleApp extends App {
 
 		// Make the window visible
 		this.window.setVisible(true);
+		this.$cmdField.focus();
+	}
+
+	async doSuggestions() {
+		// Wait a cycle for input field update
+		await sleep(0);
+
+		// Clear the current suggestions. If the field is empty, don't suggest anything
+		this.$suggestions.empty();
+		let text = this.$cmdField.val();
+		if (text.length == 0) return;
+		
+		// Split the text on the last dot. Anything behind the dot is the name of an
+		// object and everything after it is the property we are trying to auto-complete.
+		let objectName = 'window';
+		let property;
+
+		let dot = text.lastIndexOf('.');
+		if (dot != -1) {
+			objectName = text.substring(0, dot);
+			property = text.substring(dot + 1);
+		} else {
+			property = text;
+		}
+
+		// Get the object itself and list the properties that start with the same name
+		let object = getObjectByName(objectName);
+		let suggestionAmount = 0;
+		for (let key in object) {
+			if (suggestionAmount > 5) break;
+			if (!key.startsWith(property)) continue;
+
+			// Insert a suggestion into the box
+			suggestionAmount++;
+			let $suggestion = $(`<span>${key}</span>`);
+			this.$suggestions.append($suggestion);
+
+			$suggestion.click(() => {
+				this.$cmdField.val(objectName + '.' + key);
+				this.doSuggestions();
+			});
+		}
 	}
 
 	createContextMenu() {
@@ -130,10 +174,19 @@ export default class ConsoleApp extends App {
 	}
 
 	stringifyObject(obj, depth = 1) {	
+		// Specials
 		if (obj === undefined) return "undefined";
-
 		if (obj === null) return "null";
 
+		// Strings
+		if (typeof obj === 'string') return `"${obj}"`;
+		
+		// Numbers
+		if (!Array.isArray(obj) && !isNaN(obj)) return "" + obj;
+
+		if (depth <= 0) return obj.constructor.name;
+
+		// Arrays
 		if (Array.isArray(obj)) {
 			let str = "["
 			for (let i = 0; i < obj.length; i++) {
@@ -146,15 +199,11 @@ export default class ConsoleApp extends App {
 			return str;
 		}
 
-		if (typeof obj === 'string') return `"${obj}"`;
-		
-		if (!isNaN(obj)) return "" + obj;
-
-		if (depth <= 0) return obj.constructor.name;
-
+		// Object
 		let properties = "";
-		for (let property in obj) {
-			properties += `\n${property}: ${obj[property]}`;
+		for (let key in obj) {
+			let value = obj[key];
+			properties += `\n${key}: ${this.stringifyObject(value, depth - 1)}`;
 		}
 		properties = strReplaceAll(properties, '\n', '\n  ');
 		return `${obj.constructor.name}: {${properties}\n}`;

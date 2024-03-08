@@ -69,8 +69,12 @@ function getCookie(cname) {
 }
 
 function strReplaceAll(text, token, newToken) {
-	let escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	let regexp = new RegExp(escapedToken);
+	let escapedToken = token.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&");
+	let regexp = new RegExp(escapedToken, 'g');
+
+	if (typeof(newToken) == "string") {
+		newToken = newToken.replace(/\$/g, "$$$$");
+	}
 
 	return text.replace(regexp, newToken);
 }

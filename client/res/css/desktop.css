@@ -46,6 +46,7 @@ body {
 	overflow: hidden;
 	flex-grow: 1;
 	min-height: 0;
+	z-index: 0;
 }
 
 .desktop .backplane {
@@ -166,10 +167,8 @@ body {
 }
 
 #taskbar-window-list {
-	z-index: 998;
 	display: none;
 	position: absolute;
-	z-index: 1000;
 	border: solid 1px #4AF;
 	padding: 2px 2px;
 	font-size: 13pt;
