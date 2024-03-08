@@ -1,4 +1,9 @@
-.app-configs .window-body {
+.app-configs {
+	display: flex;
+	flex-direction: column;
+}
+
+.app-configs .general-tab.visible {
 	display: flex;
 	flex-direction: column;
 }

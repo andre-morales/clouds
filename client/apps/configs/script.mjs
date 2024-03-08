@@ -36,10 +36,13 @@ export default class ConfigsApp extends App {
 		});
 
 		let $win = this.window.$window;
-		$win.addClass('app-configs');
+		let $app = $win.find('.window-body');
+		$app.addClass('app-configs');
 
 		// Fetch body
 		await this.window.setContentToUrl('/app/configs/main.html');
+
+		UIControls.tabs($app.find('.ui-tabs'));		
 
 		// Background
 		let $input = $win.find('.background-input');
@@ -80,6 +83,18 @@ export default class ConfigsApp extends App {
 				Client.desktop.configs.show_dragged_window_contents = true;
 			} else {
 				Client.desktop.configs.show_dragged_window_contents = false;
+			}
+			self.unsavedChanges = true;
+		});
+
+		// Fullscreen filter
+		let $pdfViewer = $win.find('.use-pdf-viewer');
+		$pdfViewer.prop("checked", Client.desktop.configs.use_pdf_viewer);
+		$pdfViewer.change(async function (){
+			if (this.checked) {
+				Client.desktop.configs.use_pdf_viewer = true;
+			} else {
+				Client.desktop.configs.use_pdf_viewer = false;
 			}
 			self.unsavedChanges = true;
 		});

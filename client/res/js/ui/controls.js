@@ -101,3 +101,17 @@ function prepareSliders(){
 		}
 	}
 }
+
+class UIControls {
+	static tabs(elem) {
+		let $tabPane = $(elem);
+		$tabPane.find('.ui-tabs-header button').click((ev) => {
+			let tab = ev.target.getAttribute('data-tab');
+			$tabPane.find('.ui-tabs-header .button').removeClass('selected');
+			$tabPane.find('.ui-tab').removeClass('visible');
+
+			ev.target.classList.add('selected');
+			$tabPane.find(`.ui-tab[data-tab='${tab}']`).addClass('visible');
+		});
+	}
+}

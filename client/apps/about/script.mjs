@@ -13,8 +13,10 @@ export default class AboutApp extends App {
 		$app.addClass('app-about');
 		await this.window.setContentToUrl('/app/about/body.html');
 
+		UIControls.tabs($app.find('.ui-tabs'));
+
 		// Tab pane behavior
-		let $tabPane = $app.find('.tabpane');
+		/*let $tabPane = $app.find('.tabpane');
 		$tabPane.find('button').click((ev) => {
 			let tab = ev.target.getAttribute('data-tab');
 			$tabPane.find('.header .button').removeClass('selected');
@@ -22,7 +24,7 @@ export default class AboutApp extends App {
 
 			ev.target.classList.add('selected');
 			$tabPane.find(`.tab[data-tab='${tab}']`).addClass('visible');
-		});
+		});*/
 
 		// Client Tab
 		let clientStr = `Version ${Client.BUILD_STRING}`;
