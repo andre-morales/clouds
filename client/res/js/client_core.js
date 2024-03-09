@@ -77,7 +77,7 @@ class ClientClass {
 		this.BUILD_TEXT = ClientClass.BUILD_TEXT;
 	}
 
-	static get CLIENT_VERSION() { return '1.0.176'; }
+	static get CLIENT_VERSION() { return '1.0.177'; }
 	static get BUILD_STRING() { return `${this.CLIENT_VERSION} Early Test 2`; }
 	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 
@@ -125,6 +125,8 @@ class ClientClass {
 			if (app.startsWith('-')) delete this.registeredApps[app];
 		}
 		
+		this.desktop.taskbar.setupAppsMenu();
+
 		// Let the desktop prepare app icons and behavior
 		this.desktop.setupApps();
 

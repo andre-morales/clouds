@@ -4,17 +4,66 @@ class Taskbar {
 		this.$windowList = $('#taskbar-window-list');
 		this.$bar = $('.taskbar');
 		this.$tasks = $('.taskbar .tasks');
+		this.$appsMenu = this.$bar.find('#taskbar-apps-menu');
 		this.noGrouping = false;
 
-		$(document).on('mousedown', (ev) => {
-			let $wlist = this.$windowList;
-			let el = ev.target;
+		this.$bar.find('.fullscreen-btn').click(() => {
+			let body = $('body')[0];
+			if (Fullscreen.element == body) {
+				Fullscreen.leave();
+			} else Fullscreen.on(body);
+		});
 
+		$(document).on('mousedown', (ev) => {
+			let et = ev.target;
+					
 			// If the menu *is not* and *does not contain*
 			// the clicked element.
-			if ($wlist[0] != el && $wlist.has(el).length === 0) {
+			let $wlist = this.$windowList;
+			if ($wlist[0] != et && $wlist.has(et).length === 0) {
 				this.closeWindowList();
 			}
+
+			let $amenu = this.$appsMenu;
+			if ($amenu[0] != et && $amenu.has(et).length === 0) {
+				this.closeAppsMenu();
+			}
+		});
+	}
+
+	setupAppsMenu() {
+		let $appsList = this.$appsMenu.find('ul');
+		for (let appName of Object.keys(Client.registeredApps)) {
+			let app = Client.registeredApps[appName];
+
+			// Get the app icon, with a default app icon as a fallback
+			const DEFAULT_ICON = '/res/img/app64.png';
+			let icon = (app.icon) ? app.icon : DEFAULT_ICON;
+			
+			// Create the icon element. If the image fails to load, set the default icon
+			let $icon = $(`<img src='${icon}'/>`);
+			$icon.on('error', () => {
+				$icon.attr('src', DEFAULT_ICON);
+			})
+
+			// Create the app element
+			let $appItem = $(`<li><span>${app.name}</span></li>`);
+			$appItem.prepend($icon);
+
+			$appItem.click(() => {
+				Client.runApp(appName);
+				this.closeAppsMenu();
+			});
+
+			$appsList.append($appItem);
+		}
+
+		this.$bar.find('.apps-btn').click((ev) => {
+			this.$appsMenu.css('display', 'block');
+		});
+
+		this.$appsMenu.find('.logout-btn').click(() => {
+			Client.logout();
 		});
 	}
 
@@ -34,6 +83,10 @@ class Taskbar {
 		let button = new TaskbarButton(win.app);
 		button.addWindow(win);
 		return button;
+	}
+
+	closeAppsMenu() {
+		this.$appsMenu.css('display', 'none');
 	}
 
 	closeWindowList() {

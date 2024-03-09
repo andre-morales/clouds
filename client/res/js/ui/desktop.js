@@ -21,25 +21,6 @@ class Desktop {
 
 		this._configsProm = this.loadConfigs();
 
-		this.taskbar.$bar.find('.fullscreen-btn').click(() => {
-			let body = $('body')[0];
-			if (Fullscreen.element == body) {
-				Fullscreen.leave();
-			} else Fullscreen.on(body);
-		});
-
-		this.taskbar.$bar.find('.apps-btn').click((ev) => {
-			let items = Object.keys(Client.registeredApps)
-				.map((id) => CtxItem(Client.registeredApps[id].name, () => Client.runApp(id)));
-			
-			items.push('-');
-			items.push(CtxItem('Logout', () => {
-				Client.logout();
-			}));
-			let menu = CtxMenu(items);
-			this.openCtxMenuAt(menu, ev.clientX, ev.clientY);
-		});
-
 		let menu = CtxMenu([
 			CtxItem("System Settings", () => {
 				Client.runApp('configs');
@@ -253,7 +234,7 @@ class Desktop {
 			$apps.append($icon);
 		}
 	}
-	
+
 	setDragRectangle(x, y, width, height) {
 		let style = $("#window-drag-rect")[0].style;
 		let lastTime;

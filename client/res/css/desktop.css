@@ -49,6 +49,11 @@ body {
 	z-index: 0;
 }
 
+/* When an app is fullscreen, make sure the desktop area appears over the taskbar */
+.desktop .dt-area.fscr-parent {
+	z-index: 1;
+}
+
 .desktop .backplane {
 	display: flex;
 	overflow: hidden;
@@ -166,6 +171,43 @@ body {
 	flex-shrink: 0;
 }
 
+#taskbar-apps-menu {
+	display: none;
+	position: absolute;
+	left: 0;
+	bottom: var(--taskbar-height);
+	border: solid 1px #4AF;
+	padding: 2px 2px;
+	font-size: 13pt;
+	background: #202020;
+	box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+#taskbar-apps-menu li {
+	display: block;
+	padding: 4px 1.5em 4px 1em;
+	vertical-align: middle;
+}
+
+#taskbar-apps-menu li:hover {
+	background-color: #35D;
+}
+
+#taskbar-apps-menu img {
+	width: 24px;
+	height: 24px;
+	margin: 0 .5em 0 0;
+	vertical-align: middle;
+}
+
+#taskbar-apps-menu button {
+	float: right;
+	margin: .3em .15em .15em;
+	padding: .35em .5em;
+	font: 12pt 'Tahoma';
+	color: white;
+}
+
 #taskbar-window-list {
 	display: none;
 	position: absolute;
@@ -179,7 +221,6 @@ body {
 #taskbar-window-list li {
 	display: block;
 	padding: 4px 1em 4px .5em;
-	font-style: inherit;
 	vertical-align: middle;
 }
 
