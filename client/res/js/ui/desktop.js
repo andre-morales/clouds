@@ -75,11 +75,17 @@ class Desktop {
 	}
 
 	async saveConfigs() {
-		await FileSystem.writeJson('/usr/desktop.json', this.configs);
+		await FileSystem.writeJson('/usr/.system/desktop.json', this.configs);
 	}
 
 	async loadConfigs() {
-		this.configs = await FileSystem.readJson('/usr/desktop.json');
+		try {
+			this.configs = await FileSystem.readJson('/usr/.system/desktop.json');
+		} catch (err) {
+			this.configs = {};
+			console.warn('Desktop.json failed to load. Assuming defaults.', err);
+		}
+		
 
 		let bg = this.configs.background;
 		if (bg) this.setBackground(bg);

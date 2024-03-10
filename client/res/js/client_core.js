@@ -77,7 +77,7 @@ class ClientClass {
 		this.BUILD_TEXT = ClientClass.BUILD_TEXT;
 	}
 
-	static get CLIENT_VERSION() { return '1.0.177'; }
+	static get CLIENT_VERSION() { return '1.0.178'; }
 	static get BUILD_STRING() { return `${this.CLIENT_VERSION} Early Test 2`; }
 	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 
@@ -118,7 +118,7 @@ class ClientClass {
 		});
 
 		// Fetch app definitions from the user profile
-		this.registeredApps = await FileSystem.readJson('/usr/apps.json');
+		this.registeredApps = await FileSystem.readJson('/usr/.system/apps.json');
 		
 		// Remove disabled apps
 		for (let app of Object.keys(this.registeredApps)) {

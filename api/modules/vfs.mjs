@@ -219,20 +219,26 @@ export function getRouter() {
 			return;
 		}
 		
-		// Resolve the path and send the file. If an error occurs,
-		// answer with a 500 error code and log the error.
+		// Resolve the path and send the file.
 		let absPath = Path.resolve(fPath);
 		res.sendFile(absPath, (err) => {
 			if (!err) return;
 			
+			switch (err.code) {
 			// Fetch interrupted. Do nothing.
-			if (err.code == 'ECONNABORTED') {
+			case 'ECONNABORTED':
 				res.status(200).end();
+				break;
+			// File doesn't exit
+			case 'ENOENT':
+				res.status(404).end();
+				break;
 			// Tried to GET a directory.
-			} else if (err.code == 'EISDIR') {
-				res.sendStatus(400);
+			case 'EISDIR':
+				res.status(400).end();
+				break;
 			// Unknown error, log it.
-			} else {
+			default:
 				console.error("Send file failed with error: ", err);
 				res.status(500).end();
 			}

@@ -395,12 +395,12 @@ export default class ExplorerApp extends App {
 	}
 
 	async saveFavorites() {
-		await FileSystem.writeJson('/usr/favorites.json', this.favorites);
+		await FileSystem.writeJson('/usr/.system/favorites.json', this.favorites);
 	}
 
 	async loadFavorites() {
 		try {
-			this.favorites = await FileSystem.readJson('/usr/favorites.json');
+			this.favorites = await FileSystem.readJson('/usr/.system/favorites.json');
 		} catch (err) {
 			this.favorites = [];
 		}

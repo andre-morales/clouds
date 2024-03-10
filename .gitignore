@@ -1,8 +1,8 @@
 .*/*
 *.proto
 api/node_modules/*
-usr/test/collections.json
-usr/test/favorites.json
-usr/test/desktop.json
+usr/test/.system/collections.json
+usr/test/.system/favorites.json
+usr/test/.system/desktop.json
 client/apps/_graveyard/*
 config/ssl/*

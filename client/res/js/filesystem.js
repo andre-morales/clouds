@@ -8,6 +8,8 @@ class FileSystem {
 		let url = Paths.toFSV(path);
 		try {
 			let res = await fetch(url);
+			if (res.status != 200) throw new FetchException(`JSON fetch of '${path}' failed with status ${res.status}.`);
+
 			return await res.json();
 		} catch (err) {
 			throw new FetchException(err);
