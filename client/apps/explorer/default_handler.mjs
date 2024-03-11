@@ -43,8 +43,7 @@ export default class ExplorerDefaultHandler {
 			this.window.close();
 		});
 
-		await this.window.pack();
+		this.window.setInitialPosition('center');
 		this.window.setVisible(true);
-		this.window.bringToCenter();
 	}
 }

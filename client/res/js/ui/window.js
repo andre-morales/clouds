@@ -27,6 +27,7 @@ class Window {
 
 		// None | Close | Exit
 		this._closeBehavior = 'close';
+		this._initialPosition = 'default';
 
 		if (app.icon && app.mainWindow == this) {
 			this.icon = app.icon;	
@@ -143,18 +144,22 @@ class Window {
 		this.bringToFront();
 	}
 
-	doFirstShowSetup() {
+	async doFirstShowSetup() {
 		this.firstShow = false;
 		this.taskButton = Client.desktop.taskbar.addWindow(this);
 
 		// If no width or height has been set, pack by default
 		if (!this.width || !this.height) {
-			this.pack();
+			await this.pack();
 		}
 
 		// If dimensions are still way too small, set them to a default reasonable amount
 		if (this.width < 32 || this.height < 32) {
 			this.setSize(360, 240);
+		}
+
+		if (this._initialPosition == 'center') {
+			this.bringToCenter();
 		}
 	}
 
@@ -168,7 +173,7 @@ class Window {
 
 			startMX = mx,        startMY = my;
 			startX  = this.posX, startY  = this.posY;
-			this.setPointerEvents(false);
+			Client.desktop.setPointerEvents(false);
 		};
 
 		let dragMove = (mx, my) => {
@@ -205,7 +210,7 @@ class Window {
 
 			dragging = false;
 			this.setPosition(startX + mx - startMX, startY + my - startMY);
-			this.setPointerEvents(true);
+			Client.desktop.setPointerEvents(true);
 			Client.desktop.setDragRectangle(null);
 		};
 
@@ -272,7 +277,7 @@ class Window {
 		// If the window isn't visible, insert it into the layout but don't display its contents.
 		// This has to be done, otherwise its dimensions won't be calculated.
 		if (!this.visible) {
-			this.$window.css('visibility', 'visible');
+			this.$window.css('visibility', 'hidden');
 			this.$window.css('display', 'flex');
 		}
 
@@ -292,8 +297,8 @@ class Window {
 
 		// If the window is invisible, restore its old status
 		if (!this.visible) {
-			this.$window.css('visibility', 'visible');
 			this.$window.css('display', '');
+			this.$window.css('visibility', '');
 		}
 	}
 
@@ -324,6 +329,10 @@ class Window {
 
 	setCloseBehavior(action) {
 		this._closeBehavior = action;
+	}
+
+	setInitialPosition(position) {
+		this._initialPosition = position;
 	}
 
 	setTitle(title) {
@@ -405,17 +414,18 @@ class Window {
 		return [this.posX, this.posY, this.width, this.height];
 	}
 
-	setVisible(visible) {
-		this.visible = visible;
+	async setVisible(visible) {
 		if (visible) {
 			if (this.firstShow) {
-				this.doFirstShowSetup();
+				await this.doFirstShowSetup();
 			}
 
 			this.$window.addClass('visible');			
 		} else {
 			this.$window.removeClass('visible');
 		}
+
+		this.visible = visible;
 	}
 
 	setIcon(icon) {

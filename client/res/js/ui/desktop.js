@@ -271,6 +271,10 @@ class Desktop {
 		});		
 	}
 
+	setPointerEvents(evs) {
+		this.$desktop.find('.dt-area').css('pointer-events', (evs) ? '' : 'none');
+	}
+
 	// Updates desktop area to match client window area
 	_queryBounds() {
 		let bounds = this.$desktop[0].getBoundingClientRect();
@@ -313,7 +317,7 @@ class Desktop {
 					resWin = win;
 					startMX = mx,       startMY = my;
 					startB = win.getBounds();
-					win.setPointerEvents(false);
+					Client.desktop.setPointerEvents(false);
 					ev.stopPropagation();
 					return;
 				} else {
@@ -380,7 +384,7 @@ class Desktop {
 			doResize(mx, my);
 			resWin.setBounds(wx, wy, ww, wh);
 			this.setDragRectangle(null);
-			resWin.setPointerEvents(true);
+			Client.desktop.setPointerEvents(true);
 			resWin = null;
 		};
 

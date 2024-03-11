@@ -140,22 +140,24 @@ class TaskbarButton {
 		// If there's a single window left
 		if (this.windows.length == 1) {
 			this.single = true;
-			this.setText(win.title);
+			this.setText(this.windows[0].title);
 		}
 
 		this.updateCount();
 	}
 
-	createButton(win) {
-		if (win.icon) this.icon = win.icon;
+	createButton(firstWindow) {
+		if (firstWindow.icon) this.icon = firstWindow.icon;
 
 		// Create taskbar button
-		this.$button = $(`<div class='task-button'><span class='count'>2</span><img src='${this.icon}'/><span class='text'>${win.title}</span></div>`);
+		this.$button = $(`<div class='task-button'><span class='count'>2</span><img src='${this.icon}'/></div>`);
+		this.$button.append(`<span class='text'>${firstWindow.title}</span>`);
 		this.$text = this.$button.find('.text');
 		this.$count = this.$button.find('.count');
 
 		this.$button.click(() => {
 			if (this.single) {
+				let win = this.windows[0];
 				if (win.minimized) {
 					win.restore();
 				}
@@ -169,6 +171,7 @@ class TaskbarButton {
 		
 		Client.desktop.addCtxMenuOn(this.$button, () => {
 			if (this.single) {
+				let win = this.windows[0];
 				return win.optionsCtxMenu;
 			} else {
 				return CtxMenu([
