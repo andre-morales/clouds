@@ -1,41 +1,14 @@
 import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
-import ExplorerOpenWith from './openwith.mjs';
-
-// App associated with each file extension. In the future will be a user configuration file
-const TYPE_ASSOCIATIONS = {
-	'mp4': 'sinestesia',
-	'webm': 'sinestesia',
-	'mkv': 'sinestesia',
-	'm4v': 'sinestesia',
-
-	'weba': 'sinestesia',
-	'm4a': 'sinestesia',
-	'mp3': 'sinestesia',
-	'wav': 'sinestesia',
-	'ogg': 'sinestesia',
-	'opus': 'sinestesia',
-
-	'png': 'sinestesia',
-	'jpg': 'sinestesia',
-	'jpeg': 'sinestesia',
-	'webp': 'sinestesia',
-
-	'json': 'notepad',
-	'txt': 'notepad',
-	'ini': 'notepad',
-	'log': 'notepad',
-
-	'pdf': 'webview',
-	'html': 'webview',
-	'htm': 'webview'
-};
+import ExplorerOpenWith from './open_with.mjs';
+import ExplorerDefaultHandler from './default_handler.mjs';
 
 export default class ExplorerApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;
 		this.cwd = null;
+		this.typeAssociations = {};
 		this.favorites = [];
 		this.collections = {};
 		this.collectionsMap = new Map();
@@ -115,31 +88,11 @@ export default class ExplorerApp extends App {
 			CtxItem('Create collection...', () => this.openCreateCollectionDialog())
 		]));
 
-		// Configure touch gestures
-		let hammer = new Hammer.Manager(this.$app.find('.body')[0], {
-			recognizers: [
-				[Hammer.Pinch, {}]
-			]
-		});
-
-		let beginZoom = 1;
-		hammer.on('pinchstart', (ev) => {
-			beginZoom = this.panel.zoom;
-		});
-
-		hammer.on('pinch', (ev) => {
-			this.panel.setZoom(beginZoom * ev.scale);
-		});
-
-		this.$filePanel.on('wheel', (ev) => {
-			if (!ev.ctrlKey) return;
-			
-			let scale = ev.deltaY / 1000.0;
-			this.panel.setZoom(this.panel.zoom - scale);
-
-			ev.preventDefault();
-		});
-
+		// Read file type associations. Fail silently if the file doesn't exist.
+		try {
+			this.typeAssociations = await FileSystem.readJson('/usr/.system/ftype_defaults.json');
+		} catch (err) {}
+		
 		// Final preparation
 		this.loadFavorites().then(() => {
 			this.refreshFavorites();
@@ -343,7 +296,7 @@ export default class ExplorerApp extends App {
 		if (i != -1) {
 			// Find the app associated based on the extension
 			let ext = path.substring(i + 1);
-			let appId = TYPE_ASSOCIATIONS[ext];
+			let appId = this.typeAssociations[ext];
 
 			if (appId) {
 				let app = await Client.runApp(appId, [fsPath]);
@@ -359,8 +312,8 @@ export default class ExplorerApp extends App {
 			}
 		}
 
-		// If there was no extension or no app associated with this file, open it externally
-		this.openFileExt(path);	
+		// If there was no extension or no app associated with this file, open file handler dialog
+		this.openDefaultHandler(path);
 	}
 
 	// Favorites 
@@ -588,9 +541,14 @@ export default class ExplorerApp extends App {
 		}
 	}
 
-	async openFileWith(path) {
+	openFileWith(path) {
 		let openWith = new ExplorerOpenWith(this);
 		openWith.open(path);
+	}
+
+	openDefaultHandler(path) {
+		let dialog = new ExplorerDefaultHandler(this);
+		dialog.open(path);
 	}
 
 	openFileExt(path) {

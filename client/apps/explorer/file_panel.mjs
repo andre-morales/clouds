@@ -12,7 +12,33 @@ export class FilePanel {
 	}
 
 	init() {
+		this.$filesContainer = this.app.$app.find('.files-container');
 		this.$files = this.app.$app.find('.files');
+
+		// Configure touch gestures
+		let hammer = new Hammer.Manager(this.app.$app[0], {
+			recognizers: [
+				[Hammer.Pinch, {}]
+			]
+		});
+
+		let beginZoom = 1;
+		hammer.on('pinchstart', (ev) => {
+			beginZoom = this.zoom;
+		});
+
+		hammer.on('pinch', (ev) => {
+			this.setZoom(beginZoom * ev.scale);
+		});
+
+		this.$filesContainer.on('wheel', (ev) => {
+			if (!ev.ctrlKey) return;
+			
+			let scale = ev.deltaY / 1000.0;
+			this.setZoom(this.zoom - scale);
+
+			ev.preventDefault();
+		});
 	}
 
 	setContent(files) {

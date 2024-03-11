@@ -5,7 +5,8 @@
 	"modules" : [
 		"/app/explorer/main.mjs",
 		"/app/explorer/uploader.mjs",
-		"/app/explorer/openwith.mjs"
+		"/app/explorer/open_with.mjs",
+		"/app/explorer/default_handler.mjs"
 	],
 	"styles": [
 		"/app/explorer/res/style.css"

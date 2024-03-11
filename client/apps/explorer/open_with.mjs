@@ -5,7 +5,7 @@ export default class ExplorerOpenWith {
 
 	async open(path) {
 		this.window = Client.desktop.createWindow(this.explorer);
-		
+
 		await this.window.setContentToUrl('/app/explorer/res/openwith-helper.html');
 		this.window.setTitle('Open: ' + path.substring(path.lastIndexOf('/') + 1));
 		this.window.setSize(280, 280);

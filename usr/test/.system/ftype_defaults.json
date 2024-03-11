@@ -1,0 +1,27 @@
+{
+	"mp4": "sinestesia",
+	"webm": "sinestesia",
+	"mkv": "sinestesia",
+	"m4v": "sinestesia",
+
+	"weba": "sinestesia",
+	"m4a": "sinestesia",
+	"mp3": "sinestesia",
+	"wav": "sinestesia",
+	"ogg": "sinestesia",
+	"opus": "sinestesia",
+
+	"png": "sinestesia",
+	"jpg": "sinestesia",
+	"jpeg": "sinestesia",
+	"webp": "sinestesia",
+
+	"json": "notepad",
+	"txt": "notepad",
+	"ini": "notepad",
+	"log": "notepad",
+
+	"pdf": "webview",
+	"html": "webview",
+	"htm": "webview"
+}
