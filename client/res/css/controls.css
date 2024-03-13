@@ -186,3 +186,9 @@ progress::-webkit-progress-value {
 .ui-tabs .ui-tab.visible {
 	display: block;
 }
+
+ui-slider {
+	display: inline-block;
+	width: 256px;
+	height: 12px;
+}

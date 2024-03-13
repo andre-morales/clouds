@@ -103,6 +103,11 @@ function prepareSliders(){
 }
 
 class UIControls {
+	static async init() {
+		let SliderM = await import('/res/js/ui/controls/slider.mjs');
+		window.customElements.define('ui-slider', SliderM.UISlider);
+	}	
+
 	static tabs(elem) {
 		let $tabPane = $(elem);
 		let control = new UITabs($tabPane);

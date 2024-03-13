@@ -55,7 +55,7 @@ export default class SinestesiaApp extends App {
 		// Make the window visible
 		this.window.setVisible(true);
 
-		prepareSliders();
+		//prepareSliders();
 
 		if (this.buildArgs.length > 0) {
 			this.openFile(this.buildArgs[0]);
@@ -153,7 +153,7 @@ export default class SinestesiaApp extends App {
 		$video.on("timeupdate", function() {
 			if (progressbarHeld) return;
 			let prog = this.currentTime / this.duration * 100;
-			$progressbar[0].setValue(prog);
+			$progressbar[0].value = prog;
 
 			$time.text(fnTimeAsString(this.currentTime));
 		});

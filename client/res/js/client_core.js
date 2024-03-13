@@ -48,6 +48,7 @@ async function main() {
 		addScript('/res/js/ui/dialogs.js'),
 		addScript('/res/js/audiosystem.js'),
 		addScript('/res/js/ui/controls.js'),
+		addModule('/res/js/ui/controls/slider.mjs'),
 		addModule('/res/js/media_sess_bridge.mjs')
 	]);
 
@@ -77,7 +78,7 @@ class ClientClass {
 		this.BUILD_TEXT = ClientClass.BUILD_TEXT;
 	}
 
-	static get CLIENT_VERSION() { return '1.0.184'; }
+	static get CLIENT_VERSION() { return '1.0.186'; }
 	static get BUILD_STRING() { return `${this.CLIENT_VERSION} Early Test 2`; }
 	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 
@@ -99,6 +100,8 @@ class ClientClass {
 
 			$('#api-ver').text('API ' + apiv);
 		});
+
+		UIControls.init();
 
 		// Create desktop subsystem
 		this.desktop = new Desktop();
