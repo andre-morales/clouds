@@ -19,30 +19,22 @@ export default class SystemMonitorApp extends App {
 
 		let $win = this.window.$window;
 		this.$app = $win;
-		$win.find('.window-body').addClass('app-sysmonitor');
+		let $app = $win.find('.window-body');
+		$app.addClass('app-sysmonitor');
 
 		// Fetch app body
 		await this.window.setContentToUrl('/app/systemmonitor/res/main.html');
-
-		// Tab pane behavior
-		let $tabPane = $win.find('.tabpane');
-		$tabPane.find('button').click((ev) => {
-			let tab = ev.target.getAttribute('data-tab');
-			$tabPane.find('.header .button').removeClass('selected');
-			$tabPane.find('.tab').removeClass('visible');
-
-			ev.target.classList.add('selected');
-			$tabPane.find(`.tab[data-tab='${tab}']`).addClass('visible');
-
+		let tabPane = UIControls.tabs($app.find('.ui-tabs'));
+		tabPane.onTabChanged = (tab) => {
 			if (tab == 'resources') {
 				this.setupNetworkMonitor();
 			} else {
 				this.stopNetPolling();
 			}
-		});
+		};
 
 		// Apps tab
-		let $appTab = $win.find('.tab[data-tab="apps"]');
+		let $appTab = $win.find('.ui-tab[data-tab="apps"]');
 		let makeAppEntries = () => {
 			$appTab.empty();
 			for (let app of Client.runningApps) {
@@ -60,7 +52,7 @@ export default class SystemMonitorApp extends App {
 		Client.on('apps-rem', makeAppEntries);
 
 		// Windows tab
-		let $windowsTab = $win.find('.tab[data-tab="windows"]');
+		let $windowsTab = $win.find('.ui-tab[data-tab="windows"]');
 		let makeWindowsEntries = () => {
 			$windowsTab.empty();
 			for (let win of Client.desktop.windows) {

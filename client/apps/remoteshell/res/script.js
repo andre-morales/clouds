@@ -28,8 +28,23 @@ window.RemoteShellApp = class RemoteShellApp extends App {
 
 		// Fetch explorer body
 		await this.window.setContentToUrl('/app/remoteshell/res/main.html');
-
 		this.$content = $app.find('.content');
+
+		let fileMenu = CtxMenu([
+			CtxItem('Exit', () => { this.window.close(); })
+		]);
+	
+		$app.find('.file-menu').click((ev) => {
+			Client.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
+		});
+
+		$app.find('.view-menu').click((ev) => {
+			let menu = CtxMenu([
+				CtxCheck('Wrap text', (v) => { this.setTextWrapping(v); }, this.textWrapping),
+				CtxItem('Clear', () => { this.clear(); })
+			]);
+			Client.desktop.openCtxMenuAt(menu, ev.clientX, ev.clientY);
+		});
 
 		let $field = $app.find('input');
 		$field.on('keypress', (ev) => {
@@ -90,6 +105,19 @@ window.RemoteShellApp = class RemoteShellApp extends App {
 		if (onBottom) {
 			cont.scrollTo(0, cont.scrollHeight);
 		}
+	}
+
+	setTextWrapping(w) {
+		this.textWrapping = w;
+		if (w) {
+			this.$content.css('white-space', 'pre-wrap');
+		} else {
+			this.$content.css('white-space', 'pre');
+		}
+	}
+
+	clear() {
+		this.$content.empty();
 	}
 
 	doCleanup() {

@@ -22,6 +22,7 @@ export function create() {
 	try {
 		if (!shell.spawn()) return null;
 	} catch(err) {
+		console.log("Shell creation exception.");
 		return null;
 	}
 
@@ -35,7 +36,7 @@ export function create() {
 export function destroy(id) {
 	if (!shells[id]) return false;
 
-	shells[id].proc.kill();
+	shells[id].kill();
 	delete shells[id];
 	return true;
 }
@@ -47,10 +48,11 @@ export function destroyOldShells(limit) {
 	for (const [id, proc] of Object.entries(shells)) {
 		if (now - proc.lastPing > limit*1000) {
 			destroyedShells.push(id);
+			console.log('Timeout shell ' + id);
 		}
 	}
 
-	destroyedShells.forEach(destroy);
+	destroyedShells.forEach((id) => destroy(id));
 }
 
 export function installRouter(router) {
@@ -63,8 +65,20 @@ export function installRouter(router) {
 			return;
 		}
 
-		console.log('Created shell ' + shell.id);
 		res.json(shell.id);
+	});
+
+	router.get('/shell/0/list', (req, res) => {
+		Auth.getUserGuard(req);
+
+		let obj = Object.values(shells).map((shell) => {
+			return {
+				'id': shell.id,
+				'ping': new Date(shell.lastPing).toString()
+			};
+		});
+
+		res.json(obj);
 	});
 
 	router.post('/shell/:id/send', (req, res) => {
@@ -157,15 +171,21 @@ export class RShell {
 	}
 
 	spawn() {
-		if (!defs || !defs.enabled) return null;
-
 		let proc = CProc.spawn(defs.exec);
 		proc.on('error', (err) => {
 			console.log(err);
 		});
 
-		if (proc.pid) return this.proc = proc;
-		return null;
+		if (!proc.pid) return false;
+		this.proc = proc;
+
+		console.log('+ shell ' + this.id);
+		return true;
+	}
+
+	kill() {
+		this.proc.kill();
+		console.log('- shell ' + this.id);
 	}
 
 	newStdoutData() {

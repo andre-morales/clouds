@@ -9,7 +9,7 @@ export default class ConfigsApp extends App {
 
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
-		
+		this.window.setCloseBehavior('exit');
 		this.window.setTitle('Configs');
 		this.window.on('closing', (ev) => {
 			if (this.unsavedChanges) {

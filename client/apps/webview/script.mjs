@@ -7,6 +7,7 @@ export default class WebViewApp extends App {
 	async init() {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
+		this.window.setCloseBehavior('exit');
 		this.window.setTitle('WebView');
 
 		let $app = this.window.$window.find('.window-body');
