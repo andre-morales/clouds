@@ -1,6 +1,7 @@
 class Taskbar {
 	constructor() {
 		this.buttons = [];
+		this.DEFAULT_TASKBAR_ICON = '/res/img/icons/windows64.png';
 		this.$windowList = $('#taskbar-window-list');
 		this.$bar = $('.taskbar');
 		this.$tasks = $('.taskbar .tasks');
@@ -100,7 +101,7 @@ class TaskbarButton {
 		this.app = app;
 		this.windows = [];
 		this.single = false;
-		this.icon = '/res/img/icons/windows64.png';
+		this.icon = Client.desktop.taskbar.DEFAULT_TASKBAR_ICON;
 		this.$button = null;
 
 		Client.desktop.taskbar.buttons.push(this);
@@ -150,8 +151,19 @@ class TaskbarButton {
 		if (firstWindow.icon) this.icon = firstWindow.icon;
 
 		// Create taskbar button
-		this.$button = $(`<div class='task-button'><span class='count'>2</span><img src='${this.icon}'/></div>`);
+		this.$button = $(`<div class='task-button'><span class='count'>2</span></div>`);
+		let $icon = $(`<img src='${this.icon}'/>`);
+		this.$button.append($icon);
 		this.$button.append(`<span class='text'>${firstWindow.title}</span>`);
+
+		// If taskbar icon fails to load, set a default one
+		$icon.on('error', () => {
+			let src = $icon.attr('src');
+			if (src != Client.desktop.taskbar.DEFAULT_TASKBAR_ICON) {
+				$icon.attr('src', Client.desktop.taskbar.DEFAULT_TASKBAR_ICON);
+			}
+		});
+
 		this.$text = this.$button.find('.text');
 		this.$count = this.$button.find('.count');
 

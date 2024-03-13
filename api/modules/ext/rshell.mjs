@@ -1,16 +1,18 @@
 import CProc from 'child_process';
 import Express from 'express';
+import * as Auth from '../auth.mjs';
+import * as Config from '../config.mjs';
 
+var enabled = false;
 var defs = null; 
 export var shells = {};
 var counter = 1;
 
 export function init() {
-	
-}
+	if (!Config.isExtensionEnabled('rshell')) return;
+	enabled = true;
 
-export function loadDefs(defs_) {
-	defs = defs_;
+	defs = Config.config.extensions.rshell;
 }
 
 export function create() {
@@ -51,14 +53,11 @@ export function destroyOldShells(limit) {
 	destroyedShells.forEach(destroy);
 }
 
-export function getRouter() {
-	let router = Express.Router();
-
-
+export function installRouter(router) {
 	router.get('/shell/0/init', (req, res) => {
 		Auth.getUserGuard(req);
 
-		let shell = ShellMgr.create();
+		let shell = create();
 		if (!shell) {
 			res.status(500).end();
 			return;
@@ -71,7 +70,7 @@ export function getRouter() {
 	router.post('/shell/:id/send', (req, res) => {
 		Auth.getUserGuard(req);
 
-		let shell = ShellMgr.shells[req.params.id]
+		let shell = shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
 			return;
@@ -83,7 +82,7 @@ export function getRouter() {
 
 	router.get('/shell/:id/stdout', (req, res) => {
 		Auth.getUserGuard(req);
-		let shell = ShellMgr.shells[req.params.id]
+		let shell = shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
 			return;
@@ -96,7 +95,7 @@ export function getRouter() {
 		Auth.getUserGuard(req);
 		res.set('Cache-Control', 'no-store');
 
-		let shell = ShellMgr.shells[req.params.id]
+		let shell = shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
 			return;
@@ -118,7 +117,7 @@ export function getRouter() {
 		
 		let id = req.params.id;
 		
-		if(!ShellMgr.destroy(id)) {
+		if(!destroy(id)) {
 			res.status(404).end();
 			return;
 		}
@@ -129,7 +128,7 @@ export function getRouter() {
 
 	router.get('/shell/:id/ping', (req, res) => {
 		Auth.getUserGuard(req);
-		let shell = ShellMgr.shells[req.params.id]
+		let shell = shells[req.params.id]
 		if (!shell) {
 			res.status(404).end();
 			return;
@@ -141,7 +140,7 @@ export function getRouter() {
 
 
 	setInterval(() => {
-		ShellMgr.destroyOldShells(20);
+		destroyOldShells(20);
 	}, 20000)
 
 	return router;

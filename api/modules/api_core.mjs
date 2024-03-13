@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.7.02';
+const KAPI_VERSION = '0.7.03';
 
 // Lib imports
 import Path from 'path';
@@ -60,6 +60,7 @@ function initExpress() {
 	app.use('/fsv', VFS.getRouter());			   // Extended file system with HTTP verbs
 	app.use('/stat', Stats.getRouter());
 	apiSetupPages();     			    		   // Entry, Auth and Desktop
+	RShell.installRouter(app);
 	apiSetupApps();								   // Apps service
 
 	// General error handler
