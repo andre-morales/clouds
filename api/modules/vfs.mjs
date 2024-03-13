@@ -2,10 +2,11 @@ import FS from 'fs';
 import Path from 'path';
 import Express from 'express';
 
-import { asyncRoute, FFmpeg } from './api_core.mjs';
+import { asyncRoute } from './api_core.mjs';
 import config from './config.mjs';
 import * as Auth from './auth.mjs'
 import * as Files from './files.mjs';
+import * as FFmpeg from './ext/ffmpeg.mjs'
 
 var defs = null;
 

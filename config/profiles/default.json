@@ -15,7 +15,7 @@
 	},
 	
 	"extensions": {
-		"shell": {
+		"rshell": {
 			"enabled": true,
 			"exec": "cmd.exe"
 		},
@@ -23,11 +23,6 @@
 			"enabled": true,
 			"ffmpeg_exec": "ffmpeg",
 			"ffprobe_exec": "ffprobe"
-		},
-		"mediastr": {
-			"enabled": true,
-			"ytdl": "python extensions/yt-dlp.py",
-			"downpath": "downloads"
 		}
 	}
 }

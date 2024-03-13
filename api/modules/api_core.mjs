@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.7.01';
+const KAPI_VERSION = '0.7.02';
 
 // Lib imports
 import Path from 'path';
@@ -17,10 +17,9 @@ import config, * as Config from './config.mjs';
 import * as Auth from './auth.mjs';
 import * as VFS from './vfs.mjs';
 import * as Stats from './stats.mjs';
-import * as FFmpegM from './ext/ffmpeg.mjs';
+import * as FFmpeg from './ext/ffmpeg.mjs';
+import * as RShell from './ext/rshell.mjs';
 
-// Module instances
-export var FFmpeg = null;
 var progArgs = null;
 var app = null;
 
@@ -32,15 +31,12 @@ export async function main(args) {
 	Auth.init();
 	VFS.init();
 	Stats.init();
+	FFmpeg.init();
+	RShell.init();
 	initExpress();
 }
 
 function initExpress() {
-	if (Config.isExtensionEnabled('ffmpeg')) {
-		FFmpeg = new FFmpegM.FFmpeg();
-		FFmpeg.init(config.extensions.ffmpeg);
-	}
-
 	app = Express();
 
 	// Core request handlers.

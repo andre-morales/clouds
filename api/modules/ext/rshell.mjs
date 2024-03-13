@@ -1,0 +1,211 @@
+import CProc from 'child_process';
+import Express from 'express';
+
+var defs = null; 
+export var shells = {};
+var counter = 1;
+
+export function init() {
+	
+}
+
+export function loadDefs(defs_) {
+	defs = defs_;
+}
+
+export function create() {
+	let id = counter;
+	let shell = new RShell(id);
+
+	try {
+		if (!shell.spawn()) return null;
+	} catch(err) {
+		return null;
+	}
+
+	counter++;
+	shells[id] = shell;
+	shell.setupOutput();
+	shell.ping();
+	return shell;
+}
+
+export function destroy(id) {
+	if (!shells[id]) return false;
+
+	shells[id].proc.kill();
+	delete shells[id];
+	return true;
+}
+
+export function destroyOldShells(limit) {
+	let now = (new Date()).getTime();
+	let destroyedShells = [];
+
+	for (const [id, proc] of Object.entries(shells)) {
+		if (now - proc.lastPing > limit*1000) {
+			destroyedShells.push(id);
+		}
+	}
+
+	destroyedShells.forEach(destroy);
+}
+
+export function getRouter() {
+	let router = Express.Router();
+
+
+	router.get('/shell/0/init', (req, res) => {
+		Auth.getUserGuard(req);
+
+		let shell = ShellMgr.create();
+		if (!shell) {
+			res.status(500).end();
+			return;
+		}
+
+		console.log('Created shell ' + shell.id);
+		res.json(shell.id);
+	});
+
+	router.post('/shell/:id/send', (req, res) => {
+		Auth.getUserGuard(req);
+
+		let shell = ShellMgr.shells[req.params.id]
+		if (!shell) {
+			res.status(404).end();
+			return;
+		}
+		let cmd = req.body.cmd;
+		shell.send(cmd);
+		res.end();
+	});
+
+	router.get('/shell/:id/stdout', (req, res) => {
+		Auth.getUserGuard(req);
+		let shell = ShellMgr.shells[req.params.id]
+		if (!shell) {
+			res.status(404).end();
+			return;
+		}
+
+		res.send(shell.stdout);
+	});
+
+	router.get('/shell/:id/stdout_new', async (req, res) => {
+		Auth.getUserGuard(req);
+		res.set('Cache-Control', 'no-store');
+
+		let shell = ShellMgr.shells[req.params.id]
+		if (!shell) {
+			res.status(404).end();
+			return;
+		}
+
+		try {
+			let result = await shell.newStdoutData();
+			res.send(result);
+		} catch(err) {
+			console.log(err);
+			res.status(500).end();
+			return;
+		}
+		
+	});
+
+	router.get('/shell/:id/kill', (req, res) => {
+		Auth.getUserGuard(req);
+		
+		let id = req.params.id;
+		
+		if(!ShellMgr.destroy(id)) {
+			res.status(404).end();
+			return;
+		}
+
+		console.log('Destroyed shell ' + id);
+		res.end();
+	});
+
+	router.get('/shell/:id/ping', (req, res) => {
+		Auth.getUserGuard(req);
+		let shell = ShellMgr.shells[req.params.id]
+		if (!shell) {
+			res.status(404).end();
+			return;
+		}
+
+		shell.ping();
+		res.end();
+	});
+
+
+	setInterval(() => {
+		ShellMgr.destroyOldShells(20);
+	}, 20000)
+
+	return router;
+}
+
+export class RShell {
+	constructor(id) {
+		this.id = id;
+		this.stdout = '';
+		this.newOut = '';
+		this.proc = null;
+		this.waiterObj = null;
+		this._config = null;
+	}
+
+	spawn() {
+		if (!defs || !defs.enabled) return null;
+
+		let proc = CProc.spawn(defs.exec);
+		proc.on('error', (err) => {
+			console.log(err);
+		});
+
+		if (proc.pid) return this.proc = proc;
+		return null;
+	}
+
+	newStdoutData() {
+		if (this.newOut) {
+			let promise = Promise.resolve(this.newOut);
+			this.newOut = '';
+			return promise;
+		}
+
+		if (this.waiterObj) return Promise.reject();
+
+		return new Promise((res) => {
+			this.waiterObj = res;
+		});
+	}
+
+	setupOutput() {
+		let outFn = (ch) => {
+			let content = ch.toString();
+			this.stdout += content;
+
+			if (this.waiterObj) {
+				let prom = this.waiterObj;
+				this.waiterObj = null;
+				prom(content);
+			} else {
+				this.newOut += content;
+			}
+		}
+
+		this.proc.stdout.on('data', outFn);
+		this.proc.stderr.on('data', outFn);
+	}
+
+	ping() {
+		this.lastPing = (new Date()).getTime();
+	}
+
+	send(msg) {
+		this.proc.stdin.write(msg + '\n');
+	}
+}
