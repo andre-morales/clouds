@@ -25,14 +25,16 @@ class Desktop {
 			CtxItem("System Settings", () => {
 				Client.runApp('configs');
 			}),
-			'-',
-			CtxItem("Logout", () => {
-				Client.logout();
+			CtxItem("Console", () => {
+				Client.runApp('console');
 			}),
-			'-',
 			CtxItem("About", () => {
 				Client.runApp('about');
 			}),
+			'-',
+			CtxItem("Logout", () => {
+				Client.logout();
+			}),			
 		]);
 		this.addCtxMenuOn(this.$desktop.find('.backplane'), () => menu);
 

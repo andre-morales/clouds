@@ -32,12 +32,12 @@
 	"console": {
 		"name": "Console",
 		"icon": "/app/console/icon128.png",
-		"flags": ["desk"]
+		"flags": []
 	},
 	"remoteshell": {
 		"name": "Remote Shell",
 		"icon": "/app/remoteshell/icon128.png",
-		"flags": []
+		"flags": ["desk"]
 	},
 	"about": {
 		"name": "About",
