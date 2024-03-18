@@ -14,6 +14,8 @@
 		}
 	},
 	
+	"logFSOperations": true,
+
 	"extensions": {
 		"rshell": {
 			"enabled": true,

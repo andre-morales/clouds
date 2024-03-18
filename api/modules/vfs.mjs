@@ -114,7 +114,9 @@ async function eraseVirtual(user, path) {
 	let fpath = translate(user, path);
 	if (!fpath) return;
 
-	console.log(`Erasing '${fpath}'`);
+	if (config.logFSOperations) {
+		console.log(`Erasing "${fpath}"`);
+	}
 
 	await FS.promises.rm(fpath, { recursive: true });
 }
@@ -125,7 +127,9 @@ async function renameVirtual(user, path, newPath) {
 	let fNewPath = translate(user, newPath);
 	if (!fPath || !fNewPath) return;
 
-	console.log(`Renaming "${fPath}" to ${fNewPath}`);
+	if (config.logFSOperations) {
+		console.log(`Renaming "${fPath}" to "${fNewPath}"`);
+	}
 
 	await FS.promises.rename(fPath, fNewPath);
 }
@@ -136,7 +140,9 @@ async function copyVirtual(user, srcPath, dstPath) {
 	let fDestination = translate(user, dstPath);
 	if (!fSource || !fDestination) return;
 
-	console.log(`Copying "${fSource}" to ${fDestination}`);
+	if (config.logFSOperations) {
+		console.log(`Copying "${fSource}" to "${fDestination}"`);
+	}
 
 	await FS.promises.copyFile(fSource, fDestination, FS.constants.COPYFILE_EXCL);
 }
@@ -162,7 +168,9 @@ async function mkdirVirtual(user, path) {
 	let fPath = translate(user, path);
 	if (!fPath) return;
 
-	console.log(`Directory in "${fPath}"`);
+	if (config.logFSOperations) {
+		console.log(`New Directory in "${fPath}"`);
+	}
 
 	await FS.promises.mkdir(fPath);
 }
