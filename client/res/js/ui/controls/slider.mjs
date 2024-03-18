@@ -37,7 +37,8 @@ export class UISlider extends HTMLElement {
 
 	connectedCallback() {
 		let valueChange = (coff, fireEv) => {
-			coff = Mathx.clamp(coff, 0, 1);
+			if (coff < 0) coff = 0;
+			if (coff > 1) coff = 1;
 			let val = this._min + (this._max - this._min) * coff;
 
 			this.value = val;
