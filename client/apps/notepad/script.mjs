@@ -2,6 +2,7 @@ export default class NotepadApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;
+		this.fontSize = 12;
 	}
 
 	async init() {
@@ -68,7 +69,32 @@ export default class NotepadApp extends App {
 		$app.find('.file-menu').click((ev) => {
 			Client.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
 		});
-	
+		
+		// Zoom on Ctrl + Mouse wheel
+		this.$textArea.on('wheel', (ev) => {
+			if (!ev.ctrlKey) return;
+			
+			let scale = ev.deltaY / 100.0;
+			this.setFontSize(this.fontSize - scale);
+
+			ev.preventDefault();
+		});
+
+		/*let hammer = new Hammer.Manager(this.$textArea[0], {
+			recognizers: [
+				[Hammer.Pinch, {}]
+			]
+		});
+
+		let beginZoom = this.fontSize;
+		hammer.on('pinchstart', (ev) => {
+			beginZoom = this.fontSize;
+		});
+
+		hammer.on('pinch', (ev) => {
+			this.setFontSize(beginZoom * ev.scale);
+		});*/
+
 		// Await for text
 		if (fileTextProm) {
 			this.$textArea.val(await fileTextProm);
@@ -150,6 +176,14 @@ export default class NotepadApp extends App {
 		}
 	}
 	
+	setFontSize(size) {
+		if (size < 5) size = 5;
+		if (size > 72) size = 72;
+
+		this.fontSize = size;
+		this.$textArea.css('font-size', size + 'pt');
+	}
+
 	setDarkTheme(v) {
 		this.$app.toggleClass('dark', v);
 	}
