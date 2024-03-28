@@ -24,8 +24,8 @@ export default class SystemMonitorApp extends App {
 
 		// Fetch app body
 		await this.window.setContentToUrl('/app/systemmonitor/res/main.html');
-		let tabPane = UIControls.tabs($app.find('.ui-tabs'));
-		tabPane.onTabChanged = (tab) => {
+		let $tabPane = $app.find('ui-tabs');
+		$tabPane[0].onTabChanged = (tab) => {
 			if (tab == 'resources') {
 				this.setupNetworkMonitor();
 			} else {

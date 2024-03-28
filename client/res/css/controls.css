@@ -93,45 +93,6 @@ progress::-webkit-progress-value {
 	background: var(--color);
 }
 
-.ui-tabs {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-}
-
-.ui-tabs .ui-tabs-header {
-	width: 100%;
-	display: flex;
-	font-size: 0;
-}
-
-.ui-tabs .ui-tabs-header button {
-	margin: 0;
-	flex-grow: 1;
-	font-size: 13pt;
-	background-color: transparent;
-	border-bottom: ridge 2px #47F;
-}
-
-.ui-tabs .ui-tabs-header button.selected {
-	border-bottom-color: hsl(320, 70%, 60%);
-	background-color: rgba(255, 255, 255, 0.1);
-}
-
-.ui-tabs .ui-tabs-header button:focus {
-	outline: none;
-}
-
-.ui-tabs .ui-tab {
-	display: none;
-	flex-grow: 1;
-	overflow-y: auto;
-}
-
-.ui-tabs .ui-tab.visible {
-	display: block;
-}
-
 ui-slider {
 	display: inline-block;
 	width: 256px;
