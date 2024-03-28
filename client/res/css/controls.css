@@ -137,3 +137,68 @@ ui-slider {
 	width: 256px;
 	height: 12px;
 }
+
+ui-tabs {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+ui-tabs .ui-tabs-header {
+	width: 100%;
+	display: flex;
+	font-size: 0;
+}
+
+ui-tabs .ui-tabs-switch {
+	flex-grow: 1;
+	margin: 0;
+	padding: .35em .5em;
+	border: none;
+	border-bottom: ridge 2px #47F;
+	font: 13pt 'Tahoma';
+	background-color: rgba(255, 255, 255, 0.075);
+	background-position: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-clip: padding-box;
+	color: white;
+}
+
+ui-tabs .ui-tabs-switch:hover {
+	background-color: rgba(255, 255, 255, 0.15);
+}
+
+ui-tabs .ui-tabs-switch:active {
+	background-color: rgba(0, 0, 0, 0.2);
+	outline: solid 1px #18F;
+}
+
+ui-tabs .ui-tabs-switch:focus {
+	outline: solid 1px #B28;
+}
+
+ui-tabs .ui-tabs-switch:focus-visible {
+	outline: solid 4px #FFF !important;
+	opacity: 1;
+	animation: blinking 500ms ease-in-out;
+}
+
+ui-tabs .ui-tabs-header .ui-tabs-switch.selected {
+	border-bottom-color: hsl(320, 70%, 60%);
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+ui-tabs .ui-tabs-header .ui-tabs-switch:focus {
+	outline: none;
+}
+
+ui-tabs .ui-tab {
+	display: none;
+	flex-grow: 1;
+	overflow-y: auto;
+}
+
+ui-tabs .ui-tab.visible {
+	display: block;
+}

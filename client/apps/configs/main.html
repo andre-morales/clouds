@@ -1,8 +1,8 @@
-<div class='ui-tabs'>
-	<div class='ui-tabs-header'>
-		<button class='button selected' data-tab='general'>General</button>
-		<button class='button' data-tab='debug'>Debug</button>
-	</div>
+<ui-tabs>
+	<nav class='ui-tabs-header'>
+		<button class='ui-tabs-switch selected' data-tab='general'>General</button>
+		<button class='ui-tabs-switch' data-tab='debug'>Debug</button>
+	</nav>
 	<div class='ui-tab general-tab visible' data-tab='general'>
 		<div class='row input'>
 			<span>Background: </span>
@@ -26,6 +26,9 @@
 			<input type="checkbox" class='checkbox use-pdf-viewer'/>
 			<span>Use experimental PDF viewer</span>
 		</label>
+		<select>
+			<option>nice</option>
+		</select>
 		<div class='row'>
 			<button class='button' onclick='throw new Fault("Manually triggered fault.")'>Throw Fault</button>
 			<button class='button' onclick='_systemPanic("Manually triggered panic")'>Trigger Panic</button>
@@ -34,7 +37,7 @@
 			<button class='button' onclick='Client.logout(false);'>Delete Auth Key</button>
 		</div>
 	</div>
-</div>
+</ui-tabs>
 <div class='spacer'>
 </div>
 <nav class="row bottom">

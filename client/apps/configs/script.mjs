@@ -42,8 +42,6 @@ export default class ConfigsApp extends App {
 		// Fetch body
 		await this.window.setContentToUrl('/app/configs/main.html');
 
-		UIControls.tabs($app.find('.ui-tabs'));		
-
 		// Background
 		let $input = $win.find('.background-input');
 		$input.val(Client.desktop.configs.background);
