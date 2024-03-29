@@ -1,6 +1,6 @@
 .*/*
 *.proto
-api/node_modules/*
+node_modules/*
 usr/test/.system/collections.json
 usr/test/.system/favorites.json
 usr/test/.system/desktop.json

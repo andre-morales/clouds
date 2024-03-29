@@ -1,1 +1,1 @@
-node api $@
+node . $@

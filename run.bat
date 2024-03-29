@@ -1,1 +1,1 @@
-@node api --no-warnings
+@node .
