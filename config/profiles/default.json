@@ -13,8 +13,6 @@
 			"acess": "@all"
 		}
 	},
-	
-	"logFSOperations": true,
 
 	"extensions": {
 		"rshell": {

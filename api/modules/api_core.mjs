@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.7.04';
+const KAPI_VERSION = '0.7.06';
 
 // Lib imports
 import Path from 'path';
@@ -10,6 +10,8 @@ import CookieParser from 'cookie-parser';
 import Cors from 'cors';
 import Express from 'express';
 import FileUpload from 'express-fileupload';
+import Morgan from 'morgan';
+import Chalk from 'chalk';
 
 // Local imports
 import { BadAuthException } from './errors.mjs';
@@ -40,6 +42,8 @@ function initExpress() {
 	app = Express();
 
 	// Core request handlers.
+	setupLoggingRouter(app);
+
 	app.use(Cors());
 	app.use(Compression());
 
@@ -101,6 +105,60 @@ function initExpress() {
 
 function initConfig() {
 	Config.init(progArgs);
+}
+
+function setupLoggingRouter(app) {
+	if (!config.log_requests) return;
+
+	app.use(Morgan((tokens, req, res) => {
+		// Query all the information for the log message
+		let ip = tokens['remote-addr'](req, res);
+		let method = tokens.method(req, res);
+		let status = tokens.status(req, res);
+		let url = tokens.url(req, res);
+		let time = tokens['response-time'](req, res);
+
+		// Color response status code according to their category
+		switch (status[0]) {
+		case '2':
+			status = Chalk.green(status);
+			break;
+		case '4':
+			status = Chalk.yellow(status);
+			break;
+		case '5':
+			status = Chalk.red(status);
+			break;
+		}
+
+		// Limit the URL length in the console, only showing the tail part
+		const URL_LENGTH = 40;
+		if (url.length > URL_LENGTH) {
+			url = '…' + url.substring(url.length - URL_LENGTH + 1);
+		} else {
+			url = url.padStart(URL_LENGTH);
+		}
+
+		// Show time in millis or seconds and color slow responses yellow or red
+		let timeMs = Number(time);
+		if (timeMs >= 1000) {
+			time = Chalk.red((timeMs / 1000).toFixed(0) + 's');
+		} else if (timeMs >= 500) {
+			time = Chalk.yellow(timeMs.toFixed(0) + 'ms');
+		} else {
+			time = timeMs.toFixed(0) + 'ms';
+		}
+		time = time.padStart(5);
+
+		let msg = [
+			ip, '|',
+			method,
+			status,
+			url,
+			time
+		].join(' ');
+		return msg;
+	}));
 }
 
 function apiSetupPages() {

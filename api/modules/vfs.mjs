@@ -114,7 +114,7 @@ async function eraseVirtual(user, path) {
 	let fpath = translate(user, path);
 	if (!fpath) return;
 
-	if (config.logFSOperations) {
+	if (config.log_fs_operations) {
 		console.log(`Erasing "${fpath}"`);
 	}
 
@@ -127,7 +127,7 @@ async function renameVirtual(user, path, newPath) {
 	let fNewPath = translate(user, newPath);
 	if (!fPath || !fNewPath) return;
 
-	if (config.logFSOperations) {
+	if (config.log_fs_operations) {
 		console.log(`Renaming "${fPath}" to "${fNewPath}"`);
 	}
 
@@ -140,7 +140,7 @@ async function copyVirtual(user, srcPath, dstPath) {
 	let fDestination = translate(user, dstPath);
 	if (!fSource || !fDestination) return;
 
-	if (config.logFSOperations) {
+	if (config.log_fs_operations) {
 		console.log(`Copying "${fSource}" to "${fDestination}"`);
 	}
 
@@ -168,7 +168,7 @@ async function mkdirVirtual(user, path) {
 	let fPath = translate(user, path);
 	if (!fPath) return;
 
-	if (config.logFSOperations) {
+	if (config.log_fs_operations) {
 		console.log(`New Directory in "${fPath}"`);
 	}
 

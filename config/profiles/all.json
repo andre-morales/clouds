@@ -1,5 +1,6 @@
 {
-	
 	"http_port": 8000,
-	"https_port": null
+	"https_port": null,
+	"log_fs_operations": true,
+	"log_requests": false
 }

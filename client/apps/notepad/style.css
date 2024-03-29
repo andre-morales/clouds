@@ -6,7 +6,7 @@
 .app-notepad textarea {
 	flex-grow: 1;
 	border: none;
-	padding: 0;
+	padding: .25em .5em;
 	outline: none;
 	resize: none;
 }
