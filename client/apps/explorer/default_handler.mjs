@@ -1,3 +1,5 @@
+import { Paths } from 'client/res/js/filesystem.mjs';
+
 export default class ExplorerDefaultHandler {
 	constructor(explorer) {
 		this.explorer = explorer;

@@ -1,3 +1,5 @@
+import { FileSystem, Paths } from '/res/js/filesystem.mjs';
+
 export default class ExplorerUploader {
 	constructor(explorer) {
 		this.explorer = explorer;

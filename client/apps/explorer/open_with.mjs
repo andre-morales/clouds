@@ -1,3 +1,5 @@
+import { Paths } from '/res/js/filesystem.mjs';
+
 export default class ExplorerOpenWith {
 	constructor(explorer) {
 		this.explorer = explorer;
