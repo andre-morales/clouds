@@ -8,8 +8,10 @@ class Taskbar {
 		this.$appsMenu = this.$bar.find('#taskbar-apps-menu');
 		this.noGrouping = false;
 
-		this.$bar.find('.fullscreen-btn').click(() => {
+		this.$bar.find('.fullscreen-btn').click(async () => {
 			let body = $('body')[0];
+
+			let Fullscreen = (await import('/res/js/ui/fullscreen.mjs')).default;
 			if (Fullscreen.element == body) {
 				Fullscreen.leave();
 			} else Fullscreen.on(body);

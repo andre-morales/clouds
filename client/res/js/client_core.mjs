@@ -1,18 +1,10 @@
 var Client;
 
-async function main() {
-	// Load jquery compatible lib
-	await addScript('/res/js/lib/zepto.min.js');
+import * as Dialogs from './ui/dialogs.mjs';
+import Util from './util.mjs';
+import Desktop from './ui/desktop.mjs';
 
-	// Early unhandled errors and rejections should bring immediate user attention in the form
-	// of a system panic
-	window.onerror = (err) => {
-		_systemPanic("Unhandled error", err, true);
-	};
-	window.onunhandledrejection = (ev) => {
-		_systemPanic("Unhandled promise error", ev.reason, true);
-	};
-
+export async function main() {
 	// Fetch desktop page and display the system version on the page
 	let desktopPageProm = fetch('/page/desktop').then(fres => {
 		if (fres.status != 200) {
@@ -36,20 +28,17 @@ async function main() {
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
 		addScript('/res/js/faults.js'),
-		addScript('/res/js/events.js'),
 		addScript('/res/js/util.js'),
+		addScript('/res/js/events.js'),
 		addScript('/res/js/filesystem.js'),
 		addScript('/res/js/app.js'),
-		addScript('/res/js/ui/desktop.js'),
 		addScript('/res/js/ui/taskbar.js'),
 		addScript('/res/js/lib/hammer.min.js'),
 		addScript('/res/js/ui/context_menu.js'),
 		addScript('/res/js/ui/window.js'),
 		addScript('/res/js/ui/dialogs.js'),
 		addScript('/res/js/audiosystem.js'),
-		addScript('/res/js/ui/controls.js'),
-		addModule('/res/js/ui/controls/slider.mjs'),
-		addModule('/res/js/media_sess_bridge.mjs')
+		addScript('/res/js/ui/controls.js')
 	]);
 
 	// Schedule loading of main styles
@@ -64,11 +53,16 @@ async function main() {
 
 	// Instatiate system
 	Client = new ClientClass();
+	window.Client = Client;
 	await Client.init();
 
 	destroyElementById('loading-screen');
 
-	Client.start(getURLParams());
+	Client.start(Util.getURLParams());
+}
+
+export function get() {
+	return Client;
 }
 
 class ClientClass {
@@ -462,71 +456,4 @@ class ClientClass {
 	}
 }
 
-class LocalClipboard {
-	static async saveObject(type, object) {
-		this.object = object;
-		this.type = type;
-	}
-
-	static async getObject() {
-		return this.object;
-	}	
-
-	static async getType() {
-		return this.type;
-	}
-
-	static clear() {
-		this.object = null;
-		this.type = null;
-	}
-}
-
-function _systemPanic(reason, detail, mode) {
-	console.error('--- SYSTEM PANIC ---');
-	// Initialize a counter to keep incrementing the z-index
-	let self = _systemPanic;
-	self.counter = self.counter || 1024;
-	let index = self.counter++;
-
-	let $box = $(`<div class='panic-screen' style="z-index: ${index}; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: black; color: white;">`);
-
-	let $title;
-	if (mode) {
-		$title = $("<h1>-- Startup Failed --</h1>");
-	} else {
-		$title = $("<h1>-- System Panic --</h1>");
-	}
-
-	let $text = $(`<div></div>`);
-	if (reason) {
-		$text.append(`<p><b>Reason: </b>${reason}</p>`);
-	}
-	if (detail) {
-		$text.append(`<p><b>Detail: </b>${detail}</p>`);
-	}
-	$text.append(`<p><b>System: </b>${navigator.userAgent}</p>`);
-
-	let stack = Error().stack;
-	if (stack) {
-		$text.append(`<p><b>Trigger Stack: </b>${stack}</p>`);
-	}
-
-	let $dismiss = $("<button>Dismiss</button>");
-	$dismiss.click(() => {
-		$box.remove();
-	});
-	
-	if (mode) {
-		$box.css('background', '#503');
-	} else {
-		$box.css('background', '#58A');
-	}
-
-	$box.append($title);
-	$box.append($text);
-	$box.append($dismiss);
-	$('body').append($box);
-}
-
-main();
+export default { get };

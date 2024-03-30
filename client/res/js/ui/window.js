@@ -488,7 +488,9 @@ class Window {
 	goFullscreen() {
 		if (this.minimized) this.restore();
 
-		Fullscreen.on(this.$window.find('.window-body')[0]);
+		import('/res/js/ui/fullscreen.mjs').then(M => {
+			M.default.on(this.$window.find('.window-body')[0]);
+		});
 	}
 
 	setMaximized(max) {

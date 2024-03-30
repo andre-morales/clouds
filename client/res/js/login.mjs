@@ -1,6 +1,6 @@
 import * as Entry from './entry.mjs';
 
-function initLogin() {
+export function initLogin() {
 	// Set title
 	document.title = 'Auth - Clouds';
 
@@ -55,5 +55,3 @@ function authFail() {
 	let el = document.querySelector('#login-screen .status');
 	el.innerHTML = 'Auth failed.';
 }
-
-initLogin();

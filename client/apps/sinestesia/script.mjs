@@ -1,3 +1,5 @@
+import Fullscreen from '/res/js/ui/fullscreen.mjs';
+
 export default class SinestesiaApp extends App {
 	constructor(...args) {
 		super(...args);
