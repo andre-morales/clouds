@@ -6,8 +6,9 @@ function addScript(src, id) {
 
 	document.head.appendChild(elem);
 
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		elem.addEventListener('load', resolve);
+		elem.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
 	});
 }
 
@@ -19,8 +20,9 @@ function addModule(src, id) {
 	
 	document.head.appendChild(elem);
 
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		elem.addEventListener('load', resolve);
+		elem.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
 	});
 }
 
@@ -32,8 +34,9 @@ function addStylesheet(src, id) {
 
 	document.head.appendChild(style);
 
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		style.addEventListener('load', resolve);
+		style.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
 	});
 }
 

@@ -48,12 +48,16 @@ export async function main() {
 	]);
 
 	// Wait for scripts and styles
+	console.log("Scheduled all main resources.");
+	
 	await scriptsPromises;
+	console.log("Scripts finished loading.");
+	
 	await stylesPromises;
+	console.log("Styles finished loading.");
 
 	// Instatiate system
 	Client = new ClientClass();
-	window.Client = Client;
 	await Client.init();
 
 	destroyElementById('loading-screen');
@@ -77,6 +81,10 @@ class ClientClass {
 	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 
 	async init() {
+		// Export global names
+		window.Client = Client;
+		window.App = App;
+
 		// Start logging record
 		this.logHistory = '[Begin]\n';
 		this.setupLogging();
@@ -385,8 +393,8 @@ class ClientClass {
 		};
 
 		window.onunhandledrejection = (ev) => {
-			this.log(`[Error] Unhandled rejection: ${ev.reason}`);
-			this.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}`);
+			this.log(`[Error] Unhandled rejection: ${ev.stack}`);
+			this.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}`, ev.reason);
 		};
 	}
 
@@ -427,16 +435,26 @@ class ClientClass {
 		return err.stack;
 	}
 
-	showErrorDialog(title, msg) {
+	showErrorDialog(title, msg, error) {
 		try {
 			let [win, p] = Dialogs.showError(this.desktop.dwm, title, msg);
 			win.$window.find('.options button').focus();
 		} catch (err) {
-			console.log("---- Couldn't display error message ----");
+			console.log("---- Couldn't display the error ----");
+			console.error(error);
+			console.log("------------- Due to ---------------")
 			console.error(err);
-			console.log("----------------------------------------")
+			console.log("------------------------------------")
+
+			// If the dialog has an optional error object, show it
 			let causeString = (err.stack) ? err.stack : err;
-			let panicMsg = `Couldn't show [${title}]: "${msg}".\n\n<b>Cause: </b>${causeString}`;
+			let errorDetail = '';
+			if (error && error.stack) {
+				errorDetail = `<b>Error: </b>${error.stack}\n`;
+			}
+
+			let originalErrStr = `[${title}]: "${msg}".\n${errorDetail}`;
+			let panicMsg = `Couldn't show ${originalErrStr}\n<b>Display Failure Cause: </b>${causeString}`;
 			_systemPanic("No Error Display", panicMsg);
 		}
 	}

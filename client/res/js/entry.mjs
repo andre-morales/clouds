@@ -78,7 +78,7 @@ function _systemPanic(reason, detail, mode) {
 
 	let $text = $(`<div></div>`);
 	if (reason) {
-		$text.append(`<p><b>Reason: </b>${reason}</p>`);
+		$text.append(`<p><b><u>${reason}</u></b></p>`);
 	}
 	if (detail) {
 		$text.append(`<p><b>Detail: </b>${detail}</p>`);

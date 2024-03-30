@@ -46,7 +46,8 @@ body {
 .panic-screen {
 	overflow-x: hidden;
 	overflow-y: auto;
-	text-align: center;
+	padding-left: 1rem;
+	text-align: left;
 	background: #115;
 	color: white;
 }
