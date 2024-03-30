@@ -38,10 +38,16 @@ export async function initDesktop() {
 	// Early unhandled errors and rejections should bring immediate user attention in the form
 	// of a system panic
 	window.onerror = (err) => {
-		_systemPanic("Unhandled error", err, true);
+		_systemPanic("Unhandled Error", err, true);
 	};
+
 	window.onunhandledrejection = (ev) => {
-		_systemPanic("Unhandled promise error", ev.reason, true);
+		let detail;
+		if (ev.reason) {
+			let trace = (ev.reason.stack) ? ev.reason.stack : 'unavailable';
+			detail = `${ev.reason}\n trace: ${trace}`;
+		}
+		_systemPanic("Unhandled Promise Error", detail, true);
 	};
 
 	// Add system script and let it do the setup

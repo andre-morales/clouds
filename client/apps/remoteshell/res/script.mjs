@@ -1,4 +1,5 @@
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import Util from '/res/js/util.mjs';
 
 export default class RemoteShellApp extends App {
 	constructor(...args) {
@@ -87,7 +88,7 @@ export default class RemoteShellApp extends App {
 
 		// Make the window visible
 		this.window.setVisible(true);
-		await sleep(0);
+		await Util.sleep(0);
 		$field.focus();
 	}
 

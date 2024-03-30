@@ -1,3 +1,5 @@
+import Dialogs from '/res/js/ui/dialogs.mjs';
+
 export default class ConfigsApp extends App {
 	constructor(...args) {
 		super(...args);

@@ -1,3 +1,6 @@
+import { Reactor } from '../events.mjs';
+import { FileSystem } from '../filesystem.mjs';
+import Util from '../util.mjs';
 import Fullscreen from './fullscreen.mjs';
 import TaskbarM from './taskbar.mjs'
 import Window from './window.mjs';
@@ -117,7 +120,7 @@ export class Desktop {
 
 	destroyWindow(win) {
 		// Remove window from windows list
-		if (arrErase(this.windows, win) < 0) return;
+		if (Util.arrErase(this.windows, win) < 0) return;
 
 		// Dispatch closed event
 		win.events.dispatch('closed');
@@ -131,7 +134,7 @@ export class Desktop {
 		win._dispose();
 		
 		// Remove window from list
-		arrErase(win.app.windows, win);
+		Util.arrErase(win.app.windows, win);
 
 		// If this was the main window, exit the owner app
 		if (win.app.exitMode == 'last-win-closed') {

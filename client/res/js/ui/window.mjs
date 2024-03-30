@@ -1,4 +1,6 @@
+import { Reactor, ReactorEvent } from '/res/js/events.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
+import Util from '/res/js/util.mjs';
 
 export default class Window {
 	constructor(app) {
@@ -42,9 +44,14 @@ export default class Window {
 		if (this.destroyed) return;	
 		this.destroyed = true;
 
+		// If this is the app main window, save its state
 		if (this.app.mainWindow == this) {
 			this.saveState();
 		}	
+
+		for (let child of this.children) {
+			Client.desktop.destroyWindow(child);
+		}
 
 		// Optimization: Nullify all sources of media this window contained.
 		// This cancels the fetch of any resources this window could make
@@ -64,7 +71,7 @@ export default class Window {
 		if (this.$window) throw IllegalStateFault('Double initialization of window object.');
 
 		// Instantiation
-		let $win = $(cloneTemplate('window')).find('.window');
+		let $win = $(Util.cloneTemplate('window')).find('.window');
 		Client.desktop.$windows.append($win);
 		this.optionsCtxMenu = this.makeOptionsCtxMenu();
 
@@ -94,9 +101,6 @@ export default class Window {
 		$win.find('.close-btn').click(() => {
 			let closingev = new ReactorEvent();
 			this.dispatch('closing', closingev);
-
-			let event = new ReactorEvent();
-			this.dispatch('closereq', event);
 		});
 
 		this.events.default('closing', (ev) => {
@@ -288,7 +292,7 @@ export default class Window {
 		this.$window.css('height', '');
 
 		// Wait an engine cycle to update the layout
-		await sleep(0);
+		await Util.sleep(0);
 
 		// Get computed dimensions and compensate 2px for borders		
 		let ow = this.$window.width() + 2;

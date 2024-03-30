@@ -1,3 +1,4 @@
+import Dialogs from '/res/js/ui/dialogs.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
 
 export default class NotepadApp extends App {

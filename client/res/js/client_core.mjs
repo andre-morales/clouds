@@ -6,6 +6,9 @@ import Desktop from './ui/desktop.mjs';
 import UIControls from './ui/controls.mjs';
 import App from './app.mjs';
 import Resource from './resource.mjs';
+import { FileSystem } from './filesystem.mjs';
+import { AudioSystem } from './audiosystem.mjs';
+import { Reactor } from './events.mjs';
 
 export async function main() {
 	// Fetch desktop page and display the system version on the page
@@ -30,12 +33,7 @@ export async function main() {
 
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
-		addScript('/res/js/faults.js'),
-		addScript('/res/js/util.js'),
-		addScript('/res/js/events.js'),
-		addScript('/res/js/filesystem.js'),
 		addScript('/res/js/lib/hammer.min.js'),
-		addScript('/res/js/audiosystem.js'),
 	]);
 
 	// Schedule loading of main styles
@@ -84,7 +82,7 @@ class ClientClass {
 
 		// Start logging record
 		this.logHistory = '[Begin]\n';
-		this.setupLogging();
+		this.initLogging();
 
 		// Create main structures
 		this.runningApps = [];
@@ -105,11 +103,11 @@ class ClientClass {
 		// Create desktop subsystem
 		this.desktop = new Desktop();
 
-		// Save current page on history
-		history.pushState(null, null, location.href);
+		this.initGraphicalErrors();
 
-		// Track back button press
+		// Save current page on history and rack back button press
 		let btime = 0;
+		history.pushState(null, null, location.href);
 		window.addEventListener('popstate', () => {
 			let time = new Date().getTime()
 			let dt = time - btime;
@@ -248,7 +246,7 @@ class ClientClass {
 			return app;
 		} catch (err) {
 			Client.logError(err);	
-			this.showErrorDialog('App Initialization', err);
+			this.showErrorDialog('App Initialization', err, err);
 		}
 		return null;
 	}
@@ -262,7 +260,7 @@ class ClientClass {
 		instance._dispose();
 
 		// Remove app from app list
-		arrErase(this.runningApps, instance);
+		Util.arrErase(this.runningApps, instance);
 		this.dispatch('apps-rem');
 	}
 
@@ -361,7 +359,6 @@ class ClientClass {
 		}
 	}
 
-
 	downloadUrl(path) {
 		let link = document.createElement('a');
 		link.style.display = 'none';
@@ -376,23 +373,44 @@ class ClientClass {
 		return this.mediaSessionBridge.registerMediaElement(elem);
 	}
 
-	// -- Logging --
-	setupLogging() {
-		window.onerror = (msg, file, line, col, err) => {
-			let lmsg = `[Error] Unhandled error "${msg}"\n    at: ${file}:${line}\n  says: ${err}\n stack: `;
-			if (err.stack) {
-				lmsg += err.stack;
+	initLogging() {
+		window.addEventListener('error', (ev) => {
+			let lmsg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
+			if (ev.error.stack) {
+				lmsg += ev.error.stack;
 			} else {
 				lmsg += 'unavailable';
 			}
 			this.log(lmsg);
-			this.showErrorDialog("Error", `Unhandled error\n\n${msg}`);
-		};
+		});
 
-		window.onunhandledrejection = (ev) => {
-			this.log(`[Error] Unhandled rejection: ${ev.stack}`);
-			this.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}`, ev.reason);
-		};
+		window.addEventListener('unhandledrejection', (ev) => {
+			this.log(`[Error] Unhandled rejection: ${ev.reason.stack}`);
+		});
+	}
+
+	initGraphicalErrors() {
+		window.addEventListener('error', (ev) => {
+			let lmsg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
+			if (ev.error.stack) {
+				lmsg += ev.error.stack;
+			} else {
+				lmsg += 'unavailable';
+			}
+			let stack = '';
+			if (ev.error.stack) {
+				stack = `\n${ev.error.stack}`;
+			}
+			this.showErrorDialog("Error", `Unhandled error:\n${ev.message}${stack}`);
+		});
+		
+		window.addEventListener('unhandledrejection', (ev) => {
+			this.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}\n${ev.reason.stack}`, ev.reason);
+		});
+
+		// Disable entry-level error handlers
+		window.onerror = undefined;
+		window.onunhandledrejection = undefined;
 	}
 
 	log(msg) {

@@ -1,5 +1,4 @@
-
-class AudioSystem {
+export class AudioSystem {
 	constructor() {
 		this.enabled = false;
 		this.initialized = false;
@@ -146,3 +145,5 @@ class AudioSystem {
 		}
 	}
 }
+
+export default { AudioSystem };

@@ -1,6 +1,8 @@
 import LocalClipboard from '/res/js/clipboard.mjs';
 import Dialogs from '/res/js/ui/dialogs.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import { FileSystem, Paths } from '/res/js/filesystem.mjs';
+import { Deferred } from '/res/js/events.mjs';
 
 import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';

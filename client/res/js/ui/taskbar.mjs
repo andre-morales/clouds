@@ -1,3 +1,5 @@
+import Util from '../util.mjs';
+
 export class Taskbar {
 	constructor() {
 		this.buttons = [];
@@ -129,11 +131,11 @@ class TaskbarButton {
 	}
 
 	removeWindow(win) {
-		arrErase(this.windows, win);
+		Util.arrErase(this.windows, win);
 
 		// If all windows were closed
 		if (this.windows.length == 0) {
-			arrErase(Client.desktop.taskbar.buttons, this.taskButton);
+			Util.arrErase(Client.desktop.taskbar.buttons, this.taskButton);
 
 			this.$button.remove();
 			this.$button = null;

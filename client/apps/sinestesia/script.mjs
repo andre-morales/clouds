@@ -1,4 +1,5 @@
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import { FileSystem, Paths, FileTypes } from '/res/js/filesystem.mjs';
 import Fullscreen from '/res/js/ui/fullscreen.mjs';
 
 export default class SinestesiaApp extends App {
@@ -28,7 +29,6 @@ export default class SinestesiaApp extends App {
 		this.on('exit', () => {
 			this.playlist = null;
 			this.cancelPauseEvents = false;
-			this.unload();
 		});
 
 		// Create window and fetch app body
@@ -41,6 +41,9 @@ export default class SinestesiaApp extends App {
 			} else {
 				this.exit();
 			}
+		});
+		this.window.on('closing', () => {
+			this.unload();
 		});
 		this.window.setTitle('Sinestesia');
 
@@ -405,7 +408,7 @@ export default class SinestesiaApp extends App {
 			let nextUrl = '/fsv' + this.playlist.dir + nextFile;
 			this.openFile(nextUrl);
 
-			await sleep(100);
+			await Util.sleep(100);
 			this.play();
 		}
 	}
@@ -423,7 +426,7 @@ export default class SinestesiaApp extends App {
 
 			this.openFile(prevUrl);
 
-			await sleep(100);
+			await Util.sleep(100);
 			this.play();
 		}
 	}

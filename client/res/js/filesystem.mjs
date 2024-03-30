@@ -1,4 +1,7 @@
-class FileSystem {
+import Util from '/res/js/util.mjs';
+import { Exception } from '/res/js/faults.mjs';
+
+export class FileSystem {
 	static async readText(path) {
 		let res = await fetch(Paths.toFSV(path));
 		return await res.text();
@@ -110,7 +113,7 @@ class FileSystem {
 	}
 }
 
-class Paths {
+export class Paths {
 	static toFS(path, op) {
 		// If it is already a FS path, replace the op	
 		if (Paths.isFS(path)) {
@@ -229,25 +232,25 @@ class Paths {
 	}
 }
 
-class FileTypes {
+export class FileTypes {
 	static isDir(path) {
 		return path.endsWith('/');
 	}
 
 	static isVideo(path) {
-		return endsWithArr(path, ['.mp4', '.mkv', '.webm', '.m4v']);
+		return Util.endsWithAny(path, ['.mp4', '.mkv', '.webm', '.m4v']);
 	}
 
 	static isPicture(path) {
-		return endsWithArr(path, ['.png', '.jpg', '.jpeg', '.webp']);
+		return Util.endsWithAny(path, ['.png', '.jpg', '.jpeg', '.webp']);
 	}
 
 	static isAudio(path) {
-		return endsWithArr(path, ['.mp3', '.ogg', 'm4a', '.opus', '.weba']);
+		return Util.endsWithAny(path, ['.mp3', '.ogg', 'm4a', '.opus', '.weba']);
 	}
 	
 	static isText(path) {
-		return endsWithArr(path, ['.txt', '.json']);
+		return Util.endsWithAny(path, ['.txt', '.json']);
 	}
 	
 	static isMedia(path) {
@@ -255,7 +258,7 @@ class FileTypes {
 	}
 }
 
-class FileSystemException extends Exception {
+export class FileSystemException extends Exception {
 	constructor(message) {
 		super(message);
 		this.name = "FileSystemException";

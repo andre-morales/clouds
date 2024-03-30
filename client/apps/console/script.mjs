@@ -1,4 +1,5 @@
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import Util from '/res/js/util.mjs';
 
 export default class ConsoleApp extends App {
 	constructor(...args) {
@@ -63,7 +64,7 @@ export default class ConsoleApp extends App {
 
 	async doSuggestions() {
 		// Wait a cycle for input field update
-		await sleep(0);
+		await Util.sleep(0);
 
 		// Clear the current suggestions. If the field is empty, don't suggest anything
 		this.$suggestions.empty();
@@ -84,7 +85,7 @@ export default class ConsoleApp extends App {
 		}
 
 		// Get the object itself and list the properties that start with the same name
-		let object = getObjectByName(objectName);
+		let object = Util.getObjectByName(objectName);
 		let suggestionAmount = 0;
 		for (let key in object) {
 			if (suggestionAmount > 5) break;

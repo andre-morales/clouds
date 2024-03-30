@@ -1,3 +1,5 @@
+import { Reactor } from './events.mjs';
+
 export default class App {
 	constructor(manifest, args) {
 		if (!manifest) throw new InternalFault("Apps need a manifest");
@@ -28,7 +30,8 @@ export default class App {
 		}
 
 		// Destroy all windows owned by this app
-		for (let win of this.windows) {
+		while (this.windows.length > 0) {
+			let win = this.windows[0];
 			Client.desktop.destroyWindow(win);
 		}
 

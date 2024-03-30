@@ -1,3 +1,6 @@
+import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import { FileSystem, Paths, FileTypes } from '/res/js/filesystem.mjs';
+
 export class FilePanel {
 	constructor(explorer) {
 		this.app = explorer;

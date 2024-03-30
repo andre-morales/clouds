@@ -115,6 +115,7 @@ function setupLoggingRouter(app) {
 		let ip = tokens['remote-addr'](req, res);
 		let method = tokens.method(req, res);
 		let status = tokens.status(req, res);
+		if (!status) status = '???';
 		let url = tokens.url(req, res);
 		let time = tokens['response-time'](req, res);
 

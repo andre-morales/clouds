@@ -1,4 +1,5 @@
 import Client from '../client_core.mjs';
+import { Deferred } from '../events.mjs';
 
 export function showOptions(app, title, msg, options, settings = {}) {
 	if (!msg) msg = "";

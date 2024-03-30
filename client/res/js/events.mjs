@@ -1,11 +1,13 @@
-class ReactorClass {
+import Util from './util.mjs';
+
+export class ReactorClass {
 	constructor() {
 		this.listeners = [];
 		this.defaultHandler = null;
 	}
 }
 
-class Reactor {
+export class Reactor {
 	constructor() {
 		this.classes = {};
 	}
@@ -36,7 +38,7 @@ class Reactor {
 		let list = this.classes[name];
 		if (!list) throw Error(`No class ${name} registered.`);
 
-		arrErase(list.listeners, callback);
+		Util.arrErase(list.listeners, callback);
 	}
 
 	default(name, callback) {
@@ -46,7 +48,8 @@ class Reactor {
 		evclass.defaultHandler = callback;
 	}
 
-	dispatch(name, event, handler) {
+	// Invoke event handlers immediatly
+	fire(name, event, handler) {
 		let evclass = this.classes[name];
 		if (!evclass) throw Error(`No class ${name} registered.`);
 
@@ -68,9 +71,19 @@ class Reactor {
 			evclass.defaultHandler(event);
 		}
 	}
+
+	// Invoke event handlers in the next cycle of the engine
+	dispatch(name, event, handler) {
+		return new Promise((resolve) => {
+			setTimeout(() => {
+				this.fire(name, event, handler);
+				resolve();
+			}, 0);
+		});
+	}
 }
 
-class Deferred {
+export class Deferred {
 	constructor() {
 		this.promise = new Promise((resolve, reject) => {
 			this.reject = reject
@@ -79,7 +92,7 @@ class Deferred {
 	}
 }
 
-class ReactorEvent {
+export class ReactorEvent {
 	constructor() {
 		this.canceled = false;
 	}

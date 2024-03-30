@@ -24,7 +24,7 @@ export function arrErase(arr, val) {
 	return i;
 }
 
-export function endsWithArr(str, arr) {
+export function endsWithAny(str, arr) {
 	for (let end of arr) {
 		if (str.endsWith(end)) return true;
 	}
@@ -41,4 +41,4 @@ export function getURLParams() {
 	});
 }
 
-export default { cloneTemplate, getURLParams };
+export default { getObjectByName, cloneTemplate, arrErase, endsWithAny, sleep, getURLParams };

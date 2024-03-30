@@ -1,4 +1,4 @@
-'use strict';
+import { Paths } from './filesystem.mjs';
 
 var activeMediaElements = null;
 var currentMedia = null;
