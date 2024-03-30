@@ -1,6 +1,4 @@
-"use strict"
-
-class CtxMenuClass {
+export class CtxMenuClass {
 	constructor(entr, label) {
 		this.entries = (entr) ? entr : [];
 		this.label = label;
@@ -74,7 +72,7 @@ class CtxMenuClass {
 	}
 }
 
-class CtxItemClass {
+export class CtxItemClass {
 	constructor(label, action) {
 		this.label = label;
 		this.action = action;
@@ -87,21 +85,21 @@ class CtxItemClass {
 	}
 }
 
-class CtxCheckClass extends CtxItemClass {
+export class CtxCheckClass extends CtxItemClass {
 	constructor(label, action, checked) {
 		super(label, action);
 		this.checked = Boolean(checked);
 	}
 }
 
-function CtxMenu() {
+export function CtxMenu() {
 	return new CtxMenuClass(...arguments);
 }
 
-function CtxItem() {
+export function CtxItem() {
 	return new CtxItemClass(...arguments);
 }
 
-function CtxCheck() {
+export function CtxCheck() {
 	return new CtxCheckClass(...arguments);
 }

@@ -1,3 +1,5 @@
+import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+
 export default class ConsoleApp extends App {
 	constructor(...args) {
 		super(...args);

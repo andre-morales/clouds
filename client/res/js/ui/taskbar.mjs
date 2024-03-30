@@ -1,4 +1,4 @@
-class Taskbar {
+export class Taskbar {
 	constructor() {
 		this.buttons = [];
 		this.DEFAULT_TASKBAR_ICON = '/res/img/icons/windows64.png';
@@ -242,3 +242,5 @@ class TaskbarButton {
 		this.$count.text((count >= 2) ? count : '');
 	}
 }
+
+export default { Taskbar }

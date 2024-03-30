@@ -1,8 +1,11 @@
+import LocalClipboard from '/res/js/clipboard.mjs';
+import Dialogs from '/res/js/ui/dialogs.mjs';
+import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+
 import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
 import ExplorerOpenWith from './open_with.mjs';
 import ExplorerDefaultHandler from './default_handler.mjs';
-import LocalClipboard from '/res/js/clipboard.mjs';
 
 export default class ExplorerApp extends App {
 	constructor(...args) {

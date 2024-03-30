@@ -1,4 +1,6 @@
-window.RemoteShellApp = class RemoteShellApp extends App {
+import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+
+export default class RemoteShellApp extends App {
 	constructor(...args) {
 		super(...args);
 		this.window = null;

@@ -48,3 +48,5 @@ export function showError(app, title, msg) {
 	});
 	return [win, prom];
 }
+
+export default { showOptions, showError };

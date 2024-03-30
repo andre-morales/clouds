@@ -3,6 +3,9 @@ var Client;
 import * as Dialogs from './ui/dialogs.mjs';
 import Util from './util.mjs';
 import Desktop from './ui/desktop.mjs';
+import UIControls from './ui/controls.mjs';
+import App from './app.mjs';
+import Resource from './resource.mjs';
 
 export async function main() {
 	// Fetch desktop page and display the system version on the page
@@ -31,14 +34,8 @@ export async function main() {
 		addScript('/res/js/util.js'),
 		addScript('/res/js/events.js'),
 		addScript('/res/js/filesystem.js'),
-		addScript('/res/js/app.js'),
-		addScript('/res/js/ui/taskbar.js'),
 		addScript('/res/js/lib/hammer.min.js'),
-		addScript('/res/js/ui/context_menu.js'),
-		addScript('/res/js/ui/window.js'),
-		addScript('/res/js/ui/dialogs.js'),
 		addScript('/res/js/audiosystem.js'),
-		addScript('/res/js/ui/controls.js')
 	]);
 
 	// Schedule loading of main styles
@@ -76,7 +73,7 @@ class ClientClass {
 		this.BUILD_TEXT = ClientClass.BUILD_TEXT;
 	}
 
-	static get CLIENT_VERSION() { return '1.0.187'; }
+	static get CLIENT_VERSION() { return '1.0.190'; }
 	static get BUILD_STRING() { return `${this.CLIENT_VERSION} Early Test 2`; }
 	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 

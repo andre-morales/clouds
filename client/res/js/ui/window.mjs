@@ -1,4 +1,6 @@
-class Window {
+import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
+
+export default class Window {
 	constructor(app) {
 		if (!app) throw new InternalFault("Windows must have valid owner apps.");
 

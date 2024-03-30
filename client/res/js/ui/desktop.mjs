@@ -1,4 +1,8 @@
 import Fullscreen from './fullscreen.mjs';
+import TaskbarM from './taskbar.mjs'
+import Window from './window.mjs';
+import App from '../app.mjs';
+import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
 
 export class Desktop {
 	constructor() {
@@ -13,7 +17,7 @@ export class Desktop {
 		this.iconifiedGroups = {};
 		this.$desktop = $('.desktop');
 		this.$windows = $('.windows');
-		this.taskbar = new Taskbar();
+		this.taskbar = new TaskbarM.Taskbar();
 		this.$contextMenu = $('.context-menu');
 		this.focusedWindow = null;
 		this.mouseX = 0;
