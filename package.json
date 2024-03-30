@@ -2,6 +2,7 @@
   "name": "clouds",
   "version": "1.0.0",
   "description": "",
+  "private": true,
   "main": "api/modules/entry.mjs",
   "type": "module",
   "scripts": {

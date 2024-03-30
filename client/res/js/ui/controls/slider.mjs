@@ -107,7 +107,7 @@ export class UISlider extends HTMLElement {
 async function doStaticInitialization() {
 	staticInit = true;
 	stylesheet = new CSSStyleSheet();
-	fetch('/res/ui/slider.css')
+	fetch('/res/css/slider.css')
 		.then(res => res.text())
 		.then(css => stylesheet.replace(css));
 }

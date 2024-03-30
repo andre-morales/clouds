@@ -6,7 +6,7 @@ export async function entry() {
 		let res = await fetch('/page/login');
 		document.body.innerHTML = await res.text();
 
-		(await import('/res/js/login.mjs')).initLogin();
+		(await import('/res/boot/login.mjs')).initLogin();
 	}
 }
 
@@ -33,7 +33,7 @@ export async function initDesktop() {
 	window._systemPanic = _systemPanic;
 
 	// Load jquery compatible lib
-	await addScript('/res/js/lib/zepto.min.js');
+	await addScript('/res/lib/zepto.min.js');
 
 	// Early unhandled errors and rejections should bring immediate user attention in the form
 	// of a system panic

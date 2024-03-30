@@ -3,12 +3,13 @@ var Client;
 import * as Dialogs from './ui/dialogs.mjs';
 import Util from './util.mjs';
 import Desktop from './ui/desktop.mjs';
-import UIControls from './ui/controls.mjs';
+import UIControls from './ui/controls/controls.mjs';
 import App from './app.mjs';
 import Resource from './resource.mjs';
 import { FileSystem } from './filesystem.mjs';
 import { AudioSystem } from './audiosystem.mjs';
 import { Reactor } from './events.mjs';
+import * as MediaSessionBridge from './media_sess_bridge.mjs';
 
 export async function main() {
 	// Fetch desktop page and display the system version on the page
@@ -33,7 +34,7 @@ export async function main() {
 
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
-		addScript('/res/js/lib/hammer.min.js'),
+		addScript('/res/lib/hammer.min.js'),
 	]);
 
 	// Schedule loading of main styles
@@ -131,7 +132,7 @@ class ClientClass {
 		this.desktop.setupApps();
 
 		// Media Session bridge
-		this.mediaSessionBridge = await import('/res/js/media_sess_bridge.mjs');
+		this.mediaSessionBridge = MediaSessionBridge;
 		this.mediaSessionBridge.init();
 
 		// Initialize audio subsystem

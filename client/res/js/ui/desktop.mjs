@@ -164,6 +164,13 @@ export class Desktop {
 		return [rect.width, rect.height];
 	}
 
+	getDefaultWindowSize() {
+		let rect = this.getWindowingArea();
+		let w = (rect[0] * 0.9 < 512) ? rect[0] * 0.9 : 512;
+		let h = (rect[1] * 0.9 < 768) ? rect[1] * 0.9 : 768;
+		return [w, h];
+	}
+
 	// Repositions the window so that it doesn't stay directly on top of any other window
 	realignWindow(win) {
 		if (win.maximized) return;

@@ -1,6 +1,6 @@
-import { Reactor, ReactorEvent } from '/res/js/events.mjs';
+import { Reactor, ReactorEvent } from '../events.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
-import Util from '/res/js/util.mjs';
+import Util from '../util.mjs';
 
 export default class Window {
 	constructor(app) {
@@ -160,8 +160,9 @@ export default class Window {
 		}
 
 		// If dimensions are still way too small, set them to a default reasonable amount
-		if (this.width < 32 || this.height < 32) {
-			this.setSize(360, 240);
+		if (this.width < 128 || this.height < 128) {
+			let size = Client.desktop.getDefaultWindowSize();
+			this.setSize(size[0], size[1]);
 		}
 
 		if (this._initialPosition == 'center') {
@@ -494,7 +495,7 @@ export default class Window {
 	goFullscreen() {
 		if (this.minimized) this.restore();
 
-		import('/res/js/ui/fullscreen.mjs').then(M => {
+		import('./fullscreen.mjs').then(M => {
 			M.default.on(this.$window.find('.window-body')[0]);
 		});
 	}

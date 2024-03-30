@@ -1,8 +1,13 @@
+# Any dot file or folder is never added
 .*/*
-*.proto
+
+# Modules should be obtained from npm
 node_modules/*
+
+# Private user files
 usr/test/.system/collections.json
 usr/test/.system/favorites.json
 usr/test/.system/desktop.json
-client/apps/_graveyard/*
+
+# SSL configuration should be kept private
 config/ssl/*

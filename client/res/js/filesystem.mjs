@@ -1,5 +1,5 @@
-import Util from '/res/js/util.mjs';
-import { Exception } from '/res/js/faults.mjs';
+import Util from './util.mjs';
+import { Exception } from './faults.mjs';
 
 export class FileSystem {
 	static async readText(path) {

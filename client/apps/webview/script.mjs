@@ -59,7 +59,7 @@ export default class WebViewApp extends App {
 		this.window.setTitle(Paths.file(path));
 
 		if (path.endsWith('.pdf') && Client.desktop.configs.use_pdf_viewer) {
-			this.$iframe[0].src = `/res/pdfjs.proto/2.16.105-legacy/web/viewer.html?file=${encodeURIComponent(path)}`;
+			this.$iframe[0].src = `/res/lib/pdfjs.proto/2.16.105-legacy/web/viewer.html?file=${encodeURIComponent(path)}`;
 		} else {
 			this.$iframe[0].src = path;	
 		}
