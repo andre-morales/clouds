@@ -34,7 +34,8 @@ export async function main() {
 
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
-		addScript('/res/lib/hammer.min.js'),
+		addScript('/res/js/public.bundle.js'),
+		addScript('/res/lib/hammer.min.js')
 	]);
 
 	// Schedule loading of main styles
@@ -208,7 +209,7 @@ class ClientClass {
 
 				// Import first module
 				let moduleName = modules[0];
-				let namespace = await import(moduleName);
+				let namespace = await IMPORT(moduleName);
 
 				AppClass = namespace.default;
 			}

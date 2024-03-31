@@ -81,3 +81,7 @@ function strReplaceAll(text, token, newToken) {
 
 	return text.replace(regexp, newToken);
 }
+
+function IMPORT(path) {
+	return import(path);
+}

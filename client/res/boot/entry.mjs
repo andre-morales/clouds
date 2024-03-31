@@ -51,7 +51,7 @@ export async function initDesktop() {
 	};
 
 	// Add system script and let it do the setup
-	await addScript('/res/js/main.js');
+	await addScript('/res/js/shared.bundle.js');
 	CoreModule.main();
 }
 

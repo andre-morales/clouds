@@ -11,3 +11,6 @@ usr/test/.system/desktop.json
 
 # SSL configuration should be kept private
 config/ssl/*
+
+# Ignore bundled content
+*.bundle.js
