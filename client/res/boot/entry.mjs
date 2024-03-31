@@ -51,8 +51,8 @@ export async function initDesktop() {
 	};
 
 	// Add system script and let it do the setup
-	let Core = await import ('/res/js/client_core.mjs');
-	Core.main();
+	await addScript('/res/js/main.js');
+	CoreModule.main();
 }
 
 function authLogout() {
