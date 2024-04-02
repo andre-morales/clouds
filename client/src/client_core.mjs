@@ -34,7 +34,7 @@ export async function main() {
 
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
-		addScript('/res/js/public.bundle.js'),
+		addScript('/res/pack/public.bundle.js'),
 		addScript('/res/lib/hammer.min.js')
 	]);
 
@@ -73,7 +73,7 @@ class ClientClass {
 		this.BUILD_TEXT = ClientClass.BUILD_TEXT;
 	}
 
-	static get CLIENT_VERSION() { return '1.0.190'; }
+	static get CLIENT_VERSION() { return '1.0.192'; }
 	static get BUILD_STRING() { return `${this.CLIENT_VERSION} Early Test 2`; }
 	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 

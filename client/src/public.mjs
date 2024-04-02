@@ -1,3 +1,5 @@
+// Publicly available core modules accessible from these variables.
+// Webpack will make these modules available in a super module called PublicModules.
 export * as AppM from './app.mjs';
 export * as FileSystemM from './filesystem.mjs';
 export * as EventsM from './events.mjs';

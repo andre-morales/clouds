@@ -6,7 +6,9 @@
   "main": "api/modules/entry.mjs",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config client/webpack.dev.cjs",
+    "dist": "webpack --config client/webpack.dist.cjs",
+    "stats": "webpack --config client/webpack.dist.cjs --json > .stats.json && npx webpack-bundle-analyzer .stats.json"
   },
   "author": "",
   "license": "ISC",

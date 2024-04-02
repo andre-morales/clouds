@@ -13,5 +13,6 @@ usr/test/.system/desktop.json
 config/ssl/*
 
 # Ignore bundled content
+client/res/pack/*
 *.bundle.js
 *.map

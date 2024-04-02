@@ -1,4 +1,5 @@
 const path = require('path');
+const ROOT = path.resolve(__dirname, '../');
 
 module.exports = {
 	mode: 'production',
@@ -22,6 +23,6 @@ module.exports = {
 	},
 	output: {
 		filename: '[name].bundle.js',
-		path: path.resolve(__dirname, 'client/res/js'),
+		path: path.resolve(ROOT, 'client/res/pack'),
 	},
 };
