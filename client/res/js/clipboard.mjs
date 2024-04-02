@@ -1,0 +1,1 @@
+export default PublicModules.ClipboardM.default;

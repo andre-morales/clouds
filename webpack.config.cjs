@@ -1,6 +1,8 @@
 const path = require('path');
 
 module.exports = {
+	mode: 'production',
+	devtool: 'source-map',
 	entry: {
 		shared: {
 			import: './client/src/client_core.mjs',
@@ -13,12 +15,11 @@ module.exports = {
 			import: './client/src/public.mjs',
 			dependOn: 'shared',
 			library: {
-				name: 'PublicModule',
+				name: 'PublicModules',
 				type: 'umd'
 			}
 		}
 	},
-	mode: 'development',
 	output: {
 		filename: '[name].bundle.js',
 		path: path.resolve(__dirname, 'client/res/js'),
