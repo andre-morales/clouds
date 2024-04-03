@@ -21,6 +21,29 @@ module.exports = {
 			}
 		}
 	},
+	module: {
+		rules: [
+			{
+				test: /\.(?:js|mjs|cjs)$/,
+				exclude: /node_modules/,
+				use: {
+					loader: 'babel-loader',
+					options: {
+						cacheDirectory: true,
+						presets: [
+							['@babel/preset-env', {
+								targets: {
+									chrome: 79
+								},
+								useBuiltIns: 'usage',
+								corejs: '^3.36.1'
+							}]
+						]
+					}
+				}
+			}
+		]
+	},
 	output: {
 		filename: '[name].bundle.js',
 		path: path.resolve(ROOT, 'client/res/pack'),
