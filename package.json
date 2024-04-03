@@ -6,9 +6,9 @@
   "main": "api/modules/entry.mjs",
   "type": "module",
   "scripts": {
-    "build": "webpack --config client/webpack.dev.cjs",
-    "dist": "webpack --config client/webpack.dist.cjs",
-    "stats": "webpack --config client/webpack.dist.cjs --json > .stats.json && npx webpack-bundle-analyzer .stats.json"
+    "build": "webpack --config config/webpack/dev.cjs",
+    "dist":  "webpack --config config/webpack/dist.cjs",
+    "stats": "webpack --config config/webpack/dist.cjs --json > client/res/pack/.stats.json && npx webpack-bundle-analyzer client/res/pack/.stats.json"
   },
   "author": "",
   "license": "ISC",

@@ -17,7 +17,7 @@ export function showOptions(app, title, msg, options, settings = {}) {
 	let $msg = $("<div class='message'>");
 	$msg.append($(`<i class='dialog-icon ${icon}-icon'>`))
 	
-	let html = strReplaceAll(msg.toString(), '\n', '<br>');
+	let html = msg.toString().replaceAll('\n', '<br>');
 	$msg.append($('<span class="dialog-text"><br/>' + html + '</span>'));
 	$body.append($msg);
 

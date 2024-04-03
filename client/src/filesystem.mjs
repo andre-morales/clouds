@@ -197,7 +197,7 @@ export class Paths {
 
 	static resolve(path) {
 		// Remove redundant local references
-		path = strReplaceAll(path, '/./', '/');
+		path = path.replaceAll('/./', '/');
 
 		// Remove redundant local ref
 		if (path.endsWith('/.')) path = path.slice(0, -1);

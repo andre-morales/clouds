@@ -2,8 +2,8 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '../');
 
 module.exports = {
-	mode: 'development',
-	devtool: 'eval',
+	mode: 'production',
+	devtool: 'source-map',
 	entry: {
 		shared: {
 			import: './client/src/client_core.mjs',
