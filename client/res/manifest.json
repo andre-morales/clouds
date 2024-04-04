@@ -18,14 +18,14 @@
 	],
 	"screenshots": [
 		{
-			"src": "/res/img/screenshot-tall.jpg",
-			"type": "image/jpg",
+			"src": "/res/img/screenshot-tall.webp",
+			"type": "image/webp",
 			"sizes": "768x1024",
 			"form_factor": "narrow"
 		},
 		{
-			"src": "/res/img/screenshot-wide.jpg",
-			"type": "image/jpg",
+			"src": "/res/img/screenshot-wide.webp",
+			"type": "image/webp",
 			"sizes": "1920x1080",
 			"form_factor": "wide"
 		}

@@ -24,5 +24,5 @@ module.exports = {
 	output: {
 		filename: '[name].bundle.js',
 		path: path.resolve(ROOT, 'client/res/pack'),
-	},
+	}
 };
