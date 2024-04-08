@@ -1,6 +1,7 @@
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
 import { FileSystem, Paths, FileTypes } from '/res/js/filesystem.mjs';
 import Fullscreen from '/res/js/ui/fullscreen.mjs';
+import Util from '/res/js/util.mjs';
 
 export default class SinestesiaApp extends App {
 	constructor(...args) {
