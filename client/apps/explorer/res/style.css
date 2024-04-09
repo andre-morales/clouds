@@ -296,3 +296,7 @@
 .default-handler-helper .option-text {
 	vertical-align: middle;
 }
+
+.properties-win {
+	padding: 1rem;
+}

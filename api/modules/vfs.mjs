@@ -59,7 +59,7 @@ function listVMPoints(userid) {
 }
 
 // List all files present in a PHYSICAL path
-async function listPDir(path) {
+async function listPhysical(path) {
 	if (!path.endsWith('/')) path += '/';
 
 	let files;
@@ -107,6 +107,38 @@ async function listPDir(path) {
 
 	let results = await Promise.all(promises);
 	return results; 
+}
+
+async function sizePhysical(path) {
+	let stats = await FS.promises.stat(path);
+
+	// If path is a file, just return its size directly
+	if (!stats.isDirectory()) {
+		return stats.size;
+	}
+
+	// Read all of the files inside the directory, including sub-dirs
+	let files = await FS.promises.readdir(path, {
+		withFileTypes: true,
+		recursive: true
+	});
+
+	// For each subfile, query the size of the file in a promise
+	let promises = files.map(async (entry) => {
+		if (!entry.isFile()) return 0;
+
+		let fileName = entry.name;
+		let fileParentPath = entry.parentPath;
+		let stat = await FS.promises.stat(Path.resolve(path, fileParentPath, fileName));
+		return stat.size;
+	});
+
+	// Await all of the size queries
+	let sizes = await Promise.all(promises);
+
+	// Sum all of the sizes
+	let size = sizes.reduce((acc, v) => acc + v, 0);
+	return size;
 }
 
 // Erases completely the given file or folder
@@ -160,8 +192,19 @@ async function listVirtual(user, path) {
 	}
 
 	// List the directory
-	let results = await listPDir(fPath);
+	let results = await listPhysical(fPath);
 	return results;
+}
+
+async function statsVirtual(user, path) {
+	let fPath = translate(user, path);
+	if (!fPath) return;
+
+	let pSize = await sizePhysical(fPath);
+
+	return {
+		size: pSize
+	};
 }
 
 async function mkdirVirtual(user, path) {
@@ -387,6 +430,14 @@ export function getRouter() {
 		await copyVirtual(user, from, target);
 
 		res.end();
+	}
+
+	// GET/STATS
+	getOperations['stats'] = async (req, res) => {
+		let user = Auth.getUserGuard(req);
+		let vpath = '/' + req.params[0];
+
+		res.json(await statsVirtual(user, vpath));
 	}
 
 	// GET/THUMB Thumbnail GET request

@@ -259,7 +259,9 @@ export class FilePanel {
 			CtxItem('Cut', () => { this.app.cut(absPath) }),
 			'-',
 			CtxItem('Rename', () => { this.enableRename(absPath) }),
-			CtxItem('Erase', () => { this.app.erase(absPath) })
+			CtxItem('Erase', () => { this.app.erase(absPath) }),
+			'-',
+			CtxItem('Properties', () => {this.app.openFileProperties(absPath)})
 		);
 		return CtxMenu(menu);
 	}

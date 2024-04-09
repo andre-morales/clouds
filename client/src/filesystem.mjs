@@ -99,6 +99,19 @@ export class FileSystem {
 		}
 	} 
 
+	static async stats(path) {
+		// Convert the path
+		let cmd = Paths.toFSV(path) + '?stats';
+
+		let fres = await fetch(cmd);
+		if (fres.status != 200) {
+			throw new FileSystemException(`Stats operation failed with status ${fres.status}`);
+		}
+
+		let result = await fres.json();
+		return result;
+	}
+
 	static async makeDirectory(path) {
 		// Convert the path
 		let cmd = Paths.toFSV(path) + '?make';

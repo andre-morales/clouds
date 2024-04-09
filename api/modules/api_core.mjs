@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.7.06';
+const KAPI_VERSION = '0.7.08';
 
 // Lib imports
 import Path from 'path';

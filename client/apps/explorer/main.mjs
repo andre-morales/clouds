@@ -7,6 +7,7 @@ import { Deferred } from '/res/js/events.mjs';
 import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
 import ExplorerDefaultHandler from './open_handler.mjs';
+import ExplorerProperties from './properties.mjs';
 
 export default class ExplorerApp extends App {
 	constructor(...args) {
@@ -544,6 +545,11 @@ export default class ExplorerApp extends App {
 			await FileSystem.erase(path);
 			this.refresh();
 		}
+	}
+
+	openFileProperties(path) {
+		let dialog = new ExplorerProperties(this);
+		dialog.open(path);
 	}
 
 	openDefaultHandler(path) {
