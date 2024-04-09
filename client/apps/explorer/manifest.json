@@ -3,10 +3,7 @@
 	"displayName": "Files",
 	"icon": "/app/explorer/icon64.png",
 	"modules" : [
-		"/app/explorer/main.mjs",
-		"/app/explorer/uploader.mjs",
-		"/app/explorer/open_with.mjs",
-		"/app/explorer/default_handler.mjs"
+		"/app/explorer/main.mjs"
 	],
 	"styles": [
 		"/app/explorer/res/style.css"

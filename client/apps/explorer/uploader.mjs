@@ -9,7 +9,7 @@ export default class ExplorerUploader {
 		let helperWin = Client.desktop.createWindow(this.explorer);
 		helperWin.setOwner(this.explorer.window);
 		
-		await helperWin.setContentToUrl('/app/explorer/res/upload-helper.html');
+		await helperWin.setContentToUrl('/app/explorer/res/upload-win.html');
 		helperWin.setTitle('Upload to: ' + Paths.file(this.explorer.cwd));
 		helperWin.setSize(380, 270);
 		helperWin.bringToCenter();
