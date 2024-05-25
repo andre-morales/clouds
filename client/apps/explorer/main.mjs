@@ -3,6 +3,7 @@ import Dialogs from '/res/js/ui/dialogs.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
 import { FileSystem, Paths } from '/res/js/filesystem.mjs';
 import { Deferred } from '/res/js/events.mjs';
+import Util from '/res/js/util.mjs';
 
 import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
@@ -331,7 +332,7 @@ export default class ExplorerApp extends App {
 	}
 
 	removeFavorite(path) {
-		arrErase(this.favorites, path);
+		Util.arrErase(this.favorites, path);
 
 		this.saveFavorites();
 		this.refreshFavorites();
@@ -555,6 +556,11 @@ export default class ExplorerApp extends App {
 	openDefaultHandler(path) {
 		let dialog = new ExplorerDefaultHandler(this);
 		dialog.open(path);
+	}
+
+	openFileWith(path) {
+		let dialog = new ExplorerDefaultHandler(this);
+		dialog.openFileWith(path);
 	}
 
 	openFileExt(path) {
