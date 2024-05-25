@@ -14,16 +14,21 @@ export function init() {
 	defs = config.fs;
 }
 
-// Translate a virtual path into a physical one.
-// Loops over all mounting points checking if the virtual path belongs to one of them.
-// If so, does the mapping. If no mapping was found, returns null.
-// This function performs no checks if the path provided is valid,
-// it only performs a substitution.
-function translate(userid, vPath) {
+/**
+ * Translate a virtual path into a physical one.
+ * Loops over all mounting points checking if the virtual path belongs to one of them.
+ * If so, does the mapping. If no mapping was found, returns null.
+ * This function performs no checks if the path provided is valid,
+ * it only performs a substitution.
+ * @param {string} userId String id of the user performing the translation
+ * @param {string} virtualPath Virtual path to be translated
+ * @returns The physical path mapping, if it exists. Otherwise, null.
+ */
+function translate(userId, virtualPath) {
 	for (let mPoint in defs) {
-		if (vPath.startsWith(mPoint)) {
+		if (virtualPath.startsWith(mPoint)) {
 			// Normalize virtual path
-			let nPath = Path.posix.normalize(vPath);
+			let nPath = Path.posix.normalize(virtualPath);
 
 			// Trying to escape the mounting point?
 			if (nPath.indexOf(mPoint) == -1) {
@@ -35,7 +40,7 @@ function translate(userid, vPath) {
 
 			// Retrieve physical location of mounting point
 			let phyPoint = defs[mPoint].path;
-			phyPoint = phyPoint.replace('$user', userid);
+			phyPoint = phyPoint.replace('$user', userId);
 
 			// Physical path
 			let jPath = Path.posix.join(phyPoint, nPath);
@@ -46,8 +51,13 @@ function translate(userid, vPath) {
 	return null;
 }
 
-// Lists all virtual mounting points accessible to the user as configured in the
-// config/profiles/[user].json
+/**
+ * Lists all virtual mounting points accessible to the user as configured in the
+ * config/profiles/[user].json
+ * @param {string} userid String id of the user
+ * @returns An array of mounting points. Each mount point is an array with in the format
+ * [physical, virtual] of paths.
+ */
 function listVMPoints(userid) {
 	return Object.keys(defs)
 	.filter((vmp) => {
@@ -58,10 +68,14 @@ function listVMPoints(userid) {
 	});
 }
 
-// List all files present in a PHYSICAL path
+/**
+ * List all files present in a PHYSICAL path
+ * @param {string} path Physical path to be listed.
+ * @returns Returns an array of paths. Each path is an array in the format [name, tags, data]
+ * */
 async function listPhysical(path) {
 	if (!path.endsWith('/')) path += '/';
-
+	
 	let files;
 	try {
 		files = await FS.promises.readdir(path, {

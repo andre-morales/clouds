@@ -22,14 +22,16 @@ import * as Stats from './stats.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
 
-var progArgs = null;
 var app = null;
 
+/**
+ * Main entry point of the server system.
+ * @param args Command-line arguments
+ */
 export async function main(args) {
 	console.log('--- KAPI Version: ' + KAPI_VERSION);
-	progArgs = args;
 
-	initConfig();
+	Config.init(args);
 	Auth.init();
 	VFS.init();
 	Stats.init();
@@ -38,11 +40,14 @@ export async function main(args) {
 	initExpress();
 }
 
+/**
+ * Initialize Express App. Setups middlewares, routes, and starts up the HTTP(s) servers.
+ */
 function initExpress() {
 	app = Express();
 
 	// Core request handlers.
-	setupLoggingRouter(app);
+	setupLoggingRouter();
 
 	app.use(Cors());
 	app.use(Compression());
@@ -81,6 +86,7 @@ function initExpress() {
 	app.set('views', 'api/pages');
 	app.disable('x-powered-by');
 
+	// Enable HTTP listening server
 	if (config.http_port) {
 		let http = HTTP.createServer(app);
 		http.listen(config.http_port, () => {
@@ -88,6 +94,7 @@ function initExpress() {
 		});
 	}
 	
+	// Enable HTTPS listening server
 	if (config.https_port) {
 		let httpsKey = FS.readFileSync('config/ssl/key.key');
 		let httpsCert = FS.readFileSync('config/ssl/cert.crt');
@@ -103,11 +110,10 @@ function initExpress() {
 	}
 }
 
-function initConfig() {
-	Config.init(progArgs);
-}
-
-function setupLoggingRouter(app) {
+/**
+ * Sets up request logging on the console.  
+ */
+function setupLoggingRouter() {
 	if (!config.log_requests) return;
 
 	app.use(Morgan((tokens, req, res) => {
@@ -162,6 +168,9 @@ function setupLoggingRouter(app) {
 	}));
 }
 
+/**
+ * Configure main pages on the app router.
+ */
 function apiSetupPages() {
 	// - Entry point page
 	app.get('/', (req, res) => {
@@ -184,6 +193,7 @@ function apiSetupPages() {
 	});
 }
 
+/** Setup /app route */
 function apiSetupApps() {
 	app.get('/app/:app/*', (req, res) => {
 		Auth.getUserGuard(req);

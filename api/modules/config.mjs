@@ -3,10 +3,13 @@ import FS from 'fs';
 var profile = 'default';
 var config = {};
 
-// Initialize the configuration system with the program arguments.
-// If no --profile argument was passed, 'default' will be used as the profile.
-// Configuration is loaded first from all.json, then, replaced by the specific 
-// profile.json file.
+/**
+ *  Initialize the configuration system with the program arguments.
+ *  If no --profile argument was passed, 'default' will be used as the profile.
+ *  Configuration is loaded first from all.json, then, replaced by the specific 
+ *  profile.json file.
+ * @param args Program cmd-line arguments
+ */
 export function init(args) {
 	let i = args.indexOf('--profile');
 	if (i >= 0) profile = args[i + 1];
