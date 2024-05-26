@@ -1,4 +1,4 @@
-import Dialogs from '/res/js/ui/dialogs.mjs';
+import Dialogs from '/@sys/ui/dialogs.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
 import { FileSystem, Paths } from '/res/js/filesystem.mjs';
 

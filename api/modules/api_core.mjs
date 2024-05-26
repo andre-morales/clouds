@@ -63,6 +63,7 @@ function initExpress() {
 	
 	// Public resources
 	app.use('/res', Express.static('client/res')); 
+	app.use('/@sys', Express.static('client/res/js'));
 
 	// API routes
 	app.use('/auth', Auth.getRouter());            // Auth system 

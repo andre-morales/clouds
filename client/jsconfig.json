@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"paths": {
+			"/@sys/*": ["./src/*"]
+		}
+	},
+	"exclude": [
+		"node_modules",
+		"**/node_modules/*"
+	]
+}

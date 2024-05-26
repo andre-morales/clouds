@@ -7,7 +7,7 @@ export default class ExplorerProperties {
 
 	async open(path) {
 		let statsProm = FileSystem.stats(path);
-
+		
 		this.window = Client.desktop.createWindow(this.explorer);
 		this.window.setOwner(this.explorer.window);
 		
@@ -22,6 +22,8 @@ export default class ExplorerProperties {
 		$win.addClass("properties-win");
 		
 		this.window.setVisible(true);
+		this.window.focus();
+		
 		$win.find('.name').text(Paths.file(path));
 
 		let stats = await statsProm;

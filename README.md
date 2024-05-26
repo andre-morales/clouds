@@ -52,3 +52,17 @@ All of these dependencies can be installed with: ```> npm install``` on the root
 After building the project, running it is as easy as double-clicking the ```run``` script that matches your OS on the root of the project. You can also invoke _node_ directly with the same effect as the script. On a fresh terminal in the root, run the command ```> node .```.
 
 This will instantiate a new server on the current machine and automatically start listening for new client connections. The terminal will stay open and log some of the user activities. Which activities are logged can be configured in the forementioned profiles stored in the ```config/profiles``` directory.
+
+## :scroll: API Routes
+
+Route|Maps to|Purpose
+:-|:-|:-
+/|/api/pages/entry|Initial page.
+/test|-|Tests authentication status.
+/page/|/api/pages/|Fetching of initial system pages, mainly login and desktop page.
+/res/|/client/res/|Static resource access. All logged in users can access any content in this directory.
+/app/**&lt;name&gt;**|/client/apps/**&lt;name&gt;**|Fetch static app resources.
+/fsv/|_(User filesystem)_|Read/write file system access at the current path.
+/shell/|-|Manage user remote shells.
+/stat|-|Obtains system-wide status information.
+/version|-|Obtains the current system version.
