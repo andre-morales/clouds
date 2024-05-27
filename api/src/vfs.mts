@@ -2,7 +2,7 @@ import FS from 'fs';
 import Path from 'path';
 import Express from 'express';
 
-import { asyncRoute } from './api_core.mjs';
+import { asyncRoute } from './core.mjs';
 import config from './config.mjs';
 import * as Auth from './auth.mjs'
 import * as Files from './files.mjs';
@@ -138,7 +138,7 @@ async function sizePhysical(path) {
 	});
 
 	// For each subfile, query the size of the file in a promise
-	let promises = files.map(async (entry) => {
+	let promises = files.map(async (entry: any) => {
 		if (!entry.isFile()) return 0;
 
 		let fileName = entry.name;

@@ -13,8 +13,13 @@ export function init() {
 	userDefs = JSON.parse(contents.toString());
 }
 
-// Tries to login a user with an id and password, returns its authkey on success, or 0 on failure.
-export function login(id: string, pass: string) {
+/**
+ * Tries to login a user with an id and password, returns its authkey on success, or 0 on failure.
+ * @param id User's name.
+ * @param pass String representation of the user's password.
+ * @returns The user's new key, or 0 if the authentication failed.
+ */
+export function login(id: string, pass: string): number {
 	if ((id in userDefs) && (userDefs[id].pass === pass)) {
 		let key = getRandomInt(1, 32768);
 		logins[id] = key;
@@ -56,7 +61,7 @@ export function getUser(req: Express.Request) {
 /**
  * Obtains the user associated with a request. If an invalid user is associated with it, throws a 
  * BadAuthException;
- * @param {*} req Express request
+ * @param req Request object
  * @returns The user associated with the request
  */
 export function getUserGuard(req: Express.Request) {
@@ -68,11 +73,11 @@ export function getUserGuard(req: Express.Request) {
 /**
  * Safeguards a request making sure the user is authenticated. This is meant to be used as a
  * request middleware function. If the user is not authenticated, BadAuthException is thrown.
- * @param {*} req Express request object
- * @param {*} res Express response object
- * @param {*} next Express next middleware function
+ * @param req Request object
+ * @param res Response object
+ * @param next Next middleware function
  */
-export function guard(req, res, next) {
+export function guard(req: Express.Request, res: Express.Response, next: Function) {
 	let user = getUser(req);
 	if (!user) throw new BadAuthException();
 	next();

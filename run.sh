@@ -1,1 +1,1 @@
-node . $@
+node --enable-source-maps . $@

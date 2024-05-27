@@ -3,7 +3,7 @@ import * as Files from '../files.mjs';
 import * as Config from '../config.mjs';
 
 var enabled = false;
-var config = {};
+var config : any = {};
 
 export function init() {
 	if (!Config.isExtensionEnabled('ffmpeg')) return;
@@ -20,7 +20,7 @@ export async function createThumbOf(path, dest) {
 	// If the path points to a video
 	if (Files.isFileExtVideo(path)) {
 		// Run ffprobe on video to get video length.
-		let videolength = await getVideoLength(path);
+		let videolength : any = await getVideoLength(path);
 
 		args = ['-ss', videolength / 2, '-i', path, '-q:v', '4', '-vf', "scale='iw*144/max(iw,ih):-1'", '-vframes', 1, '-f', 'mjpeg', dest];
 	// Treat the file as an image otherwise
@@ -30,7 +30,7 @@ export async function createThumbOf(path, dest) {
 	
 	// Execute ffmpeg with the arguments. If there's an error, fail silently
 	try {
-		await execute(ffmpegExec, args);
+		await execute(ffmpegExec, args, {});
 		return true;
 	} catch(err) {
 		console.log(err);
@@ -46,7 +46,7 @@ export async function getVideoLength(path) {
 	
 	let args = ['-i', `${path}`, '-show_entries', 'format=duration', '-v', 'quiet', '-of', 'csv'];
 	try {
-		let ffprobe = await execute(ffprobeExec, args);
+		let ffprobe : any = await execute(ffprobeExec, args, {});
 		videolength = ffprobe.stdout.split("format,")[1] * 1.0;
 		return videolength;
 	} catch(err) {

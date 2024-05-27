@@ -4,6 +4,9 @@
 # Modules should be obtained from npm
 node_modules/*
 
+# Runtime JS should be compiled from TS
+api/runtime/**
+
 # Private user files
 usr/test/.system/collections.json
 usr/test/.system/favorites.json

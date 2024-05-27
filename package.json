@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "private": true,
-  "main": "api/runtime/entry.mjs",
+  "main": "api/runtime/main.mjs",
   "type": "module",
   "scripts": {
-    "build": "webpack --config config/webpack/dev.cjs",
-    "dist": "webpack --config config/webpack/dist.cjs",
-    "stats": "webpack --config config/webpack/dist.cjs --json > client/res/pack/.stats.json && npx webpack-bundle-analyzer client/res/pack/.stats.json"
+    "build-api-dist": "tsc -p api",
+    "build-client-dev": "webpack --config config/webpack/dev.cjs",
+    "build-client-dist": "webpack --config config/webpack/dist.cjs",
+    "build-client-stats": "webpack --config config/webpack/dist.cjs --json > client/res/pack/.stats.json && npx webpack-bundle-analyzer client/res/pack/.stats.json"
   },
   "author": "",
   "license": "ISC",

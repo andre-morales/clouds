@@ -1,6 +1,6 @@
 import Express from 'express';
 
-import * as Core from './api_core.mjs';
+import * as Core from './core.mjs';
 
 var totalDataRead = 0;
 var totalDataWritten = 0;

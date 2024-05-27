@@ -9,11 +9,13 @@ function entry() {
 function runInSelf(args) {
 	console.log('Entry: Launching in self.');
 
-	import('./api_core.mjs').then((mod) => {
+	import('./core.mjs').then((mod) => {
 		mod.main(args);
 	});
 }
 
+/*
+TODO: Update these launching modes.
 function runAttachedProc(){
 	console.log('Entry: Launching in attached process.');
 
@@ -22,7 +24,7 @@ function runAttachedProc(){
 		stdio: 'pipe'
 	}
 
-	let child = CProcess.spawn("node", ["api/api_core.js"], opt);
+	let child = CProcess.spawn("node", ["api/core.mjs"], opt);
 	child.stdout.on('data', (data) => {
 		console.log(`${data}`);
 	});
@@ -42,5 +44,5 @@ function runDetachedProc() {
 	let child = CProcess.spawn("node", ["api/api_core.js"], opt);
 	child.unref();
 }
-
+*/
 entry();

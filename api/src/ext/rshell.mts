@@ -5,7 +5,7 @@ import * as Config from '../config.mjs';
 
 var enabled = false;
 var defs = null; 
-export var shells = {};
+export var shells : any = {};
 var counter = 1;
 
 export function init() {
@@ -45,7 +45,8 @@ export function destroyOldShells(limit) {
 	let now = (new Date()).getTime();
 	let destroyedShells = [];
 
-	for (const [id, proc] of Object.entries(shells)) {
+	for (const [id, proc_] of Object.entries(shells)) {
+		let proc : any = proc_;
 		if (now - proc.lastPing > limit*1000) {
 			destroyedShells.push(id);
 			console.log('Timeout shell ' + id);
@@ -71,7 +72,7 @@ export function installRouter(router) {
 	router.get('/shell/0/list', (req, res) => {
 		Auth.getUserGuard(req);
 
-		let obj = Object.values(shells).map((shell) => {
+		let obj = Object.values(shells).map((shell: any) => {
 			return {
 				'id': shell.id,
 				'ping': new Date(shell.lastPing).toString()
@@ -161,6 +162,14 @@ export function installRouter(router) {
 }
 
 export class RShell {
+	id: any;
+	stdout: any;
+	newOut: any;
+	proc: any;
+	waiterObj: any;
+	_config: any;
+	lastPing: any;
+
 	constructor(id) {
 		this.id = id;
 		this.stdout = '';

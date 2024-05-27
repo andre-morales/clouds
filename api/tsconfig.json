@@ -2,7 +2,8 @@
 	"compilerOptions": {
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
-		"outDir": "runtime"
+		"outDir": "runtime",
+		"sourceMap": true
 	},
 	"include": ["src"]
 }
