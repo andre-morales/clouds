@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "typescript",
+			"tsconfig": "api/tsconfig.json",
+			"option": "watch",
+			"problemMatcher": [
+				"$tsc-watch"
+			],
+			"group": {
+				"kind": "build"
+			},
+			"label": "Watch API Build",
+			"detail": "👀 tsc: watch - api/tsconfig.json"
+		},
+		{
+			"type": "npm",
+			"script": "build-api-dist",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"label": "Build API Dist",
+			"detail": "📦 npm run build-api-dist: tsc -p api"
+		}
+	]
+}

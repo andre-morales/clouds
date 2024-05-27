@@ -1,11 +1,14 @@
-# Any dot file or folder is never added
+# Any dot file or folder is ignored,
 .*/*
 
+# Except for the VSCode folder, which contains an useful development environment.
+!.vscode/*
+
 # Modules should be obtained from npm
-node_modules/*
+node_modules
 
 # Runtime JS should be compiled from TS
-api/runtime/**
+api/runtime
 
 # Private user files
 usr/test/.system/collections.json
@@ -13,10 +16,10 @@ usr/test/.system/favorites.json
 usr/test/.system/desktop.json
 
 # SSL configuration should be kept private
-config/ssl/*
+config/ssl
 
 # Ignore bundled content
-client/res/pack/*
+client/res/pack
 *.bundle.js
 *.map
 
