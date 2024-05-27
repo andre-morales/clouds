@@ -32,7 +32,7 @@ async function authSubmit() {
 		body: JSON.stringify({id: id, pass: pass})
 	};
 	
-	let fres = await fetch('/auth', opt);
+	let fres = await fetch('/auth/login', opt);
 	let res = await fres.json();
 
 	if (res.ok) {

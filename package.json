@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "webpack --config config/webpack/dev.cjs",
-    "dist":  "webpack --config config/webpack/dist.cjs",
+    "dist": "webpack --config config/webpack/dist.cjs",
     "stats": "webpack --config config/webpack/dist.cjs --json > client/res/pack/.stats.json && npx webpack-bundle-analyzer client/res/pack/.stats.json"
   },
   "author": "",

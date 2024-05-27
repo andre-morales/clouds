@@ -1,4 +1,4 @@
-const KAPI_VERSION = '0.7.08';
+export const KAPI_VERSION = '0.7.09';
 
 // Lib imports
 import Path from 'path';
@@ -63,12 +63,12 @@ function initExpress() {
 	
 	// Public resources
 	app.use('/res', Express.static('client/res')); 
-	app.use('/@sys', Express.static('client/res/js'));
+	app.use('/@sys', [Auth.guard, Express.static('client/res/js')]);
 
 	// API routes
 	app.use('/auth', Auth.getRouter());            // Auth system 
 	app.use('/fsv', VFS.getRouter());			   // Extended file system with HTTP verbs
-	app.use('/stat', Stats.getRouter());
+	app.use('/stat', [Auth.guard, Stats.getRouter()]);
 	apiSetupPages();     			    		   // Entry, Auth and Desktop
 	RShell.installRouter(app);
 	apiSetupApps();								   // Apps service
@@ -109,6 +109,36 @@ function initExpress() {
 			console.log('Listening on port ' + config.https_port);
 		});
 	}
+}
+/**
+ * Configure main pages on the app router.
+ */
+function apiSetupPages() {
+	// - Entry point page
+	app.get('/', (req, res) => {
+		res.render('entry');
+	});
+
+	// - Login page
+	app.get('/page/login', (req, res) => {
+		res.render('login');
+	});
+
+	// - Desktop page
+	app.get('/page/desktop', Auth.guard, (req, res) => {
+		Auth.getUserGuard(req);
+		res.render('desktop');
+	});
+}
+
+/** Setup /app route */
+function apiSetupApps() {
+	app.get('/app/:app/*', Auth.guard, (req, res) => {
+		let app = req.params.app;
+		let path = req.params[0];	
+		let fpath = './client/apps/' + app + '/' + path;
+		res.sendFile(Path.resolve(fpath));
+	});
 }
 
 /**
@@ -167,43 +197,6 @@ function setupLoggingRouter() {
 		].join(' ');
 		return msg;
 	}));
-}
-
-/**
- * Configure main pages on the app router.
- */
-function apiSetupPages() {
-	// - Entry point page
-	app.get('/', (req, res) => {
-		res.render('entry');
-	});
-
-	// - Login page
-	app.get('/page/login', (req, res) => {
-		res.render('login');
-	});
-
-	// - Desktop page
-	app.get('/page/desktop', (req, res) => {
-		Auth.getUserGuard(req);
-		res.render('desktop');
-	});
-
-	app.get('/version', (req, res) => {
-		res.send(KAPI_VERSION);
-	});
-}
-
-/** Setup /app route */
-function apiSetupApps() {
-	app.get('/app/:app/*', (req, res) => {
-		Auth.getUserGuard(req);
-		
-		let app = req.params.app;
-		let path = req.params[0];	
-		let fpath = './client/apps/' + app + '/' + path;
-		res.sendFile(Path.resolve(fpath));
-	});
 }
 
 function denyRequest(res) {

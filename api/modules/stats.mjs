@@ -1,6 +1,6 @@
 import Express from 'express';
 
-import * as Auth from './auth.mjs';
+import * as Core from './api_core.mjs';
 
 var totalDataRead = 0;
 var totalDataWritten = 0;
@@ -26,12 +26,14 @@ export function getRouter() {
 	let router = Express.Router();
 
 	router.get('/net', (req, res) => {
-		let userId = Auth.getUser(req);
-
 		res.json({
 			'bytesWritten': totalDataWritten,
 			'bytesRead': totalDataRead,
 		});
+	});
+
+	router.get('/version', (req, res) => {
+		res.send(Core.KAPI_VERSION);
 	});
 
 	return router;

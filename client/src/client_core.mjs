@@ -93,7 +93,9 @@ class ClientClass {
 		this._reactor.register('log', 'apps-add', 'apps-rem');
 		
 		// Display API version
-		fetch('/version').then(async (fres) => {
+		fetch('/stat/version').then(async (fres) => {
+			if (fres.status != 200) return;
+
 			let apiv = await fres.text();
 			this.API_VERSION = apiv;
 
@@ -151,6 +153,10 @@ class ClientClass {
 
 	logout(refresh = true) {
 		setCookie('authkey', '');
+		fetch("/auth/logout", {
+			method: "POST"
+		});
+		
 		if (refresh) window.location.href = "/";
 	}
 

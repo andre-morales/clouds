@@ -23,6 +23,14 @@ export function login(id, pass) {
 	return 0;
 }
 
+/**
+ * Logs out an user.
+ * @param {*} user The string id of an user
+ */
+export function logout(user) {
+	delete logins[user];
+}
+
 // Returns the user associated with the request.
 // If no-auth was set in config, returns the no-auth user.
 // Returns null if the request has no user or an invalid one associated with it.
@@ -44,24 +52,47 @@ export function getUser(req) {
 	return null;
 }
 
-// Returns the user associated with the request.
-// If no user is associated or if it's an invalid user, throws a BadAuthException
+/**
+ * Obtains the user associated with a request. If an invalid user is associated with it, throws a 
+ * BadAuthException;
+ * @param {*} req Express request
+ * @returns The user associated with the request
+ */
 export function getUserGuard(req) {
 	let user = getUser(req);
 	if (!user) throw new BadAuthException();
 	return user;
 }
 
+/**
+ * Safeguards a request making sure the user is authenticated. This is meant to be used as a
+ * request middleware function. If the user is not authenticated, BadAuthException is thrown.
+ * @param {*} req Express request object
+ * @param {*} res Express response object
+ * @param {*} next Express next middleware function
+ */
+export function guard(req, res, next) {
+	let user = getUser(req);
+	if (!user) throw new BadAuthException();
+	next();
+}
+
 export function getRouter() {
 	let router = Express.Router();
 
 	// Login request
-	router.post('/', (req, res) => {
+	router.post('/login', (req, res) => {
 		let id = req.body.id;
 		let pass = req.body.pass;
 		let newKey = login(id, pass);
 
 		res.json({ ok: (newKey != 0), key: newKey })
+	});
+
+	router.post('/logout', (req, res) => {
+		let user = getUser(req);
+		if (user) logout(user);
+		res.status(200).end();
 	});
 
 	// Authentication test

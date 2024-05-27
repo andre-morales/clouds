@@ -58,11 +58,11 @@ This will instantiate a new server on the current machine and automatically star
 Route|Maps to|Purpose
 :-|:-|:-
 /|/api/pages/entry|Initial page.
-/test|-|Tests authentication status.
-/page/|/api/pages/|Fetching of initial system pages, mainly login and desktop page.
+/auth/|-|Authentication services: login, logout, test
+/page/|/api/pages/|Fetching of core HTML pages, mainly login and desktop page.
 /res/|/client/res/|Static resource access. All logged in users can access any content in this directory.
+/@sys/|/client/res/js/|Static core JS modules.
 /app/**&lt;name&gt;**|/client/apps/**&lt;name&gt;**|Fetch static app resources.
 /fsv/|_(User filesystem)_|Read/write file system access at the current path.
 /shell/|-|Manage user remote shells.
 /stat|-|Obtains system-wide status information.
-/version|-|Obtains the current system version.
