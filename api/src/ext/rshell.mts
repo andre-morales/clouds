@@ -4,7 +4,7 @@ import * as Auth from '../auth.mjs';
 import * as Config from '../config.mjs';
 
 var enabled = false;
-var defs = null; 
+var defs: any = null; 
 export var shells : any = {};
 var counter = 1;
 
@@ -33,7 +33,7 @@ export function create() {
 	return shell;
 }
 
-export function destroy(id) {
+export function destroy(id: number) {
 	if (!shells[id]) return false;
 
 	shells[id].kill();
@@ -41,14 +41,14 @@ export function destroy(id) {
 	return true;
 }
 
-export function destroyOldShells(limit) {
+export function destroyOldShells(limit: number) {
 	let now = (new Date()).getTime();
-	let destroyedShells = [];
+	let destroyedShells: number[] = [];
 
 	for (const [id, proc_] of Object.entries(shells)) {
 		let proc : any = proc_;
 		if (now - proc.lastPing > limit*1000) {
-			destroyedShells.push(id);
+			destroyedShells.push(Number(id));
 			console.log('Timeout shell ' + id);
 		}
 	}
@@ -56,7 +56,7 @@ export function destroyOldShells(limit) {
 	destroyedShells.forEach((id) => destroy(id));
 }
 
-export function installRouter(router) {
+export function installRouter(router: Express.Router) {
 	router.get('/shell/0/init', (req, res) => {
 		Auth.getUserGuard(req);
 
@@ -130,8 +130,8 @@ export function installRouter(router) {
 	router.get('/shell/:id/kill', (req, res) => {
 		Auth.getUserGuard(req);
 		
-		let id = req.params.id;
-		
+		let id = Number(req.params.id);
+
 		if(!destroy(id)) {
 			res.status(404).end();
 			return;
@@ -162,7 +162,7 @@ export function installRouter(router) {
 }
 
 export class RShell {
-	id: any;
+	id: number;
 	stdout: any;
 	newOut: any;
 	proc: any;
@@ -170,7 +170,7 @@ export class RShell {
 	_config: any;
 	lastPing: any;
 
-	constructor(id) {
+	constructor(id: number) {
 		this.id = id;
 		this.stdout = '';
 		this.newOut = '';
@@ -212,7 +212,7 @@ export class RShell {
 	}
 
 	setupOutput() {
-		let outFn = (ch) => {
+		let outFn = (ch: any) => {
 			let content = ch.toString();
 			this.stdout += content;
 
@@ -233,7 +233,7 @@ export class RShell {
 		this.lastPing = (new Date()).getTime();
 	}
 
-	send(msg) {
+	send(msg: string) {
 		this.proc.stdin.write(msg + '\n');
 	}
 }

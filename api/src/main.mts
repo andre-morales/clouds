@@ -6,7 +6,7 @@ function entry() {
 	runInSelf(args);
 }
 
-function runInSelf(args) {
+function runInSelf(args: string[]) {
 	console.log('Entry: Launching in self.');
 
 	import('./core.mjs').then((mod) => {

@@ -22,13 +22,13 @@ import * as Stats from './stats.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
 
-var app = null;
+var app: Express.Application;
 
 /**
  * Main entry point of the server system.
  * @param args Command-line arguments
  */
-export async function main(args) {
+export async function main(args: string[]) {
 	console.log('--- KAPI Version: ' + KAPI_VERSION);
 
 	Config.init(args);
@@ -74,7 +74,7 @@ function initExpress() {
 	apiSetupApps();								   // Apps service
 
 	// General error handler
-	app.use((err, req, res, next) => {
+	app.use((err: any, req: any, res: any, next: any) => {
 		if (err instanceof BadAuthException) {
 			denyRequest(res);
 			return;
@@ -153,7 +153,7 @@ function setupLoggingRouter() {
 		let method = tokens.method(req, res);
 		let status = tokens.status(req, res);
 		if (!status) status = '???';
-		let url = tokens.url(req, res);
+		let url = "" + tokens.url(req, res);
 		let time = tokens['response-time'](req, res);
 
 		// Color response status code according to their category
@@ -199,14 +199,14 @@ function setupLoggingRouter() {
 	}));
 }
 
-function denyRequest(res) {
+function denyRequest(res: Express.Response) {
 	res.status(403);
 	res.send('BAD_AUTH: Authentication required.');
 }
 
 // Route wrapper for async routes
-export function asyncRoute(fn) {
-	return async (req, res, next) => {
+export function asyncRoute(fn: Function) {
+	return async (req: any, res: any, next: any) => {
 		try {
 			await fn(req, res, next);
 		} catch (err) {

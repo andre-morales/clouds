@@ -8,7 +8,7 @@ import * as Auth from './auth.mjs'
 import * as Files from './files.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs'
 
-var defs = null;
+var defs: any = null;
 
 export function init() {
 	defs = config.fs;
@@ -20,11 +20,11 @@ export function init() {
  * If so, does the mapping. If no mapping was found, returns null.
  * This function performs no checks if the path provided is valid,
  * it only performs a substitution.
- * @param {string} userId String id of the user performing the translation
- * @param {string} virtualPath Virtual path to be translated
+ * @param userId String id of the user performing the translation
+ * @param virtualPath Virtual path to be translated
  * @returns The physical path mapping, if it exists. Otherwise, null.
  */
-function translate(userId, virtualPath) {
+function translate(userId: string, virtualPath: string): string | null {
 	for (let mPoint in defs) {
 		if (virtualPath.startsWith(mPoint)) {
 			// Normalize virtual path
@@ -54,11 +54,11 @@ function translate(userId, virtualPath) {
 /**
  * Lists all virtual mounting points accessible to the user as configured in the
  * config/profiles/[user].json
- * @param {string} userid String id of the user
+ * @param userId String id of the user
  * @returns An array of mounting points. Each mount point is an array with in the format
  * [physical, virtual] of paths.
  */
-function listVMPoints(userid) {
+function listVMPoints(userId: string) {
 	return Object.keys(defs)
 	.filter((vmp) => {
 		return !defs[vmp].hidden;
@@ -73,7 +73,7 @@ function listVMPoints(userid) {
  * @param {string} path Physical path to be listed.
  * @returns Returns an array of paths. Each path is an array in the format [name, tags, data]
  * */
-async function listPhysical(path) {
+async function listPhysical(path: string) {
 	if (!path.endsWith('/')) path += '/';
 	
 	let files;
@@ -81,7 +81,7 @@ async function listPhysical(path) {
 		files = await FS.promises.readdir(path, {
 			"withFileTypes": true
 		});
-	} catch (err) {
+	} catch (err: any) {
 		if (err.code == 'EPERM') throw 403;
 		if (err.code == 'ENOENT') throw 404;
 		if (err.code == 'ENOTDIR') throw 400;
@@ -123,7 +123,7 @@ async function listPhysical(path) {
 	return results; 
 }
 
-async function sizePhysical(path) {
+async function sizePhysical(path: string) {
 	let stats = await FS.promises.stat(path);
 
 	// If path is a file, just return its size directly
@@ -156,7 +156,7 @@ async function sizePhysical(path) {
 }
 
 // Erases completely the given file or folder
-async function eraseVirtual(user, path) { 
+async function eraseVirtual(user: string, path: string) { 
 	let fpath = translate(user, path);
 	if (!fpath) return;
 
@@ -168,7 +168,7 @@ async function eraseVirtual(user, path) {
 }
 
 // Moves a path to another, this can move files or folders and give them new names
-async function renameVirtual(user, path, newPath) {
+async function renameVirtual(user: string, path: string, newPath: string) {
 	let fPath = translate(user, path);
 	let fNewPath = translate(user, newPath);
 	if (!fPath || !fNewPath) return;
@@ -181,7 +181,7 @@ async function renameVirtual(user, path, newPath) {
 }
 
 // Copies a file to another path, if the target already exists, fails.
-async function copyVirtual(user, srcPath, dstPath) {
+async function copyVirtual(user: string, srcPath: string, dstPath: string) {
 	let fSource = translate(user, srcPath);
 	let fDestination = translate(user, dstPath);
 	if (!fSource || !fDestination) return;
@@ -193,7 +193,7 @@ async function copyVirtual(user, srcPath, dstPath) {
 	await FS.promises.copyFile(fSource, fDestination, FS.constants.COPYFILE_EXCL);
 }
 
-async function listVirtual(user, path) {
+async function listVirtual(user: string, path: string) {
 	// If the virtual path is root '/', list the virtual mounting points
 	if (path == '/') {
 		return listVMPoints(user);
@@ -210,7 +210,7 @@ async function listVirtual(user, path) {
 	return results;
 }
 
-async function statsVirtual(user, path) {
+async function statsVirtual(user: string, path: string) {
 	let fPath = translate(user, path);
 	if (!fPath) return;
 
@@ -221,7 +221,7 @@ async function statsVirtual(user, path) {
 	};
 }
 
-async function mkdirVirtual(user, path) {
+async function mkdirVirtual(user: string, path: string) {
 	let fPath = translate(user, path);
 	if (!fPath) return;
 
@@ -236,12 +236,12 @@ async function mkdirVirtual(user, path) {
 export function getRouter() {
 	var router = Express.Router();
 
-	let getOperations = {};
-	let patchOperations = {};
-	let putOperations = {};
+	let getOperations: any = {};
+	let patchOperations: any = {};
+	let putOperations: any = {};
 
 	// GET: Query route
-	router.get('/*', asyncRoute(async function (req, res) {
+	router.get('/*', asyncRoute(async function (req: Express.Request, res: Express.Response) {
 		let userId = Auth.getUserGuard(req);
 		
 		// Get query parameters and check for special GET operations	
@@ -272,7 +272,7 @@ export function getRouter() {
 			try {
 				let results = await listVirtual(userId, vPath);
 				res.json(results);
-			} catch (errCode) {
+			} catch (errCode: any) {
 				res.status(errCode).end();
 			}
 			return;
@@ -287,7 +287,7 @@ export function getRouter() {
 		
 		// Resolve the path and send the file.
 		let absPath = Path.resolve(fPath);
-		res.sendFile(absPath, (err) => {
+		res.sendFile(absPath, (err: any) => {
 			if (!err) return;
 			
 			switch (err.code) {
@@ -312,7 +312,7 @@ export function getRouter() {
 	}));
 
 	// POST: Upload files trough upload form
-	router.post('/*', asyncRoute(async (req, res) => {	
+	router.post('/*', asyncRoute(async (req: Express.Request & { files: any }, res: Express.Response) => {	
 		let userId = Auth.getUserGuard(req);
 
 		// Sanity check
@@ -329,9 +329,13 @@ export function getRouter() {
 			return;
 		}
 		
-		// Translate target directory to physical
+		// Translate target directory to physical and make sure the mapping exists
 		let vdir = '/' + req.params[0];
 		let fdir = translate(userId, vdir);
+		if (!fdir) {
+			res.status(500).end();
+			return;
+		}
 
 		// Make sure uploaded files are in an array
 		var files = req.files.upload;
@@ -348,7 +352,7 @@ export function getRouter() {
 	}));	
 
 	// PUT: Upload data to new or existing file
-	router.put('/*', asyncRoute(async function (req, res) {
+	router.put('/*', asyncRoute(async function (req: Express.Request, res: Express.Response) {
 		let user = Auth.getUserGuard(req);
 
 		// Get query parameters and check for special GET operations	
@@ -372,8 +376,12 @@ export function getRouter() {
 			return;
 		}
 
-		// Phyisical target path
+		// Obtain phyisical target path and make sure it is valid.
 		let path = translate(user, '/' + req.params[0]);
+		if (!path) {
+			res.status(500).end();
+			return;
+		}
 
 		try {
 			await FS.promises.writeFile(path, req.body);
@@ -384,7 +392,7 @@ export function getRouter() {
 	}));
 
 	// DELETE: Delete file completely (no trash)
-	router.delete('/*', asyncRoute(async(req, res) => {
+	router.delete('/*', asyncRoute(async(req: Express.Request, res: Express.Response) => {
 		let userId = Auth.getUserGuard(req);
 
 		let vpath = '/' + req.params[0];
@@ -394,7 +402,7 @@ export function getRouter() {
 	}));
 
 	// PATCH: General file operations without response and non-cacheable
-	router.patch('/*', asyncRoute(async function(req, res) {
+	router.patch('/*', asyncRoute(async function(req: Express.Request, res: Express.Response) {
 		let userId = Auth.getUserGuard(req);
 		
 		// Get query parameters and check for special operations	
@@ -423,23 +431,28 @@ export function getRouter() {
 	}));
 
 	// PATCH/RENAME: Renames (moves) a path from one place to another
-	patchOperations['rename'] = async (req, res) => {
+	patchOperations['rename'] = async (req: Express.Request, res: Express.Response) => {
 		let user = Auth.getUserGuard(req);
 
 		let from = '/' + req.params[0];
-		let target = decodeURIComponent(req.query['rename']);
+		let target: any = req.query['rename'];
+		if (!target) {
+			res.status(400).end();
+			return;
+		}
+		let targetURI = decodeURIComponent(target);
 
-		await renameVirtual(user, from, target);
+		await renameVirtual(user, from, targetURI);
 
 		res.end();
 	}
 
 	// PATCH/COPY: Copies a path from one place to another
-	patchOperations['copy'] = async (req, res) => {
+	patchOperations['copy'] = async (req: Express.Request, res: Express.Response) => {
 		let user = Auth.getUserGuard(req);
 
 		let from = '/' + req.params[0];
-		let target = decodeURIComponent(req.query['copy']);
+		let target = decodeURIComponent((req.query['copy'] as string));
 
 		await copyVirtual(user, from, target);
 
@@ -447,7 +460,7 @@ export function getRouter() {
 	}
 
 	// GET/STATS
-	getOperations['stats'] = async (req, res) => {
+	getOperations['stats'] = async (req: Express.Request, res: Express.Response) => {
 		let user = Auth.getUserGuard(req);
 		let vpath = '/' + req.params[0];
 
@@ -455,11 +468,15 @@ export function getRouter() {
 	}
 
 	// GET/THUMB Thumbnail GET request
-	getOperations['thumb'] = async (req, res) => {
+	getOperations['thumb'] = async (req: Express.Request, res: Express.Response) => {
 		let userId = Auth.getUserGuard(req);
 
 		let vpath = '/' + req.params[0];
 		let fpath = translate(userId, vpath);
+		if (!fpath) {
+			res.status(400).end();
+			return;
+		}
 
 		if (Files.isFileExtVideo(fpath) || Files.isFileExtPicture(fpath)) {
 			await handleThumbRequest(fpath, res);
@@ -469,7 +486,7 @@ export function getRouter() {
 	};
 
 	// PUT/MAKE
-	putOperations['make'] = async (req, res) => {
+	putOperations['make'] = async (req: Express.Request, res: Express.Response) => {
 		let userId = Auth.getUserGuard(req);
 
 		let target = '/' + req.params[0];
@@ -484,7 +501,7 @@ export function getRouter() {
 	return router;
 }
 
-async function handleThumbRequest(_abs, res){
+async function handleThumbRequest(_abs: string, res: Express.Response){
 	let absFilePath = Files.toFullSystemPath(_abs);
 	var thumbfolder = Files.toFullSystemPath(`./.thumbnails/`);
 

@@ -3,8 +3,8 @@ import Express from 'express';
 import config from './config.mjs';
 import { BadAuthException } from './errors.mjs';
 
-export var logins = null;
-var userDefs = null;
+export var logins: any = null;
+var userDefs: any = null;
 
 export function init() {
 	logins = {};
@@ -14,7 +14,7 @@ export function init() {
 }
 
 /**
- * Tries to login a user with an id and password, returns its authkey on success, or 0 on failure.
+ * Tries to login a user with an id and password, returns its authKey on success, or 0 on failure.
  * @param id User's name.
  * @param pass String representation of the user's password.
  * @returns The user's new key, or 0 if the authentication failed.
@@ -31,16 +31,20 @@ export function login(id: string, pass: string): number {
 
 /**
  * Logs out an user.
- * @param {*} user The string id of an user
+ * @param user The string id of an user
  */
 export function logout(user: string) {
 	delete logins[user];
 }
 
-// Returns the user associated with the request.
-// If no-auth was set in config, returns the no-auth user.
-// Returns null if the request has no user or an invalid one associated with it.
-export function getUser(req: Express.Request) {
+/**
+ * Obtains the user associated with the request.
+ * If no-auth was set in config, returns the no-auth user.
+ * Returns null if the request has no user or an invalid one associated with it.
+ * @param req Express request object.
+ * @returns String id of the user, or null if no user is associated with it.
+ */
+export function getUser(req: Express.Request): string | null {
 	if (!req.cookies) return null;
 	let key = req.cookies.authkey;
 	
@@ -83,7 +87,12 @@ export function guard(req: Express.Request, res: Express.Response, next: Functio
 	next();
 }
 
-export function getRouter() {
+/**
+ * Obtains a Router for all paths meant for the authentication lifecycle.
+ * The routes are /login, /logout and /test.
+ * @returns The Express router.
+ */
+export function getRouter(): Express.Router {
 	let router = Express.Router();
 
 	// Login request
@@ -109,7 +118,7 @@ export function getRouter() {
 	return router;
 }
 
-function getRandomInt(min, max) {
+function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;

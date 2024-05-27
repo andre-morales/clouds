@@ -1,17 +1,17 @@
 import Express from 'express';
-
+import { Socket } from 'node:net';
 import * as Core from './core.mjs';
 
 var totalDataRead = 0;
 var totalDataWritten = 0;
-var liveSocketMap = null;
+var liveSocketMap: Map<Socket, object>;
 
 export function init() {
 	liveSocketMap = new Map();
 }
 
 export function getTracker() {
-	return (req, res, next) => {
+	return (req: Express.Request, res: any, next: any) => {
 		updateSocket(req.socket);
 
 		for (let s of liveSocketMap.keys()) {
@@ -39,9 +39,9 @@ export function getRouter() {
 	return router;
 }
 
-function updateSocket(socket) {
+function updateSocket(socket: Socket) {
 	// Obtain the user live sockets
-	let socketData = getSocketData(socket);
+	let socketData: any = getSocketData(socket);
 	if (socketData) {
 		// If this socket is still alive, only add the difference to the count
 		totalDataWritten += socket.bytesWritten - socketData.written;
@@ -71,16 +71,16 @@ function updateSocket(socket) {
 	}
 }
 
-function getSocketData(socket) {
+function getSocketData(socket: Socket): object | undefined {
 	return liveSocketMap.get(socket);
 }
 
-function createSocketData(socket) {
+function createSocketData(socket: Socket): object {
 	let socketData = {};
 	liveSocketMap.set(socket, socketData);
 	return socketData;
 }
 
-function deleteSocketData(socket) {
+function deleteSocketData(socket: Socket) {
 	liveSocketMap.delete(socket);
 }

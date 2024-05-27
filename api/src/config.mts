@@ -10,7 +10,7 @@ var config : any = {};
  *  profile.json file.
  * @param args Program cmd-line arguments
  */
-export function init(args) {
+export function init(args: string[]) {
 	let i = args.indexOf('--profile');
 	if (i >= 0) profile = args[i + 1];
 	console.log('Profile: ' + profile);
@@ -22,7 +22,7 @@ export function init(args) {
 	print();
 }
 
-export function isExtensionEnabled(ext) {
+export function isExtensionEnabled(ext: string) {
 	return config.extensions
 		&& config.extensions[ext]
 		&& config.extensions[ext].enabled;
