@@ -1,7 +1,7 @@
 import FS from 'fs';
 
 var profile = 'default';
-var config = {};
+var config : any = {};
 
 /**
  *  Initialize the configuration system with the program arguments.
@@ -15,8 +15,8 @@ export function init(args) {
 	if (i >= 0) profile = args[i + 1];
 	console.log('Profile: ' + profile);
 
-	let allConfig = JSON.parse(FS.readFileSync(`config/profiles/all.json`));
-	let profConfig = JSON.parse(FS.readFileSync(`config/profiles/${profile}.json`));
+	let allConfig = JSON.parse(FS.readFileSync(`config/profiles/all.json`).toString());
+	let profConfig = JSON.parse(FS.readFileSync(`config/profiles/${profile}.json`).toString());
 
 	Object.assign(config, allConfig, profConfig);
 	print();

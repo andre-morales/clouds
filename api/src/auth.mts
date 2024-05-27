@@ -8,12 +8,13 @@ var userDefs = null;
 
 export function init() {
 	logins = {};
-
-	userDefs = JSON.parse(FS.readFileSync('config/users.json'));
+	
+	let contents = FS.readFileSync('config/users.json'); 
+	userDefs = JSON.parse(contents.toString());
 }
 
 // Tries to login a user with an id and password, returns its authkey on success, or 0 on failure.
-export function login(id, pass) {
+export function login(id: string, pass: string) {
 	if ((id in userDefs) && (userDefs[id].pass === pass)) {
 		let key = getRandomInt(1, 32768);
 		logins[id] = key;
@@ -27,14 +28,14 @@ export function login(id, pass) {
  * Logs out an user.
  * @param {*} user The string id of an user
  */
-export function logout(user) {
+export function logout(user: string) {
 	delete logins[user];
 }
 
 // Returns the user associated with the request.
 // If no-auth was set in config, returns the no-auth user.
 // Returns null if the request has no user or an invalid one associated with it.
-export function getUser(req) {
+export function getUser(req: Express.Request) {
 	if (!req.cookies) return null;
 	let key = req.cookies.authkey;
 	
@@ -58,7 +59,7 @@ export function getUser(req) {
  * @param {*} req Express request
  * @returns The user associated with the request
  */
-export function getUserGuard(req) {
+export function getUserGuard(req: Express.Request) {
 	let user = getUser(req);
 	if (!user) throw new BadAuthException();
 	return user;

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "private": true,
-  "main": "api/modules/entry.mjs",
+  "main": "api/runtime/entry.mjs",
   "type": "module",
   "scripts": {
     "build": "webpack --config config/webpack/dev.cjs",
@@ -25,8 +25,10 @@
   "devDependencies": {
     "@babel/core": "^7.24.3",
     "@babel/preset-env": "^7.24.3",
+    "@types/express": "^4.17.21",
     "babel-loader": "^9.1.3",
     "core-js": "^3.36.1",
+    "typescript": "^5.4.5",
     "webpack": "^5.91.0",
     "webpack-bundle-analyzer": "^4.10.1",
     "webpack-cli": "^5.1.4"
