@@ -1,7 +1,12 @@
 import * as Path from 'path';
 
-/* Join two path locations with an unix seprator */
-export function join(a: string, b: string) {
+/**
+ * Join two paths with an unix seprator.
+ * @param a First path.
+ * @param b Second path.
+ * @returns <a>/<b>
+ */
+export function join(a: string, b: string): string {
 	var as = a.endsWith("/");
 	var bs = b.startsWith('/'); 
 	if(as && bs){

@@ -1,7 +1,7 @@
 import FS from 'fs';
 
 var profile = 'default';
-var config : any = {};
+var config: any = {};
 
 /**
  *  Initialize the configuration system with the program arguments.
@@ -22,12 +22,20 @@ export function init(args: string[]) {
 	print();
 }
 
-export function isExtensionEnabled(ext: string) {
+/**
+ * Checks wether the given extension is enabled.
+ * @param ext Th extension id.
+ * @returns True if the extension exists and is enabled, false otherwise.
+ */
+export function isExtensionEnabled(ext: string): boolean {
 	return config.extensions
 		&& config.extensions[ext]
 		&& config.extensions[ext].enabled;
 }
 
+/**
+ * Logs to the console the current configuration.
+ */
 export function print() {
 	console.log("Config:", config);
 }

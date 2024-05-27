@@ -4,7 +4,8 @@
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
 		"outDir": "runtime",
-		"sourceMap": true
+		"inlineSourceMap": true,
+		"incremental": true
 	},
 	"include": ["src"]
 }

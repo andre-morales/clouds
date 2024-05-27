@@ -3,7 +3,7 @@ import Express from 'express';
 import config from './config.mjs';
 import { BadAuthException } from './errors.mjs';
 
-export var logins: any = null;
+var logins: any = null;
 var userDefs: any = null;
 
 export function init() {

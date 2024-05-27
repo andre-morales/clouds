@@ -1,4 +1,4 @@
-export const KAPI_VERSION = '0.7.09';
+export const KAPI_VERSION = '0.8.00';
 
 // Lib imports
 import Path from 'path';
@@ -204,7 +204,11 @@ function denyRequest(res: Express.Response) {
 	res.send('BAD_AUTH: Authentication required.');
 }
 
-// Route wrapper for async routes
+/**
+ * Wraps a route handler in an async route capable of handling exceptions.
+ * @param fn The route handler in natural Express format.
+ * @returns An async function meant to be used as an Express route handler.
+ */
 export function asyncRoute(fn: Function) {
 	return async (req: any, res: any, next: any) => {
 		try {
