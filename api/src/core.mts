@@ -1,4 +1,4 @@
-export const KAPI_VERSION = '0.8.00';
+export const KAPI_VERSION = '0.8.01';
 
 // Lib imports
 import Path from 'path';

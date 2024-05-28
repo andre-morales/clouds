@@ -1,4 +1,5 @@
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import { Paths } from '/res/js/filesystem.mjs';
 
 export default class WebViewApp extends App {
 	constructor(...args) {
