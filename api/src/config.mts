@@ -1,7 +1,7 @@
 import FS from 'fs';
 
-var profile = 'default';
-var config: any = {};
+export var profile = 'default';
+export var config: any = {};
 
 /**
  *  Initialize the configuration system with the program arguments.
@@ -40,5 +40,4 @@ export function print() {
 	console.log("Config:", config);
 }
 
-export { profile, config };
 export default config;

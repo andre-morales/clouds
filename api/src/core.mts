@@ -17,7 +17,7 @@ import Chalk from 'chalk';
 import { BadAuthException } from './errors.mjs';
 import config, * as Config from './config.mjs';
 import * as Auth from './auth.mjs';
-import * as VFS from './vfs.mjs';
+import * as VFSRouter from './vfs_router.mjs';
 import * as Stats from './stats.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
@@ -33,7 +33,7 @@ export async function main(args: string[]) {
 
 	Config.init(args);
 	Auth.init();
-	VFS.init();
+	VFSRouter.init();
 	Stats.init();
 	FFmpeg.init();
 	RShell.init();
@@ -67,7 +67,7 @@ function initExpress() {
 
 	// API routes
 	app.use('/auth', Auth.getRouter());            // Auth system 
-	app.use('/fsv', VFS.getRouter());			   // Extended file system with HTTP verbs
+	app.use('/fsv', VFSRouter.getRouter());		   // Extended file system with HTTP verbs
 	app.use('/stat', [Auth.guard, Stats.getRouter()]);
 	apiSetupPages();     			    		   // Entry, Auth and Desktop
 	RShell.installRouter(app);

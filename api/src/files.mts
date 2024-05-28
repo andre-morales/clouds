@@ -1,58 +1,107 @@
-import * as Path from 'path';
+import FS from 'node:fs';
+import Path from 'node:path';
 
 /**
- * Join two paths with an unix seprator.
- * @param a First path.
- * @param b Second path.
- * @returns <a>/<b>
+ * Type returned by the file listing operation.
  */
-export function join(a: string, b: string): string {
-	var as = a.endsWith("/");
-	var bs = b.startsWith('/'); 
-	if(as && bs){
-		return a + b.substring(1);
-	} else if(as || bs){
-		return a + b;
-	} else {
-		return a + '/' + b;
-	}
+interface DirEntryArray {
+	/** Path name */
+	0: string;
+	/** Attributes */
+	1: string;
+	/** Creation date */
+	2: number;
 }
 
-/** Normalizes a path with unix separators (/)
- * @param path the path to be normalized. */
-export function normalize(path: string) {
-	return Path.normalize(path).replace(/\\/g, '/');
-}
+/**
+ * Obtain the size of this path. If this path is a folder, calculates its size recursively.
+ * @param path A path to a file or directory.
+ * @returns The size in bytes of the path.
+ */
+export async function size(path: string): Promise<number> {
+	let stats = await FS.promises.stat(path);
 
-/** Transforms the path given into a filesystem
- * absolute path, such as C:\Users... or /home/.
- * @param path the path to be transformed. */
-export function toFullSystemPath(path: string) {
-	return normalize(Path.resolve(path));
-}
-
-export function isFileExtVideo(path: string) {
-	let extensions = ['.mp4', '.webm', '.mkv', '.m4v'];
-	for (let ext of extensions) {
-		if (path.endsWith(ext)) return true;
+	// If path is a file, just return its size directly
+	if (!stats.isDirectory()) {
+		return stats.size;
 	}
 
-	return false;
+	// Read all of the files inside the directory, including sub-dirs
+	let files = await FS.promises.readdir(path, {
+		withFileTypes: true,
+		recursive: true
+	});
+
+	// For each subfile, query the size of the file in a promise
+	let promises = files.map(async (entry) => {
+		if (!entry.isFile()) return 0;
+
+		let fileName = entry.name;
+		let fileParentPath = (entry as any).parentPath;
+		let stat = await FS.promises.stat(Path.resolve(path, fileParentPath, fileName));
+		return stat.size;
+	});
+
+	// Await all of the size queries
+	let sizes = await Promise.all(promises);
+
+	// Sum all of the sizes
+	let size = sizes.reduce((acc, v) => acc + v, 0);
+	return size;
 }
 
-export function isFileExtPicture(path: string) {
-	let extensions = ['.webp', '.png', '.jpg', '.jpeg'];
-	for (let ext of extensions) {
-		if (path.endsWith(ext)) return true;
+/**
+ * List all files and their properties in a path.
+ * @param path Physical path to be listed.
+ * @returns Returns an array of paths. Each path is an array in the format [name, tags, data]
+ */
+export async function list(path: string): Promise<DirEntryArray[]> {
+	if (!path.endsWith('/')) path += '/';
+	
+	let files;
+	try {
+		files = await FS.promises.readdir(path, {
+			"withFileTypes": true
+		});
+	} catch (err: any) {
+		if (err.code == 'EPERM') throw 403;
+		if (err.code == 'ENOENT') throw 404;
+		if (err.code == 'ENOTDIR') throw 400;
+		else {
+			console.error(err);
+			throw 500;
+		}
 	}
 
-	return false;
-}
+	let promises = files.map(async (entry) => {
+		let file = entry.name;
+		let stype = '';
+		let creationTime = 0;
 
-export function hashPath(path: string) {
-	return path
-	.replaceAll('/', '_')
-	.replaceAll('\\', '_')
-	.replaceAll('.', '_')
-	.replaceAll(':', '_');
+		// If this try-catch fails, we probably have no rights to gather
+		// information about the file
+		try {
+			let stat = await FS.promises.stat(path + file);
+
+			//creationTime = stat.birthtimeMs;
+			creationTime = stat.mtimeMs;
+
+			if (stat.isDirectory()) {
+				file += '/';
+			}
+
+			if (entry.isSymbolicLink()) {
+				stype += 's';
+			}
+		} catch(e) {
+			// Add inacessible tag to it
+			stype += 'i';
+		}
+
+		let result: DirEntryArray = [file, stype, creationTime];
+		return result;
+	});
+
+	let results = await Promise.all(promises);
+	return results; 
 }

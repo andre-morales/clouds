@@ -1,8 +1,8 @@
 import * as CProc from 'child_process';
-import * as Files from '../files.mjs';
+import * as Files from '../pathx.mjs';
 import * as Config from '../config.mjs';
 
-var enabled = false;
+export var enabled = false;
 var config : any = {};
 
 export function init() {
