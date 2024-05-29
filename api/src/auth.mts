@@ -54,8 +54,8 @@ export function getUser(req: Express.Request): string | null {
 	}
 
 	// If the key isn't registered, check if we have a no-auth user configured
-	if (config.noauth) {
-		return config.noauth;
+	if (config.no_auth_user) {
+		return config.no_auth_user;
 	}
 	
 	// If no user, return null

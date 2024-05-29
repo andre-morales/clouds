@@ -20,6 +20,86 @@ export function init() {
 }
 
 /**
+ * Send a file as the response to a user.
+ * Used in the GET <file> route
+ * @param res Express response object.
+ * @param user Id of the request user.
+ * @param path Virtual path to the desired resource.
+ */
+function resSendFile(res: Express.Response, user: string, path: string): void {
+	// Translate the virtual path to a real one
+	let fPath = VFS.translate(user, path);
+	if (!fPath) {
+		res.status(404).end();
+		return;
+	}
+	
+	// Resolve the path and send the file.
+	let absPath = Path.resolve(fPath);
+	res.sendFile(absPath, (err: any) => {
+		if (!err) return;
+		
+		switch (err.code) {
+		// Fetch interrupted. Do nothing.
+		case 'ECONNABORTED':
+			res.status(200).end();
+			break;
+		// File doesn't exit
+		case 'ENOENT':
+			res.status(404).end();
+			break;
+		// Tried to GET a directory.
+		case 'EISDIR':
+			res.status(400).end();
+			break;
+		// Unknown error, log it.
+		default:
+			console.error("Send file failed with error: ", err);
+			res.status(500).end();
+		}
+	});
+}
+
+/**
+ * Validates and moves uploaded files into their target directory. Sends response to the user.
+ * Used in the POST <directory> route
+ * @param res Express response object.
+ * @param user Id of the request user.
+ * @param path Virtual directory path, target of the uploaded files.
+ * @param files Files upload structure obtained from the request.
+ */
+function resFetchFiles(res: Express.Response, user: string, path: string, files: any): void {
+	// Sanity check
+	if (!files) {
+		res.status(400).send('No file structure sent.');
+		return;
+	}
+
+	// Sanity check 2
+	if (!files.upload) {
+		res.status(400).send('No files sent.');
+		return;
+	}
+
+	// Translate target directory to physical and make sure the mapping exists
+	let fdir = VFS.translate(user, path);
+	if (!fdir) {
+		res.status(500).end();
+		return;
+	}
+
+	// Make sure uploaded files are in an array
+	let uploadedFiles = [files.upload].flat();
+
+	// Move the uploaded files into their target path
+	for(let file of uploadedFiles){
+		file.mv(Path.join(fdir, file.name));
+	}	
+
+	res.status(200).end();
+}
+
+/**
  * Obtains the client-side virtual file system router. Already performs authentication.
  * @returns The express router, mountable anywhere.
  */
@@ -34,26 +114,8 @@ export function getRouter(): Express.Router {
 	router.get('/*', asyncRoute(async function (req: Express.Request, res: Express.Response) {
 		let userId = Auth.getUserGuard(req);
 		
-		// Get query parameters and check for special GET operations	
-		let queryParams = Object.keys(req.query);	
-		if (queryParams.length > 0) {
-			// Only one special query operation allowed
-			if (queryParams.length != 1) {
-				res.status(400).send("Only one query operation allowed.");
-				return;
-			}
-
-			// Get operation name, and throw error if no such operation
-			let operation = queryParams[0];
-			let handler = getOperations[operation];
-			if (!handler) {
-				res.sendStatus(400);
-				return;
-			}
-
-			await handler(...arguments);
-			return;
-		}
+		let handled = await dispatchQueryOperation(req, res, getOperations);
+		if (handled) return;
 
 		let vPath = '/' + req.params[0];
 
@@ -68,103 +130,25 @@ export function getRouter(): Express.Router {
 			return;
 		}
 
-		// Translate the virtual path to a real one
-		let fPath = VFS.translate(userId, vPath);
-		if (!fPath) {
-			res.status(404).end();
-			return;
-		}
-		
-		// Resolve the path and send the file.
-		let absPath = Path.resolve(fPath);
-		res.sendFile(absPath, (err: any) => {
-			if (!err) return;
-			
-			switch (err.code) {
-			// Fetch interrupted. Do nothing.
-			case 'ECONNABORTED':
-				res.status(200).end();
-				break;
-			// File doesn't exit
-			case 'ENOENT':
-				res.status(404).end();
-				break;
-			// Tried to GET a directory.
-			case 'EISDIR':
-				res.status(400).end();
-				break;
-			// Unknown error, log it.
-			default:
-				console.error("Send file failed with error: ", err);
-				res.status(500).end();
-			}
-		});
+		// Otherwise, send the file to the user.
+		resSendFile(res, userId, vPath);
 	}));
 
 	// POST: Upload files trough upload form
 	router.post('/*', asyncRoute(async (req: Express.Request & { files: any }, res: Express.Response) => {	
-		let userId = Auth.getUserGuard(req);
-
-		// Sanity check
-		if (!req.files) {
-			console.log('no files');
-			res.status(500).end();
-			return;
-		}
-
-		// Sanity check 2
-		if (!req.files.upload) {
-			console.log('no uploaded files');
-			res.status(500).end();
-			return;
-		}
-		
-		// Translate target directory to physical and make sure the mapping exists
-		let vdir = '/' + req.params[0];
-		let fdir = VFS.translate(userId, vdir);
-		if (!fdir) {
-			res.status(500).end();
-			return;
-		}
-
-		// Make sure uploaded files are in an array
-		var files = req.files.upload;
-		if(!Array.isArray(files)){
-			files = [files];
-		}
-
-		// Move the uploaded files into their target path
-		for(let file of files){
-			file.mv(Path.join(fdir, file.name));
-		}	
-
-		res.end();
+		let user = Auth.getUserGuard(req);
+		let virtualPath = '/' + req.params[0];
+		let files = req.files;
+		resFetchFiles(res, user, virtualPath, files);
 	}));	
 
 	// PUT: Upload data to new or existing file
-	router.put('/*', asyncRoute(async function (req: Express.Request, res: Express.Response) {
+	router.put('/*', asyncRoute(async (req: Express.Request, res: Express.Response) => {
 		let user = Auth.getUserGuard(req);
 
-		// Get query parameters and check for special GET operations	
-		let queryParams = Object.keys(req.query);	
-		if (queryParams.length > 0) {
-			// Only one special query operation allowed
-			if (queryParams.length != 1) {
-				res.status(400).send("Only one query operation allowed.");
-				return;
-			}
-
-			// Get operation name, and throw error if no such operation
-			let operation = queryParams[0];
-			let handler = putOperations[operation];
-			if (!handler) {
-				res.sendStatus(400);
-				return;
-			}
-
-			await handler(...arguments);
-			return;
-		}
+		// Handle special operations specified though query parameters
+		let handled = await dispatchQueryOperation(req, res, putOperations);
+		if (handled) return;
 
 		// Obtain phyisical target path and make sure it is valid.
 		let path = VFS.translate(user, '/' + req.params[0]);
@@ -173,6 +157,7 @@ export function getRouter(): Express.Router {
 			return;
 		}
 
+		// Write request body straight to file content.
 		try {
 			await FS.promises.writeFile(path, req.body);
 		} catch (err) {
@@ -182,7 +167,7 @@ export function getRouter(): Express.Router {
 	}));
 
 	// DELETE: Delete file completely (no trash)
-	router.delete('/*', asyncRoute(async(req: Express.Request, res: Express.Response) => {
+	router.delete('/*', asyncRoute(async (req: Express.Request, res: Express.Response) => {
 		let userId = Auth.getUserGuard(req);
 
 		let vpath = '/' + req.params[0];
@@ -192,35 +177,18 @@ export function getRouter(): Express.Router {
 	}));
 
 	// PATCH: General file operations without response and non-cacheable
-	router.patch('/*', asyncRoute(async function(req: Express.Request, res: Express.Response) {
+	router.patch('/*', asyncRoute(async (req: Express.Request, res: Express.Response) => {
 		let userId = Auth.getUserGuard(req);
 		
-		// Get query parameters and check for special operations	
-		let queryParams = Object.keys(req.query);	
-		if (queryParams.length > 0) {
-			// Only one special operation allowed
-			if (queryParams.length != 1) {
-				res.status(400).send("Only one operation allowed.");
-				return;
-			}
+		// Handle special operations specified though query parameters
+		let handled = await dispatchQueryOperation(req, res, patchOperations);
+		if (handled) return;
 
-			// Get operation name, and throw error if no such operation
-			let operation = queryParams[0];
-			let handler = patchOperations[operation];
-			if (!handler) {
-				res.sendStatus(400);
-				return;
-			}
-
-			await handler(...arguments);
-			return;
-		}
-
-		// Patch request without operation is malformed
+		// Patch requests without any operation are malformed
 		res.sendStatus(400);
 	}));
 
-	// PATCH/RENAME: Renames (moves) a path from one place to another
+	// PATCH?=RENAME: Renames (moves) a path from one place to another
 	patchOperations['rename'] = async (req: Express.Request, res: Express.Response) => {
 		let user = Auth.getUserGuard(req);
 
@@ -237,7 +205,7 @@ export function getRouter(): Express.Router {
 		res.end();
 	}
 
-	// PATCH/COPY: Copies a path from one place to another
+	// PATCH?=COPY: Copies a path from one place to another
 	patchOperations['copy'] = async (req: Express.Request, res: Express.Response) => {
 		let user = Auth.getUserGuard(req);
 
@@ -249,7 +217,7 @@ export function getRouter(): Express.Router {
 		res.end();
 	}
 
-	// GET/STATS
+	// GET?=STATS
 	getOperations['stats'] = async (req: Express.Request, res: Express.Response) => {
 		let user = Auth.getUserGuard(req);
 		let vpath = '/' + req.params[0];
@@ -257,7 +225,7 @@ export function getRouter(): Express.Router {
 		res.json(await VFS.stats(user, vpath));
 	}
 
-	// GET/THUMB Thumbnail GET request
+	// GET?=THUMB Thumbnail GET request
 	getOperations['thumb'] = async (req: Express.Request, res: Express.Response) => {
 		let userId = Auth.getUserGuard(req);
 
@@ -275,7 +243,7 @@ export function getRouter(): Express.Router {
 		}
 	};
 
-	// PUT/MAKE
+	// PUT?=MAKE
 	putOperations['make'] = async (req: Express.Request, res: Express.Response) => {
 		let userId = Auth.getUserGuard(req);
 
@@ -289,6 +257,38 @@ export function getRouter(): Express.Router {
 	};
 
 	return router;
+}
+
+/**
+ * Invokes a function on the callback table with the same name as the query parameter.
+ * @param req Express request.
+ * @param res Express response.
+ * @param table Function tables with handlers for each kind of operation.
+ * @returns True if the request has handled (successfully or with an error), False if the request
+ * must be handled by someone (lacks a query parameter).
+ */
+async function dispatchQueryOperation(req: Express.Request, res: Express.Response, table: FunctionMap) {
+	// If there are no query parameters, let someone else handle the request.
+	let queryParams = Object.keys(req.query);	
+	if (queryParams.length == 0) return false;
+
+	// Only one special query operation allowed
+	if (queryParams.length != 1) {
+		res.status(400).send("Only one query operation allowed.");
+		return true;
+	}
+
+	// Get operation name, and send an error if there is no such operation.
+	let operation = queryParams[0];
+	let handler = table[operation];
+	if (!handler) {
+		res.status(400).send("No handler for operation.");
+		return true;
+	}
+
+	// Invoke handler
+	await handler(req, res);
+	return true;
 }
 
 async function handleThumbRequest(_abs: string, res: Express.Response){
