@@ -1,4 +1,4 @@
-export const KAPI_VERSION = '0.8.01';
+export const KAPI_VERSION = '0.8.02';
 
 // Lib imports
 import Path from 'path';
@@ -21,6 +21,10 @@ import * as VFSRouter from './vfs_router.mjs';
 import * as Stats from './stats.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
+
+interface AsyncRequestHandler {
+	(req: Express.Request, res: Express.Response, next: Express.NextFunction): Promise<any>;
+}
 
 var app: Express.Application;
 
@@ -209,8 +213,8 @@ function denyRequest(res: Express.Response) {
  * @param fn The route handler in natural Express format.
  * @returns An async function meant to be used as an Express route handler.
  */
-export function asyncRoute(fn: Function) {
-	return async (req: any, res: any, next: any) => {
+export function asyncRoute(fn: AsyncRequestHandler): AsyncRequestHandler {
+	return async (req, res, next) => {
 		try {
 			await fn(req, res, next);
 		} catch (err) {

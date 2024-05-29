@@ -12,11 +12,170 @@ interface FunctionMap {
 	[method: string]: Function;
 }
 
+// Add some properties to the Express request object
+declare global {
+	namespace Express {
+		interface Request {
+			/** User associated with this request. */
+			userId: string;
+
+			/** VFS path for this request. */
+			virtualPath: string;
+
+			/** Obtains the physical path translation of the virtual path associated with this
+			 * request. */
+			getPhysicalPath: () => string | null;
+		}
+	}
+}
+
 /**
  * Initializes virtual file system router.
  */
 export function init() {
 	VFS.init();
+}
+
+/**
+ * Obtains the client-side virtual file system router. Already performs authentication.
+ * @returns An express router mountable anywhere.
+ */
+export function getRouter(): Express.Router {
+	var router = Express.Router();
+
+	// Middleware handler for every VFS request
+	router.use((req, res, next) => {
+		// If the user isn't logged in, the request will be denied through an exception.
+		Auth.getUserGuard(req);
+		decorateRequest(req);
+		next();
+	});
+
+	let getOperations: FunctionMap = {};
+	let patchOperations: FunctionMap = {};
+	let putOperations: FunctionMap = {};
+
+	// GET: Query route
+	router.get('/*', asyncRoute(async (req, res) => {
+		let handled = await dispatchQueryOperation(req, res, getOperations);
+		if (handled) return;
+
+		let vPath = req.virtualPath;
+
+		// If querying a path that ends in slash, perform a directory listing
+		if (vPath.endsWith('/')) {
+			try {
+				let results = await VFS.list(req.userId, vPath);
+				res.json(results);
+			} catch (errCode: any) {
+				res.status(errCode).end();
+			}
+			return;
+		}
+
+		// Otherwise, send the file to the user.
+		resSendFile(res, req);
+	}));
+
+	// POST: Upload files trough upload form
+	router.post('/*', asyncRoute(async (req, res) => {	
+		resFetchFiles(res, req);
+	}));	
+
+	// PUT: Upload data to new or existing file
+	router.put('/*', asyncRoute(async (req, res) => {
+		// Handle special operations specified though query parameters
+		let handled = await dispatchQueryOperation(req, res, putOperations);
+		if (handled) return;
+
+		// Obtain phyisical target path and make sure it is valid.
+		let path = req.getPhysicalPath();
+		if (!path) {
+			res.status(500).end();
+			return;
+		}
+
+		// Write request body straight to file content.
+		try {
+			await FS.promises.writeFile(path, req.body);
+		} catch (err) {
+			res.status(500);
+		}
+		res.end();
+	}));
+
+	// DELETE: Delete file completely (no trash)
+	router.delete('/*', asyncRoute(async (req, res) => {
+		await VFS.erase(req.userId, req.virtualPath);
+		res.status(200).end();
+	}));
+
+	// PATCH: General file operations without response and non-cacheable
+	router.patch('/*', asyncRoute(async (req, res) => {
+		// Handle special operations specified though query parameters
+		let handled = await dispatchQueryOperation(req, res, patchOperations);
+		if (handled) return;
+
+		// Patch requests without any operation are malformed
+		res.status(400).end();
+	}));
+
+	// PATCH?=RENAME: Renames (moves) a path from one place to another
+	patchOperations['rename'] = async (req: Express.Request, res: Express.Response) => {
+		let from = req.virtualPath;
+		let target: any = req.query['rename'];
+		if (!target) {
+			res.status(400).end();
+			return;
+		}
+
+		let targetURI = decodeURIComponent(target);
+
+		await VFS.rename(req.userId, from, targetURI);
+
+		res.end();
+	}
+
+	// PATCH?=COPY: Copies a path from one place to another
+	patchOperations['copy'] = async (req: Express.Request, res: Express.Response) => {
+		let target = decodeURIComponent((req.query['copy'] as string));
+
+		await VFS.copy(req.userId, req.virtualPath, target);
+
+		res.end();
+	}
+
+	// GET?=STATS
+	getOperations['stats'] = async (req: Express.Request, res: Express.Response) => {
+		res.json(await VFS.stats(req.userId, req.virtualPath));
+	}
+
+	// GET?=THUMB Thumbnail GET request
+	getOperations['thumb'] = async (req: Express.Request, res: Express.Response) => {
+		let fpath = req.getPhysicalPath();
+		if (!fpath) {
+			res.status(400).end();
+			return;
+		}
+
+		if (Pathx.isFileExtVideo(fpath) || Pathx.isFileExtPicture(fpath)) {
+			await resThumbnail(res, req);
+		} else {
+			res.sendFile(fpath);
+		}
+	};
+
+	// PUT?=MAKE
+	putOperations['make'] = async (req: Express.Request, res: Express.Response) => {
+		let target = req.virtualPath;
+		if (target.endsWith('/')) {
+			await VFS.mkdir(req.userId, target);
+		}
+
+		res.end();
+	};
+
+	return router;
 }
 
 /**
@@ -26,9 +185,9 @@ export function init() {
  * @param user Id of the request user.
  * @param path Virtual path to the desired resource.
  */
-function resSendFile(res: Express.Response, user: string, path: string): void {
+function resSendFile(res: Express.Response, req: Express.Request): void {
 	// Translate the virtual path to a real one
-	let fPath = VFS.translate(user, path);
+	let fPath = req.getPhysicalPath();
 	if (!fPath) {
 		res.status(404).end();
 		return;
@@ -68,7 +227,9 @@ function resSendFile(res: Express.Response, user: string, path: string): void {
  * @param path Virtual directory path, target of the uploaded files.
  * @param files Files upload structure obtained from the request.
  */
-function resFetchFiles(res: Express.Response, user: string, path: string, files: any): void {
+function resFetchFiles(res: Express.Response, req: Express.Request): void {
+	let files = req.files;
+
 	// Sanity check
 	if (!files) {
 		res.status(400).send('No file structure sent.');
@@ -82,7 +243,7 @@ function resFetchFiles(res: Express.Response, user: string, path: string, files:
 	}
 
 	// Translate target directory to physical and make sure the mapping exists
-	let fdir = VFS.translate(user, path);
+	let fdir = req.getPhysicalPath();
 	if (!fdir) {
 		res.status(500).end();
 		return;
@@ -99,164 +260,39 @@ function resFetchFiles(res: Express.Response, user: string, path: string, files:
 	res.status(200).end();
 }
 
-/**
- * Obtains the client-side virtual file system router. Already performs authentication.
- * @returns The express router, mountable anywhere.
- */
-export function getRouter(): Express.Router {
-	var router = Express.Router();
+async function resThumbnail(res: Express.Response, req: Express.Request){
+	let _abs = req.getPhysicalPath() as string;
+	let absFilePath = Pathx.toFullSystemPath(_abs);
+	var thumbsDirectory = Pathx.toFullSystemPath(`./.thumbnails/`);
 
-	let getOperations: FunctionMap = {};
-	let patchOperations: FunctionMap = {};
-	let putOperations: FunctionMap = {};
+	let thumbnailName = encodePath(_abs);
+	var thumbnail = `${thumbsDirectory}/${thumbnailName}.thb`;
 
-	// GET: Query route
-	router.get('/*', asyncRoute(async function (req: Express.Request, res: Express.Response) {
-		let userId = Auth.getUserGuard(req);
-		
-		let handled = await dispatchQueryOperation(req, res, getOperations);
-		if (handled) return;
-
-		let vPath = '/' + req.params[0];
-
-		// If querying a path that ends in slash, perform a directory listing
-		if (vPath.endsWith('/')) {
-			try {
-				let results = await VFS.list(userId, vPath);
-				res.json(results);
-			} catch (errCode: any) {
-				res.status(errCode).end();
-			}
-			return;
-		}
-
-		// Otherwise, send the file to the user.
-		resSendFile(res, userId, vPath);
-	}));
-
-	// POST: Upload files trough upload form
-	router.post('/*', asyncRoute(async (req: Express.Request & { files: any }, res: Express.Response) => {	
-		let user = Auth.getUserGuard(req);
-		let virtualPath = '/' + req.params[0];
-		let files = req.files;
-		resFetchFiles(res, user, virtualPath, files);
-	}));	
-
-	// PUT: Upload data to new or existing file
-	router.put('/*', asyncRoute(async (req: Express.Request, res: Express.Response) => {
-		let user = Auth.getUserGuard(req);
-
-		// Handle special operations specified though query parameters
-		let handled = await dispatchQueryOperation(req, res, putOperations);
-		if (handled) return;
-
-		// Obtain phyisical target path and make sure it is valid.
-		let path = VFS.translate(user, '/' + req.params[0]);
-		if (!path) {
-			res.status(500).end();
-			return;
-		}
-
-		// Write request body straight to file content.
-		try {
-			await FS.promises.writeFile(path, req.body);
-		} catch (err) {
-			res.status(500);
-		}
-		res.end();
-	}));
-
-	// DELETE: Delete file completely (no trash)
-	router.delete('/*', asyncRoute(async (req: Express.Request, res: Express.Response) => {
-		let userId = Auth.getUserGuard(req);
-
-		let vpath = '/' + req.params[0];
-		await VFS.erase(userId, vpath);
-
-		res.end();
-	}));
-
-	// PATCH: General file operations without response and non-cacheable
-	router.patch('/*', asyncRoute(async (req: Express.Request, res: Express.Response) => {
-		let userId = Auth.getUserGuard(req);
-		
-		// Handle special operations specified though query parameters
-		let handled = await dispatchQueryOperation(req, res, patchOperations);
-		if (handled) return;
-
-		// Patch requests without any operation are malformed
-		res.sendStatus(400);
-	}));
-
-	// PATCH?=RENAME: Renames (moves) a path from one place to another
-	patchOperations['rename'] = async (req: Express.Request, res: Express.Response) => {
-		let user = Auth.getUserGuard(req);
-
-		let from = '/' + req.params[0];
-		let target: any = req.query['rename'];
-		if (!target) {
-			res.status(400).end();
-			return;
-		}
-		let targetURI = decodeURIComponent(target);
-
-		await VFS.rename(user, from, targetURI);
-
-		res.end();
+	// If the thumbnail exists, send it.
+	if(FS.existsSync(thumbnail)){
+		res.sendFile(thumbnail);
+		return;
 	}
 
-	// PATCH?=COPY: Copies a path from one place to another
-	patchOperations['copy'] = async (req: Express.Request, res: Express.Response) => {
-		let user = Auth.getUserGuard(req);
-
-		let from = '/' + req.params[0];
-		let target = decodeURIComponent((req.query['copy'] as string));
-
-		await VFS.copy(user, from, target);
-
-		res.end();
+	// If FFMmpeg isn't enabled to create a thumb, stop.
+	if(!FFmpeg.enabled) {
+		res.status(404).end();
+		return;
 	}
 
-	// GET?=STATS
-	getOperations['stats'] = async (req: Express.Request, res: Express.Response) => {
-		let user = Auth.getUserGuard(req);
-		let vpath = '/' + req.params[0];
+	// Create thumbnail directory
+	if(!FS.existsSync(thumbsDirectory)) FS.mkdirSync(thumbsDirectory);
 
-		res.json(await VFS.stats(user, vpath));
-	}
+	let result = await FFmpeg.createThumbOf(absFilePath, thumbnail);
 
-	// GET?=THUMB Thumbnail GET request
-	getOperations['thumb'] = async (req: Express.Request, res: Express.Response) => {
-		let userId = Auth.getUserGuard(req);
+	// If the thumbnail creation fails, create an empty file in the directory to skip it
+	// the next time
+	if(!result){
+		let f = await FS.promises.open(thumbnail, 'w');
+		f.close();
+	}	
 
-		let vpath = '/' + req.params[0];
-		let fpath = VFS.translate(userId, vpath);
-		if (!fpath) {
-			res.status(400).end();
-			return;
-		}
-
-		if (Pathx.isFileExtVideo(fpath) || Pathx.isFileExtPicture(fpath)) {
-			await handleThumbRequest(fpath, res);
-		} else {
-			res.sendFile(fpath);
-		}
-	};
-
-	// PUT?=MAKE
-	putOperations['make'] = async (req: Express.Request, res: Express.Response) => {
-		let userId = Auth.getUserGuard(req);
-
-		let target = '/' + req.params[0];
-
-		if (target.endsWith('/')) {
-			await VFS.mkdir(userId, target);
-		}
-
-		res.end();
-	};
-
-	return router;
+	res.sendFile(thumbnail);
 }
 
 /**
@@ -291,38 +327,27 @@ async function dispatchQueryOperation(req: Express.Request, res: Express.Respons
 	return true;
 }
 
-async function handleThumbRequest(_abs: string, res: Express.Response){
-	let absFilePath = Pathx.toFullSystemPath(_abs);
-	var thumbsDirectory = Pathx.toFullSystemPath(`./.thumbnails/`);
+/**
+ * Appends VFS related properties to every request object.
+ * @param req Express request.
+ */
+function decorateRequest(req: Express.Request) {
+	// Obtains the user id in every request.
+	req.userId = Auth.getUserGuard(req);
 
-	let thumbnailName = encodePath(_abs);
-	var thumbnail = `${thumbsDirectory}/${thumbnailName}.thb`;
+	// Format the virtual path
+	req.virtualPath = decodeURIComponent(req.path);
 
-	// If the thumbnail exists, send it.
-	if(FS.existsSync(thumbnail)){
-		res.sendFile(thumbnail);
-		return;
-	}
-
-	// If FFMmpeg isn't enabled to create a thumb, stop.
-	if(!FFmpeg.enabled) {
-		res.status(404).end();
-		return;
-	}
-
-	// Create thumbnail directory
-	if(!FS.existsSync(thumbsDirectory)) FS.mkdirSync(thumbsDirectory);
-
-	let result = await FFmpeg.createThumbOf(absFilePath, thumbnail);
-
-	// If the thumbnail creation fails, create an empty file in the directory to skip it
-	// the next time
-	if(!result){
-		let f = await FS.promises.open(thumbnail, 'w');
-		f.close();
-	}	
-
-	res.sendFile(thumbnail);
+	// Allow obtaining the physical path. Caches the translation result.
+	req.getPhysicalPath = () => {
+		let self: any = req.getPhysicalPath;
+		
+		if (self.cachedTranslation === undefined) {
+			self.cachedTranslation = VFS.translate(req.userId, req.virtualPath);
+		}
+		
+		return self.cachedTranslation;
+	};
 }
 
 function encodePath(path: string): string {
