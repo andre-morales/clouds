@@ -1,8 +1,9 @@
 # Any dot file or folder is ignored,
 .*/*
 
-# Except for the VSCode folder, which contains an useful development environment.
-!.vscode/*
+# But don't ignore launch.json and tasks.json, these enable out-of-box IDE tools
+!.vscode/launch.json
+!.vscode/tasks.json
 
 # Modules should be obtained from npm
 node_modules

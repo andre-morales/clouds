@@ -1,10 +1,23 @@
 import FS from 'node:fs';
 import Path from 'node:path';
 
+export enum ResultCode {
+	/** A non-specified error ocurred. */
+	UNKNOWN_ERROR = -1,
+	/** The operation executed successfully. */
+	SUCCESS = 0,
+	/** The path specified is invalid. */
+	NOT_FOUND,
+	/** The user has no access to the resource or operation requested. */
+	ACCESS_DENIED,
+	/** Malformed request. */
+	BAD_PARAMETERS
+}
+
 /**
  * Type returned by the file listing operation.
  */
-interface DirEntryArray {
+export interface DirEntryArray {
 	/** Path name */
 	0: string;
 	/** Attributes */
@@ -15,11 +28,23 @@ interface DirEntryArray {
 
 /**
  * Obtain the size of this path. If this path is a folder, calculates its size recursively.
+ * Throws FileOperationError.
  * @param path A path to a file or directory.
  * @returns The size in bytes of the path.
  */
 export async function size(path: string): Promise<number> {
-	let stats = await FS.promises.stat(path);
+	let stats: FS.Stats;
+	try {
+		stats = await FS.promises.stat(path);
+	} catch(err: any) {
+		if (err.code == 'EPERM') throw new FileOperationError(ResultCode.ACCESS_DENIED);
+		if (err.code == 'ENOENT') throw new FileOperationError(ResultCode.NOT_FOUND);
+		if (err.code == 'ENOTDIR') throw new FileOperationError(ResultCode.BAD_PARAMETERS);
+		else {
+			console.error(err);
+			throw new FileOperationError(ResultCode.UNKNOWN_ERROR);
+		}
+	}
 
 	// If path is a file, just return its size directly
 	if (!stats.isDirectory()) {
@@ -32,7 +57,7 @@ export async function size(path: string): Promise<number> {
 		recursive: true
 	});
 
-	// For each subfile, query the size of the file in a promise
+	// For each sub-file, query the size of the file in a promise
 	let promises = files.map(async (entry) => {
 		if (!entry.isFile()) return 0;
 
@@ -51,7 +76,7 @@ export async function size(path: string): Promise<number> {
 }
 
 /**
- * List all files and their properties in a path.
+ * List all files and their properties in a path. Throws FileOperationError.
  * @param path Physical path to be listed.
  * @returns Returns an array of paths. Each path is an array in the format [name, tags, data]
  */
@@ -64,18 +89,18 @@ export async function list(path: string): Promise<DirEntryArray[]> {
 			"withFileTypes": true
 		});
 	} catch (err: any) {
-		if (err.code == 'EPERM') throw 403;
-		if (err.code == 'ENOENT') throw 404;
-		if (err.code == 'ENOTDIR') throw 400;
+		if (err.code == 'EPERM') throw new FileOperationError(ResultCode.ACCESS_DENIED);
+		if (err.code == 'ENOENT') throw new FileOperationError(ResultCode.NOT_FOUND);
+		if (err.code == 'ENOTDIR') throw new FileOperationError(ResultCode.BAD_PARAMETERS);
 		else {
 			console.error(err);
-			throw 500;
+			throw new FileOperationError(ResultCode.UNKNOWN_ERROR);
 		}
 	}
 
 	let promises = files.map(async (entry) => {
 		let file = entry.name;
-		let stype = '';
+		let tags = '';
 		let creationTime = 0;
 
 		// If this try-catch fails, we probably have no rights to gather
@@ -91,17 +116,62 @@ export async function list(path: string): Promise<DirEntryArray[]> {
 			}
 
 			if (entry.isSymbolicLink()) {
-				stype += 's';
+				tags += 's';
 			}
 		} catch(e) {
-			// Add inacessible tag to it
-			stype += 'i';
+			// Add inaccessible tag to it
+			tags += 'i';
 		}
 
-		let result: DirEntryArray = [file, stype, creationTime];
+		let result: DirEntryArray = [file, tags, creationTime];
 		return result;
 	});
 
 	let results = await Promise.all(promises);
 	return results; 
+}
+
+/**
+ * Converts a file operation result to the HTTP status code that it resembles the most.
+ * @param result The operation status you want to convert.
+ * @returns A HTTP status code.
+ */
+export function getResultHTTPCode(result: ResultCode): number {
+	switch(result) {
+		case ResultCode.SUCCESS:
+			return 200;
+		case ResultCode.NOT_FOUND:
+			return 404;
+		case ResultCode.ACCESS_DENIED:
+			return 403;
+		default:
+			return 500;
+	}
+}
+
+export function getResultName(result: ResultCode): string {
+	switch(result) {
+		case ResultCode.SUCCESS:
+			return "Success";
+		case ResultCode.NOT_FOUND:
+			return "No mapping";
+		case ResultCode.ACCESS_DENIED:
+			return "Access denied";
+		default:
+			return "Unknown";
+	}
+}
+
+export class FileOperationError extends Error {
+	code: ResultCode;
+
+	constructor(status: ResultCode) {
+		super(`${getResultName(status)}.`);
+		this.name = 'FileOperationError';
+		this.code = status;
+	}
+
+	getHTTPCode(): number {
+		return getResultHTTPCode(this.code);
+	}
 }

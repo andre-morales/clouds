@@ -1,4 +1,4 @@
-export const KAPI_VERSION = '0.8.02';
+export const KAPI_VERSION = '0.8.03';
 
 // Lib imports
 import Path from 'path';
@@ -8,7 +8,7 @@ import HTTPS from 'https';
 import Compression from 'compression';
 import CookieParser from 'cookie-parser';
 import Cors from 'cors';
-import Express from 'express';
+import Express, { Request, Response, NextFunction } from 'express';
 import FileUpload from 'express-fileupload';
 import Morgan from 'morgan';
 import Chalk from 'chalk';
@@ -22,7 +22,7 @@ import * as Stats from './stats.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
 
-interface AsyncRequestHandler {
+export interface AsyncRequestHandler {
 	(req: Express.Request, res: Express.Response, next: Express.NextFunction): Promise<any>;
 }
 
@@ -78,7 +78,7 @@ function initExpress() {
 	apiSetupApps();								   // Apps service
 
 	// General error handler
-	app.use((err: any, req: any, res: any, next: any) => {
+	app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 		if (err instanceof BadAuthException) {
 			denyRequest(res);
 			return;
@@ -86,6 +86,7 @@ function initExpress() {
 
 		next(err);
 	});
+
 
 	app.set('view engine', 'ejs');
 	app.set('views', 'api/pages');
@@ -140,8 +141,8 @@ function apiSetupApps() {
 	app.get('/app/:app/*', Auth.guard, (req, res) => {
 		let app = req.params.app;
 		let path = req.params[0];	
-		let fpath = './client/apps/' + app + '/' + path;
-		res.sendFile(Path.resolve(fpath));
+		let fPath = './client/apps/' + app + '/' + path;
+		res.sendFile(Path.resolve(fPath));
 	});
 }
 
@@ -181,7 +182,7 @@ function setupLoggingRouter() {
 			url = url.padStart(URL_LENGTH);
 		}
 
-		// Show time in millis or seconds and color slow responses yellow or red
+		// Show time in milliseconds or seconds and color slow responses yellow or red
 		let timeMs = Number(time);
 		if (timeMs >= 1000) {
 			time = Chalk.red((timeMs / 1000).toFixed(0) + 's');

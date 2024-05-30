@@ -1,15 +1,20 @@
-import Express from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import Path from 'node:path';
 import FS from 'node:fs';
 
 import { asyncRoute } from './core.mjs';
 import * as VFS from './vfs.mjs';
+import { PathStats } from './vfs.mjs';
+import * as Files from './files.mjs';
+import { FileOperationError } from './files.mjs';
+
 import * as Auth from './auth.mjs'
 import * as Pathx from './pathx.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs'
 
+/** Object map from names to async request handlers */
 interface FunctionMap {
-	[method: string]: Function;
+	[method: string]: (req: Request, res: Response) => Promise<void>;
 }
 
 // Add some properties to the Express request object
@@ -40,8 +45,8 @@ export function init() {
  * Obtains the client-side virtual file system router. Already performs authentication.
  * @returns An express router mountable anywhere.
  */
-export function getRouter(): Express.Router {
-	var router = Express.Router();
+export function getRouter(): Router {
+	var router = Router();
 
 	// Middleware handler for every VFS request
 	router.use((req, res, next) => {
@@ -57,24 +62,19 @@ export function getRouter(): Express.Router {
 
 	// GET: Query route
 	router.get('/*', asyncRoute(async (req, res) => {
+		// Handle special operations
 		let handled = await dispatchQueryOperation(req, res, getOperations);
 		if (handled) return;
 
-		let vPath = req.virtualPath;
-
-		// If querying a path that ends in slash, perform a directory listing
-		if (vPath.endsWith('/')) {
-			try {
-				let results = await VFS.list(req.userId, vPath);
-				res.json(results);
-			} catch (errCode: any) {
-				res.status(errCode).end();
-			}
+		// If querying a path that doesn't end in a slash, just send the file.
+		if (!req.virtualPath.endsWith('/')) {
+			resSendFile(res, req);
 			return;
 		}
 
-		// Otherwise, send the file to the user.
-		resSendFile(res, req);
+		// Otherwise, perform a directory listing
+		let results = await VFS.list(req.userId, req.virtualPath);
+		res.json(results);
 	}));
 
 	// POST: Upload files trough upload form
@@ -88,7 +88,7 @@ export function getRouter(): Express.Router {
 		let handled = await dispatchQueryOperation(req, res, putOperations);
 		if (handled) return;
 
-		// Obtain phyisical target path and make sure it is valid.
+		// Obtain physical target path and make sure it is valid.
 		let path = req.getPhysicalPath();
 		if (!path) {
 			res.status(500).end();
@@ -116,12 +116,12 @@ export function getRouter(): Express.Router {
 		let handled = await dispatchQueryOperation(req, res, patchOperations);
 		if (handled) return;
 
-		// Patch requests without any operation are malformed
+		// Patch requests without an operation are malformed
 		res.status(400).end();
 	}));
 
 	// PATCH?=RENAME: Renames (moves) a path from one place to another
-	patchOperations['rename'] = async (req: Express.Request, res: Express.Response) => {
+	patchOperations['rename'] = async (req, res) => {
 		let from = req.virtualPath;
 		let target: any = req.query['rename'];
 		if (!target) {
@@ -137,43 +137,55 @@ export function getRouter(): Express.Router {
 	}
 
 	// PATCH?=COPY: Copies a path from one place to another
-	patchOperations['copy'] = async (req: Express.Request, res: Express.Response) => {
+	patchOperations['copy'] = async (req, res) => {
 		let target = decodeURIComponent((req.query['copy'] as string));
 
-		await VFS.copy(req.userId, req.virtualPath, target);
-
+		let result = await VFS.copy(req.userId, req.virtualPath, target);
+		res.status(Files.getResultHTTPCode(result));
 		res.end();
 	}
 
 	// GET?=STATS
-	getOperations['stats'] = async (req: Express.Request, res: Express.Response) => {
-		res.json(await VFS.stats(req.userId, req.virtualPath));
+	getOperations['stats'] = async (req, res) => {
+		let result = await VFS.stats(req.userId, req.virtualPath);
+		res.json(result).end();
 	}
 
 	// GET?=THUMB Thumbnail GET request
-	getOperations['thumb'] = async (req: Express.Request, res: Express.Response) => {
-		let fpath = req.getPhysicalPath();
-		if (!fpath) {
-			res.status(400).end();
+	getOperations['thumb'] = async (req, res) => {
+		let path = req.getPhysicalPath();
+		if (!path) {
+			res.status(404).end();
 			return;
 		}
 
-		if (Pathx.isFileExtVideo(fpath) || Pathx.isFileExtPicture(fpath)) {
+		if (Pathx.isFileExtVideo(path) || Pathx.isFileExtPicture(path)) {
 			await resThumbnail(res, req);
 		} else {
-			res.sendFile(fpath);
+			res.sendFile(path);
 		}
 	};
 
 	// PUT?=MAKE
-	putOperations['make'] = async (req: Express.Request, res: Express.Response) => {
-		let target = req.virtualPath;
-		if (target.endsWith('/')) {
-			await VFS.mkdir(req.userId, target);
+	putOperations['make'] = async (req, res) => {
+		// Trying to create a path that isn't a folder is a malformed request.
+		if (!req.virtualPath.endsWith('/')) {
+			res.status(400).end();
+			return;
 		}
 
-		res.end();
+		await VFS.mkdir(req.userId, req.virtualPath);
 	};
+
+	// General file operation error handler
+	router.use((err: Error, req: any, res: Response, next: any): void => {
+		if (err instanceof FileOperationError) {
+			res.status(err.getHTTPCode()).end();
+			return;
+		}
+
+		next(err);
+	});
 
 	return router;
 }
@@ -185,7 +197,7 @@ export function getRouter(): Express.Router {
  * @param user Id of the request user.
  * @param path Virtual path to the desired resource.
  */
-function resSendFile(res: Express.Response, req: Express.Request): void {
+function resSendFile(res: Response, req: Request): void {
 	// Translate the virtual path to a real one
 	let fPath = req.getPhysicalPath();
 	if (!fPath) {
@@ -227,7 +239,7 @@ function resSendFile(res: Express.Response, req: Express.Request): void {
  * @param path Virtual directory path, target of the uploaded files.
  * @param files Files upload structure obtained from the request.
  */
-function resFetchFiles(res: Express.Response, req: Express.Request): void {
+function resFetchFiles(res: Response, req: Request): void {
 	let files = req.files;
 
 	// Sanity check
@@ -243,8 +255,8 @@ function resFetchFiles(res: Express.Response, req: Express.Request): void {
 	}
 
 	// Translate target directory to physical and make sure the mapping exists
-	let fdir = req.getPhysicalPath();
-	if (!fdir) {
+	let fDir = req.getPhysicalPath();
+	if (!fDir) {
 		res.status(500).end();
 		return;
 	}
@@ -254,13 +266,18 @@ function resFetchFiles(res: Express.Response, req: Express.Request): void {
 
 	// Move the uploaded files into their target path
 	for(let file of uploadedFiles){
-		file.mv(Path.join(fdir, file.name));
+		file.mv(Path.join(fDir, file.name));
 	}	
 
 	res.status(200).end();
 }
 
-async function resThumbnail(res: Express.Response, req: Express.Request){
+/**
+ * Sends a thumbnail to the user based on the original file requested.
+ * @param res Express response.
+ * @param req Express request.
+ */
+async function resThumbnail(res: Response, req: Request): Promise<void> {
 	let _abs = req.getPhysicalPath() as string;
 	let absFilePath = Pathx.toFullSystemPath(_abs);
 	var thumbsDirectory = Pathx.toFullSystemPath(`./.thumbnails/`);
@@ -274,7 +291,7 @@ async function resThumbnail(res: Express.Response, req: Express.Request){
 		return;
 	}
 
-	// If FFMmpeg isn't enabled to create a thumb, stop.
+	// If FFMpeg isn't enabled to create a thumb, stop.
 	if(!FFmpeg.enabled) {
 		res.status(404).end();
 		return;
@@ -303,7 +320,7 @@ async function resThumbnail(res: Express.Response, req: Express.Request){
  * @returns True if the request has handled (successfully or with an error), False if the request
  * must be handled by someone (lacks a query parameter).
  */
-async function dispatchQueryOperation(req: Express.Request, res: Express.Response, table: FunctionMap) {
+async function dispatchQueryOperation(req: Request, res: Response, table: FunctionMap) {
 	// If there are no query parameters, let someone else handle the request.
 	let queryParams = Object.keys(req.query);	
 	if (queryParams.length == 0) return false;
@@ -331,7 +348,7 @@ async function dispatchQueryOperation(req: Express.Request, res: Express.Respons
  * Appends VFS related properties to every request object.
  * @param req Express request.
  */
-function decorateRequest(req: Express.Request) {
+function decorateRequest(req: Request) {
 	// Obtains the user id in every request.
 	req.userId = Auth.getUserGuard(req);
 

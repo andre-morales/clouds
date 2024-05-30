@@ -1,7 +1,17 @@
 import FS from 'fs';
 
+interface Configuration {
+	extensions?: any;
+	fs?: any;
+	log_fs_operations?: boolean;
+	log_requests?: boolean;
+	https_port?: number;
+	http_port?: number;
+	no_auth_user?: string;
+}
+
 export var profile = 'default';
-export var config: any = {};
+export var config: Configuration = {};
 
 /**
  *  Initialize the configuration system with the program arguments.

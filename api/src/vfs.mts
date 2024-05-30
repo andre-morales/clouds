@@ -3,13 +3,10 @@ import Path from 'node:path';
 
 import config from './config.mjs';
 import * as Files from './files.mjs';
+import { ResultCode, FileOperationError } from './files.mjs';
 
-interface MountingPoint {
-	/** Virtual mounting point. */
-	0: string;
-}
-
-interface PathStats {
+/** Properties of path. Be it a file or folder. */
+export interface PathStats {
 	size: number;
 }
 
@@ -63,28 +60,29 @@ export function translate(userId: string, virtualPath: string): string | null {
  * @returns An array of mounting points. Each mount point is an array with in the format
  * [virtual] of paths.
  */
-export function listMountingPoints(userId: string): MountingPoint[] {
-	let result: MountingPoint[] = Object
+export function listMountingPoints(userId: string): Files.DirEntryArray[] {
+	let result = Object
 	.keys(defs)
 	.filter((vmp) => {
 		return !defs[vmp].hidden;
 	})
 	.map((vmp) => {
-		return [vmp];
+		let entry: Files.DirEntryArray = [vmp, '', 0];
+		return entry;
 	});
 	return result;
 }
 
 // Erases completely the given file or folder
 export async function erase(user: string, path: string) { 
-	let fpath = translate(user, path);
-	if (!fpath) return;
+	let fPath = translate(user, path);
+	if (!fPath) return;
 
 	if (config.log_fs_operations) {
-		console.log(`Erasing "${fpath}"`);
+		console.log(`Erasing "${fPath}"`);
 	}
 
-	await FS.promises.rm(fpath, { recursive: true });
+	await FS.promises.rm(fPath, { recursive: true });
 }
 
 // Moves a path to another, this can move files or folders and give them new names
@@ -101,19 +99,33 @@ export async function rename(user: string, path: string, newPath: string) {
 }
 
 // Copies a file to another path, if the target already exists, fails.
-export async function copy(user: string, srcPath: string, dstPath: string) {
+export async function copy(user: string, srcPath: string, dstPath: string): Promise<ResultCode> {
+	// Validate and translate paths
 	let fSource = translate(user, srcPath);
 	let fDestination = translate(user, dstPath);
-	if (!fSource || !fDestination) return;
+	if (!fSource || !fDestination) return ResultCode.NOT_FOUND;
 
 	if (config.log_fs_operations) {
 		console.log(`Copying "${fSource}" to "${fDestination}"`);
 	}
 
-	await FS.promises.copyFile(fSource, fDestination, FS.constants.COPYFILE_EXCL);
+	// Perform the copy operation safely.
+	try {
+		await FS.promises.copyFile(fSource, fDestination, FS.constants.COPYFILE_EXCL);
+	} catch(err) {
+		return ResultCode.UNKNOWN_ERROR;
+	}
+	return ResultCode.SUCCESS;
 }
 
-export async function list(user: string, path: string) {
+/**
+ * List in an array format all files present in the given path. Throws FileOperationError.
+ * For the path '/', the system mounting points are returned.
+ * @param user Id of the user performing the listing.
+ * @param path Path to a directory.
+ * @returns Array of directory entry arrays.
+ */
+export async function list(user: string, path: string): Promise<Files.DirEntryArray[]> {
 	// If the virtual path is root '/', list the virtual mounting points
 	if (path == '/') {
 		return listMountingPoints(user);
@@ -122,7 +134,7 @@ export async function list(user: string, path: string) {
 	// Translate the virtual path to the machine physical path
 	let fPath = translate(user, path);
 	if (!fPath) {
-		throw 404;
+		throw new FileOperationError(ResultCode.NOT_FOUND);
 	}
 
 	// List the directory
@@ -131,14 +143,14 @@ export async function list(user: string, path: string) {
 }
 
 /**
- * Obtains properties from the given path, for example its size.
+ * Obtains properties from the given path, for example its size. Throws FileOperationError.
  * @param user User performing the operation.
  * @param path Path to a file or directory.
- * @returns The stats of the path, or null if it is inacessible.
+ * @returns The stat properties of the path.
  */
-export async function stats(user: string, path: string): Promise<PathStats | null> {
+export async function stats(user: string, path: string): Promise<PathStats> {
 	let fPath = translate(user, path);
-	if (!fPath) return null;
+	if (!fPath) throw new FileOperationError(ResultCode.NOT_FOUND);
 
 	let pSize = await Files.size(fPath);
 
@@ -148,16 +160,24 @@ export async function stats(user: string, path: string): Promise<PathStats | nul
 }
 
 /**
+ * Create a new directory. Throws FileOperationError.
  * @param user User performing the operation. 
  * @param path Path to a directory you want to create.
  */
-export async function mkdir(user: string, path: string): Promise<void> {
+export async function mkdir(user: string, path: string) {
+	// Get physical path
 	let fPath = translate(user, path);
-	if (!fPath) return;
+	if (!fPath) throw new FileOperationError(ResultCode.NOT_FOUND);
 
 	if (config.log_fs_operations) {
 		console.log(`New Directory in "${fPath}"`);
 	}
 
-	await FS.promises.mkdir(fPath);
+	// Try creating the directory safely.
+	try {
+		await FS.promises.mkdir(fPath);
+	} catch(err) {
+		console.error(err);
+		throw new FileOperationError(ResultCode.UNKNOWN_ERROR);
+	}
 }
