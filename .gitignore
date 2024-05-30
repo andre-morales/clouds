@@ -19,10 +19,11 @@ usr/test/.system/desktop.json
 # SSL configuration should be kept private
 config/ssl
 
-# Ignore bundled content
+# Ignore generated bundled content
 client/res/pack
 *.bundle.js
 *.map
+*.tsbuildinfo
 
 # Original sample image shouldn't be tracked
 docs/sample.png

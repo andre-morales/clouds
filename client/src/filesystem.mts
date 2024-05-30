@@ -2,12 +2,12 @@ import Util from './util.mjs';
 import { BadParameterFault, FetchException, Exception } from './faults.mjs';
 
 export class FileSystem {
-	static async readText(path) {
+	static async readText(path: string) {
 		let res = await fetch(Paths.toFSV(path));
 		return await res.text();
 	}
 
-	static async readJson(path) {
+	static async readJson(path: string) {
 		let url = Paths.toFSV(path);
 		try {
 			let res = await fetch(url);
@@ -19,7 +19,7 @@ export class FileSystem {
 		}
 	}	
 
-	static async writeText(path, text) {
+	static async writeText(path: string, text: string) {
 		await fetch(Paths.toFSV(path), {
 			method: 'PUT',
 			body: text,
@@ -29,11 +29,11 @@ export class FileSystem {
 		});
 	}
 
-	static async writeJson(path, obj) {
+	static async writeJson(path: string, obj: object) {
 		await FileSystem.writeText(path, JSON.stringify(obj));
 	}
 
-	static writeUploadForm(path, form, listeners) {
+	static writeUploadForm(path: string, form, listeners) {
 		let formData = new FormData(form);
 		let req = new XMLHttpRequest();
 		
@@ -46,21 +46,21 @@ export class FileSystem {
 		return req;
 	}
 
-	static async list(path) {
+	static async list(path: string) {
 		// Convert the path to a list cmd
 		if (!path.endsWith('/')) path += '/';
 		let cmd = Paths.toFSV(path);
 
-		let fres = await fetch(cmd);
-		if (fres.status != 200) {
-			throw new FileSystemException(`List operation failed with status ${fres.status}`);
+		let fRes = await fetch(cmd);
+		if (fRes.status != 200) {
+			throw new FileSystemException(`List operation failed with status ${fRes.status}`);
 		}
 
-		let result = await fres.json();
+		let result = await fRes.json();
 		return result;
 	}
 
-	static async rename(from, to) {
+	static async rename(from: string, to: string) {
 		let fromPath = Paths.toFSV(from);
 		let toPath = Paths.removeFSPrefix(to);
 
@@ -73,7 +73,7 @@ export class FileSystem {
 		}
 	}
 
-	static async copy(from, to) {
+	static async copy(from: string, to: string) {
 		let fromPath = Paths.toFSV(from);
 		let toPath = Paths.removeFSPrefix(to);
 
@@ -86,48 +86,48 @@ export class FileSystem {
 		}
 	}
 
-	static async erase(path) {
+	static async erase(path: string) {
 		// Convert the path
 		let cmd = Paths.toFSV(path);
 
 		// Perform the operation
-		let fres = await fetch(cmd, {
+		let fRes = await fetch(cmd, {
 			method: 'DELETE'
 		});
-		if (fres.status != 200) {
-			throw new FileSystemException(`Erase operation of "${path}" failed with status ${fres.status}.`);
+		if (fRes.status != 200) {
+			throw new FileSystemException(`Erase operation of "${path}" failed with status ${fRes.status}.`);
 		}
 	} 
 
-	static async stats(path) {
+	static async stats(path: string) {
 		// Convert the path
 		let cmd = Paths.toFSV(path) + '?stats';
 
-		let fres = await fetch(cmd);
-		if (fres.status != 200) {
-			throw new FileSystemException(`Stats operation failed with status ${fres.status}`);
+		let fRes = await fetch(cmd);
+		if (fRes.status != 200) {
+			throw new FileSystemException(`Stats operation failed with status ${fRes.status}`);
 		}
 
-		let result = await fres.json();
+		let result = await fRes.json();
 		return result;
 	}
 
-	static async makeDirectory(path) {
+	static async makeDirectory(path: string) {
 		// Convert the path
 		let cmd = Paths.toFSV(path) + '?make';
 
 		// Perform the operation
-		let fres = await fetch(cmd, {
+		let fRes = await fetch(cmd, {
 			method: 'PUT'
 		});
-		if (fres.status != 200) {
-			throw new FileSystemException(`Mkdir operation in "${path}" failed with status ${fres.status}.`);
+		if (fRes.status != 200) {
+			throw new FileSystemException(`Mkdir operation in "${path}" failed with status ${fRes.status}.`);
 		}
 	}
 }
 
 export class Paths {
-	static toFS(path, op) {
+	static toFS(path: string, op: string) {
 		// If it is already a FS path, replace the op	
 		if (Paths.isFS(path)) {
 			// Remove fs-op prefix and add new one
@@ -142,7 +142,7 @@ export class Paths {
 		}
 	}
 
-	static toFSV(path) {
+	static toFSV(path: string) {
 		// If it is already a FSV path, don't alter anything
 		if (Paths.isFSV(path)) return path;
 
@@ -160,16 +160,16 @@ export class Paths {
 		}
 	}
 
-	static isFS(path) {
+	static isFS(path: string) {
 		return path.startsWith('/fs/');
 	}
 
-	static isFSV(path) {
+	static isFSV(path: string) {
 		return path.startsWith('/fsv/');
 	}
 
 	// Removes FS or FSV prefix
-	static removeFSPrefix(path) {
+	static removeFSPrefix(path: string) {
 		if (Paths.isFSV(path)) {
 			return path.substring(path.indexOf('/', 1));		
 		} else if (Paths.isFS(path)) {
@@ -178,7 +178,7 @@ export class Paths {
 		return path;
 	}
 
-	static parent(path) {
+	static parent(path: string) {
 		if (path.endsWith('/')) {
 			return path.substring(0, path.lastIndexOf('/', path.length - 2) + 1);	
 		} else {
@@ -186,7 +186,7 @@ export class Paths {
 		}
 	}
 
-	static file(path) {
+	static file(path: string) {
 		if (path.endsWith('/')) {
 			return path.substring(path.lastIndexOf('/', path.length - 2) + 1);	
 		} else {
@@ -194,7 +194,7 @@ export class Paths {
 		}
 	}
 
-	static join(base, child) {
+	static join(base: string, child: string) {
 		let path = "";
 
 		if (child.startsWith("/")) {
@@ -208,7 +208,7 @@ export class Paths {
 		return Paths.resolve(path);
 	}
 
-	static resolve(path) {
+	static resolve(path: string) {
 		// Remove redundant local references
 		path = path.replaceAll('/./', '/');
 
@@ -246,33 +246,33 @@ export class Paths {
 }
 
 export class FileTypes {
-	static isDir(path) {
+	static isDir(path: string) {
 		return path.endsWith('/');
 	}
 
-	static isVideo(path) {
+	static isVideo(path: string) {
 		return Util.endsWithAny(path, ['.mp4', '.mkv', '.webm', '.m4v']);
 	}
 
-	static isPicture(path) {
+	static isPicture(path: string) {
 		return Util.endsWithAny(path, ['.png', '.jpg', '.jpeg', '.webp']);
 	}
 
-	static isAudio(path) {
+	static isAudio(path: string) {
 		return Util.endsWithAny(path, ['.mp3', '.ogg', 'm4a', '.opus', '.weba']);
 	}
 	
-	static isText(path) {
+	static isText(path: string) {
 		return Util.endsWithAny(path, ['.txt', '.json']);
 	}
 	
-	static isMedia(path) {
+	static isMedia(path: string) {
 		return FileTypes.isVideo(path) || FileTypes.isPicture(path) || FileTypes.isAudio(path);
 	}
 }
 
 export class FileSystemException extends Exception {
-	constructor(message) {
+	constructor(message: string) {
 		super(message);
 		this.name = "FileSystemException";
 	}

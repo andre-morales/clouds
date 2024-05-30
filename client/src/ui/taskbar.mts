@@ -1,14 +1,16 @@
 import { CtxMenu, CtxItem } from './context_menu.mjs';
+import Window from './window.mjs';
 import Util from '../util.mjs';
+import App from '../app.mjs';
 
 export class Taskbar {
 	DEFAULT_TASKBAR_ICON: string;
 	buttons: any[];
-	$windowList: any;
-	$bar: any;
-	$tasks: any;
-	$appsMenu: any;
 	noGrouping: boolean;
+	$windowList: $Element;
+	$bar: $Element;
+	$tasks: $Element;
+	$appsMenu: $Element;
 
 	constructor() {
 		this.buttons = [];
@@ -29,17 +31,15 @@ export class Taskbar {
 		});
 
 		$(document).on('mousedown', (ev) => {
-			let et = ev.target;
+			let et = ev.target as HTMLElement;
 					
 			// If the menu *is not* and *does not contain*
 			// the clicked element.
-			let $wlist = this.$windowList;
-			if ($wlist[0] != et && $wlist.has(et).length === 0) {
+			if (this.$windowList[0] != et && this.$windowList.has(et).length === 0) {
 				this.closeWindowList();
 			}
 
-			let $amenu = this.$appsMenu;
-			if ($amenu[0] != et && $amenu.has(et).length === 0) {
+			if (this.$appsMenu[0] != et && this.$appsMenu.has(et).length === 0) {
 				this.closeAppsMenu();
 			}
 		});
@@ -81,7 +81,7 @@ export class Taskbar {
 		});
 	}
 
-	addWindow(win) {
+	addWindow(win: Window): TaskbarButton {
 		// If grouping is enabled for the taskbar and the app try to find a taskbar button with
 		// the same app id
 		if (!this.noGrouping && !win.app.noWindowGrouping) {
@@ -109,17 +109,17 @@ export class Taskbar {
 	}
 }
 
-class TaskbarButton {
-	app: any;
-	windows: any[];
+export class TaskbarButton {
+	app: App;
+	windows: Window[];
 	single: boolean;
-	icon: any;
-	$button: any;
+	icon: string;
 	taskButton: any;
+	$button: any;
 	$text: any;
 	$count: any;
 
-	constructor(app) {
+	constructor(app: App) {
 		this.app = app;
 		this.windows = [];
 		this.single = false;
@@ -129,7 +129,7 @@ class TaskbarButton {
 		Client.desktop.taskbar.buttons.push(this);
 	}
 
-	addWindow(win) {
+	addWindow(win: Window) {
 		this.windows.push(win);
 
 		// If this is the first window of this button, create it
@@ -148,7 +148,7 @@ class TaskbarButton {
 		this.updateCount();
 	}
 
-	removeWindow(win) {
+	removeWindow(win: Window) {
 		Util.arrErase(this.windows, win);
 
 		// If all windows were closed
@@ -169,7 +169,7 @@ class TaskbarButton {
 		this.updateCount();
 	}
 
-	createButton(firstWindow) {
+	createButton(firstWindow: Window) {
 		if (firstWindow.icon) this.icon = firstWindow.icon;
 
 		// Create taskbar button
@@ -253,7 +253,7 @@ class TaskbarButton {
 		}
 	}
 
-	setText(text) {
+	setText(text: string) {
 		this.$text.text(text);
 	}
 

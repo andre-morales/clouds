@@ -5,6 +5,7 @@
 		"target": "ES2022",
 		"moduleResolution": "Bundler",
 		"noEmit": true,
+		"incremental": true,
 		"paths": {
 			"/@sys/*": ["./src/*"]
 		}

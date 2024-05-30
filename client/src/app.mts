@@ -1,20 +1,33 @@
 import { Reactor } from './events.mjs';
 import { InternalFault } from './faults.mjs';
+import Window from './ui/window.mjs'
+import Resource from './resource.mjs';
+
+export interface AppManifest {
+	id: string;
+	icon?: string;
+	displayName?: string;
+	builder?: string;
+	modules?: string[];
+	scripts?: string[];
+	styles?: string[];
+	noWindowGrouping?: boolean;
+}
 
 export default class App {
 	state: string;
-	classId: any;
-	icon: any;
-	displayName: any;
-	noWindowGrouping: any;
-	buildArgs: any;
-	windows: any;
-	loadedResources: any;
-	mainWindow: any;
-	exitMode: any;
-	events: any;
+	classId: string;
+	icon: string;
+	displayName: string;
+	noWindowGrouping: boolean;
+	buildArgs: unknown[];
+	windows: Window[];
+	loadedResources: string[];
+	mainWindow: Window;
+	exitMode: string;
+	events: Reactor;
 
-	constructor(manifest: any, args?: string[]) {
+	constructor(manifest: AppManifest, args?: unknown[]) {
 		if (!manifest) throw new InternalFault("Apps need a manifest");
 		this.state = 'starting';
 
@@ -32,7 +45,7 @@ export default class App {
 		this.events.register("exit");
 	}
 
-	_dispose(code) {
+	_dispose(code: number) {
 		this.state = 'dying';
 
 		try {
@@ -54,23 +67,23 @@ export default class App {
 		}
 	}
 
-	exit(code) {
+	exit(code?: number) {
 		Client.endApp(this, code);
 	}
 
 	// explicit: Only exit the app upon calling App.Exit,
 	// main-win-close: Exits the app when the main window closes.
 	// last-win-close: Exits the app once all windows are closed.
-	setExitMode(mode) {
+	setExitMode(mode: string) {
 		this.exitMode = mode;
 	}
 
-	requireScript(url) {
+	requireScript(url: string) {
 		Client.requestScript(url, this);
 		this.loadedResources.push(url);
 	}
 
-	requireStyle(url) {
+	requireStyle(url: string) {
 		Client.requestStyle(url, this);
 		this.loadedResources.push(url);
 	}
@@ -79,16 +92,16 @@ export default class App {
 		return this.state != 'dying' && this.state != 'dead';
 	}
 
-	on(evclass, callback) {
-		this.events.on(evclass, callback);
+	on(evClass: string, callback) {
+		this.events.on(evClass, callback);
 	}
 
-	off(evclass, callback) {
-		this.events.off(evclass, callback);
+	off(evClass: string, callback) {
+		this.events.off(evClass, callback);
 	}
 
-	dispatch(evclass, args) {
-		this.events.dispatch(evclass, args);
+	dispatch(evClass: string, args: unknown) {
+		this.events.dispatch(evClass, args);
 	}
 
 }

@@ -1,25 +1,25 @@
-var Client;
-
-import App from './app.mjs';
+import App, { AppManifest } from './app.mjs';
 import Resource from './resource.mjs';
 import { FileSystem } from './filesystem.mjs';
-import { AudioSystem } from './audiosystem.mjs';
+import { AudioSystem } from './audio_system.mjs';
 import { Reactor } from './events.mjs';
 import Util, { getObjectByName } from './util.mjs';
 import { IllegalStateFault } from './faults.mjs';
-import * as MediaSessionBridge from './media_sess_bridge.mjs';
+import * as MediaSessionBridge from './media_session_bridge.mjs';
 import * as Dialogs from './ui/dialogs.mjs';
 import Desktop from './ui/desktop.mjs';
 import UIControls from './ui/controls/controls.mjs';
 
+var Client;
+
 export async function main() {
 	// Fetch desktop page and display the system version on the page
-	let desktopPageProm = fetch('/page/desktop').then(fres => {
-		if (fres.status != 200) {
+	let desktopPageProm = fetch('/page/desktop').then(fRes => {
+		if (fRes.status != 200) {
 			throw new IllegalStateFault('Desktop page could not be accessed.');
 		}
 
-		return fres.text();
+		return fRes.text();
 	}).then(text => {
 		document.body.innerHTML = text;
 
@@ -67,20 +67,20 @@ export function get() {
 	return Client;
 }
 
-class ClientClass {
+export class ClientClass {
 	CLIENT_VERSION: string;
 	BUILD_STRING: string;
 	BUILD_TEXT: string;
-	API_VERSION: any;
+	API_VERSION: string;
 
-	logHistory: any;
-	runningApps: any;
+	logHistory: string;
+	runningApps: App[];
 	loadedResources: any;
-	_reactor: any;
-	desktop: any;
+	_reactor: Reactor;
+	desktop: Desktop;
 	registeredApps: any;
 	mediaSessionBridge: any;
-	audio: any;
+	audio: AudioSystem;
 
 	constructor() {
 		this.CLIENT_VERSION = ClientClass.CLIENT_VERSION;
@@ -88,14 +88,14 @@ class ClientClass {
 		this.BUILD_TEXT = ClientClass.BUILD_TEXT;
 	}
 
-	static get CLIENT_VERSION() { return '1.0.201'; }
+	static get CLIENT_VERSION() { return '1.0.203'; }
 	static get BUILD_STRING() { return `${this.CLIENT_VERSION} Early Test 2`; }
 	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 
 	async init() {
 		// Export global names
 		window.Client = Client;
-		window.App = App;
+		(window as any).App = App;
 
 		// Start logging record
 		this.logHistory = '[Begin]\n';
@@ -108,13 +108,13 @@ class ClientClass {
 		this._reactor.register('log', 'apps-add', 'apps-rem');
 		
 		// Display API version
-		fetch('/stat/version').then(async (fres) => {
-			if (fres.status != 200) return;
+		fetch('/stat/version').then(async (fRes) => {
+			if (fRes.status != 200) return;
 
-			let apiv = await fres.text();
-			this.API_VERSION = apiv;
+			let version = await fRes.text();
+			this.API_VERSION = version;
 
-			$('#api-ver').text('API ' + apiv);
+			$('#api-ver').text('API ' + version);
 		});
 
 		UIControls.init();
@@ -125,12 +125,12 @@ class ClientClass {
 		this.initGraphicalErrors();
 
 		// Save current page on history and rack back button press
-		let btime = 0;
+		let bTime = 0;
 		history.pushState(null, null, location.href);
 		window.addEventListener('popstate', () => {
 			let time = new Date().getTime()
-			let dt = time - btime;
-			btime = time;
+			let dt = time - bTime;
+			bTime = time;
 			if (dt > 10) this.desktop.backButton();
 
 			history.go(1);
@@ -175,23 +175,24 @@ class ClientClass {
 		if (refresh) window.location.href = "/";
 	}
 
-	async runApp(name, buildArgs?: unknown) {
+	async runApp(name: string, buildArgs?: unknown[]) {
 		return await this.runAppFetch('/app/' + name + '/manifest.json', buildArgs);
 	}
 
-	async runAppFetch(manifestURL, buildArgs) {
+	async runAppFetch(manifestURL: string, buildArgs?: unknown[]) {
 		try {
 			// Fetch manifest
-			let fres = await fetch(manifestURL);
-			if (fres.status == 404) {
+			let fRes = await fetch(manifestURL);
+			if (fRes.status == 404) {
 				throw new Error('Failed to instantiate "' + manifestURL + '", manifest not found.');
 			}
-			if (fres.status == 403) {
+			if (fRes.status == 403) {
 				throw new Error('Failed to instantiate "' + manifestURL + '", access denied.');
 			}
 
 			// Await for manifest
-			let manifest = await fres.json();
+			let manifestObj = await fRes.json();
+			let manifest = manifestObj as AppManifest;
 
 			let tmpUserId = 'APP-CREATOR';
 
@@ -274,13 +275,13 @@ class ClientClass {
 		return null;
 	}
 
-	async endApp(instance) {
+	async endApp(instance: App, exitCode?: number) {
 		// Check if app is on the list
 		if (!this.runningApps.includes(instance)) return;
 
 		// If it is on a valid state, dispose of it
 		if (!instance.canEnd()) return;
-		instance._dispose();
+		instance._dispose(exitCode);
 
 		// Remove app from app list
 		Util.arrErase(this.runningApps, instance);
@@ -414,11 +415,11 @@ class ClientClass {
 
 	initGraphicalErrors() {
 		window.addEventListener('error', (ev) => {
-			let lmsg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
+			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
 			if (ev.error.stack) {
-				lmsg += ev.error.stack;
+				msg += ev.error.stack;
 			} else {
-				lmsg += 'unavailable';
+				msg += 'unavailable';
 			}
 			let stack = '';
 			if (ev.error.stack) {
@@ -498,17 +499,17 @@ class ClientClass {
 	}
 
 	// -- Reactor aliases --
-	on(evclass, callback) {
-		this._reactor.on(evclass, callback);
+	on(evClass: string, callback: any) {
+		this._reactor.on(evClass, callback);
 		return callback;
 	}
 
-	off(evclass, callback) {
-		this._reactor.off(evclass, callback);
+	off(evClass: string, callback: any) {
+		this._reactor.off(evClass, callback);
 	}
 
-	dispatch(evclass, args?: unknown) {
-		this._reactor.dispatch(evclass, args);
+	dispatch(evClass: string, args?: unknown) {
+		this._reactor.dispatch(evClass, args);
 	}
 }
 

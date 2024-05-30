@@ -9,11 +9,13 @@
     "build-api-dist": "tsc -p api",
     "build-client-dev": "webpack --config client/webpack/dev.cjs",
     "build-client-dist": "webpack --config client/webpack/dist.cjs",
-    "build-client-stats": "webpack --config client/webpack/dist.cjs --json > client/res/pack/.stats.json && npx webpack-bundle-analyzer client/res/pack/.stats.json"
+    "build-client-stats": "webpack --config client/webpack/dist.cjs --json > client/res/pack/.stats.json && npx webpack-bundle-analyzer client/res/pack/.stats.json",
+    "check-client-types": "tsc -p client"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/zepto": "^1.0.36",
     "chalk": "^5.3.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",

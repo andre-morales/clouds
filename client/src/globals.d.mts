@@ -1,15 +1,19 @@
+import App from "./app.mts";
+import { ClientClass } from "./client_core.mts";
+
 declare global {
-	var $: any;
-	var App: any;
-	var Client: any;
-	var _systemPanic: any;
-	var addStylesheet: any;
-	var addScript: any;
-	var destroyElementById: any;
-	var addModule: any;
-	var setCookie: any;
-	var IMPORT: any;
-	var Hammer;
+	type $Element = ZeptoCollection;
+
+	var Hammer: any;
+	var App: App;
+	var Client: ClientClass;
+	var _systemPanic: Function;
+	var addStylesheet: Function;
+	var addScript: Function;
+	var destroyElementById: Function;
+	var addModule: Function;
+	var setCookie: Function;
+	var IMPORT: Function;
 }
 
 export default global;

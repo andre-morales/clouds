@@ -1,13 +1,15 @@
+type FullscreenCallback = () => void;
+
 export class Fullscreen {
-	static stack = [];
-	static element = null;
-	static fullscreenCallbacks = [];
+	static stack: HTMLElement[] = [];
+	static element: HTMLElement = null;
+	static fullscreenCallbacks: FullscreenCallback[] = [];
 	static $style = null;
 
 	// Call before utilizing any of the fullscreen utilities. Sets up a callback for fullscreen state changes and
 	// prepares custom styling for any fullscreen elements.
 	static init() {
-		let fscrHandler = () => {
+		let fullscreenHandler = () => {
 			// If the browser went fullscreen
 			if(document.fullscreenElement) {
 				// Notify those who are waiting for
@@ -30,12 +32,12 @@ export class Fullscreen {
 		this.$style = $("#fullscreen-style");
 		
 		// Install the listener
-		document.addEventListener('fullscreenchange', fscrHandler);
+		document.addEventListener('fullscreenchange', fullscreenHandler);
 	}
 
 	// Applies fullscreen on any html element. Fullscreen calls can be stacked, and will be unwound upon calling
 	// rewind().
-	static on(el) {
+	static on(el: HTMLElement) {
 		this.element = el;
 		this.stack.push(el);			
 		
@@ -80,13 +82,14 @@ export class Fullscreen {
 	}
 	
 	// Apply custom fullscreen classes to the element and its ancestors.
-	static _applyClasses(elem) {
+	static _applyClasses(elem: HTMLElement) {
 		this._clearClasses();
 
 		let $el = $(elem);
 		$el.addClass('fullscreened');
 		$el.parents().each((i, el) => {
 			$(el).addClass('fscr-parent');
+			return true;
 		});
 	}
 
@@ -103,7 +106,7 @@ export class Fullscreen {
 
 	// Applies custom styling to the fullscreened element and its parents by inserting a rule in the fullscreen
 	// <style> tag.
-	static _applyStyle(elem) {
+	static _applyStyle(elem: HTMLElement) {
 		this._clearStyle();
 		
 		let sheet = this.$style[0].sheet;
@@ -123,7 +126,7 @@ export class Fullscreen {
 
 	// Requests fullscreen state on the body element of the page, calling the given callback once the transition
 	// is finished. If the browser was already on fullscreen state, calls callback immediately.
-	static _domEnterFscr(callback) {
+	static _domEnterFscr(callback: () => void) {
 		// If the browser already is in fullscreen, just run the callback immediately
 		if (document.fullscreenElement) {
 			if (callback) callback();

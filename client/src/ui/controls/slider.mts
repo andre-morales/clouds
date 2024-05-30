@@ -5,9 +5,9 @@ export class UISlider extends HTMLElement {
 	_value: number;
 	_min: number;
 	_max: number;
-	_container: any;
-	_lower: any;
-	_thumb: any;
+	_container: HTMLElement;
+	_lower: HTMLElement;
+	_thumb: HTMLElement;
 
 	constructor() {
 		super();

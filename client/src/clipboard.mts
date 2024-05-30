@@ -1,19 +1,22 @@
-async function saveObject(type, object) {
-	this.object = object;
-	this.type = type;
+var itemValue: any;
+var itemType: string;
+
+async function saveObject(type: string, object: any) {
+	itemValue = object;
+	itemType = type;
 }
 
 async function getObject() {
-	return this.object;
+	return itemValue;
 }	
 
 async function getType() {
-	return this.type;
+	return itemType;
 }
 
 function clear() {
-	this.object = null;
-	this.type = null;
+	itemValue = null;
+	itemType = null;
 }
 
 export default { saveObject, getObject, getType, clear };

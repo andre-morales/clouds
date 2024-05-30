@@ -1,7 +1,8 @@
+import App from '../app.mjs';
 import Client from '../client_core.mjs';
 import { Deferred } from '../events.mjs';
 
-export function showOptions(app, title, msg, options, settings: any = {}) {
+export function showOptions(app: App, title: string, msg: string, options: string[], settings: any = {}) {
 	if (!msg) msg = "";
 
 	let deferred = new Deferred();
@@ -43,7 +44,7 @@ export function showOptions(app, title, msg, options, settings: any = {}) {
 	return [win, deferred.promise];
 }
 
-export function showError(app, title, msg) {
+export function showError(app: App, title: string, msg: string) {
 	let [win, prom] = showOptions(app, title, msg, ["OK"], {
 		icon: 'error'
 	});

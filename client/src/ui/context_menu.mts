@@ -1,9 +1,9 @@
 export class CtxMenuClass {
-	entries: any;
-	label: any;
+	entries: (CtxItemClass | string)[];
+	label: string;
 
-	constructor(entr, label) {
-		this.entries = (entr) ? entr : [];
+	constructor(entries: (CtxItemClass | string)[], label: string) {
+		this.entries = (entries) ? entries : [];
 		this.label = label;
 	}
 
@@ -14,7 +14,9 @@ export class CtxMenuClass {
 				continue;
 			}
 
-			let $item;
+			if (!(entry instanceof CtxItemClass)) return;
+
+			let $item: $Element;
 			let label = entry.label;
 			let action = entry.action;
 			let enabled = entry.enabled;
@@ -76,11 +78,11 @@ export class CtxMenuClass {
 }
 
 export class CtxItemClass {
-	label: any;
-	action: any;
+	label: string;
+	action: Function;
 	enabled: boolean;
 
-	constructor(label, action) {
+	constructor(label: string, action: Function) {
 		this.label = label;
 		this.action = action;
 		this.enabled = true;
@@ -93,22 +95,22 @@ export class CtxItemClass {
 }
 
 export class CtxCheckClass extends CtxItemClass {
-	checked: any;
+	checked: boolean;
 
-	constructor(label, action, checked) {
+	constructor(label: string, action: Function, checked: boolean) {
 		super(label, action);
 		this.checked = Boolean(checked);
 	}
 }
 
-export function CtxMenu(entries: any[], label?: string) {
+export function CtxMenu(entries: any[], label?: string): CtxMenuClass {
 	return new (CtxMenuClass as any)(...arguments);
 }
 
-export function CtxItem(label: string, action: any) {
+export function CtxItem(label: string, action: any): CtxItemClass {
 	return new (CtxItemClass as any)(...arguments);
 }
 
-export function CtxCheck() {
+export function CtxCheck(): CtxCheckClass {
 	return new (CtxCheckClass as any)(...arguments);
 }

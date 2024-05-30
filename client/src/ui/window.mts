@@ -1,19 +1,21 @@
-import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
+import { CtxMenu, CtxItem, CtxCheck, CtxMenuClass } from './context_menu.mjs';
+import { TaskbarButton } from './taskbar.mjs';
 import { Reactor, ReactorEvent } from '../events.mjs';
 import { InternalFault, IllegalStateFault } from '../faults.mjs';
+import { App } from '../app.mjs';
 import Util from '../util.mjs';
 
 export default class Window {
-	app: any;
-	owner: any;
-	children: any;
+	app: App;
+	owner: Window;
+	children: Window[];
 	icon: string;
 	visible: boolean;
 	maximized: boolean;
 	minimized: boolean;
 	title: string;
 	firstShow: boolean;
-	posX:number;
+	posX: number;
 	posY: number;
 	width: number;
 	height: number;
@@ -21,19 +23,19 @@ export default class Window {
 	minHeight: number;
 	restoreBounds: number[];
 	events: Reactor;
-	_closeBehavior: any;
-	_initialPosition: any;
-	$window: any;
+	_closeBehavior: string;
+	_initialPosition: string;
 	destroyed: boolean;
-	taskButton: any;
-	$windowHeader: any;
-	$windowButton: any;
-	$windowTitle: any;
-	optionsCtxMenu: any;
+	taskButton: TaskbarButton;
+	optionsCtxMenu: CtxMenuClass;
 	decorated: boolean;
 	zIndex: number;
+	$window: $Element;
+	$windowHeader: $Element;
+	$windowButton: $Element;
+	$windowTitle: $Element;
 
-	constructor(app) {
+	constructor(app: App) {
 		if (!app) throw new InternalFault("Windows must have valid owner apps.");
 
 		this.app = app;
@@ -116,7 +118,7 @@ export default class Window {
 				[Hammer.Swipe, {
 					direction: Hammer.DIRECTION_LEFT,
 					velocity: 0.4,
-					treshold: 20
+					threshold: 20
 				}],
 			]
 		});
@@ -129,8 +131,8 @@ export default class Window {
 		this.$window.on("focusin", () => this.focus());
 
 		$win.find('.close-btn').click(() => {
-			let closingev = new ReactorEvent();
-			this.dispatch('closing', closingev);
+			let closingEv = new ReactorEvent();
+			this.dispatch('closing', closingEv);
 		});
 
 		this.events.default('closing', (ev) => {
@@ -151,7 +153,7 @@ export default class Window {
 			if (this.maximized) this.restore();
 			else this.setMaximized(true)
 		});
-		$win.find('.options-btn').click((ev) => {
+		$win.find('.options-btn').click((ev: MouseEvent) => {
 			Client.desktop.openCtxMenuAt(this.optionsCtxMenu, ev.clientX, ev.clientY);
 		});
 		Client.desktop.addCtxMenuOn(this.$windowHeader, () => this.optionsCtxMenu)
@@ -255,35 +257,35 @@ export default class Window {
 		let $wh = this.$windowHeader;
 
 		let $title = this.$windowTitle;
-		$title.on("mousedown", (e) => {
+		$title.on("mousedown", (e: MouseEvent) => {
 			dragStart(e.pageX, e.pageY);
 		});
-		$title.on("touchstart", (e) => {
+		$title.on("touchstart", (e: TouchEvent) => {
 			let mx = e.changedTouches[0].pageX;
 			let my = e.changedTouches[0].pageY;
 			dragStart(mx, my);
 		});
 		
-		$doc.on("mousemove", (e) => {
+		$doc.on("mousemove", (e: MouseEvent) => {
 			dragMove(e.pageX, e.pageY);
 		});
-		$doc.on("touchmove", (e) => {
+		$doc.on("touchmove", (e: TouchEvent) => {
 			let mx = e.changedTouches[0].pageX;
 			let my = e.changedTouches[0].pageY;
 			dragMove(mx, my);
 		});
 
-		$doc.on("mouseup", (ev) => {
+		$doc.on("mouseup", (ev: MouseEvent) => {
 			dragEnd(ev.pageX, ev.pageY);
 		});
-		$doc.on("touchend", (ev) => {
+		$doc.on("touchend", (ev: TouchEvent) => {
 			let mx = ev.changedTouches[0].pageX;
 			let my = ev.changedTouches[0].pageY;
 			dragEnd(mx, my);
 		});
 	}
 
-	makeOptionsCtxMenu() {
+	makeOptionsCtxMenu(): CtxMenuClass {
 		return CtxMenu([
 			CtxItem('Fullscreen', () => this.goFullscreen()),
 			CtxItem('Maximize', () => this.setMaximized(true)),
@@ -295,7 +297,7 @@ export default class Window {
 		]);
 	}
 
-	setOwner(window) {
+	setOwner(window: Window) {
 		if (this.owner) {
 			Util.arrErase(this.owner.children, this);
 		}
@@ -347,13 +349,13 @@ export default class Window {
 			state = [this.maximized, this.getBounds()];
 		}
 
-		let regname = 'app.' + this.app.classId + '.winstate';
-		localStorage.setItem(regname, JSON.stringify(state));
+		let regName = 'app.' + this.app.classId + '.winstate';
+		localStorage.setItem(regName, JSON.stringify(state));
 	}
 
 	restoreState() {
-		let regname = 'app.' + this.app.classId + '.winstate';
-		let item = localStorage.getItem(regname);
+		let regName = 'app.' + this.app.classId + '.winstate';
+		let item = localStorage.getItem(regName);
 		if (!item) return false;
 
 		let state = JSON.parse(item);
@@ -451,7 +453,7 @@ export default class Window {
 		return [this.posX, this.posY, this.width, this.height];
 	}
 
-	async setVisible(visible) {
+	async setVisible(visible: boolean) {
 		if (visible) {
 			if (this.firstShow) {
 				await this.doFirstShowSetup();
@@ -465,7 +467,7 @@ export default class Window {
 		this.visible = visible;
 	}
 
-	setIcon(icon) {
+	setIcon(icon: string) {
 		this.icon = icon;
 		this.$window.find('.options-btn').css('background-image', `url('${icon}')`);
 		if (this.taskButton) {
@@ -473,7 +475,7 @@ export default class Window {
 		}
 	}
 
-	setDecorated(decorated) {
+	setDecorated(decorated: boolean) {
 		this.decorated = decorated;
 		if (decorated) {
 			this.$window.addClass('decorated');
@@ -482,11 +484,11 @@ export default class Window {
 		}
 	}
 
-	setPointerEvents(val) {
+	setPointerEvents(val: boolean) {
 		this.$window.css('pointer-events', (val) ? '' : 'none');
 	}
 
-	isPointInside(x, y) {
+	isPointInside(x: number, y: number) {
 		return ((x >= this.posX)
 			&& (x <= this.posX + this.width)
 			&& (y >= this.posY)
@@ -530,7 +532,7 @@ export default class Window {
 		});
 	}
 
-	setMaximized(max) {
+	setMaximized(max: boolean) {
 		if (this.maximized == max) return;
 
 		if (max) {
@@ -599,20 +601,20 @@ export default class Window {
 		this.setBounds(x, y, width, height);
 	}
 
-	async setContentToUrl(url) {
-		let fres = await fetch(url);
-		this.$window.find('.window-body').html(await fres.text());
+	async setContentToUrl(url: string) {
+		let fRes = await fetch(url);
+		this.$window.find('.window-body').html(await fRes.text());
 	}
 
-	on(evclass, callback) {
-		this.events.on(evclass, callback);
+	on(evClass: string, callback: unknown) {
+		this.events.on(evClass, callback);
 	}
 
-	off(evclass, callback) {
-		this.events.off(evclass, callback);
+	off(evClass: string, callback: unknown) {
+		this.events.off(evClass, callback);
 	}
 
-	dispatch(evclass: string, args?: any) {
-		this.events.dispatch(evclass, args);
+	dispatch(evClass: string, args?: any) {
+		this.events.dispatch(evClass, args);
 	}
 }

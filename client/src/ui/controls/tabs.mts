@@ -1,5 +1,5 @@
 export class UITabs extends HTMLElement {
-	onTabChanged: any;
+	onTabChanged: Function;
 
 	constructor() {
 		super();

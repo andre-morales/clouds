@@ -8,22 +8,36 @@
 			"problemMatcher": [
 				"$tsc-watch"
 			],
-			"group": {
-				"kind": "build"
-			},
+			"group": "build",
 			"label": "Watch API Build",
 			"detail": "👀 tsc: watch - api/tsconfig.json"
 		},
 		{
+			"type": "typescript",
+			"tsconfig": "client/tsconfig.json",
+			"option": "watch",
+			"problemMatcher": [
+				"$tsc-watch"
+			],
+			"group": "build",
+			"label": "Watch Client Types",
+			"detail": "👀 tsc: watch - client/tsconfig.json"
+		},
+		{
 			"type": "npm",
 			"script": "build-api-dist",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [],
 			"label": "Build API Dist",
 			"detail": "📦 npm run build-api-dist: tsc -p api"
-		}
+		},
+		{
+			"type": "npm",
+			"script": "build-client-dev",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "Build Client Development",
+			"detail": "📦 npm run build-client-dev"
+		},
 	]
 }

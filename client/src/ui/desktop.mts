@@ -13,9 +13,6 @@ export class Desktop {
 	events: Reactor;
 	configs: any;
 	iconifiedGroups: any;
-	$desktop: any;
-	$windows: any;
-	$contextMenu: any;
 	taskbar: Taskbar;
 	focusedWindow: Window;
 	mouseX: number;
@@ -27,12 +24,15 @@ export class Desktop {
 	windowsHeight: number;
 	screenWidth: number;
 	screenHeight: number;
+	$desktop: $Element;
+	$windows: $Element;
+	$contextMenu: $Element;
 
 	constructor() {
 		this.windows = [];
 		this.dwm = new App({
-			'id': 'dwm',
-			'noWindowGrouping': 'true'
+			id: 'dwm',
+			noWindowGrouping: true
 		});
 		this.events = new Reactor();
 		this.events.register("window-created", "window-destroyed");
@@ -69,14 +69,14 @@ export class Desktop {
 
 		this._installWindowResizeHandlers();
 
-		$(document).on('mousemove', (ev) => {
+		$(document).on('mousemove', (ev: MouseEvent) => {
 			this.mouseX = ev.clientX;
 			this.mouseY = ev.clientY;
 		});
 
 		$(document).on('mousedown', (ev) => {
 			let $cmenu = this.$contextMenu;
-			let el = ev.target;
+			let el = ev.target as HTMLElement;
 
 			// If the context menu *is not* and *does not contain*
 			// the clicked element.
@@ -239,7 +239,7 @@ export class Desktop {
 	}
 
 	addCtxMenuOn(element, menuFn) {
-		$(element).on('contextmenu', (ev) => {
+		$(element).on('contextmenu', (ev: MouseEvent) => {
 			let mx = ev.clientX, my = ev.clientY;
 	
 			let menu = menuFn(ev);
@@ -435,19 +435,19 @@ export class Desktop {
 			dragStart(pageX, pageY, ev);
 		}, true);
 
-		this.$desktop.on("mousemove", (ev) => {
+		this.$desktop.on("mousemove", (ev: MouseEvent) => {
 			let mx = ev.pageX, my = ev.pageY;	
 			dragMove(mx, my);
 		});
-		this.$desktop.on("touchmove", (ev) => {
+		this.$desktop.on("touchmove", (ev: TouchEvent) => {
 			let { pageX, pageY } = ev.changedTouches[0];
 			dragMove(pageX, pageY);
 		});
-		this.$desktop.on("mouseup", (ev) => {
+		this.$desktop.on("mouseup", (ev: MouseEvent) => {
 			let mx = ev.pageX, my = ev.pageY;	
 			dragEnd(mx, my);
 		});
-		this.$desktop.on("touchend", (ev) => {
+		this.$desktop.on("touchend", (ev: TouchEvent) => {
 			let { pageX, pageY } = ev.changedTouches[0];
 			dragEnd(pageX, pageY);
 		});

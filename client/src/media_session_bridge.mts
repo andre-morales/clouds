@@ -1,9 +1,9 @@
 import { Paths } from './filesystem.mjs';
 import Util from './util.mjs';
 
-var activeMediaElements = null;
-var currentMedia = null;
-var enabled = false;
+var activeMediaElements: ActiveMedia[] = null;
+var currentMedia: ActiveMedia = null;
+var enabled: boolean = false;
 
 export function init() {
 	if (!navigator.mediaSession) return;
@@ -78,7 +78,7 @@ export function registerMediaElement(elem) {
 	return activeMedia;
 }
 
-function setCurrentMedia(media) {
+function setCurrentMedia(media: ActiveMedia) {
 	currentMedia = media;
 	let elem = media.element;
 
@@ -150,7 +150,7 @@ function refreshActiveMedia() {
 	}
 }
 
-function getMediaToPlay() {
+function getMediaToPlay(): ActiveMedia {
 	if (activeMediaElements.length == 0) return;
 
 	refreshActiveMedia();
