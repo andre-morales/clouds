@@ -3,7 +3,7 @@ import Dialogs from '/res/js/ui/dialogs.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
 import { FileSystem, Paths } from '/res/js/filesystem.mjs';
 import { Deferred } from '/res/js/events.mjs';
-import Util from '/res/js/util.mjs';
+import Util from '/@sys/util.mjs';
 
 import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
@@ -11,7 +11,7 @@ import ExplorerDefaultHandler from './open_handler.mjs';
 import ExplorerProperties from './properties.mjs';
 
 export default class ExplorerApp extends App {
-	constructor(...args) {
+	constructor(...args) {	
 		super(...args);
 		this.window = null;
 		this.cwd = null;

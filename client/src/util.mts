@@ -1,22 +1,22 @@
 // Query object in dot name format from window object
-export function getObjectByName(name) {
-    var nameParts = name.split('.');
-    var nameLength = nameParts.length;
-    var scope = window;
+export function getObjectByName(name: string): any {
+    let nameParts = name.split('.');
+    let nameLength = nameParts.length;
+    let scope: any = window;
 
-    for (var i = 0; i < nameLength; ++i) {
+    for (let i = 0; i < nameLength; ++i) {
         scope = scope[nameParts[i]];
     }
 
     return scope;
 }
 
-export function cloneTemplate(id) {
-	let el = document.getElementById('t_' + id);
+export function cloneTemplate(id: string) {
+	let el: any = document.getElementById('t_' + id);
 	return el.content.cloneNode(true);
 }
 
-export function arrErase(arr, val) {
+export function arrErase(arr: unknown[], val: unknown) {
 	let i = arr.indexOf(val);
 	if (i >= 0) {
 		arr.splice(i, 1);
@@ -37,7 +37,7 @@ export function sleep(ms) {
 
 export function getURLParams() {
 	return new Proxy(new URLSearchParams(window.location.search), {
- 		get: (searchParams, prop) => searchParams.get(prop),
+ 		get: (searchParams: any, prop) => searchParams.get(prop),
 	});
 }
 

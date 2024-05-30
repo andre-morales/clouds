@@ -24,25 +24,21 @@ module.exports = {
 	module: {
 		rules: [
 			{
-				test: /\.(?:js|mjs|cjs)$/,
+				test: /\.(?:mts|mjs|cjs|js)$/,
 				exclude: /node_modules/,
 				use: {
 					loader: 'babel-loader',
 					options: {
-						cacheDirectory: true,
-						presets: [
-							['@babel/preset-env', {
-								targets: {
-									chrome: 79
-								},
-								useBuiltIns: 'usage',
-								corejs: '^3.36.1'
-							}]
-						]
+						cacheDirectory: true
 					}
 				}
 			}
 		]
+	},
+	resolve: {
+		extensionAlias: {
+			'.mjs': ['.mts', '.mjs']
+		},
 	},
 	output: {
 		filename: '[name].bundle.js',
