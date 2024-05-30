@@ -57,11 +57,11 @@ export async function getVideoLength(path: string): Promise<number> {
 function execute(file: string, args: string[], options: object){
 	return new Promise((resolve, reject) => {
 		let proc;
-		let callback = (err: any, sout: any, serr: any) => {
+		let callback = (err: any, stdout: any, stderr: any) => {
 			if (err){
 				reject(err);
 			} else {
-				resolve({'stdout': sout, 'stderr': serr});
+				resolve({'stdout': stdout, 'stderr': stderr});
 			}
 		};
 		

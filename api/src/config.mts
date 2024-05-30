@@ -1,4 +1,4 @@
-import FS from 'fs';
+import FS from 'node:fs';
 
 interface Configuration {
 	extensions?: any;
@@ -40,7 +40,7 @@ export function init(args: string[]) {
 export function isExtensionEnabled(ext: string): boolean {
 	return config.extensions
 		&& config.extensions[ext]
-		&& config.extensions[ext].enabled;
+		&& config.extensions[ext].enabled === true;
 }
 
 /**

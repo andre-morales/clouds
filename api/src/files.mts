@@ -1,3 +1,6 @@
+/**
+ * Physical file and paths handling layer.
+ */
 import FS from 'node:fs';
 import Path from 'node:path';
 
@@ -33,17 +36,11 @@ export interface DirEntryArray {
  * @returns The size in bytes of the path.
  */
 export async function size(path: string): Promise<number> {
-	let stats: FS.Stats;
+	let stats;
 	try {
 		stats = await FS.promises.stat(path);
-	} catch(err: any) {
-		if (err.code == 'EPERM') throw new FileOperationError(ResultCode.ACCESS_DENIED);
-		if (err.code == 'ENOENT') throw new FileOperationError(ResultCode.NOT_FOUND);
-		if (err.code == 'ENOTDIR') throw new FileOperationError(ResultCode.BAD_PARAMETERS);
-		else {
-			console.error(err);
-			throw new FileOperationError(ResultCode.UNKNOWN_ERROR);
-		}
+	} catch(err) {
+		throw wrapIOError(err);
 	}
 
 	// If path is a file, just return its size directly
@@ -88,14 +85,8 @@ export async function list(path: string): Promise<DirEntryArray[]> {
 		files = await FS.promises.readdir(path, {
 			"withFileTypes": true
 		});
-	} catch (err: any) {
-		if (err.code == 'EPERM') throw new FileOperationError(ResultCode.ACCESS_DENIED);
-		if (err.code == 'ENOENT') throw new FileOperationError(ResultCode.NOT_FOUND);
-		if (err.code == 'ENOTDIR') throw new FileOperationError(ResultCode.BAD_PARAMETERS);
-		else {
-			console.error(err);
-			throw new FileOperationError(ResultCode.UNKNOWN_ERROR);
-		}
+	} catch (err) {
+		throw wrapIOError(err);
 	}
 
 	let promises = files.map(async (entry) => {
@@ -132,36 +123,38 @@ export async function list(path: string): Promise<DirEntryArray[]> {
 }
 
 /**
- * Converts a file operation result to the HTTP status code that it resembles the most.
- * @param result The operation status you want to convert.
- * @returns A HTTP status code.
+ * Copies a file into another path if it doesn't exist. Throws FileOperationError.
+ * @param source Source path to a file.
+ * @param destination Destination path desired.
  */
-export function getResultHTTPCode(result: ResultCode): number {
-	switch(result) {
-		case ResultCode.SUCCESS:
-			return 200;
-		case ResultCode.NOT_FOUND:
-			return 404;
-		case ResultCode.ACCESS_DENIED:
-			return 403;
-		default:
-			return 500;
+export async function copy(source: string, destination: string): Promise<void> {
+	try {
+		await FS.promises.copyFile(source, destination, FS.constants.COPYFILE_EXCL);
+	} catch(err) {
+		throw wrapIOError(err);
 	}
 }
 
-export function getResultName(result: ResultCode): string {
-	switch(result) {
-		case ResultCode.SUCCESS:
-			return "Success";
-		case ResultCode.NOT_FOUND:
-			return "No mapping";
-		case ResultCode.ACCESS_DENIED:
-			return "Access denied";
-		default:
-			return "Unknown";
+/**
+ * Wrap a general IO error within a FileOperationError.
+ * @param err IO error with code property.
+ * @returns A FileOperationError with status code most closely resembling the error passed.
+ */
+function wrapIOError(err: any) {
+	let code = ResultCode.UNKNOWN_ERROR;
+
+	switch (err.code) {
+	case 'EPERM': code = ResultCode.ACCESS_DENIED; break;
+	case 'ENOENT': code = ResultCode.NOT_FOUND; break
+	case 'ENOTDIR': code = ResultCode.BAD_PARAMETERS; break;
 	}
+
+	return new FileOperationError(code);
 }
 
+/**
+ * Error raised for exceptional cases in any file handling function.
+ */
 export class FileOperationError extends Error {
 	code: ResultCode;
 
@@ -172,6 +165,28 @@ export class FileOperationError extends Error {
 	}
 
 	getHTTPCode(): number {
-		return getResultHTTPCode(this.code);
+		switch(this.code) {
+			case ResultCode.SUCCESS:
+				return 200;
+			case ResultCode.NOT_FOUND:
+				return 404;
+			case ResultCode.ACCESS_DENIED:
+				return 403;
+			default:
+				return 500;
+		}
+	}
+}
+
+function getResultName(result: ResultCode): string {
+	switch(result) {
+		case ResultCode.SUCCESS:
+			return "Success";
+		case ResultCode.NOT_FOUND:
+			return "No mapping";
+		case ResultCode.ACCESS_DENIED:
+			return "Access denied";
+		default:
+			return "Unknown";
 	}
 }

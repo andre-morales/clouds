@@ -1,15 +1,16 @@
+/**
+ * Network facing virtual file system routes.
+ */
 import { NextFunction, Request, Response, Router } from 'express';
 import Path from 'node:path';
 import FS from 'node:fs';
 
 import { asyncRoute } from './core.mjs';
-import * as VFS from './vfs.mjs';
-import { PathStats } from './vfs.mjs';
-import * as Files from './files.mjs';
 import { FileOperationError } from './files.mjs';
-
-import * as Auth from './auth.mjs'
+import config from './config.mjs';
 import * as Pathx from './pathx.mjs';
+import * as VFS from './vfs.mjs';
+import * as Auth from './auth.mjs'
 import * as FFmpeg from './ext/ffmpeg.mjs'
 
 /** Object map from names to async request handlers */
@@ -140,9 +141,8 @@ export function getRouter(): Router {
 	patchOperations['copy'] = async (req, res) => {
 		let target = decodeURIComponent((req.query['copy'] as string));
 
-		let result = await VFS.copy(req.userId, req.virtualPath, target);
-		res.status(Files.getResultHTTPCode(result));
-		res.end();
+		await VFS.copy(req.userId, req.virtualPath, target);
+		res.status(200).end();
 	}
 
 	// GET?=STATS
@@ -180,6 +180,9 @@ export function getRouter(): Router {
 	// General file operation error handler
 	router.use((err: Error, req: any, res: Response, next: any): void => {
 		if (err instanceof FileOperationError) {
+			if (config.log_fs_operations) {
+				console.log(':: ', err);
+			}
 			res.status(err.getHTTPCode()).end();
 			return;
 		}

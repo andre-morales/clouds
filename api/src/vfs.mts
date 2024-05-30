@@ -1,3 +1,6 @@
+/**
+ * Virtual File System operations layer.
+ */
 import FS from 'node:fs';
 import Path from 'node:path';
 
@@ -74,7 +77,7 @@ export function listMountingPoints(userId: string): Files.DirEntryArray[] {
 }
 
 // Erases completely the given file or folder
-export async function erase(user: string, path: string) { 
+export async function erase(user: string, path: string): Promise<void> { 
 	let fPath = translate(user, path);
 	if (!fPath) return;
 
@@ -86,7 +89,7 @@ export async function erase(user: string, path: string) {
 }
 
 // Moves a path to another, this can move files or folders and give them new names
-export async function rename(user: string, path: string, newPath: string) {
+export async function rename(user: string, path: string, newPath: string): Promise<void> {
 	let fPath = translate(user, path);
 	let fNewPath = translate(user, newPath);
 	if (!fPath || !fNewPath) return;
@@ -98,24 +101,24 @@ export async function rename(user: string, path: string, newPath: string) {
 	await FS.promises.rename(fPath, fNewPath);
 }
 
-// Copies a file to another path, if the target already exists, fails.
-export async function copy(user: string, srcPath: string, dstPath: string): Promise<ResultCode> {
+/**
+ * Copies a file to another path, if the target already exists, fails.
+ * @param user String id of the user performing the operation.
+ * @param srcPath Path to be copied from.
+ * @param dstPath Path to be copied into.
+ */
+export async function copy(user: string, srcPath: string, dstPath: string): Promise<void> {
 	// Validate and translate paths
 	let fSource = translate(user, srcPath);
 	let fDestination = translate(user, dstPath);
-	if (!fSource || !fDestination) return ResultCode.NOT_FOUND;
+	if (!fSource || !fDestination) throw new FileOperationError(ResultCode.NOT_FOUND);
 
 	if (config.log_fs_operations) {
 		console.log(`Copying "${fSource}" to "${fDestination}"`);
 	}
 
 	// Perform the copy operation safely.
-	try {
-		await FS.promises.copyFile(fSource, fDestination, FS.constants.COPYFILE_EXCL);
-	} catch(err) {
-		return ResultCode.UNKNOWN_ERROR;
-	}
-	return ResultCode.SUCCESS;
+	await Files.copy(fSource, fDestination);
 }
 
 /**
@@ -164,7 +167,7 @@ export async function stats(user: string, path: string): Promise<PathStats> {
  * @param user User performing the operation. 
  * @param path Path to a directory you want to create.
  */
-export async function mkdir(user: string, path: string) {
+export async function mkdir(user: string, path: string): Promise<void> {
 	// Get physical path
 	let fPath = translate(user, path);
 	if (!fPath) throw new FileOperationError(ResultCode.NOT_FOUND);

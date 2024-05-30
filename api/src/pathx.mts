@@ -1,7 +1,7 @@
 import * as Path from 'path';
 
 /**
- * Join two paths with an unix seprator.
+ * Join two paths with an unix separator.
  * @param a First path.
  * @param b Second path.
  * @returns <a>/<b>
