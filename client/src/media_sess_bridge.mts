@@ -1,4 +1,5 @@
 import { Paths } from './filesystem.mjs';
+import Util from './util.mjs';
 
 var activeMediaElements = null;
 var currentMedia = null;
@@ -84,7 +85,7 @@ function setCurrentMedia(media) {
 	let srcUrlString = decodeURI(elem.currentSrc);
 	let srcUrl = new URL(srcUrlString);
 
-	let mdata = {};
+	let mdata: any = {};
 
 	let fileName = Paths.file(srcUrlString);
 	// If filename has an extension, remove it
@@ -140,8 +141,8 @@ function refreshActiveMedia() {
 	for (let i = 0; i < activeMediaElements.length; i++) {
 		let me = activeMediaElements[i];
 		if (me.valid()) continue;
-
-		arrErase(activeMediaElements, me);
+		
+		Util.arrErase(activeMediaElements, me);
 		if (currentMedia === me) {
 			currentMedia = null;
 		}
@@ -167,6 +168,10 @@ function getMediaToPlay() {
 }
 
 class ActiveMedia {
+	element: any;
+	nextTrackCallback: any;
+	previousTrackCallback: any;
+
 	constructor(elem) {
 		this.element = elem;
 		this.nextTrackCallback = null;

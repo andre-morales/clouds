@@ -1,4 +1,10 @@
 export default class Resource {
+	id: string;
+	users: unknown[];
+	fnUnload: () => void;
+	unloaded: boolean;
+	permanent: boolean;
+
 	constructor() {
 		this.id = null;
 		this.users = [];
@@ -9,7 +15,7 @@ export default class Resource {
 		this.permanent = false;
 	}
 
-	addUser(user) {
+	addUser(user: unknown) {
 		if (!this.users.includes(user)) {
 			this.users.push(user);
 			return true;
@@ -17,7 +23,7 @@ export default class Resource {
 		return false;
 	}
 
-	removeUser(user) {
+	removeUser(user: unknown) {
 		// Get user index
 		var i = this.users.indexOf(user);
 		if (i == -1) return;

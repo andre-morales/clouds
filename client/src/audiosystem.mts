@@ -1,4 +1,11 @@
 export class AudioSystem {
+	enabled: boolean;
+	initialized: boolean;
+	context: any;
+	destination: any;
+	reverbWetGain: any;
+	reverbDryGain: any;
+
 	constructor() {
 		this.enabled = false;
 		this.initialized = false;

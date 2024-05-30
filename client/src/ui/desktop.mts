@@ -2,12 +2,32 @@ import { Reactor } from '../events.mjs';
 import { FileSystem } from '../filesystem.mjs';
 import Util from '../util.mjs';
 import Fullscreen from './fullscreen.mjs';
-import TaskbarM from './taskbar.mjs'
+import TaskbarM, { Taskbar } from './taskbar.mjs'
 import Window from './window.mjs';
 import App from '../app.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
 
 export class Desktop {
+	windows: Window[];
+	dwm: App;
+	events: Reactor;
+	configs: any;
+	iconifiedGroups: any;
+	$desktop: any;
+	$windows: any;
+	$contextMenu: any;
+	taskbar: Taskbar;
+	focusedWindow: Window;
+	mouseX: number;
+	mouseY: number;
+	contextMenuOpen: boolean;
+	dragRectState: any;
+	_configsProm: any;
+	windowsWidth: number;
+	windowsHeight: number;
+	screenWidth: number;
+	screenHeight: number;
+
 	constructor() {
 		this.windows = [];
 		this.dwm = new App({
@@ -259,7 +279,7 @@ export class Desktop {
 		}
 	}
 
-	setDragRectangle(x, y, width, height) {
+	setDragRectangle(x?: number, y?: number, width?: number, height?: number) {
 		let style = $("#window-drag-rect")[0].style;
 		let lastTime;
 

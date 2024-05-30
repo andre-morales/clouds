@@ -1,15 +1,16 @@
 var Client;
 
-import * as Dialogs from './ui/dialogs.mjs';
-import Util from './util.mjs';
-import Desktop from './ui/desktop.mjs';
-import UIControls from './ui/controls/controls.mjs';
 import App from './app.mjs';
 import Resource from './resource.mjs';
 import { FileSystem } from './filesystem.mjs';
 import { AudioSystem } from './audiosystem.mjs';
 import { Reactor } from './events.mjs';
+import Util, { getObjectByName } from './util.mjs';
+import { IllegalStateFault } from './faults.mjs';
 import * as MediaSessionBridge from './media_sess_bridge.mjs';
+import * as Dialogs from './ui/dialogs.mjs';
+import Desktop from './ui/desktop.mjs';
+import UIControls from './ui/controls/controls.mjs';
 
 export async function main() {
 	// Fetch desktop page and display the system version on the page
@@ -67,6 +68,20 @@ export function get() {
 }
 
 class ClientClass {
+	CLIENT_VERSION: string;
+	BUILD_STRING: string;
+	BUILD_TEXT: string;
+	API_VERSION: any;
+
+	logHistory: any;
+	runningApps: any;
+	loadedResources: any;
+	_reactor: any;
+	desktop: any;
+	registeredApps: any;
+	mediaSessionBridge: any;
+	audio: any;
+
 	constructor() {
 		this.CLIENT_VERSION = ClientClass.CLIENT_VERSION;
 		this.BUILD_STRING = ClientClass.BUILD_STRING;
@@ -160,7 +175,7 @@ class ClientClass {
 		if (refresh) window.location.href = "/";
 	}
 
-	async runApp(name, buildArgs) {
+	async runApp(name, buildArgs?: unknown) {
 		return await this.runAppFetch('/app/' + name + '/manifest.json', buildArgs);
 	}
 
@@ -458,7 +473,7 @@ class ClientClass {
 		return err.stack;
 	}
 
-	showErrorDialog(title, msg, error) {
+	showErrorDialog(title, msg, error?: Error) {
 		try {
 			let [win, p] = Dialogs.showError(this.desktop.dwm, title, msg);
 			win.$window.find('.options button').focus();
@@ -492,7 +507,7 @@ class ClientClass {
 		this._reactor.off(evclass, callback);
 	}
 
-	dispatch(evclass, args) {
+	dispatch(evclass, args?: unknown) {
 		this._reactor.dispatch(evclass, args);
 	}
 }

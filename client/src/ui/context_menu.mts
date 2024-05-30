@@ -1,4 +1,7 @@
 export class CtxMenuClass {
+	entries: any;
+	label: any;
+
 	constructor(entr, label) {
 		this.entries = (entr) ? entr : [];
 		this.label = label;
@@ -31,7 +34,7 @@ export class CtxMenuClass {
 			} else if (entry instanceof CtxMenuClass) {
 				$item = $(`<i class='menu'>${label}</i>`);
 				let $sub = $('<div class="context-menu">');
-				entry.buildIn($sub, $rootMenu);
+				entry.buildIn($sub, $rootMenu, undefined, undefined);
 
 				$item.append($sub);
 
@@ -73,6 +76,10 @@ export class CtxMenuClass {
 }
 
 export class CtxItemClass {
+	label: any;
+	action: any;
+	enabled: boolean;
+
 	constructor(label, action) {
 		this.label = label;
 		this.action = action;
@@ -86,20 +93,22 @@ export class CtxItemClass {
 }
 
 export class CtxCheckClass extends CtxItemClass {
+	checked: any;
+
 	constructor(label, action, checked) {
 		super(label, action);
 		this.checked = Boolean(checked);
 	}
 }
 
-export function CtxMenu() {
-	return new CtxMenuClass(...arguments);
+export function CtxMenu(entries: any[], label?: string) {
+	return new (CtxMenuClass as any)(...arguments);
 }
 
-export function CtxItem() {
-	return new CtxItemClass(...arguments);
+export function CtxItem(label: string, action: any) {
+	return new (CtxItemClass as any)(...arguments);
 }
 
 export function CtxCheck() {
-	return new CtxCheckClass(...arguments);
+	return new (CtxCheckClass as any)(...arguments);
 }

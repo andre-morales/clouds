@@ -1,8 +1,38 @@
-import { Reactor, ReactorEvent } from '../events.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
+import { Reactor, ReactorEvent } from '../events.mjs';
+import { InternalFault, IllegalStateFault } from '../faults.mjs';
 import Util from '../util.mjs';
 
 export default class Window {
+	app: any;
+	owner: any;
+	children: any;
+	icon: string;
+	visible: boolean;
+	maximized: boolean;
+	minimized: boolean;
+	title: string;
+	firstShow: boolean;
+	posX:number;
+	posY: number;
+	width: number;
+	height: number;
+	minWidth: number;
+	minHeight: number;
+	restoreBounds: number[];
+	events: Reactor;
+	_closeBehavior: any;
+	_initialPosition: any;
+	$window: any;
+	destroyed: boolean;
+	taskButton: any;
+	$windowHeader: any;
+	$windowButton: any;
+	$windowTitle: any;
+	optionsCtxMenu: any;
+	decorated: boolean;
+	zIndex: number;
+
 	constructor(app) {
 		if (!app) throw new InternalFault("Windows must have valid owner apps.");
 
@@ -68,7 +98,7 @@ export default class Window {
 	}
 
 	init() {
-		if (this.$window) throw IllegalStateFault('Double initialization of window object.');
+		if (this.$window) throw new IllegalStateFault('Double initialization of window object.');
 
 		// Instantiation
 		let $win = $(Util.cloneTemplate('window')).find('.window');
@@ -267,7 +297,7 @@ export default class Window {
 
 	setOwner(window) {
 		if (this.owner) {
-			arrErase(this.owner.children, this);
+			Util.arrErase(this.owner.children, this);
 		}
 		
 		if (window) window.children.push(this);
@@ -407,7 +437,7 @@ export default class Window {
 		this.$window[0].style.height = h + "px";
 	}
 
-	setBounds(x, y, w, h) {
+	setBounds(x: number[] | number, y?: number, w?: number, h?: number) {
 		if (Array.isArray(x)) {
 			this.setPosition(x[0], x[1]);
 			this.setSize(x[2], x[3]);	
@@ -582,7 +612,7 @@ export default class Window {
 		this.events.off(evclass, callback);
 	}
 
-	dispatch(evclass, args) {
+	dispatch(evclass: string, args?: any) {
 		this.events.dispatch(evclass, args);
 	}
 }

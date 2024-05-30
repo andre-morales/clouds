@@ -11,12 +11,12 @@ export function getObjectByName(name: string): any {
     return scope;
 }
 
-export function cloneTemplate(id: string) {
-	let el: any = document.getElementById('t_' + id);
+export function cloneTemplate(id: string): Node {
+	let el = document.getElementById('t_' + id) as HTMLTemplateElement;
 	return el.content.cloneNode(true);
 }
 
-export function arrErase(arr: unknown[], val: unknown) {
+export function arrErase(arr: unknown[], val: unknown): number {
 	let i = arr.indexOf(val);
 	if (i >= 0) {
 		arr.splice(i, 1);
@@ -24,18 +24,18 @@ export function arrErase(arr: unknown[], val: unknown) {
 	return i;
 }
 
-export function endsWithAny(str, arr) {
+export function endsWithAny(str: string, arr: string[]): boolean {
 	for (let end of arr) {
 		if (str.endsWith(end)) return true;
 	}
 	return false;
 }
 
-export function sleep(ms) {
+export function sleep(ms: number): Promise<void> {
 	return new Promise(res => setTimeout(res, ms));
 }
 
-export function getURLParams() {
+export function getURLParams(): ProxyConstructor {
 	return new Proxy(new URLSearchParams(window.location.search), {
  		get: (searchParams: any, prop) => searchParams.get(prop),
 	});

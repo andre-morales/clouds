@@ -1,6 +1,9 @@
 import Util from './util.mjs';
 
 export class ReactorClass {
+	listeners: any[];
+	defaultHandler: any;
+
 	constructor() {
 		this.listeners = [];
 		this.defaultHandler = null;
@@ -8,25 +11,27 @@ export class ReactorClass {
 }
 
 export class Reactor {
+	classes: any;
+
 	constructor() {
 		this.classes = {};
 	}
 
-	register() {
-		for (let name of arguments) {
+	register(...names: string[]) {
+		for (let name of names) {
 			this.classes[name] = new ReactorClass();
 		}
 	}
 
-	unregister(name) {
+	unregister(name: string) {
 		delete this.classes[name];
 	}
 
-	getClass(name) {
+	getClass(name: string) {
 		return this.classes[name];
 	}
 
-	on(name, callback) {
+	on(name: string, callback) {
 		let list = this.classes[name];
 		if (!list) throw Error(`No class ${name} registered.`);
 
@@ -73,26 +78,32 @@ export class Reactor {
 	}
 
 	// Invoke event handlers in the next cycle of the engine
-	dispatch(name, event, handler) {
+	dispatch(name: string, event?: any, handler?: any) {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				this.fire(name, event, handler);
-				resolve();
+				resolve(undefined);
 			}, 0);
 		});
 	}
 }
 
 export class Deferred {
+	promise: any;
+	resolve: any;
+	reject: any;
+
 	constructor() {
 		this.promise = new Promise((resolve, reject) => {
-			this.reject = reject
-			this.resolve = resolve
+			this.resolve = resolve;
+			this.reject = reject;
 		})
 	}
 }
 
 export class ReactorEvent {
+	canceled: boolean;
+
 	constructor() {
 		this.canceled = false;
 	}

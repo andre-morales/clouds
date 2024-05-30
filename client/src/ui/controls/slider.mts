@@ -2,6 +2,13 @@ var staticInit = false;
 var stylesheet;
 
 export class UISlider extends HTMLElement {
+	_value: number;
+	_min: number;
+	_max: number;
+	_container: any;
+	_lower: any;
+	_thumb: any;
+
 	constructor() {
 		super();
 
@@ -9,9 +16,9 @@ export class UISlider extends HTMLElement {
 			doStaticInitialization();
 		}
 
-		this._value = this.getAttribute('value');
-		this._min = this.getAttribute('min');
-		this._max = this.getAttribute('max');
+		this._value = Number(this.getAttribute('value'));
+		this._min = Number(this.getAttribute('min'));
+		this._max = Number(this.getAttribute('max'));
 		if (!this._value) this._value = 0;
 		if (!this._min) this._min = 0;
 		if (!this._max) this._max = 100;
@@ -36,7 +43,7 @@ export class UISlider extends HTMLElement {
 	}
 
 	connectedCallback() {
-		let valueChange = (coff, fireEv) => {
+		let valueChange = (coff) => {
 			if (coff < 0) coff = 0;
 			if (coff > 1) coff = 1;
 			let val = this._min + (this._max - this._min) * coff;

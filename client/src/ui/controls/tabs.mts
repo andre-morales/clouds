@@ -1,4 +1,6 @@
 export class UITabs extends HTMLElement {
+	onTabChanged: any;
+
 	constructor() {
 		super();
 		this.onTabChanged = null;

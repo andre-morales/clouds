@@ -1,6 +1,15 @@
+import { CtxMenu, CtxItem } from './context_menu.mjs';
 import Util from '../util.mjs';
 
 export class Taskbar {
+	DEFAULT_TASKBAR_ICON: string;
+	buttons: any[];
+	$windowList: any;
+	$bar: any;
+	$tasks: any;
+	$appsMenu: any;
+	noGrouping: boolean;
+
 	constructor() {
 		this.buttons = [];
 		this.DEFAULT_TASKBAR_ICON = '/res/img/icons/windows64.png';
@@ -101,6 +110,15 @@ export class Taskbar {
 }
 
 class TaskbarButton {
+	app: any;
+	windows: any[];
+	single: boolean;
+	icon: any;
+	$button: any;
+	taskButton: any;
+	$text: any;
+	$count: any;
+
 	constructor(app) {
 		this.app = app;
 		this.windows = [];

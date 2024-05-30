@@ -1,7 +1,20 @@
 import { Reactor } from './events.mjs';
+import { InternalFault } from './faults.mjs';
 
 export default class App {
-	constructor(manifest, args) {
+	state: string;
+	classId: any;
+	icon: any;
+	displayName: any;
+	noWindowGrouping: any;
+	buildArgs: any;
+	windows: any;
+	loadedResources: any;
+	mainWindow: any;
+	exitMode: any;
+	events: any;
+
+	constructor(manifest: any, args?: string[]) {
 		if (!manifest) throw new InternalFault("Apps need a manifest");
 		this.state = 'starting';
 
