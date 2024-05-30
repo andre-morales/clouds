@@ -14,7 +14,7 @@ export function init() {
 }
 
 /**
- * Tries to login a user with an id and password, returns its authKey on success, or 0 on failure.
+ * Tries to login a user with an id and password, returns its auth_key on success, or 0 on failure.
  * @param id User's name.
  * @param pass String representation of the user's password.
  * @returns The user's new key, or 0 if the authentication failed.
@@ -46,7 +46,7 @@ export function logout(user: string) {
  */
 export function getUser(req: Express.Request): string | null {
 	if (!req.cookies) return null;
-	let key = req.cookies.authkey;
+	let key = req.cookies.auth_key;
 	
 	// Iterate over logged in users and compare authentication key
 	for (let user in logins) {
@@ -77,6 +77,7 @@ export function getUserGuard(req: Express.Request) {
 /**
  * Safeguards a request making sure the user is authenticated. This is meant to be used as a
  * request middleware function. If the user is not authenticated, BadAuthException is thrown.
+ * If the user is properly authenticated, the next() function is called.
  * @param req Request object
  * @param res Response object
  * @param next Next middleware function

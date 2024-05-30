@@ -1,14 +1,12 @@
 /**
  * Virtual File System operations layer.
  */
+import { default as Files, FileOperationError, DirEntryArray, ResultCode } from './files.mjs';
+import config from './config.mjs';
 import FS from 'node:fs';
 import Path from 'node:path';
 
-import config from './config.mjs';
-import * as Files from './files.mjs';
-import { ResultCode, FileOperationError } from './files.mjs';
-
-/** Properties of path. Be it a file or folder. */
+/** Properties of a path. Be it a file or folder. */
 export interface PathStats {
 	size: number;
 }
@@ -63,14 +61,14 @@ export function translate(userId: string, virtualPath: string): string | null {
  * @returns An array of mounting points. Each mount point is an array with in the format
  * [virtual] of paths.
  */
-export function listMountingPoints(userId: string): Files.DirEntryArray[] {
+export function listMountingPoints(userId: string): DirEntryArray[] {
 	let result = Object
 	.keys(defs)
 	.filter((vmp) => {
 		return !defs[vmp].hidden;
 	})
 	.map((vmp) => {
-		let entry: Files.DirEntryArray = [vmp, '', 0];
+		let entry: DirEntryArray = [vmp, '', 0];
 		return entry;
 	});
 	return result;
@@ -128,7 +126,7 @@ export async function copy(user: string, srcPath: string, dstPath: string): Prom
  * @param path Path to a directory.
  * @returns Array of directory entry arrays.
  */
-export async function list(user: string, path: string): Promise<Files.DirEntryArray[]> {
+export async function list(user: string, path: string): Promise<DirEntryArray[]> {
 	// If the virtual path is root '/', list the virtual mounting points
 	if (path == '/') {
 		return listMountingPoints(user);

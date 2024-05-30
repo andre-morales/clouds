@@ -32,8 +32,8 @@ async function authSubmit() {
 		body: JSON.stringify({id: id, pass: pass})
 	};
 	
-	let fres = await fetch('/auth/login', opt);
-	let res = await fres.json();
+	let fRes = await fetch('/auth/login', opt);
+	let res = await fRes.json();
 
 	if (res.ok) {
 		authSuccess(res.key);
@@ -46,7 +46,7 @@ async function authSuccess(key) {
 	let el = document.querySelector('#login-screen .status');
 	el.innerHTML = 'Auth successful.';
 
-	setCookie('authkey', key);
+	setCookie('auth_key', key);
 
 	Entry.initDesktop();
 }

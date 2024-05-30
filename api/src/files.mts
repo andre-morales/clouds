@@ -190,3 +190,7 @@ function getResultName(result: ResultCode): string {
 			return "Unknown";
 	}
 }
+
+export default {
+	size, list, copy
+}

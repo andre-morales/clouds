@@ -1,4 +1,4 @@
-import * as Path from 'path';
+import Path from 'node:path';
 
 /**
  * Join two paths with an unix separator.

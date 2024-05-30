@@ -1,18 +1,5 @@
 export const KAPI_VERSION = '0.8.03';
 
-// Lib imports
-import Path from 'path';
-import FS from 'fs';
-import HTTP from 'http';
-import HTTPS from 'https';
-import Compression from 'compression';
-import CookieParser from 'cookie-parser';
-import Cors from 'cors';
-import Express, { Request, Response, NextFunction } from 'express';
-import FileUpload from 'express-fileupload';
-import Morgan from 'morgan';
-import Chalk from 'chalk';
-
 // Local imports
 import { BadAuthException } from './errors.mjs';
 import config, * as Config from './config.mjs';
@@ -21,6 +8,17 @@ import * as VFSRouter from './vfs_router.mjs';
 import * as Stats from './stats.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
+import Express, { Request, Response, NextFunction } from 'express';
+import FileUpload from 'express-fileupload';
+import Compression from 'compression';
+import CookieParser from 'cookie-parser';
+import Cors from 'cors';
+import Morgan from 'morgan';
+import Chalk from 'chalk';
+import Path from 'node:path';
+import FS from 'node:fs';
+import HTTP from 'node:http';
+import HTTPS from 'node:https';
 
 export interface AsyncRequestHandler {
 	(req: Express.Request, res: Express.Response, next: Express.NextFunction): Promise<any>;

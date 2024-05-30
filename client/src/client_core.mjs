@@ -53,7 +53,7 @@ export async function main() {
 	await stylesPromises;
 	console.log("Styles finished loading.");
 
-	// Instatiate system
+	// Instantiate system
 	Client = new ClientClass();
 	await Client.init();
 
@@ -152,7 +152,7 @@ class ClientClass {
 	}
 
 	logout(refresh = true) {
-		setCookie('authkey', '');
+		setCookie('auth_key', '');
 		fetch("/auth/logout", {
 			method: "POST"
 		});

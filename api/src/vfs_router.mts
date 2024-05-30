@@ -1,10 +1,6 @@
 /**
  * Network facing virtual file system routes.
  */
-import { NextFunction, Request, Response, Router } from 'express';
-import Path from 'node:path';
-import FS from 'node:fs';
-
 import { asyncRoute } from './core.mjs';
 import { FileOperationError } from './files.mjs';
 import config from './config.mjs';
@@ -12,6 +8,9 @@ import * as Pathx from './pathx.mjs';
 import * as VFS from './vfs.mjs';
 import * as Auth from './auth.mjs'
 import * as FFmpeg from './ext/ffmpeg.mjs'
+import { NextFunction, Request, Response, Router } from 'express';
+import Path from 'node:path';
+import FS from 'node:fs';
 
 /** Object map from names to async request handlers */
 interface FunctionMap {

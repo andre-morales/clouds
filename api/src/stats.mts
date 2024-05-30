@@ -1,6 +1,6 @@
+import * as Core from './core.mjs';
 import Express from 'express';
 import { Socket } from 'node:net';
-import * as Core from './core.mjs';
 
 interface ISocketData {
 	written: number;

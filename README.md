@@ -2,9 +2,8 @@
 <div align="center">
 
 ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Webpack](https://img.shields.io/badge/webpack-%238DD6F9.svg?style=for-the-badge&logo=webpack&logoColor=black)![Babel](https://img.shields.io/badge/Babel-F9DC3e?style=for-the-badge&logo=babel&logoColor=black)<br>
 ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
-![Webpack](https://img.shields.io/badge/webpack-%238DD6F9.svg?style=for-the-badge&logo=webpack&logoColor=black)![Babel](https://img.shields.io/badge/Babel-F9DC3e?style=for-the-badge&logo=babel&logoColor=black)
-
 
 </div>
 
@@ -39,6 +38,7 @@ api/pages/|Web pages loaded by the client when initializing the system.
 client/apps/|Contains a folder for every built-in app available on the system. An app folder contains a manifest, modules and resources used by the app.
 client/res/|Static general resources, accessible directly by the client web browser.
 client/src/|Source code for the core client modules. These are compiled into final static resources.
+client/webpack/|Building profiles used by Webpack to transform the client source code.
 config/|Configuration used by the server.
 docs/|Files associated with the repo documentation.
 usr/|Contains a folder for each user in the web system. Provides a dedicated space that can be used by the client user.
