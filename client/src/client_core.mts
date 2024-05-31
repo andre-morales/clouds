@@ -164,7 +164,7 @@ export class ClientClass {
 		this.desktop.start();
 
 		if (args && args.loc) {
-			let app = await this.runApp('explorer');
+			let app: any = await this.runApp('explorer');
 			app.go(args.loc);
 		}
 	}

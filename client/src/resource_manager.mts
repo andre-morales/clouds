@@ -15,7 +15,11 @@ export class ResourceManager {
 	/**
 	 * Adds a resource to be owned by this manager.
 	 */
-	add(id: string, res: Resource) {
+	add(res: Resource, id?: string) {
+		if (!id) id = this.#generateId();
+		if (this.resources[id]) {
+			throw new Error(`A resource of ID "${id}" is already registered.`);
+		}
 		this.resources[id] = res;
 	}
 
@@ -52,6 +56,13 @@ export class ResourceManager {
 	}
 
 	/**
+	 * Release the handles of all resources owned by the user passed.
+	 */
+	releaseAll(user: unknown) {
+		Object.values(this.resources).forEach((res) => res.removeUser(user));
+	}
+
+	/**
 	 * Removes all unloaded resources from the manager.
 	 */
 	clean() {
@@ -65,9 +76,9 @@ export class ResourceManager {
 	 * If the module is already loaded, just register another user for it. Otherwise, load it and register its first user.
 	 * Returns the resource object that represents this module.
 	 */
-	async fetchModule(url: string, user: string): Promise<Resource> {
-		return this._fetchWebResource(url, user, async (id) => {
-			await Util.addStylesheet(url, id);
+	async fetchModule(url: string, user: unknown): Promise<Resource> {
+		return this.#fetchWebResource(url, user, async (id) => {
+			await Util.addModule(url, id);
 		});
 	}
 	/**
@@ -75,8 +86,8 @@ export class ResourceManager {
 	 * If the script is already loaded, just register another user for it. Otherwise, load it and register its first user.
 	 * Returns the resource object that represents this script.
 	 */
-	async fetchScript(url, user): Promise<Resource> {
-		return this._fetchWebResource(url, user, async (id) => {
+	async fetchScript(url: string, user: unknown): Promise<Resource> {
+		return this.#fetchWebResource(url, user, async (id) => {
 			await Util.addScript(url, id);
 		});
 	}
@@ -88,7 +99,7 @@ export class ResourceManager {
 	 * Returns the resource object representing this style resource.
 	 */
 	async fetchStyle(url: string, user: unknown): Promise<Resource> {
-		return this._fetchWebResource(url, user, async (id) => {
+		return this.#fetchWebResource(url, user, async (id) => {
 			await Util.addStylesheet(url, id);
 		});
 	}
@@ -97,29 +108,39 @@ export class ResourceManager {
 	 * General helper function for fetching and instantiating web resources like styles, modules
 	 * and scripts. Sets the resource id to the url of the resource requested.
 	 */
-	async _fetchWebResource(url: string, user: unknown, creator: Function): Promise<Resource> {
+	async #fetchWebResource(url: string, user: unknown, creator: (id: string) => Promise<void>): Promise<Resource> {
 		let resource = this.get(url);
-	
-		if (resource) {
-			// The resource was already loaded, let's register
-			// another user of it.
-			resource.addUser(user);
-		} else {
+
+		// If an unloaded resource with this URL exists, delete it to load it again.
+		if (resource && resource.isUnloaded()) {
+			this.remove(url);
+			resource = null;
+		}
+
+		// Create resource item
+		if (!resource) {
 			let resId = btoa(url);
-	
-			// The resource hasn't been loaded yet.
 			resource = new Resource();
 			resource.name = resId;
-			resource.addUser(user);
 			resource.setUnloadCallback(() => {
 				Util.destroyElementById(resId);
 			});
-			this.add(url, resource);
+			this.add(resource, url);
 	
 			await creator(resId);
 		}
+
+		resource.addUser(user);
 		return resource;
-	}	
+	}
+
+	#generateId(): string {
+		let self: any = this.#generateId;
+		if (!self.ID_COUNTER) self.ID_COUNTER = 0;
+
+		self.ID_COUNTER++;
+		return '__' + self.ID_COUNTER ;
+	}
 }
 
 export default ResourceManager;

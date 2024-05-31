@@ -1,5 +1,5 @@
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
-import Util from '/res/js/util.mjs';
+import Util from '/@sys/util.mjs';
 
 export default class ConsoleApp extends App {
 	constructor(...args) {
@@ -8,7 +8,6 @@ export default class ConsoleApp extends App {
 		this.commandHistory = [];
 		this.commandHistoryIndex = 0;
 		this.currentInput = "";
-		
 	}
 
 	async init() {

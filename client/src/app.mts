@@ -1,7 +1,7 @@
 import { Reactor } from './events.mjs';
 import { InternalFault } from './faults.mjs';
 import Window from './ui/window.mjs'
-import Resource from './resource.mjs';
+import ResourceManager from './resource_manager.mjs';
 
 export interface AppManifest {
 	id: string;
@@ -15,6 +15,7 @@ export interface AppManifest {
 }
 
 export default class App {
+	resources: ResourceManager;
 	state: string;
 	classId: string;
 	icon: string;
@@ -22,7 +23,6 @@ export default class App {
 	noWindowGrouping: boolean;
 	buildArgs: unknown[];
 	windows: Window[];
-	loadedResources: string[];
 	mainWindow: Window;
 	exitMode: string;
 	events: Reactor;
@@ -30,14 +30,13 @@ export default class App {
 	constructor(manifest: AppManifest, args?: unknown[]) {
 		if (!manifest) throw new InternalFault("Apps need a manifest");
 		this.state = 'starting';
-
+		this.resources = new ResourceManager();
 		this.classId = manifest.id;
-		this.icon = (manifest.icon) ? manifest.icon : "";
+		this.icon = manifest.icon ?? "";
 		this.displayName = manifest.displayName;
 		this.noWindowGrouping = manifest.noWindowGrouping;
 
-		this.buildArgs = (args) ? args : [];
-		this.loadedResources = [];
+		this.buildArgs = args ?? [];
 		this.windows = [];
 		this.mainWindow = undefined;
 		this.exitMode = 'main-win-close';
@@ -62,9 +61,7 @@ export default class App {
 		}
 
 		// Release all app resources
-		for (let res of this.loadedResources) {
-			Client.resourceMan.release(res, this);
-		}
+		this.resources.releaseAll(this);
 	}
 
 	exit(code?: number) {
@@ -78,14 +75,14 @@ export default class App {
 		this.exitMode = mode;
 	}
 
-	requireScript(url: string) {
-		Client.resourceMan.fetchScript(url, this);
-		this.loadedResources.push(url);
+	async requireScript(url: string) {
+		let resource = await Client.resourceMan.fetchScript(url, this);
+		this.resources.add(resource);
 	}
 
-	requireStyle(url: string) {
-		Client.resourceMan.fetchStyle(url, this);
-		this.loadedResources.push(url);
+	async requireStyle(url: string) {
+		let resource = await Client.resourceMan.fetchStyle(url, this);
+		this.resources.add(resource);
 	}
 
 	canEnd() {

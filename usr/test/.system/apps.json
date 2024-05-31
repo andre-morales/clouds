@@ -21,7 +21,7 @@
 	},
 	"webview": {
 		"name": "WebView",
-		"icon": "/res/img/apps/browser128.png",
+		"icon": "/app/webview/icon128.png",
 		"flags": ["tool"]
 	},
 	"configs": {

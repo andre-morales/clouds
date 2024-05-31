@@ -81,7 +81,7 @@ export function destroyElementById(id) {
 	return el;
 }
 
-export function addModule(src, id) {
+export function addModule(src: string, id?: string) {
 	var elem = document.createElement('script');
 	if (id) elem.setAttribute('id', id);
 	elem.setAttribute('type', 'module');

@@ -1,11 +1,11 @@
-import { AppManifest } from "./app.mjs";
+import App, { AppManifest } from "./app.mjs";
 import Resource from "./resource.mjs";
 import { getObjectByName } from "./util.mjs";
 
 interface AppResources {
-	scripts: Promise<Resource>[];
-	modules: Promise<Resource>[];
-	styles: Promise<Resource>[];
+	scripts: Promise<Resource[]>;
+	modules: Promise<Resource[]>;
+	styles: Promise<Resource[]>;
 }
 
 async function runAppFetch(manifestURL: string, buildArgs?: unknown[]) {
@@ -18,32 +18,19 @@ async function runAppFetch(manifestURL: string, buildArgs?: unknown[]) {
 		const tmpResourceUserId = 'APP-CREATOR';
 		let resources = fetchAppResources(manifest, tmpResourceUserId);
 
-		// Wait for all scripts to load and save the resource objects.
-		// We don't wait for the styles to load since most of the time, its not necessary
-		let loadedModuleResources = await Promise.all(resources.modules);
-		let loadedScriptResources = await Promise.all(resources.scripts);
+		// Wait for all scripts and modules to load in order to instantiate the application.
+		await resources.modules;
+		await resources.scripts;
 
 		// Obtain constructor function
 		let AppClass = await getAppConstructor(manifest, manifest.modules);
 
 		// Instantiate the app object with any passed arguments
-		let app = new AppClass(manifest, buildArgs ?? []);
+		let appObj = new AppClass(manifest, buildArgs ?? []);
+		let app = appObj as App;
 
-		// Replace the temporary user and set the app as a user of its own script resources
-		for (let res of loadedModuleResources) {
-			res.replaceUser(tmpResourceUserId, app);
-		}
-
-		for (let res of loadedScriptResources) {
-			res.replaceUser(tmpResourceUserId, app);
-		}
-
-		// Once a style its loaded, we should replace the temporary user with the app object.
-		for (let promise of resources.styles) {
-			promise.then((res) => {
-				res.replaceUser(tmpResourceUserId, app);
-			});
-		}
+		// Pass resources loaded to the app instance
+		tieResources(resources, app, tmpResourceUserId);
 
 		// Save the app in the running array and fire any events
 		Client.runningApps.push(app);
@@ -51,7 +38,7 @@ async function runAppFetch(manifestURL: string, buildArgs?: unknown[]) {
 		app.state = 'alive';
 
 		// Fire the app initialization and return its instance
-		await app.init();
+		await appObj.init();
 		return app;
 	} catch(err) {
 		throw new AppInitializationError('Failed to instantiate "' + manifestURL + '" - ' + err, err);
@@ -87,17 +74,17 @@ function fetchAppResources(manifest: AppManifest, userId: string): AppResources 
 
 	let resources: any = {};
 
-	resources.modules = modules.map((url) => {
+	resources.modules = Promise.all(modules.map((url) => {
 		return Client.resourceMan.fetchModule(url, userId);
-	});
+	}));
 
-	resources.scripts = scripts.map((url) => {
+	resources.scripts = Promise.all(scripts.map((url) => {
 		return Client.resourceMan.fetchScript(url, userId);
-	});
+	}));
 
-	resources.styles = styles.map((url) => {
+	resources.styles = Promise.all(styles.map((url) => {
 		return Client.resourceMan.fetchStyle(url, userId);
-	});
+	}));
 
 	return resources;
 }
@@ -129,6 +116,22 @@ async function getAppConstructor(manifest: AppManifest, modules: any): Promise<a
 	}
 
 	return AppClass;
+}
+
+/**
+ * Wait for all resources to load, and replace all temporary resource user IDs with the app
+ * instance itself as an user id.
+ */
+async function tieResources(resources: AppResources, app: App, tmpId: string) {
+	let modules = await resources.modules;
+	let scripts = await resources.scripts;
+	let styles = await resources.styles;
+
+	for (let res of [modules, scripts, styles].flat()) {
+		// Replace the temporary user and set the app as a user of its own resources
+		res.replaceUser(tmpId, app);
+		app.resources.add(res);
+	}
 }
 
 class AppInitializationError extends Error {
