@@ -3,19 +3,18 @@ export class CtxMenuClass {
 	label: string;
 
 	constructor(entries: (CtxItemClass | string)[], label: string) {
-		this.entries = (entries) ? entries : [];
+		this.entries = entries ?? [];
 		this.label = label;
 	}
 
 	buildIn($menu, $rootMenu, screenWidth, screenHeight) {
-		for (let entry of this.entries) {
-			if (entry === '-') {
+		for (let entry_ of this.entries) {
+			if (entry_ === '-') {
 				$menu.append($('<hr>'));
 				continue;
 			}
 
-			if (!(entry instanceof CtxItemClass)) return;
-
+			let entry: any = entry_;
 			let $item: $Element;
 			let label = entry.label;
 			let action = entry.action;

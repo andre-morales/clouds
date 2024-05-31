@@ -8,11 +8,6 @@ declare global {
 	var App: App;
 	var Client: ClientClass;
 	var _systemPanic: Function;
-	var addStylesheet: Function;
-	var addScript: Function;
-	var destroyElementById: Function;
-	var addModule: Function;
-	var setCookie: Function;
 	var IMPORT: Function;
 }
 

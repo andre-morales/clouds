@@ -46,7 +46,7 @@ async function authSuccess(key) {
 	let el = document.querySelector('#login-screen .status');
 	el.innerHTML = 'Auth successful.';
 
-	setCookie('auth_key', key);
+	Entry.setCookie('auth_key', key);
 
 	Entry.initDesktop();
 }

@@ -174,6 +174,7 @@ export function getRouter(): Router {
 		}
 
 		await VFS.mkdir(req.userId, req.virtualPath);
+		res.status(200).end();
 	};
 
 	// General file operation error handler

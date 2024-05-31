@@ -55,16 +55,39 @@ export async function initDesktop() {
 	CoreModule.main();
 }
 
-function authLogout() {
-	setCookie('authkey', '');
-}
-
 async function authIsKeyValid() {
 	let fres = await fetch('/auth/test');
 	let res = await fres.json();
 	return res.ok;
 }
 
+export function setCookie(name, value, time) {
+	if (!time) time = 365;
+
+	let d = new Date();
+	d.setTime(d.getTime() + (time*24*60*60*1000));
+	let expires = "expires="+ d.toUTCString();
+	document.cookie = name + "=" + value + ";" + expires + ";path=/";
+}
+
+function addScript(src) {
+	var elem = document.createElement('script');
+	elem.setAttribute('defer', '');
+	elem.setAttribute('src', src);
+
+	document.head.appendChild(elem);
+
+	return new Promise((resolve, reject) => {
+		elem.addEventListener('load', resolve);
+		elem.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
+	});
+}
+
+function destroyElementById(id) {
+	let el = document.getElementById(id);
+	if (el) el.remove();
+	return el;
+}
 
 function _systemPanic(reason, detail, mode) {
 	console.error('--- SYSTEM PANIC ---');

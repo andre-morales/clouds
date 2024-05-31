@@ -29,20 +29,20 @@ export async function main() {
 
 	// Load basic desktop page and style, this will bring the taskbar and system version
 	// on display
-	let desktopStyleProm = addStylesheet('/res/css/desktop.css');
+	let desktopStyleProm = Util.addStylesheet('/res/css/desktop.css');
 	await desktopPageProm;
 	await desktopStyleProm;
 
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
-		addScript('/res/pack/public.bundle.js'),
-		addScript('/res/lib/hammer.min.js')
+		Util.addScript('/res/pack/public.bundle.js'),
+		Util.addScript('/res/lib/hammer.min.js')
 	]);
 
 	// Schedule loading of main styles
 	let stylesPromises = Promise.all([
-		addStylesheet('/res/css/ui.css'),
-		addStylesheet('/res/css/controls.css')
+		Util.addStylesheet('/res/css/ui.css'),
+		Util.addStylesheet('/res/css/controls.css')
 	]);
 
 	// Wait for scripts and styles
@@ -58,7 +58,7 @@ export async function main() {
 	Client = new ClientClass();
 	await Client.init();
 
-	destroyElementById('loading-screen');
+	Util.destroyElementById('loading-screen');
 
 	Client.start(Util.getURLParams());
 }
@@ -167,7 +167,7 @@ export class ClientClass {
 	}
 
 	logout(refresh = true) {
-		setCookie('auth_key', '');
+		Util.setCookie('auth_key', '');
 		fetch("/auth/logout", {
 			method: "POST"
 		});
@@ -305,11 +305,11 @@ export class ClientClass {
 			resource.id = resId;
 			resource.users = [user];
 			resource.fnUnload = () => {
-				destroyElementById(resId);
+				Util.destroyElementById(resId);
 			};
 			this.loadedResources[url] = resource;
 
-			await addModule(url, resId);
+			await Util.addModule(url, resId);
 		}
 		return resource;
 	}
@@ -331,11 +331,11 @@ export class ClientClass {
 			resource.id = resId;
 			resource.users = [user];
 			resource.fnUnload = () => {
-				destroyElementById(resId);
+				Util.destroyElementById(resId);
 			};
 			this.loadedResources[url] = resource;
 
-			await addScript(url, resId);
+			await Util.addScript(url, resId);
 		}
 		return resource;
 	}
@@ -361,12 +361,12 @@ export class ClientClass {
 			resource.id = resId;
 			resource.users = [user];
 			resource.fnUnload = () => {
-				destroyElementById(resId);
+				Util.destroyElementById(resId);
 			};
 			resource.permanent = false;
 			this.loadedResources[url] = resource;
 
-			await addStylesheet(url, resId);
+			await Util.addStylesheet(url, resId);
 		}
 		return resource;
 	}

@@ -8,6 +8,7 @@ export default class ConsoleApp extends App {
 		this.commandHistory = [];
 		this.commandHistoryIndex = 0;
 		this.currentInput = "";
+		
 	}
 
 	async init() {
@@ -208,7 +209,7 @@ export default class ConsoleApp extends App {
 			let value = obj[key];
 			properties += `\n${key}: ${this.stringifyObject(value, depth - 1)}`;
 		}
-		properties = strReplaceAll(properties, '\n', '\n  ');
+		properties = Util.strReplaceAll(properties, '\n', '\n  ');
 		return `${obj.constructor.name}: {${properties}\n}`;
 	}
 }

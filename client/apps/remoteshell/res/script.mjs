@@ -88,7 +88,7 @@ export default class RemoteShellApp extends App {
 
 		// Make the window visible
 		await this.window.setVisible(true);
-		$field.focus({ preventScroll: true });
+		$field[0].focus({ preventScroll: true });
 	}
 
 	updateLog(content) {

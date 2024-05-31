@@ -41,4 +41,89 @@ export function getURLParams(): ProxyConstructor {
 	});
 }
 
-export default { getObjectByName, cloneTemplate, arrErase, endsWithAny, sleep, getURLParams };
+function strReplaceAll(text, token, newToken) {
+	let escapedToken = token.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&");
+	let regexp = new RegExp(escapedToken, 'g');
+
+	if (typeof(newToken) == "string") {
+		newToken = newToken.replace(/\$/g, "$$$$");
+	}
+
+	return text.replace(regexp, newToken);
+}
+
+export function setCookie(name: string, value: string, time = 365) {
+	let d = new Date();
+	d.setTime(d.getTime() + (time*24*60*60*1000));
+	let expires = "expires="+ d.toUTCString();
+	document.cookie = name + "=" + value + ";" + expires + ";path=/";
+}
+
+export function getCookie(cname: string): string {
+	let name = cname + "=";
+	let decodedCookie = decodeURIComponent(document.cookie);
+	let ca = decodedCookie.split(';');
+	for(let i = 0; i < ca.length; i++) {
+		let c = ca[i];
+		while (c.charAt(0) == ' ') {
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+			return c.substring(name.length, c.length);
+		}
+	}
+	return "";
+}
+
+export function destroyElementById(id) {
+	let el = document.getElementById(id);
+	if (el) el.remove();
+	return el;
+}
+
+export function addModule(src, id) {
+	var elem = document.createElement('script');
+	if (id) elem.setAttribute('id', id);
+	elem.setAttribute('type', 'module');
+	elem.setAttribute('src', src);
+	
+	document.head.appendChild(elem);
+
+	return new Promise((resolve, reject) => {
+		elem.addEventListener('load', resolve);
+		elem.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
+	});
+}
+
+export function addStylesheet(src: string, id?: string) {
+	var style = document.createElement('link');
+	if(id) style.setAttribute('id', id);
+	style.setAttribute('rel', 'stylesheet');
+	style.setAttribute('href', src);
+
+	document.head.appendChild(style);
+
+	return new Promise((resolve, reject) => {
+		style.addEventListener('load', resolve);
+		style.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
+	});
+}
+
+export function addScript(src: string, id?: string) {
+	var elem = document.createElement('script');
+	if (id) elem.setAttribute('id', id);
+	elem.setAttribute('defer', '');
+	elem.setAttribute('src', src);
+
+	document.head.appendChild(elem);
+
+	return new Promise((resolve, reject) => {
+		elem.addEventListener('load', resolve);
+		elem.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
+	});
+}
+
+export default {
+	getObjectByName, cloneTemplate, arrErase, endsWithAny, sleep, getURLParams, strReplaceAll,
+	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript
+};

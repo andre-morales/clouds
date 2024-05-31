@@ -226,8 +226,7 @@ export default class ExplorerApp extends App {
 				el.setAttribute('src', '');
 			});
 		}
-		//this.$files.empty();
-		
+
 		if (path.startsWith('$')) {
 			this.openCollection(path.substring(1));
 			return;
@@ -482,17 +481,17 @@ export default class ExplorerApp extends App {
 
 	// Returns whether there is a copy/cut operation in the clipboard
 	canPaste() {
-		let type = LocalClipboard.type;
+		let type = LocalClipboard.getType();
 		if (type != 'path') return false;
 
-		let op = LocalClipboard.object;
+		let op = LocalClipboard.getObject();
 		return op.operation == 'cut' || op.operation == 'copy';
 	}
 
 	async paste() {
 		if (!this.canPaste()) return;
 
-		let obj = LocalClipboard.object;
+		let obj = LocalClipboard.getObject();
 		let from = obj.path;
 		let to = this.cwd + Paths.file(from);
 

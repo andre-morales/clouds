@@ -1,16 +1,16 @@
 var itemValue: any;
 var itemType: string;
 
-async function saveObject(type: string, object: any) {
+function saveObject(type: string, object: any) {
 	itemValue = object;
 	itemType = type;
 }
 
-async function getObject() {
+function getObject() {
 	return itemValue;
 }	
 
-async function getType() {
+function getType() {
 	return itemType;
 }
 
