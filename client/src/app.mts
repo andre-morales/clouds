@@ -63,7 +63,7 @@ export default class App {
 
 		// Release all app resources
 		for (let res of this.loadedResources) {
-			Client.releaseResource(res, this);
+			Client.resourceMan.release(res, this);
 		}
 	}
 
@@ -79,12 +79,12 @@ export default class App {
 	}
 
 	requireScript(url: string) {
-		Client.requestScript(url, this);
+		Client.resourceMan.fetchScript(url, this);
 		this.loadedResources.push(url);
 	}
 
 	requireStyle(url: string) {
-		Client.requestStyle(url, this);
+		Client.resourceMan.fetchStyle(url, this);
 		this.loadedResources.push(url);
 	}
 

@@ -9,6 +9,8 @@ import * as MediaSessionBridge from './media_session_bridge.mjs';
 import * as Dialogs from './ui/dialogs.mjs';
 import Desktop from './ui/desktop.mjs';
 import UIControls from './ui/controls/controls.mjs';
+import ResourceManager from './resource_manager.mjs';
+import { runAppFetch } from './app_runner.mjs';
 
 var Client;
 
@@ -75,7 +77,8 @@ export class ClientClass {
 
 	logHistory: string;
 	runningApps: App[];
-	loadedResources: any;
+	//loadedResources: any;
+	resourceMan: ResourceManager;
 	_reactor: Reactor;
 	desktop: Desktop;
 	registeredApps: any;
@@ -103,7 +106,7 @@ export class ClientClass {
 
 		// Create main structures
 		this.runningApps = [];
-		this.loadedResources = {};
+		this.resourceMan = new ResourceManager();
 		this._reactor = new Reactor();
 		this._reactor.register('log', 'apps-add', 'apps-rem');
 		
@@ -176,99 +179,9 @@ export class ClientClass {
 	}
 
 	async runApp(name: string, buildArgs?: unknown[]) {
-		return await this.runAppFetch('/app/' + name + '/manifest.json', buildArgs);
-	}
-
-	async runAppFetch(manifestURL: string, buildArgs?: unknown[]) {
 		try {
-			// Fetch manifest
-			let fRes = await fetch(manifestURL);
-			if (fRes.status == 404) {
-				throw new Error('Failed to instantiate "' + manifestURL + '", manifest not found.');
-			}
-			if (fRes.status == 403) {
-				throw new Error('Failed to instantiate "' + manifestURL + '", access denied.');
-			}
-
-			// Await for manifest
-			let manifestObj = await fRes.json();
-			let manifest = manifestObj as AppManifest;
-
-			let tmpUserId = 'APP-CREATOR';
-
-			// Load required scripts and styles declared in the manifest
-			let modules = (manifest.modules) ? manifest.modules : [];
-			let scripts = (manifest.scripts) ? manifest.scripts : [];
-			let styles = (manifest.styles) ? manifest.styles : [];
-
-			let loadingModulesPromises = modules.map((url) => {
-				return this.requestModule(url, tmpUserId);
-			});
-
-			let loadingScriptsPromises = scripts.map((url) => {
-				return this.requestScript(url, tmpUserId);
-			});
-
-			let loadingStylesPromises = styles.map((url) => {
-				return this.requestStyle(url, tmpUserId);
-			});
-
-			// Wait for all scripts to load and save the resource objects.
-			// We don't wait for the styles to load since most of the time, its not necessary
-			let loadedModuleResources = await Promise.all(loadingModulesPromises);
-			let loadedScriptResources = await Promise.all(loadingScriptsPromises);
-
-			let AppClass;
-
-			// Obtain the app class declared in the manifest from the global namespace
-			if (manifest.builder) {
-				AppClass = getObjectByName(manifest.builder)
-			// Obtain the app class as the default export of the first module
-			} else {
-				if (modules.length < 1) {
-					throw Error('Failed to instantiate "' + manifestURL + '", undisclosed builder and no modules declared.');
-				}
-
-				// Import first module
-				let moduleName = modules[0];
-				let namespace = await IMPORT(moduleName);
-
-				AppClass = namespace.default;
-			}
-			
-			if (!AppClass) {
-				throw Error('Failed to instantiate "' + manifestURL + '", builder unavailable.');
-			}
-
-			// Instantiate the app object with any passed arguments
-			if (!buildArgs) buildArgs = [];
-			let app = new AppClass(manifest, buildArgs);
-
-			// Replace the temporary user and set the app as a user of its own script resources
-			for (let res of loadedModuleResources) {
-				res.users[res.users.indexOf(tmpUserId)] = app;
-			}
-
-			for (let res of loadedScriptResources) {
-				res.users[res.users.indexOf(tmpUserId)] = app;
-			}
-
-			// Once a style its loaded, we should replace the temporary user with the app object.
-			for (let promise of loadingStylesPromises) {
-				promise.then((resource) => {
-					resource.users[resource.users.indexOf(tmpUserId)] = app;
-				});
-			}
-
-			// Save the app in the running array and fire any events
-			this.runningApps.push(app);
-			this.dispatch('apps-add');
-			app.state = 'alive';
-
-			// Fire the app initialization and return its instance
-			await app.init();
-			return app;
-		} catch (err) {
+			return await runAppFetch('/app/' + name + '/manifest.json', buildArgs);
+		} catch(err) {
 			Client.logError(err);	
 			this.showErrorDialog('App Initialization', err, err);
 		}
@@ -288,101 +201,6 @@ export class ClientClass {
 		this.dispatch('apps-rem');
 	}
 
-	// Loads the module with the given url and registers a user.
-	// If the module is already loaded, just register another user for it. Otherwise, load it and register its first user.
-	// Returns the resource object that represents this module.
-	async requestModule(url, user) {
-		let resource = this.loadedResources[url];
-		if (resource) {
-			// The resource was already loaded, let's register
-			// another user of it.
-			resource.addUser(user);
-		} else {
-			// The resource hasn't been loaded yet, let's create it and load the script
-			let resId = btoa(url);
-			resource = new Resource();
-			resource.permanent = false;
-			resource.id = resId;
-			resource.users = [user];
-			resource.fnUnload = () => {
-				Util.destroyElementById(resId);
-			};
-			this.loadedResources[url] = resource;
-
-			await Util.addModule(url, resId);
-		}
-		return resource;
-	}
-
-	// Loads the script with the given url and registers a user.
-	// If the script is already loaded, just register another user for it. Otherwise, load it and register its first user.
-	// Returns the resource object that represents this script.
-	async requestScript(url, user) {
-		let resource = this.loadedResources[url];
-		if (resource) {
-			// The resource was already loaded, let's register
-			// another user of it.
-			resource.addUser(user);
-		} else {
-			// The resource hasn't been loaded yet, let's create it and load the script
-			let resId = btoa(url);
-			resource = new Resource();
-			resource.permanent = false;
-			resource.id = resId;
-			resource.users = [user];
-			resource.fnUnload = () => {
-				Util.destroyElementById(resId);
-			};
-			this.loadedResources[url] = resource;
-
-			await Util.addScript(url, resId);
-		}
-		return resource;
-	}
-
-	// Loads a style of the given url and registers a user.
-	// If the style was already loaded, just add another user to it.
-	// Otherwise, load the style, create its resource object and register its first user.
-	// Returns the resource object representing this style resource.
-	async requestStyle(url, user) {
-		let resource = this.loadedResources[url];
-
-		if (resource) {
-			// The resource was already loaded, let's register
-			// another user of it.
-			if (!resource["users"].includes(user)) {
-				resource["users"].push(user);
-			}
-		} else {
-			let resId = btoa(url);
-
-			// The resource hasn't been loaded yet.
-			resource = new Resource();
-			resource.id = resId;
-			resource.users = [user];
-			resource.fnUnload = () => {
-				Util.destroyElementById(resId);
-			};
-			resource.permanent = false;
-			this.loadedResources[url] = resource;
-
-			await Util.addStylesheet(url, resId);
-		}
-		return resource;
-	}
-
-	releaseResource(url, user) {
-		// Find resource
-		let res = this.loadedResources[url];
-		if (!res) return;
-
-		// Remove its user, and if it gets unloaded, remove it from the list
-		res.removeUser(user);
-		if (res.unloaded) {
-			delete this.loadedResources[url];
-		}
-	}
-
 	downloadUrl(path) {
 		let link = document.createElement('a');
 		link.style.display = 'none';
@@ -399,13 +217,13 @@ export class ClientClass {
 
 	initLogging() {
 		window.addEventListener('error', (ev) => {
-			let lmsg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
+			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
 			if (ev.error.stack) {
-				lmsg += ev.error.stack;
+				msg += ev.error.stack;
 			} else {
-				lmsg += 'unavailable';
+				msg += 'unavailable';
 			}
-			this.log(lmsg);
+			this.log(msg);
 		});
 
 		window.addEventListener('unhandledrejection', (ev) => {

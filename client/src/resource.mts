@@ -1,18 +1,17 @@
 export default class Resource {
-	id: string;
+	name: string;
 	users: unknown[];
-	fnUnload: () => void;
-	unloaded: boolean;
-	permanent: boolean;
+	#unloaded: boolean;
+	/** A permanent resource does not get unloaded if it has no more users. */
+	#permanent: boolean;
+	#unloadFn?: () => void;
 
 	constructor() {
-		this.id = null;
+		this.name = null;
 		this.users = [];
-		this.fnUnload = null;
-		this.unloaded = false;
-
-		// A permanent resource does not get unloaded if it has no more users.
-		this.permanent = false;
+		this.#unloadFn = null;
+		this.#unloaded = false;
+		this.#permanent = false;
 	}
 
 	addUser(user: unknown) {
@@ -32,13 +31,37 @@ export default class Resource {
 		this.users.splice(i, 1);
 
 		// If there are no users for this resource and it's not a permanent resource. Unload it.
-		if (this.users.length == 0 && !this.permanent) {
+		if (this.users.length == 0 && !this.#permanent) {
 			this.unload();
 		}	
 	}
 
+	/**
+	 * Find the user 'oldUser' of this resource and replace it with 'newUser'.
+	 */
+	replaceUser(oldUser: unknown, newUser: unknown) {
+		this.users[this.users.indexOf(oldUser)] = newUser;
+	}
+
+	/**
+	 * Invokes this resource unload function and flags it as unloaded.
+	 */
 	unload() {
-		this.unloaded = true;
-		this.fnUnload();
+		this.#unloaded = true;
+		if (this.#unloadFn) {
+			this.#unloadFn();
+		}
+	}
+
+	setPermanent(permanent: boolean) {
+		this.#permanent = permanent;
+	}
+
+	setUnloadCallback(callback: () => void) {
+		this.#unloadFn = callback;
+	}
+
+	isUnloaded() {
+		return this.#unloaded;
 	}
 }
