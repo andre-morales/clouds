@@ -48,8 +48,8 @@ export default class SystemMonitorApp extends App {
 			}
 		};
 
-		Client.on('apps-add', makeAppEntries);
-		Client.on('apps-rem', makeAppEntries);
+		Client.events.on('apps-add', makeAppEntries);
+		Client.events.on('apps-rem', makeAppEntries);
 
 		// Windows tab
 		let $windowsTab = $win.find('.ui-tab[data-tab="windows"]');

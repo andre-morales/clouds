@@ -76,12 +76,12 @@ export default class App {
 	}
 
 	async requireScript(url: string) {
-		let resource = await Client.resourceMan.fetchScript(url, this);
+		let resource = await Client.resources.fetchScript(url, this);
 		this.resources.add(resource);
 	}
 
 	async requireStyle(url: string) {
-		let resource = await Client.resourceMan.fetchStyle(url, this);
+		let resource = await Client.resources.fetchStyle(url, this);
 		this.resources.add(resource);
 	}
 

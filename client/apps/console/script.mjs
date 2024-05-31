@@ -27,11 +27,11 @@ export default class ConsoleApp extends App {
 		this.$cmdField = $app.find('.cmd-field');
 		this.$suggestions = $app.find('.suggestions');
 
-		this.logListener = Client.on('log', (msg) => {
+		this.logListener = Client.events.on('log', (msg) => {
 			this.updateLog(msg);
 		});
 		this.on('exit', () => {	
-			Client.off('log', this.logListener);
+			Client.events.off('log', this.logListener);
 		});
 
 		this.updateLog(Client.logHistory, true);

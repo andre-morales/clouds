@@ -38,7 +38,6 @@ api/pages/|Web pages loaded by the client when initializing the system.
 client/src/|**TypeScript** source code for the core client modules. These are compiled into final static resources.
 client/apps/|Contains a folder for every built-in app available on the system. An app folder contains a manifest, modules and resources used by the app.
 client/res/|Static general resources, accessible directly by the client web browser.
-client/webpack/|Building profiles used by Webpack to transform the client source code.
 config/|Configuration used by the server.
 docs/|Files associated with the repo documentation.
 usr/|Contains a folder for each user in the web system. Provides a dedicated space that can be used by the client user.
@@ -71,7 +70,7 @@ Here's a list of all NPM scripts that can be used through ```> npm run <script>`
 Script|Purpose
 :-|:-
 build-api-dist|Compiles all the TypeScript API files in /api/src/ to /api/runtime/
-build-client-dist|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in distribution mode.
+build-client-prod|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in production mode.
 build-client-dev|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in development mode.
 build-client-stats|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in stats analysis mode.
 check-client-types|Runs TypeScript compiler type checking on Client code.

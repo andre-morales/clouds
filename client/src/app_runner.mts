@@ -34,7 +34,7 @@ async function runAppFetch(manifestURL: string, buildArgs?: unknown[]) {
 
 		// Save the app in the running array and fire any events
 		Client.runningApps.push(app);
-		Client.dispatch('apps-add');
+		Client.events.dispatch('apps-add');
 		app.state = 'alive';
 
 		// Fire the app initialization and return its instance
@@ -75,15 +75,15 @@ function fetchAppResources(manifest: AppManifest, userId: string): AppResources 
 	let resources: any = {};
 
 	resources.modules = Promise.all(modules.map((url) => {
-		return Client.resourceMan.fetchModule(url, userId);
+		return Client.resources.fetchModule(url, userId);
 	}));
 
 	resources.scripts = Promise.all(scripts.map((url) => {
-		return Client.resourceMan.fetchScript(url, userId);
+		return Client.resources.fetchScript(url, userId);
 	}));
 
 	resources.styles = Promise.all(styles.map((url) => {
-		return Client.resourceMan.fetchStyle(url, userId);
+		return Client.resources.fetchStyle(url, userId);
 	}));
 
 	return resources;

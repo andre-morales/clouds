@@ -36,8 +36,16 @@
 			"script": "build-client-dev",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "Build Client Development",
-			"detail": "📦 npm run build-client-dev"
+			"label": "Build Client (Development)",
+			"detail": "🐛 npm run build-client-dev"
+		},
+		{
+			"type": "npm",
+			"script": "build-client-prod",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "Build Client (Production)",
+			"detail": "📦 npm run build-client-prod"
 		},
 	]
 }

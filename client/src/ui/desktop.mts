@@ -1,11 +1,11 @@
+import TaskbarM, { Taskbar } from './taskbar.mjs'
+import Window from './window.mjs';
+import Fullscreen from './fullscreen.mjs';
+import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
+import App from '../app.mjs';
 import { Reactor } from '../events.mjs';
 import { FileSystem } from '../filesystem.mjs';
 import Util from '../util.mjs';
-import Fullscreen from './fullscreen.mjs';
-import TaskbarM, { Taskbar } from './taskbar.mjs'
-import Window from './window.mjs';
-import App from '../app.mjs';
-import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
 
 export class Desktop {
 	windows: Window[];

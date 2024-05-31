@@ -1,3 +1,5 @@
+import { ClientClass } from "/@sys/client_core.mjs";
+
 export default class AboutApp extends App {
 	constructor(...args) {
 		super(...args);
@@ -16,10 +18,10 @@ export default class AboutApp extends App {
 		await this.window.setContentToUrl('/app/about/body.html');
 
 		// Client Tab
-		let clientStr = `Version ${Client.BUILD_STRING}`;
+		let clientStr = `Version ${ClientClass.BUILD_STRING}`;
 		$app.find('.version').text(clientStr);
 
-		let serverStr = `KAPI ${Client.API_VERSION}`;
+		let serverStr = `KAPI ${ClientClass.API_VERSION}`;
 		$app.find('.api-version').text(serverStr);
 
 		// Platform tab

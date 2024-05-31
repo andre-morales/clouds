@@ -7,9 +7,9 @@
   "type": "module",
   "scripts": {
     "build-api-dist": "tsc -p api",
-    "build-client-dev": "webpack --config client/webpack/dev.cjs",
-    "build-client-dist": "webpack --config client/webpack/dist.cjs",
-    "build-client-stats": "webpack --config client/webpack/dist.cjs --json > client/res/pack/.stats.json && npx webpack-bundle-analyzer client/res/pack/.stats.json",
+    "build-client-dev":   "webpack --config client/webpack.config.cjs --env development",
+    "build-client-prod":  "webpack --config client/webpack.config.cjs --env production",
+    "build-client-stats": "webpack --config client/webpack.config.cjs --env production --json > client/res/pack/.stats.json && npx webpack-bundle-analyzer client/res/pack/.stats.json",
     "check-client-types": "tsc -p client"
   },
   "author": "",

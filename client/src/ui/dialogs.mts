@@ -1,5 +1,4 @@
 import App from '../app.mjs';
-import Client from '../client_core.mjs';
 import { Deferred } from '../events.mjs';
 
 export function showOptions(app: App, title: string, msg: string, options: string[], settings: any = {}) {
@@ -7,7 +6,7 @@ export function showOptions(app: App, title: string, msg: string, options: strin
 
 	let deferred = new Deferred();
 
-	let win = Client.get().desktop.createWindow(app);
+	let win = Client.desktop.createWindow(app);
 	win.$window.addClass('dialog');
 	win.setTitle(title);
 	

@@ -12,7 +12,7 @@ import UIControls from './ui/controls/controls.mjs';
 import ResourceManager from './resource_manager.mjs';
 import { runAppFetch } from './app_runner.mjs';
 
-var Client;
+var clientInstance;
 
 export async function main() {
 	// Fetch desktop page and display the system version on the page
@@ -57,47 +57,35 @@ export async function main() {
 	console.log("Styles finished loading.");
 
 	// Instantiate system
-	Client = new ClientClass();
-	await Client.init();
+	clientInstance = new ClientClass();
+	await clientInstance.init();
 
 	Util.destroyElementById('loading-screen');
 
-	Client.start(Util.getURLParams());
-}
-
-export function get() {
-	return Client;
+	clientInstance.start(Util.getURLParams());
 }
 
 export class ClientClass {
-	CLIENT_VERSION: string;
-	BUILD_STRING: string;
-	BUILD_TEXT: string;
-	API_VERSION: string;
+	static readonly CLIENT_VERSION = '1.0.204';
+	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Early Test 2`;
+	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
+	static readonly API_VERSION: string;
 
-	logHistory: string;
-	runningApps: App[];
-	//loadedResources: any;
-	resourceMan: ResourceManager;
-	_reactor: Reactor;
+	resources: ResourceManager;
 	desktop: Desktop;
+	audio: AudioSystem;
 	registeredApps: any;
 	mediaSessionBridge: any;
-	audio: AudioSystem;
+	logHistory: string;
+	runningApps: App[];
+	events: Reactor;
 
 	constructor() {
-		this.CLIENT_VERSION = ClientClass.CLIENT_VERSION;
-		this.BUILD_STRING = ClientClass.BUILD_STRING;
-		this.BUILD_TEXT = ClientClass.BUILD_TEXT;
 	}
-
-	static get CLIENT_VERSION() { return '1.0.203'; }
-	static get BUILD_STRING() { return `${this.CLIENT_VERSION} Early Test 2`; }
-	static get BUILD_TEXT() { return `Clouds ${this.BUILD_STRING}`; }
 
 	async init() {
 		// Export global names
-		window.Client = Client;
+		window.Client = clientInstance;
 		(window as any).App = App;
 
 		// Start logging record
@@ -106,16 +94,16 @@ export class ClientClass {
 
 		// Create main structures
 		this.runningApps = [];
-		this.resourceMan = new ResourceManager();
-		this._reactor = new Reactor();
-		this._reactor.register('log', 'apps-add', 'apps-rem');
+		this.resources = new ResourceManager();
+		this.events = new Reactor();
+		this.events.register('log', 'apps-add', 'apps-rem');
 		
 		// Display API version
 		fetch('/stat/version').then(async (fRes) => {
 			if (fRes.status != 200) return;
 
 			let version = await fRes.text();
-			this.API_VERSION = version;
+			(ClientClass as any).API_VERSION = version;
 
 			$('#api-ver').text('API ' + version);
 		});
@@ -182,7 +170,7 @@ export class ClientClass {
 		try {
 			return await runAppFetch('/app/' + name + '/manifest.json', buildArgs);
 		} catch(err) {
-			Client.logError(err);	
+			this.logError(err);	
 			this.showErrorDialog('App Initialization', err, err);
 		}
 		return null;
@@ -198,7 +186,7 @@ export class ClientClass {
 
 		// Remove app from app list
 		Util.arrErase(this.runningApps, instance);
-		this.dispatch('apps-rem');
+		this.events.dispatch('apps-rem');
 	}
 
 	downloadUrl(path) {
@@ -260,7 +248,7 @@ export class ClientClass {
 
 		try {
 			this.logHistory += msg + '\n';
-			this._reactor.dispatch('log', undefined, (fn) => {
+			this.events.dispatch('log', undefined, (fn) => {
 				if (fn.disabled) return;
 
 				try {
@@ -268,7 +256,7 @@ export class ClientClass {
 				} catch (err) {
 					fn.disabled = true;
 					this.showErrorDialog("Log failure", `A log event handler threw an exception and was disabled.\n\n${err}`);
-					Client.logError(err);
+					this.logError(err);
 					console.error('Error thrown in log listener:', err);
 				}
 			});
@@ -284,7 +272,7 @@ export class ClientClass {
 		} else {
 			msg += 'unavailable';
 		};
-		Client.log("[Error] " + msg);
+		this.log("[Error] " + msg);
 	}
 
 	stringifyError(err) {
@@ -316,19 +304,7 @@ export class ClientClass {
 		}
 	}
 
-	// -- Reactor aliases --
-	on(evClass: string, callback: any) {
-		this._reactor.on(evClass, callback);
-		return callback;
-	}
-
-	off(evClass: string, callback: any) {
-		this._reactor.off(evClass, callback);
-	}
-
-	dispatch(evClass: string, args?: unknown) {
-		this._reactor.dispatch(evClass, args);
+	static get(): ClientClass {
+		return clientInstance;
 	}
 }
-
-export default { get };

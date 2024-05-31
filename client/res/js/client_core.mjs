@@ -1,0 +1,1 @@
+export let ClientClass = PublicModules.ClientCoreM.ClientClass;
