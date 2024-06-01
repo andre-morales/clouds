@@ -9,8 +9,8 @@
 				"$tsc-watch"
 			],
 			"group": "build",
-			"label": "Watch API Build",
-			"detail": "👀 tsc: watch - api/tsconfig.json"
+			"label": "👀 API: Watch Build",
+			"detail": "tsc: watch - api/tsconfig.json"
 		},
 		{
 			"type": "typescript",
@@ -20,32 +20,32 @@
 				"$tsc-watch"
 			],
 			"group": "build",
-			"label": "Watch Client Types",
-			"detail": "👀 tsc: watch - client/tsconfig.json"
+			"label": "👀 CLIENT: Watch Typechecking",
+			"detail": "tsc: watch - client/tsconfig.json"
 		},
 		{
 			"type": "npm",
 			"script": "build-api-dist",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "Build API Dist",
-			"detail": "📦 npm run build-api-dist: tsc -p api"
+			"label": "📦 API: Build",
+			"detail": "npm run build-api-dist: tsc -p api"
 		},
 		{
 			"type": "npm",
 			"script": "build-client-dev",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "Build Client (Development)",
-			"detail": "🐛 npm run build-client-dev"
+			"label": "🐛 CLIENT: Build (Development)",
+			"detail": "npm run build-client-dev"
 		},
 		{
 			"type": "npm",
 			"script": "build-client-prod",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "Build Client (Production)",
-			"detail": "📦 npm run build-client-prod"
+			"label": "📦 CLIENT: Build (Production)",
+			"detail": "npm run build-client-prod"
 		},
 	]
 }

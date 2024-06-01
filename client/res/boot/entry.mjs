@@ -10,6 +10,8 @@ export async function entry() {
 	}
 }
 
+var loadingText;
+
 function initTransition() {
 	let screen = document.createElement('div');
 	screen.setAttribute('id', 'loading-screen');
@@ -17,6 +19,10 @@ function initTransition() {
 	let icon = document.createElement('div');
 	icon.setAttribute('id', 'loading-icon');
 	screen.appendChild(icon);
+
+	loadingText= document.createElement('p');
+	loadingText.setAttribute('id', 'loading-text');
+	screen.appendChild(loadingText);
 
 	document.body.appendChild(screen);
 }
@@ -33,6 +39,7 @@ export async function initDesktop() {
 	window._systemPanic = _systemPanic;
 
 	// Load jquery compatible lib
+	loadingText.innerHTML = "Loading base...";
 	await addScript('/res/lib/zepto.min.js');
 
 	// Early unhandled errors and rejections should bring immediate user attention in the form
@@ -51,7 +58,10 @@ export async function initDesktop() {
 	};
 
 	// Add system script and let it do the setup
+	loadingText.innerHTML = "Loading core...";
 	await addScript('/res/pack/shared.bundle.js');
+	
+	loadingText.innerHTML = "Initializing core...";
 	CoreModule.main();
 }
 

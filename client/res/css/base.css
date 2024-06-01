@@ -19,6 +19,7 @@ body {
 	align-items: center;
 	background: rgba(20, 20, 20, 0.4);	
 	pointer-events: none;
+	flex-direction: column;
 }
 
 #loading-icon {
@@ -28,6 +29,19 @@ body {
 	background-repeat: no-repeat;
 	background-size: contain;
 	animation: loading-animation 2.5s infinite ease-in-out;
+}
+
+#loading-text {
+	margin-top: .5rem;
+	font: 20pt 'Tahoma';
+	color: white;
+	animation: text-animation 2s infinite normal;
+}
+
+@keyframes text-animation {
+	0% { opacity: 1; }
+	50% { opacity: 0.4;}
+	100% { opacity: 1; }
 }
 
 @keyframes loading-animation {
