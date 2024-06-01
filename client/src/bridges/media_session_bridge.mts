@@ -1,5 +1,5 @@
 import { Paths } from './filesystem.mjs';
-import Util from './util.mjs';
+import Util from '../util.mjs';
 
 var activeMediaElements: ActiveMedia[] = null;
 var currentMedia: ActiveMedia = null;

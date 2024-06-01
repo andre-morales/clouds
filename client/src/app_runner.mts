@@ -8,11 +8,21 @@ interface AppResources {
 	styles: Promise<Resource[]>;
 }
 
-async function runAppFetch(manifestURL: string, buildArgs?: unknown[]) {
+export async function runUrl(manifestURL: string, buildArgs = []): Promise<App> {
 	try {
 		// Fetch manifest
 		let manifest = await getManifest(manifestURL);
 
+		return run(manifest, buildArgs);
+	} catch(err) {
+		if (err instanceof AppInitializationError) throw err;
+
+		throw new AppInitializationError('Failed to instantiate "' + manifestURL + '" - ' + err, err);
+	}
+}
+
+export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
+	try {
 		// Start fetching of scripts, styles and modules required by this app under a temporary
 		// resource user id.
 		const tmpResourceUserId = 'APP-CREATOR';
@@ -41,7 +51,7 @@ async function runAppFetch(manifestURL: string, buildArgs?: unknown[]) {
 		await appObj.init();
 		return app;
 	} catch(err) {
-		throw new AppInitializationError('Failed to instantiate "' + manifestURL + '" - ' + err, err);
+		throw new AppInitializationError(`Failed to instantiate "${manifest.id} (${manifest.displayName ?? ""})"` + ' - ' + err, err);
 	}
 }
 
@@ -141,4 +151,4 @@ class AppInitializationError extends Error {
 	}
 }
 
-export { runAppFetch };
+export default { run, runUrl };

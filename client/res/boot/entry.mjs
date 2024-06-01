@@ -61,7 +61,6 @@ export async function initDesktop() {
 	loadingText.innerHTML = "Loading core...";
 	await addScript('/res/pack/shared.bundle.js');
 	
-	loadingText.innerHTML = "Initializing core...";
 	CoreModule.main();
 }
 

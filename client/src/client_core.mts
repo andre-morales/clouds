@@ -1,20 +1,25 @@
 import App, { AppManifest } from './app.mjs';
 import Resource from './resource.mjs';
-import { FileSystem } from './filesystem.mjs';
-import { AudioSystem } from './audio_system.mjs';
+import { FileSystem } from './bridges/filesystem.mjs';
+import { AudioSystem } from './bridges/audio_system.mjs';
 import { Reactor } from './events.mjs';
 import Util, { getObjectByName } from './util.mjs';
 import { IllegalStateFault } from './faults.mjs';
-import * as MediaSessionBridge from './media_session_bridge.mjs';
+import * as MediaSessionBridge from './bridges/media_session_bridge.mjs';
 import * as Dialogs from './ui/dialogs.mjs';
 import Desktop from './ui/desktop.mjs';
 import UIControls from './ui/controls/controls.mjs';
 import ResourceManager from './resource_manager.mjs';
-import { runAppFetch } from './app_runner.mjs';
+import AppRunner from './app_runner.mjs';
+import { AppManager } from './app_manager.mjs';
 
 var clientInstance;
+var loadingText;
 
 export async function main() {
+	loadingText = document.getElementById('loading-text');
+	loadingText.innerHTML = "Initializing core...";
+
 	// Fetch desktop page and display the system version on the page
 	let desktopPageProm = fetch('/page/desktop').then(fRes => {
 		if (fRes.status != 200) {
@@ -74,7 +79,7 @@ export class ClientClass {
 	resources: ResourceManager;
 	desktop: Desktop;
 	audio: AudioSystem;
-	registeredApps: any;
+	appManager: AppManager;
 	mediaSessionBridge: any;
 	logHistory: string;
 	runningApps: App[];
@@ -127,17 +132,11 @@ export class ClientClass {
 			history.go(1);
 		});
 
-		// Fetch app definitions from the user profile
-		this.registeredApps = await FileSystem.readJson('/usr/.system/apps.json');
+		this.appManager = new AppManager();
+		await this.appManager.init();
 		
-		// Remove disabled apps
-		for (let app of Object.keys(this.registeredApps)) {
-			if (app.startsWith('-')) delete this.registeredApps[app];
-		}
-		
-		this.desktop.taskbar.setupAppsMenu();
-
 		// Let the desktop prepare app icons and behavior
+		this.desktop.taskbar.setupAppsMenu();
 		this.desktop.setupApps();
 
 		// Media Session bridge
@@ -166,9 +165,9 @@ export class ClientClass {
 		if (refresh) window.location.href = "/";
 	}
 
-	async runApp(name: string, buildArgs?: unknown[]) {
+	async runApp(name: string, buildArgs = []): Promise<App> {
 		try {
-			return await runAppFetch('/app/' + name + '/manifest.json', buildArgs);
+			return await AppRunner.runUrl('/app/' + name + '/manifest.json', buildArgs);
 		} catch(err) {
 			this.logError(err);	
 			this.showErrorDialog('App Initialization', err, err);
@@ -187,16 +186,6 @@ export class ClientClass {
 		// Remove app from app list
 		Util.arrErase(this.runningApps, instance);
 		this.events.dispatch('apps-rem');
-	}
-
-	downloadUrl(path) {
-		let link = document.createElement('a');
-		link.style.display = 'none';
-		link.href = path;
-		link.download = '';
-		document.body.appendChild(link);
-		link.click();
-		link.remove();
 	}
 
 	registerMediaElement(elem) {

@@ -4,7 +4,7 @@ import Fullscreen from './fullscreen.mjs';
 import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
 import App from '../app.mjs';
 import { Reactor } from '../events.mjs';
-import { FileSystem } from '../filesystem.mjs';
+import { FileSystem } from '../bridges/filesystem.mjs';
 import Util from '../util.mjs';
 
 export class Desktop {
@@ -259,15 +259,13 @@ export class Desktop {
 	// also configures their input behavior.
 	setupApps() {
 		let $apps = $('.backplane');
-		for (let id in Client.registeredApps) {
-			let def = Client.registeredApps[id];
-
+		for (let [id, def] of Client.appManager.getAppEntries()) {
 			if (def.flags.includes('disabled')) continue;
 			if (!def.flags.includes('desk')) continue;
 
-			let img = def.icon;
-			let name = def.name;
-			let $icon = $(`<div class='app-icon'> <img src='${img}'> <label>${name}</label> </div>`);
+			let img = def.icons[0].url;
+			let name = def.displayName;
+			let $icon = $(`<div class='app-icon'> <img src='${img}'/> <label>${name}</label> </div>`);
 			$icon.click(async () => {
 				let app = await Client.runApp(id);
 				if (app && app.mainWindow) {

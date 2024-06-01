@@ -1,5 +1,5 @@
-import Util from './util.mjs';
-import { BadParameterFault, FetchException, Exception } from './faults.mjs';
+import Util from '../util.mjs';
+import { BadParameterFault, FetchException, Exception } from '../faults.mjs';
 
 export class FileSystem {
 	static async readText(path: string) {

@@ -1,5 +1,6 @@
 import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
 import { FileSystem, Paths, FileTypes } from '/res/js/filesystem.mjs';
+import Util from '/@sys/util.mjs';
 
 export class FilePanel {
 	constructor(explorer) {
@@ -225,7 +226,7 @@ export class FilePanel {
 					CtxItem('With',  () => this.app.openFileWith(absPath)),
 					CtxItem('Outside', () => this.app.openFileExt(absPath))
 				], 'Open...'),
-				CtxItem('Download', () => Client.downloadUrl(fsPath))
+				CtxItem('Download', () => 	Util.downloadUrl(fsPath))
 			);
 		}
 

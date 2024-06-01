@@ -47,25 +47,20 @@ export class Taskbar {
 
 	setupAppsMenu() {
 		let $appsList = this.$appsMenu.find('ul');
-		for (let appName of Object.keys(Client.registeredApps)) {
-			let app = Client.registeredApps[appName];
-
-			// Get the app icon, with a default app icon as a fallback
-			const DEFAULT_ICON = '/res/img/app64.png';
-			let icon = (app.icon) ? app.icon : DEFAULT_ICON;
-			
+		for (let [appId, appDef] of Client.appManager.getAppEntries()) {
 			// Create the icon element. If the image fails to load, set the default icon
+			let icon = appDef.icons[0].url;
 			let $icon = $(`<img src='${icon}'/>`);
 			$icon.on('error', () => {
-				$icon.attr('src', DEFAULT_ICON);
+				$icon.attr('src', Client.appManager.getDefaultIcon().url);
 			})
 
 			// Create the app element
-			let $appItem = $(`<li><span>${app.name}</span></li>`);
+			let $appItem = $(`<li><span>${appDef.displayName}</span></li>`);
 			$appItem.prepend($icon);
 
 			$appItem.click(() => {
-				Client.runApp(appName);
+				Client.runApp(appDef.id);
 				this.closeAppsMenu();
 			});
 

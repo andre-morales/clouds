@@ -123,6 +123,16 @@ export function addScript(src: string, id?: string) {
 	});
 }
 
+function downloadUrl(path) {
+	let link = document.createElement('a');
+	link.style.display = 'none';
+	link.href = path;
+	link.download = '';
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+}
+
 export default {
 	getObjectByName, cloneTemplate, arrErase, endsWithAny, sleep, getURLParams, strReplaceAll,
 	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript
