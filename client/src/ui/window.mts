@@ -1,4 +1,4 @@
-import { CtxMenu, CtxItem, CtxCheck, CtxMenuClass } from './context_menu.mjs';
+import { CtxMenuClass } from './context_menu.mjs';
 import { TaskbarButton } from './taskbar.mjs';
 import { Reactor, ReactorEvent } from '../events.mjs';
 import { InternalFault, IllegalStateFault } from '../faults.mjs';
@@ -286,14 +286,14 @@ export default class Window {
 	}
 
 	makeOptionsCtxMenu(): CtxMenuClass {
-		return CtxMenu([
-			CtxItem('Fullscreen', () => this.goFullscreen()),
-			CtxItem('Maximize', () => this.setMaximized(true)),
-			CtxItem('Minimize', () => this.minimize()),
-			CtxItem('Restore', () => this.restore()),
-			CtxItem('Refit', () => this.refit()),
-			'-',
-			CtxItem('Close', () => this.dispatch('closing', new ReactorEvent()))
+		return CtxMenuClass.fromEntries([
+			['-Fullscreen', () => this.goFullscreen()],
+			['-Maximize', () => this.setMaximized(true)],
+			['-Minimize', () => this.minimize()],
+			['-Restore', () => this.restore()],
+			['-Refit', () => this.refit()],
+			['|'],
+			['-Close', () => this.dispatch('closing', new ReactorEvent())]
 		]);
 	}
 

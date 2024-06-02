@@ -1,7 +1,7 @@
 import TaskbarM, { Taskbar } from './taskbar.mjs'
 import Window from './window.mjs';
 import Fullscreen from './fullscreen.mjs';
-import { CtxMenu, CtxItem, CtxCheck } from './context_menu.mjs';
+import { CtxMenuClass } from './context_menu.mjs';
 import App from '../app.mjs';
 import { Reactor } from '../events.mjs';
 import { FileSystem } from '../bridges/filesystem.mjs';
@@ -50,21 +50,22 @@ export class Desktop {
 
 		this._configsProm = this.loadConfigs();
 
-		let menu = CtxMenu([
-			CtxItem("System Settings", () => {
+		let menu = CtxMenuClass.fromEntries([
+			["-System Settings", () => {
 				Client.runApp('configs');
-			}),
-			CtxItem("Console", () => {
+			}],
+			["-Console", () => {
 				Client.runApp('console');
-			}),
-			CtxItem("About", () => {
+			}],
+			["-About", () => {
 				Client.runApp('about');
-			}),
-			'-',
-			CtxItem("Logout", () => {
+			}],
+			['|'],
+			["-Logout", () => {
 				Client.logout();
-			}),			
+			}],			
 		]);
+
 		this.addCtxMenuOn(this.$desktop.find('.backplane'), () => menu);
 
 		this._installWindowResizeHandlers();

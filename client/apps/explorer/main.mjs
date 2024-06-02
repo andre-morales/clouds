@@ -17,9 +17,6 @@ export default class ExplorerApp extends App {
 		this.cwd = null;
 		this.typeAssociations = {};
 		this.favorites = [];
-		this.collections = {};
-		this.collectionsMap = new Map();
-		this.collectionsVisible = [];
 		this.closingDeferred = new Deferred();
 		this.history = new History();
 		this.history.save();
@@ -91,9 +88,6 @@ export default class ExplorerApp extends App {
 		]));
 
 		let $sidePanel = $app.find('aside');
-		Client.desktop.addCtxMenuOn($sidePanel, () => CtxMenu([
-			CtxItem('Create collection...', () => this.openCreateCollectionDialog())
-		]));
 
 		// Read file type associations. Fail silently if the file doesn't exist.
 		try {
@@ -103,10 +97,6 @@ export default class ExplorerApp extends App {
 		// Final preparation
 		this.loadFavorites().then(() => {
 			this.refreshFavorites();
-		});
-		
-		this.loadCollections().then(() => {
-			this.recreateCollections();
 		});
 
 		// Make the window visible
@@ -121,30 +111,6 @@ export default class ExplorerApp extends App {
 	async openUploadDialog() {
 		let uploader = new ExplorerUploader(this);
 		uploader.open();
-	}
-
-	async openCreateCollectionDialog() {
-		let win = Client.desktop.createWindow();
-		win.on('closereq', () => win.close());
-		
-		let $body = win.$window.find('.window-body');
-		
-		let $input = $('<input>')
-		$body.append($input);
-
-		let $save = $('<button>Save</button>')
-		$save.click(() => {
-			this.createCollection($input.val());
-			win.close();
-		});
-		$body.append($save);
-
-		win.setTitle('Create Collection');
-		win.setSize(280, 200);
-		win.bringToCenter();
-		win.bringToFront();
-
-		win.setVisible(true);
 	}
 
 	goBack() {
@@ -266,8 +232,6 @@ export default class ExplorerApp extends App {
 		this.cwd = path;
 		
 		// UI changes		
-		this.refreshCollections();
-
 		if (path == '/') {
 			this.window.setTitle('File Explorer');
 		} else {
@@ -363,106 +327,6 @@ export default class ExplorerApp extends App {
 		} catch (err) {
 			this.favorites = [];
 		}
-	}
-
-	// Collections
-	createCollection(name) {
-		this.collections[name] = {};
-
-		this.saveCollections();
-		this.recreateCollections();
-	}
-
-	destroyCollection(name) {
-		delete this.collections[name];
-
-		this.saveCollections();
-		this.recreateCollections();
-	}
-	
-	refreshCollections() {
-		this.collectionsVisible.length = 0;
-		for (let [name, $item] of this.collectionsMap.entries()) {
-			let coll = this.collections[name];
-
-			let visible = !coll.exclusive || coll.exclusive == this.cwd;
-			$item.toggleClass('hidden_', !visible);
-			if (visible) this.collectionsVisible.push(name);
-		}
-	}
-
-	recreateCollections() {
-		let self = this;
-
-		this.$collections.empty();
-		this.collectionsMap.clear();
-
-		for (let [name, coll] of Object.entries(this.collections)) {
-			let $item = $('<li class="hidden_">' + name + '</li>');
-			this.collectionsMap.set(name, $item);
-
-			$item.click(() => {
-				this.openCollection(name);
-			});
-
-			Client.desktop.addCtxMenuOn($item, () => {
-				return CtxMenu([
-					CtxCheck('Only show here', (c) => {
-						coll.exclusive = (c) ? self.cwd : null;
-						this.saveCollections();
-					}, coll.exclusive == this.cwd),
-					CtxItem('Remove', () => this.destroyCollection(name))
-				]);
-			});
-			this.$collections.append($item);
-		}
-
-		this.refreshCollections();
-	}
-
-	async saveCollections() {
-		let data = JSON.stringify(this.collections);
-
-		await fetch('/fs/ud/usr/collections.json', {
-			method: 'POST',
-			body: data,
-			headers: {
-				'Content-Type': 'text/plain'
-			}
-		})
-	}
-
-	async loadCollections() {
-		let freq = await fetch('/fs/q/usr/collections.json');
-		if (freq.status == 404) {
-			this.collections = {};
-			return;
-		}
-
-		let data = await freq.text();
-		this.collections = JSON.parse(data);
-	}
-
-	openCollection(cname) {
-		let col = this.collections[cname];
-		if (!col) return;
-
-		this.window.setTitle(`[${cname}]`);
-		this.setFilePanelContent(col.files);
-
-		this.cwd = '$' + cname;
-		this.history.save(this.cwd);
-		this.$addressField.val(this.cwd);
-	}
-
-	addFileToCollection(cname, file) {
-		let coll = this.collections[cname];
-		if (!coll.files) coll.files = [];
-
-		if (coll.files.includes(file)) return;
-		
-		coll.files.push(file);
-		this.saveCollections();
 	}
 
 	copy(path) {

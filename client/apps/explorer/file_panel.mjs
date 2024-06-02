@@ -1,4 +1,4 @@
-import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import { CtxMenuClass } from '/res/js/ui/context_menu.mjs';
 import { FileSystem, Paths, FileTypes } from '/res/js/filesystem.mjs';
 import Util from '/@sys/util.mjs';
 
@@ -207,64 +207,47 @@ export class FilePanel {
 		let fsPath = Paths.toFSV(absPath);
 
 		let menu = [
-			CtxItem('Open', () => this.app.openHandler(absPath)),
+			['-Open', () => this.app.openHandler(absPath)],
 		];
 
 		if (isDir) {
 			menu.push(
-				CtxItem('Open in another window', async () => {
+				['-Open in another window', async () => {
 					let app = await Client.runApp('explorer');
 					app.go(absPath);
-				}),
-				CtxItem('Add to favorites', () => {
+				}],
+				['-Add to favorites', () => {
 					this.app.addFavorite(absPath)
-				})
+				}]
 			);
 		} else {
 			menu.push(
-				CtxMenu([
-					CtxItem('With',  () => this.app.openFileWith(absPath)),
-					CtxItem('Outside', () => this.app.openFileExt(absPath))
-				], 'Open...'),
-				CtxItem('Download', () => 	Util.downloadUrl(fsPath))
+				['>Open...', [
+					['-With',  () => this.app.openFileWith(absPath)],
+					['-Outside', () => this.app.openFileExt(absPath)]
+				]],
+				['-Download', () => 	Util.downloadUrl(fsPath)]
 			);
 		}
 
-		if (this.app.cwd.startsWith('$')) {
-			menu.push(CtxItem('Remove from this collection', () => {
-				let colName = this.app.cwd.substring(1);
-				let coll = this.app.collections[colName];
-				arrErase(coll.files, absPath);
-
-				this.app.saveCollections();
-				this.app.navigate('.');
-			}));
-		}
-
-		menu.push(CtxMenu(
-			this.app.collectionsVisible.map((cname) => CtxItem(cname, () => {
-				this.app.addFileToCollection(cname, absPath);
-			}))
-		, 'Add to collection'));
-
 		if (FileTypes.isPicture(absPath)) {
-			menu.push(CtxItem('Set as background', () => {
+			menu.push(['-Set as background', () => {
 				Client.desktop.setBackground(fsPath);
 				Client.desktop.saveConfigs();
-			}));
+			}]);
 		}
 
 		menu.push(
-			'-',
-			CtxItem('Copy', () => { this.app.copy(absPath) }),
-			CtxItem('Cut', () => { this.app.cut(absPath) }),
-			'-',
-			CtxItem('Rename', () => { this.enableRename(absPath) }),
-			CtxItem('Erase', () => { this.app.erase(absPath) }),
-			'-',
-			CtxItem('Properties', () => {this.app.openFileProperties(absPath)})
+			['|'],
+			['-Copy', () => { this.app.copy(absPath) }],
+			['-Cut', () => { this.app.cut(absPath) }],
+			['|'],
+			['-Rename', () => { this.enableRename(absPath) }],
+			['-Erase', () => { this.app.erase(absPath) }],
+			['|'],
+			['-Properties', () => {this.app.openFileProperties(absPath)}]
 		);
-		return CtxMenu(menu);
+		return CtxMenuClass.fromEntries(menu);
 	}
 
 	recalculateIcons() {

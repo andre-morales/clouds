@@ -1,13 +1,32 @@
+import { BadParameterFault } from "../faults.mjs";
+
+type CtxItem = CtxItemClass | CtxMenuClass | string;
+
+interface ContextEntryOptions {
+	checked?: boolean;
+	disabled?: boolean;
+}
+
+interface ContextEntry {
+	0: string;
+	1?: Function | ContextEntry[];
+	2?: ContextEntryOptions;
+}
+
 export class CtxMenuClass {
-	entries: (CtxItemClass | string)[];
+	entries: CtxItem[];
 	label: string;
 
-	constructor(entries: (CtxItemClass | string)[], label: string) {
+	constructor(entries: CtxItem[], label?: string) {
 		this.entries = entries ?? [];
-		this.label = label;
+		this.label = label ?? '';
 	}
 
-	buildIn($menu, $rootMenu, screenWidth, screenHeight) {
+	static fromEntries(entries: ContextEntry[], label?: string): CtxMenuClass {
+		return new CtxMenuClass(itemsFromEntries(entries), label);
+	}
+
+	buildIn($menu: $Element, $rootMenu: $Element, screenWidth: number, screenHeight: number) {
 		for (let entry_ of this.entries) {
 			if (entry_ === '-') {
 				$menu.append($('<hr>'));
@@ -102,14 +121,48 @@ export class CtxCheckClass extends CtxItemClass {
 	}
 }
 
-export function CtxMenu(entries: any[], label?: string): CtxMenuClass {
+export function CtxMenu(entries: CtxItem[], label?: string): CtxMenuClass {
 	return new (CtxMenuClass as any)(...arguments);
 }
 
-export function CtxItem(label: string, action: any): CtxItemClass {
+export function CtxItem(label: string, action: Function): CtxItemClass {
 	return new (CtxItemClass as any)(...arguments);
 }
 
 export function CtxCheck(): CtxCheckClass {
 	return new (CtxCheckClass as any)(...arguments);
+}
+
+function itemsFromEntries(entries: ContextEntry[]): CtxItem[] {
+	let constructed: CtxItem[] = [];
+
+	console.log(entries);
+
+	for (let entry of entries) {
+		let type = entry[0].at(0);
+		let label = entry[0].substring(1);
+		let options = (entry[2] ?? {}) as ContextEntryOptions;
+		let item: CtxItem;
+
+		if (type == '|') {
+			item = '-';
+		} else if (type == '-') {
+			let action = entry[1] as Function;
+			item = new CtxItemClass(label, action);
+			item.enabled = !options.disabled;
+		} else if (type == '*') {
+			let action = entry[1] as Function;
+			let checked = Boolean(options.checked);
+			item = new CtxCheckClass(label, action, checked);
+		} else if (type == '>') {
+			let subEntries = entry[1] as ContextEntry[];
+			let subMenu = itemsFromEntries(subEntries);
+			item = new CtxMenuClass(subMenu, label);
+		} else {
+			throw new BadParameterFault(`Undefined context menu entry type ${type}`);
+		}
+		constructed.push(item);
+	}
+
+	return constructed;
 }

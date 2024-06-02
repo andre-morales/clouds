@@ -1,4 +1,4 @@
-import { CtxMenu, CtxItem } from './context_menu.mjs';
+import { CtxMenuClass } from './context_menu.mjs';
 import Window from './window.mjs';
 import Util from '../util.mjs';
 import App from '../app.mjs';
@@ -203,8 +203,8 @@ export class TaskbarButton {
 				let win = this.windows[0];
 				return win.optionsCtxMenu;
 			} else {
-				return CtxMenu([
-					CtxItem('Close all', () => this.closeAll())
+				return CtxMenuClass.fromEntries([
+					['-Close all', () => this.closeAll()]
 				]);	
 			}
 		});
