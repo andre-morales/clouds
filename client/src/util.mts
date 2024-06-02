@@ -134,6 +134,6 @@ export function downloadUrl(path) {
 }
 
 export default {
-	getObjectByName, cloneTemplate, arrErase, endsWithAny, sleep, getURLParams, strReplaceAll,
-	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript
+	getObjectByName, arrErase, endsWithAny, cloneTemplate, sleep, getURLParams, strReplaceAll,
+	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript, downloadUrl
 };

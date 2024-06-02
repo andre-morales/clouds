@@ -1,16 +1,14 @@
 {
 	"plugins": [
-		// Point /@sys/ references to other TypeScript modules
+		// Point /@sys/ references to dummy imports in public js includes
 		["module-resolver", {
 			"alias": {
-				"/@sys": "./client/src/"
+				"/@sys": "./client/public/js/"
 			}
 		}]
 	],
 	"presets": [
-		// Compile TypeScript with no typechecking
 		["@babel/preset-typescript", {}],
-		// Babel compiler
 		["@babel/preset-env", {		
 			"targets": {
 				"chrome": 79

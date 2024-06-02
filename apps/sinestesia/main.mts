@@ -6,6 +6,8 @@ import App from '/@sys/app.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Window from '/@sys/ui/window.mjs';
 
+import type ExplorerApp from '../explorer/main.mjs';
+
 var Client: ClientClass;
 
 export default class SinestesiaApp extends App {
@@ -73,7 +75,7 @@ export default class SinestesiaApp extends App {
 		// Fetch explorer body
 		await this.window.setContentToUrl('/app/sinestesia/main.html');
 
-		// Behaviour
+		// Behavior
 		this.createContextMenu();
 		this.setupVideoContainer();
 		this.setupImageContainer();
@@ -299,7 +301,7 @@ export default class SinestesiaApp extends App {
 	}
 
 	async showOpenDialog() {
-		let app = await Client.runApp('explorer') as any;
+		let app = await Client.runApp('explorer') as ExplorerApp;
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
 		if (!result || !result.length) return;

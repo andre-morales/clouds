@@ -25,10 +25,12 @@ Here's a list of some things you can do with **Clouds**:
 
 ## :file_folder: Structure
 
-This project consists of two separate entities: The **API** and the **Client** core. 
+This project consists of three separate entities: The **API**, the **Client** core and the included **Apps**. 
 - **API**: Encompasses all the functionalities pertaining to the services provided in the server. Targets the _server_ device. It uses **Node.js** with **Express** to provide a simple but powerful routing system consumed by the web client.
 
-- **Client**: Encompasses all subsystems targeting the _client_ device, that is, the web browser accessing the web interface. Includes the classes responsible for the interface as well as the built-in **Apps**. Uses standard modern JavaScript, compiled through **Webpack** and **Babel** for better performance and support of older devices.
+- **Client**: Encompasses all subsystems targeting the _client_ device, that is, the web browser accessing the web interface. Uses standard modern TypeScript, compiled through **Webpack** and **Babel** for better performance and support of older devices. Consumes the API through the browser.
+
+- **Apps**: Built-in apps written in TypeScript to provide support to basic functionalities in the environment. These are also compiled through **Webpack** and **Babel** to provide performance and support of older devices. These apps are compiled against the client core platform.
 
 Directory|Purpose
 :-|:-
@@ -58,12 +60,13 @@ _Webpack_|No|Yes
 All of these dependencies can be installed with: ```> npm install``` on the root of a fresh clone of the repository.
 
 ### 2) Building API
-The API is written in TypeScript, and must be compiled first before being executed as a server. To compile the API, run ```> npm run build-api-dist```. This script invokes **tsc** to perform the compilation of all TypeScript files in /api/src/ and put them in /api/runtime/.
+The API is written in TypeScript, and must be compiled first before being executed as a server. To compile the API, run ```> npm run build-api-dist```. This script invokes **tsc** to perform the type-checking and compilation of all TypeScript files in /api/src/ and put them in /api/runtime/.
 
 ### 3) Building Client Core
-The core modules used by the Client system are also written in TypeScript and must be compiled through Webpack in order to be available in the /client/res/ directory. You can invoke an npm script to do this compilation. Simply run ```> npm run build-client-dist``` in the root of a project.
+The core modules used by the Client system are also written in TypeScript and must be compiled through Webpack in order to be available in the /client/public/ directory. You can invoke an npm script to do this compilation. Simply run ```> npm run build-client-prod``` in the root of a project.
+
 ### 4) Building Built-in Apps
-Some apps in /apps/ are written in TS and must also be compiled. Run ```> npm run build-apps``` to perform compilation and type-checking.
+The built-in apps in /apps/ are written in TS and must also be compiled with Webpack and Babel. Run ```> npm run build-apps-prod``` to perform compilation.
 ### 5) Configuration
 You are done! You can configure the behavior of the server through the profiles stored in ```config/profiles/```. The default profile is already well configured, but you might want to change a few settings.
 
@@ -75,7 +78,9 @@ build-client-prod|Compiles and Bundles the Core client modules in /client/src/ t
 build-client-dev|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in development mode.
 build-client-types|Runs TypeScript compiler type checking on Client code and emits declaration files on /client/types/ folder.
 check-client-stats|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in stats analysis mode.
-build-apps|Compiles TypeScript apps on /apps/
+build-apps-prod|Compiles apps on /apps/ in production mode.
+build-apps-dev|Compiles apps on /apps/ in development mode.
+check-apps-type|Check types of all apps in /apps/.
 
 ## :arrow_forward: Running
 After building the project, running it is as easy as double-clicking the ```run``` script that matches your OS on the root of the project. You can also invoke _node_ directly with the same effect as the script. On a fresh terminal in the root, run the command ```> node .```.

@@ -19,6 +19,7 @@ export default class ConsoleApp extends App {
 
 	constructor(...args: ConstructorParameters<typeof App>) {
 		super(...args);
+		Client = ClientClass.get();
 		this.window = null;
 		this.commandHistory = [];
 		this.commandHistoryIndex = 0;

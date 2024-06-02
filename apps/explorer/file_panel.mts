@@ -1,6 +1,6 @@
 import { ContextEntry, CtxMenuClass } from '/@sys/ui/context_menu.mjs';
 import { FileSystem, Paths, FileTypes } from '/@sys/bridges/filesystem.mjs';
-import * as Util from '/@sys/util.mjs';
+import Util from '/@sys/util.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 
 var Client: ClientClass;

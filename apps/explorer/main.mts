@@ -8,10 +8,10 @@ import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 
-import { FilePanel } from './file_panel.src.mjs';
-import ExplorerUploader from './uploader.src.mjs';
-import ExplorerDefaultHandler from './open_handler.src.mjs';
-import ExplorerProperties from './properties.src.mjs';
+import { FilePanel } from './file_panel.mjs';
+import ExplorerUploader from './uploader.mjs';
+import ExplorerDefaultHandler from './open_handler.mjs';
+import ExplorerProperties from './properties.mjs';
 
 var Client: ClientClass;
 

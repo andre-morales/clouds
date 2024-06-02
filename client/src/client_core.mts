@@ -1,4 +1,4 @@
-import App from './app.mjs';
+import App from '/@sys/app.mjs';
 import { AudioSystem } from './bridges/audio_system.mjs';
 import { Reactor } from './events.mjs';
 import Util from './util.mjs';

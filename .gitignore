@@ -19,6 +19,7 @@ client/public/pack
 client/types
 
 *.bundle.js
+*.bundle.mjs
 *.map
 *.tsbuildinfo
 

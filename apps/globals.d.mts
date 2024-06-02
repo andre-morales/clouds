@@ -3,7 +3,6 @@ declare global {
 
 	var Hammer: any;
 	var _systemPanic: Function;
-	var IMPORT: Function;
 }
 
 export default global;

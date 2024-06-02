@@ -3,7 +3,7 @@
 	"displayName": "Files",
 	"icon": "/app/explorer/icon64.png",
 	"modules" : [
-		"/app/explorer/main.src.mjs"
+		"/app/explorer/app.bundle.mjs"
 	],
 	"styles": [
 		"/app/explorer/res/style.css"

@@ -1,6 +1,6 @@
 import { ClientClass } from "/@sys/client_core.mjs";
 import { App } from '/@sys/app.mjs';
-import Window  from '/@sys/ui/window.mjs';
+import Window from '/@sys/ui/window.mjs';
 
 export default class AboutApp extends App {
 	window: Window;
