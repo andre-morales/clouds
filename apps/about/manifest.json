@@ -2,7 +2,7 @@
 	"id": "about",
 	"icon": "/app/about/icon64.png",
 	"modules": [
-		"/app/about/script.mjs"	
+		"/app/about/main.src.mjs"	
 	],
 	"styles": [
 		"/app/about/style.css"

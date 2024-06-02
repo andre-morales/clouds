@@ -106,7 +106,7 @@ export class CtxItemClass {
 		this.enabled = true;
 	}
 
-	setEnabled(v) {
+	setEnabled(v: boolean) {
 		this.enabled = v;
 		return this;
 	}
@@ -133,6 +133,11 @@ export function CtxCheck(): CtxCheckClass {
 	return new (CtxCheckClass as any)(...arguments);
 }
 
+/**
+ * Generated context menu items from entries.
+ * @param entries Array of stringified entries in a terse syntax.
+ * @returns An array of context menu entries. These can be added to a context menu as is.
+ */
 function itemsFromEntries(entries: ContextEntry[]): CtxItem[] {
 	let constructed: CtxItem[] = [];
 
@@ -142,16 +147,20 @@ function itemsFromEntries(entries: ContextEntry[]): CtxItem[] {
 		let options = (entry[2] ?? {}) as ContextEntryOptions;
 		let item: CtxItem;
 
+		// Horizontal separator
 		if (type == '|') {
 			item = '-';
+		// Regular entry
 		} else if (type == '-') {
 			let action = entry[1] as Function;
 			item = new CtxItemClass(label, action);
 			item.enabled = !options.disabled;
+		// Checked options
 		} else if (type == '*') {
 			let action = entry[1] as Function;
 			let checked = Boolean(options.checked);
 			item = new CtxCheckClass(label, action, checked);
+		// Submenus
 		} else if (type == '>') {
 			let subEntries = entry[1] as ContextEntry[];
 			let subMenu = itemsFromEntries(subEntries);

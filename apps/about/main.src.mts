@@ -1,14 +1,18 @@
 import { ClientClass } from "/@sys/client_core.mjs";
+import { App } from '/@sys/app.mjs';
+import Window  from '/@sys/ui/window.mjs';
 
 export default class AboutApp extends App {
-	constructor(...args) {
-		super(...args);
+	window: Window;
 
+	constructor(...args: ConstructorParameters<typeof App>) {
+		super(...args);
+		
 		this.window = null;
 	}
 
 	async init() {
-		this.window = Client.desktop.createWindow(this);
+		this.window = ClientClass.get().desktop.createWindow(this);
 		this.window.setTitle('About');
 		this.window.setCloseBehavior('exit');
 		
@@ -28,7 +32,7 @@ export default class AboutApp extends App {
 		let secure = window.isSecureContext;
 		$app.find('.secure-ctx').text((secure) ? 'Yes' : 'No');
 		
-		let devmem = navigator.deviceMemory;
+		let devmem = (navigator as any).deviceMemory;
 		if (devmem) {
 			let str = (devmem < 1) ? devmem * 1000 + ' MB' : devmem + ' GB';
 			$app.find('.dev-memory').text('Device Memory: ' + str);
@@ -47,9 +51,10 @@ export default class AboutApp extends App {
 	}
 
 	getRam() {
-		if (!performance || !performance.memory) return '?';
+		let perf : any = performance;
+		if (!perf || !perf.memory) return '?';
 
-		let ram = performance.memory.jsHeapSizeLimit / 1024 / 1024;
+		let ram = perf.memory.jsHeapSizeLimit / 1024 / 1024;
 		return ram.toFixed(0);
 	}
 

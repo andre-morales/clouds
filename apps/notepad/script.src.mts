@@ -1,17 +1,28 @@
 import Dialogs from '/@sys/ui/dialogs.mjs';
-import { CtxMenu, CtxItem, CtxCheck } from '/@sys/ui/context_menu.mjs';
-import { FileSystem, Paths } from '/@sys/filesystem.mjs';
+import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
+import App from '/@sys/app.mjs';
+import Window from '/@sys/ui/window.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+
+var Client: ClientClass;
 
 export default class NotepadApp extends App {
-	constructor(...args) {
+	window: Window = null;
+	fontSize: number = 12;
+	unsavedChanges: boolean;
+	path: string;
+	$app: $Element;
+	$textArea: $Element;
+
+	constructor(...args : ConstructorParameters<typeof App>) {
 		super(...args);
-		this.window = null;
-		this.fontSize = 12;
+		Client = ClientClass.get();
 	}
 
 	async init() {
 		// Create window
-		this.window = Client.desktop.createWindow(this);
+		this.window = ClientClass.get().desktop.createWindow(this);
 		this.window.on('closing', (ev) => {
 			if (!this.unsavedChanges) {
 				this.exit();
@@ -47,7 +58,7 @@ export default class NotepadApp extends App {
 
 		// Load the text from the argument path (if present)
 		if (this.buildArgs.length > 0) {
-			this.setPath(Paths.removeFSPrefix(this.buildArgs[0]));
+			this.setPath(Paths.removeFSPrefix(this.buildArgs[0] as string));
 			fileTextProm = FileSystem.readText(this.path);
 		}
 
@@ -58,24 +69,25 @@ export default class NotepadApp extends App {
 		this.$textArea = $app.find('textarea');
 		this.$textArea.on('change', () => this.unsavedChanges = true);
 	
-		let fileMenu = CtxMenu([
-			CtxItem('Open...', () => { this.open(); }),
-			CtxItem('Save', () => { this.save(); }),
-			CtxItem('Save as...', () => { this.saveAs(); }),
+		let fileMenu = CtxMenuClass.fromEntries([
+			['-Open...', () => { this.open(); }],
+			['-Save', () => { this.save(); }],
+			['-Save as...', () => { this.saveAs(); }],
 		
-			CtxCheck('Dark theme', (v) => { 
+			['*Dark theme', (v) => { 
 				this.setDarkTheme(v);
-			}, true),
-			'-',
-			CtxItem('Exit', () => { this.window.close(); })
+			}, { checked: true } ],
+
+			['|'],
+			['-Exit', () => { this.window.close(); }]
 		]);
 	
-		$app.find('.file-menu').click((ev) => {
+		$app.find('.file-menu').click((ev: MouseEvent) => {
 			Client.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
 		});
 		
 		// Zoom on Ctrl + Mouse wheel
-		this.$textArea.on('wheel', (ev) => {
+		this.$textArea.on('wheel', (ev: WheelEvent) => {
 			if (!ev.ctrlKey) return;
 			
 			let scale = ev.deltaY / 100.0;
@@ -126,7 +138,7 @@ export default class NotepadApp extends App {
 		}
 
 		// Choose file location
-		let app = await Client.runApp('explorer');
+		let app = await Client.runApp('explorer') as any;
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
 		
@@ -152,7 +164,7 @@ export default class NotepadApp extends App {
 	
 	async saveAs() {
 		// Choose file location
-		let app = await Client.runApp('explorer');
+		let app = await Client.runApp('explorer') as any;
 		app.asFileSelector('save', 'one');
 		
 		let result = await app.waitFileSelection();

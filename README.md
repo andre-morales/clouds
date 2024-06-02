@@ -43,7 +43,6 @@ docs/|Files associated with the repo documentation.
 usr/|Contains a folder for each user in the web system. Provides a dedicated space that can be used by the client user.
 
 ## :package: Building
-Most of the project is already packaged for you. Only a few preparation build steps must be done.
 ### 1) Preparation
 You must install all NPM dependencies. Some dependencies are meant to be used at runtime and others are build tools.
 Here's the main dependencies of the project, the ones listed in _italics_ are _dev dependencies_:
@@ -63,7 +62,9 @@ The API is written in TypeScript, and must be compiled first before being execut
 
 ### 3) Building Client Core
 The core modules used by the Client system are also written in TypeScript and must be compiled through Webpack in order to be available in the /client/res/ directory. You can invoke an npm script to do this compilation. Simply run ```> npm run build-client-dist``` in the root of a project.
-### 4) Configuration
+### 4) Building Built-in Apps
+Some apps in /apps/ are written in TS and must also be compiled. Run ```> npm run build-apps``` to perform compilation and type-checking.
+### 5) Configuration
 You are done! You can configure the behavior of the server through the profiles stored in ```config/profiles/```. The default profile is already well configured, but you might want to change a few settings.
 
 Here's a list of all NPM scripts that can be used through ```> npm run <script>```
@@ -72,8 +73,10 @@ Script|Purpose
 build-api-dist|Compiles all the TypeScript API files in /api/src/ to /api/runtime/
 build-client-prod|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in production mode.
 build-client-dev|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in development mode.
-build-client-stats|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in stats analysis mode.
-check-client-types|Runs TypeScript compiler type checking on Client code.
+build-client-types|Runs TypeScript compiler type checking on Client code and emits declaration files on /client/types/ folder.
+check-client-stats|Compiles and Bundles the Core client modules in /client/src/ to /client/res/js/ in stats analysis mode.
+build-apps|Compiles TypeScript apps on /apps/
+
 ## :arrow_forward: Running
 After building the project, running it is as easy as double-clicking the ```run``` script that matches your OS on the root of the project. You can also invoke _node_ directly with the same effect as the script. On a fresh terminal in the root, run the command ```> node .```.
 
@@ -86,7 +89,7 @@ Route|Maps to|Purpose
 /|/api/pages/entry|Initial page.
 /auth/|-|Authentication services: login, logout, test
 /page/|/api/pages/|Fetching of core HTML pages, mainly login and desktop page.
-/res/|/client/res/|Static resource access. All logged in users can access any content in this directory.
+/res/|/client/public/|Static resource access. All logged in users can access any content in this directory.
 /@sys/|/client/res/js/|Static core JS modules. Compiled through Webpack from /client/src/
 /app/**&lt;name&gt;**|/client/apps/**&lt;name&gt;**|Fetch static app resources.
 /fsv/|_(User filesystem)_|Read/write file system access at the current path.

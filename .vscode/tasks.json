@@ -47,5 +47,13 @@
 			"label": "📦 CLIENT: Build (Production)",
 			"detail": "npm run build-client-prod"
 		},
+		{
+			"type": "npm",
+			"script": "build-apps",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "📦 APPS: Build",
+			"detail": "npm run build-apps"
+		},
 	]
 }

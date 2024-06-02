@@ -4,17 +4,21 @@
 		"module": "ES2020",
 		"target": "ES2022",
 		"moduleResolution": "Bundler",
-		"emitDeclarationOnly": true,
-		"outDir": "types",
-		"composite": true,
+		"noEmit": false,
 		"incremental": true,
 		"paths": {
-			"/@sys/*": ["./src/*"]
+			"/@sys/*": ["./../client/src/*"]
 		}
 	},
-	"include": ["src"],
+	"include": ["./**/*.mts", "./../client/globals.d.mts"],
 	"exclude": [
 		"node_modules",
-		"**/node_modules/*"
+		"**/node_modules/*",
+		"client"
+	],
+	"references": [
+		{
+			"path": "./../client"
+		}
 	]
 }
