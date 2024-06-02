@@ -1,9 +1,22 @@
-import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
-import Util from '/res/js/util.mjs';
+import App from '/@sys/app.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+import { CtxMenu, CtxItem, CtxCheck, CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import Window from '/@sys/ui/window.mjs';
+import Util from '/@sys/util.mjs';
+
+var Client: ClientClass;
 
 export default class RemoteShellApp extends App {
-	constructor(...args) {
+	window: Window;
+	shellId: number;
+	textWrapping: boolean;
+	$content: $Element;
+	#fetchTimeout__: any;
+	#pingInterval__: any;
+
+	constructor(...args: ConstructorParameters<typeof App>) {
 		super(...args);
+		Client = ClientClass.get();
 		this.window = null;
 		this.shellId = null;
 	}
@@ -37,20 +50,20 @@ export default class RemoteShellApp extends App {
 			CtxItem('Exit', () => { this.window.close(); })
 		]);
 	
-		$app.find('.file-menu').click((ev) => {
+		$app.find('.file-menu').click((ev: MouseEvent) => {
 			Client.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
 		});
 
-		$app.find('.view-menu').click((ev) => {
-			let menu = CtxMenu([
-				CtxCheck('Wrap text', (v) => { this.setTextWrapping(v); }, this.textWrapping),
-				CtxItem('Clear', () => { this.clear(); })
+		$app.find('.view-menu').click((ev: MouseEvent) => {
+			let menu = CtxMenuClass.fromEntries([
+				['*Wrap text', (v) => { this.setTextWrapping(v); }, { checked: this.textWrapping} ],
+				['-Clear', () => { this.clear(); }]
 			]);
 			Client.desktop.openCtxMenuAt(menu, ev.clientX, ev.clientY);
 		});
 
 		let $field = $app.find('input');
-		$field.on('keypress', (ev) => {
+		$field.on('keypress', (ev: KeyboardEvent) => {
 			if (ev.key != 'Enter') return;
 			
 			let cmd = $field.val();
@@ -76,13 +89,13 @@ export default class RemoteShellApp extends App {
 			let content = await fres.text();
 			this.updateLog(content);
 
-			if (!this.fetchTimeout__) return;
-			this.fetchTimeout__ = setTimeout(call);
+			if (!this.#fetchTimeout__) return;
+			this.#fetchTimeout__ = setTimeout(call);
 		};	
 
-		this.fetchTimeout__ = setTimeout(call, 1);
+		this.#fetchTimeout__ = setTimeout(call, 1);
 
-		this.pingInterval__ = setInterval(async () => {
+		this.#pingInterval__ = setInterval(async () => {
 			fetch('/shell/' + this.shellId + '/ping');
 		}, 10000)
 
@@ -123,9 +136,9 @@ export default class RemoteShellApp extends App {
 	}
 
 	doCleanup() {
-		clearInterval(this.pingInterval__);
-		clearTimeout(this.fetchTimeout__);
-		this.fetchTimeout__ = null;
+		clearInterval(this.#pingInterval__);
+		clearTimeout(this.#fetchTimeout__);
+		this.#fetchTimeout__ = null;
 
 		if (this.shellId) fetch('/shell/' + this.shellId + '/kill');
 

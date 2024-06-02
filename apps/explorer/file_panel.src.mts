@@ -1,9 +1,24 @@
-import { CtxMenuClass } from '/res/js/ui/context_menu.mjs';
-import { FileSystem, Paths, FileTypes } from '/res/js/bridges/filesystem.mjs';
-import Util from '/@sys/util.mjs';
+import { ContextEntry, CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { FileSystem, Paths, FileTypes } from '/@sys/bridges/filesystem.mjs';
+import * as Util from '/@sys/util.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+
+var Client: ClientClass;
 
 export class FilePanel {
+	app: any;
+	zoom: number;
+	files: any;
+	fileIcons: any;
+	sorting: string;
+	selectionMode: string;
+	selectedFiles: any[];
+	selectedElems: any[];
+	$files: $Element;
+	$filesContainer: $Element;
+
 	constructor(explorer) {
+		Client = ClientClass.get();
 		this.app = explorer;
 		this.zoom = 1;
 		this.files = null;
@@ -35,7 +50,7 @@ export class FilePanel {
 			this.setZoom(beginZoom * ev.scale);
 		});
 
-		this.$filesContainer.on('wheel', (ev) => {
+		this.$filesContainer.on('wheel', (ev: WheelEvent) => {
 			if (!ev.ctrlKey) return;
 			
 			let scale = ev.deltaY / 1000.0;
@@ -206,14 +221,14 @@ export class FilePanel {
 		let isDir = absPath.endsWith('/');
 		let fsPath = Paths.toFSV(absPath);
 
-		let menu = [
+		let menu: ContextEntry[] = [
 			['-Open', () => this.app.openHandler(absPath)],
 		];
 
 		if (isDir) {
 			menu.push(
 				['-Open in another window', async () => {
-					let app = await Client.runApp('explorer');
+					let app = await Client.runApp('explorer') as any;
 					app.go(absPath);
 				}],
 				['-Add to favorites', () => {
@@ -226,7 +241,7 @@ export class FilePanel {
 					['-With',  () => this.app.openFileWith(absPath)],
 					['-Outside', () => this.app.openFileExt(absPath)]
 				]],
-				['-Download', () => 	Util.downloadUrl(fsPath)]
+				['-Download', () => Util.downloadUrl(fsPath)]
 			);
 		}
 
@@ -283,6 +298,7 @@ export class FilePanel {
 			} else {
 				$el.addClass('hidden');
 			}
+			return false;
 		});
 	}
 
@@ -340,7 +356,7 @@ export class FilePanel {
 			doRename();
 		});
 
-		$input.on('keydown', (ev) => {
+		$input.on('keydown', (ev: KeyboardEvent) => {
 			switch (ev.key) {
 			case 'Enter':
 				doRename();

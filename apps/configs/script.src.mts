@@ -1,9 +1,18 @@
-import Dialogs from '/res/js/ui/dialogs.mjs';
+import Dialogs from '/@sys/ui/dialogs.mjs';
 import { Paths } from '/@sys/bridges/filesystem.mjs';
+import Window from '/@sys/ui/window.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+import App from '/@sys/app.mjs';
+
+var Client: ClientClass;
 
 export default class ConfigsApp extends App {
-	constructor(...args) {
+	window: Window;
+	unsavedChanges: boolean;
+
+	constructor(...args: ConstructorParameters<typeof App>) {
 		super(...args);
+		Client = ClientClass.get();
 		this.window = null;
 	}
 
@@ -53,7 +62,7 @@ export default class ConfigsApp extends App {
 		});
 
 		$win.find('.find').click(async () => {
-			let app = await Client.runApp('explorer');
+			let app = await Client.runApp('explorer') as any;
 			app.asFileSelector('open', 'one');
 			let result = await app.waitFileSelection();
 			if (!result || !result.length) return;

@@ -123,7 +123,7 @@ export function addScript(src: string, id?: string) {
 	});
 }
 
-function downloadUrl(path) {
+export function downloadUrl(path) {
 	let link = document.createElement('a');
 	link.style.display = 'none';
 	link.href = path;

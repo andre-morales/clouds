@@ -2,7 +2,7 @@
 	"id": "configs",
 	"icon": "/app/configs/icon128.png",
 	"modules": [
-		"/app/configs/script.mjs"	
+		"/app/configs/script.src.mjs"	
 	],
 	"styles": [
 		"/app/configs/style.css"

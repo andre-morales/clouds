@@ -33,7 +33,7 @@ export default class NotepadApp extends App {
 				"Save", "Don't save", "Cancel"]);
 			
 			promise.then(async (r) => {
-				// Save clicked, if saved succesfully, close.
+				// Save clicked, if saved successfully, close.
 				if (r == 0) {
 					let saved = await this.save();
 					if (saved) {
@@ -130,7 +130,7 @@ export default class NotepadApp extends App {
 			// If cancel or close was clicked, don't do anything
 			if (btn == -1 || btn == 2) return;
 
-			// Save clicked, if saved succesfully, proceed with the open.
+			// Save clicked, if saved successfully, proceed with the open.
 			if (btn == 0) {
 				let saved = await this.save();
 				if (!saved) return;

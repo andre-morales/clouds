@@ -7,7 +7,7 @@ interface ContextEntryOptions {
 	disabled?: boolean;
 }
 
-interface ContextEntry {
+export interface ContextEntry {
 	0: string;
 	1?: Function | ContextEntry[];
 	2?: ContextEntryOptions;

@@ -1,12 +1,31 @@
-import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
 import { FileSystem, Paths, FileTypes } from '/@sys/bridges/filesystem.mjs';
-import Fullscreen from '/res/js/ui/fullscreen.mjs';
-import Util from '/res/js/util.mjs';
+import Fullscreen from '/@sys/ui/fullscreen.mjs';
+import Util from '/@sys/util.mjs';
+import App from '/@sys/app.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+import Window from '/@sys/ui/window.mjs';
+
+var Client: ClientClass;
 
 export default class SinestesiaApp extends App {
-	constructor(...args) {
+	window: Window;
+	contentType: string;
+	allowZoomPan: boolean;
+	transform: any;
+	$mediaElement: $Element;
+	$video: $Element;
+	$image: $Element;
+	currentUrl: string;
+	autoPlay: boolean;
+	playlist: any;
+	cancelPauseEvents: boolean;
+	lockedPlayback: boolean;
+	fullscreen: any;
+
+	constructor(...args: ConstructorParameters<typeof App>) {
 		super(...args);
-		
+		Client = ClientClass.get();
 		this.window = null;
 		this.contentType = '';
 		this.allowZoomPan = false;
@@ -102,7 +121,7 @@ export default class SinestesiaApp extends App {
 			this.goNext();
 		});
 
-		$container.dblclick((ev) => {
+		$container.dblclick((ev: MouseEvent) => {
 			let cPos = $container.offset();
 			let x = 1.0 * (ev.pageX - cPos.left) / cPos.width;
 			
@@ -243,44 +262,44 @@ export default class SinestesiaApp extends App {
 
 	createContextMenu() {
 		let $win = this.window.$window;
-		let ctxMenu = CtxMenu([
-			CtxItem('Open...', () => this.showOpenDialog()),
-			CtxItem('Open folder...', () => this.showOpenFolderDialog()),
-			'-',
-			CtxCheck('Autoplay', (v) => {
+		let ctxMenu = CtxMenuClass.fromEntries([
+			['-Open...', () => this.showOpenDialog()],
+			['-Open folder...', () => this.showOpenFolderDialog()],
+			['|'],
+			['-Autoplay', (v) => {
 				this.autoPlay = v;
-			}),
-			CtxCheck('Lock playback', (v) => {
+			}],
+			['-Lock playback', (v) => {
 				this.lockedPlayback = v;
 				this.cancelPauseEvents = v;
-			}),
-			'-',
-			CtxItem('Flip horizontally', () => {
+			}],
+			['|'],
+			['-Flip horizontally', () => {
 				this.transform.flipX *= -1;
 				this.updateTransform();
-			}),
-			CtxItem('Flip vertically', () => {
+			}],
+			['-Flip vertically', () => {
 				this.transform.flipY *= -1;
 				this.updateTransform();
-			}),
-			CtxItem('Rotate right', () => {
+			}],
+			['-Rotate right', () => {
 				this.transform.rotation += 90;
 				this.updateTransform();
-			}),
-			CtxItem('Rotate left', () => {
+			}],
+			['-Rotate left', () => {
 				this.transform.rotation -= 90;
 				this.updateTransform();
-			}),
-			CtxCheck('Allow zoom/pan', (v) => {
+			}],
+			['*Allow zoom/pan', (v) => {
 				this.allowZoomPan = v;
-			}, false),
-			CtxItem('Reset transform', () => this.resetZoomPan()),
+			}, {checked: false}],
+			['-Reset transform', () => this.resetZoomPan()],
 		]);
 		Client.desktop.addCtxMenuOn($win.find('.window-body'), () => ctxMenu);
 	}
 
 	async showOpenDialog() {
-		let app = await Client.runApp('explorer');
+		let app = await Client.runApp('explorer') as any;
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
 		if (!result || !result.length) return;
@@ -290,7 +309,7 @@ export default class SinestesiaApp extends App {
 	}
 
 	async showOpenFolderDialog() {
-		let app = await Client.runApp('explorer');
+		let app = await Client.runApp('explorer') as any;
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
 		if (!result || !result.length) return;

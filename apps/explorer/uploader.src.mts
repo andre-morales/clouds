@@ -1,7 +1,15 @@
-import { FileSystem, Paths } from '/res/js/bridges/filesystem.mjs';
+import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+
+var Client: ClientClass;
 
 export default class ExplorerUploader {
+	explorer: any;
+	$win: $Element;
+	$formSelect: $Element;
+
 	constructor(explorer) {
+		Client = ClientClass.get();
 		this.explorer = explorer;
 	}
 
@@ -76,7 +84,6 @@ export default class ExplorerUploader {
 	    	ev.preventDefault();
 		});
 
-		$form.on('')
 		helperWin.setVisible(true);
 	}
 

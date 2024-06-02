@@ -3,7 +3,7 @@
 	"displayName": "Sinestesia",
 	"icon": "/app/sinestesia/icon128.png",
 	"modules": [
-		"/app/sinestesia/script.mjs"	
+		"/app/sinestesia/script.src.mjs"	
 	],
 	"styles": [
 		"/app/sinestesia/style.css"

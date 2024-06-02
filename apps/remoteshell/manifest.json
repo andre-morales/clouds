@@ -1,7 +1,7 @@
 {
 	"id": "remoteshell",
 	"modules": [
-		"/app/remoteshell/res/script.mjs"	
+		"/app/remoteshell/res/script.src.mjs"	
 	],
 	"icon": "/app/remoteshell/icon128.png"
 }

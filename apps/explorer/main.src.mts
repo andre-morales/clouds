@@ -1,25 +1,45 @@
-import LocalClipboard from '/res/js/clipboard.mjs';
-import Dialogs from '/res/js/ui/dialogs.mjs';
-import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
-import { FileSystem, Paths } from '/res/js/bridges/filesystem.mjs';
-import { Deferred } from '/res/js/events.mjs';
+import LocalClipboard from '/@sys/bridges/clipboard.mjs';
+import Dialogs from '/@sys/ui/dialogs.mjs';
+import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
+import { Deferred } from '/@sys/events.mjs';
 import Util from '/@sys/util.mjs';
+import App from '/@sys/app.mjs';
+import Window from '/@sys/ui/window.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
 
-import { FilePanel } from './file_panel.mjs';
-import ExplorerUploader from './uploader.mjs';
-import ExplorerDefaultHandler from './open_handler.mjs';
-import ExplorerProperties from './properties.mjs';
+import { FilePanel } from './file_panel.src.mjs';
+import ExplorerUploader from './uploader.src.mjs';
+import ExplorerDefaultHandler from './open_handler.src.mjs';
+import ExplorerProperties from './properties.src.mjs';
+
+var Client: ClientClass;
 
 export default class ExplorerApp extends App {
-	constructor(...args) {	
+	window: Window;
+	cwd: string;
+	typeAssociations: any;
+	favorites: any;
+	closingDeferred: Deferred;
+	history: History;
+	panel: FilePanel;
+	cancelFetches: boolean;
+	canceledFetches: any;
+	doneClicked: boolean;
+	$app: $Element;
+	$filePanel: $Element;
+	$addressField: $Element;
+	$favorites: $Element;
+
+	constructor(...args: ConstructorParameters<typeof App>) {	
 		super(...args);
+		Client = ClientClass.get();
 		this.window = null;
 		this.cwd = null;
 		this.typeAssociations = {};
 		this.favorites = [];
 		this.closingDeferred = new Deferred();
 		this.history = new History();
-		this.history.save();
 		this.panel = new FilePanel(this);
 		this.cancelFetches = true;
 		this.canceledFetches = new Map();
@@ -51,7 +71,6 @@ export default class ExplorerApp extends App {
 		this.$filePanel = $app.find('.files-container');
 		this.$addressField = $app.find('.address-field');
 		this.$favorites = $app.find('.favorites');
-		this.$collections = $app.find('.collections');
 
 		// Setup file panel
 		this.panel.init();
@@ -72,19 +91,19 @@ export default class ExplorerApp extends App {
 
 		// Context menus
 		let $filesContainer = $app.find('.files-container');
-		Client.desktop.addCtxMenuOn($filesContainer, () => CtxMenu([
-			CtxMenu([
-				CtxItem('Name', () => this.panel.sortBy('name')),
-				CtxItem('Date', () => this.panel.sortBy('date'))
-			], "Sort by"),
-			'-',
-			CtxItem('Paste', () => this.paste()).setEnabled(this.canPaste()),
-			CtxItem('Upload...', () => this.openUploadDialog()),
-			'-',
-			CtxMenu([
-				CtxItem('Directory', () => this.create('dir')),
-				CtxItem('Text File', () => this.create('text'))
-			], "Create"),
+		Client.desktop.addCtxMenuOn($filesContainer, () => CtxMenuClass.fromEntries([
+			['>Sort by', [
+				['-Name', () => this.panel.sortBy('name')],
+				['-Date', () => this.panel.sortBy('date')]
+			]],
+			['|'],
+			['-Paste', () => this.paste(), { disabled: !this.canPaste() }],
+			['-Upload...', () => this.openUploadDialog()],
+			['|'],
+			['>Create', [
+				['-Directory', () => this.create('dir')],
+				['-Text File', () => this.create('text')]
+			]],
 		]));
 
 		let $sidePanel = $app.find('aside');
@@ -105,7 +124,7 @@ export default class ExplorerApp extends App {
 		
 		// Go to the root directory and save it in history
 		await this.goHome();
-		this.history.save();
+		this.history.save(this.cwd);
 	}
 
 	async openUploadDialog() {
@@ -190,12 +209,8 @@ export default class ExplorerApp extends App {
 				let src = el.getAttribute('src');;
 				el.dataset.haltSrc = src;
 				el.setAttribute('src', '');
+				return false;
 			});
-		}
-
-		if (path.startsWith('$')) {
-			this.openCollection(path.substring(1));
-			return;
 		}
 
 		this.$addressField.val(path);
@@ -224,6 +239,7 @@ export default class ExplorerApp extends App {
 				this.panel.$files.find('img').each((i, el) => {
 					let src = el.dataset.haltSrc;
 					el.setAttribute('src', src);
+					return false;
 				});
 			}
 			return code;
@@ -310,8 +326,8 @@ export default class ExplorerApp extends App {
 			$item.click(() => {
 				this.openHandler(path);
 			});
-			Client.desktop.addCtxMenuOn($item, () => CtxMenu([
-				CtxItem('Remove', () => this.removeFavorite(path))
+			Client.desktop.addCtxMenuOn($item, () => CtxMenuClass.fromEntries([
+				['-Remove', () => this.removeFavorite(path)]
 			]));
 			this.$favorites.append($item);
 		}
@@ -436,6 +452,9 @@ export default class ExplorerApp extends App {
 }	
 
 class History {
+	log: string[];
+	logIndex: number;
+
 	constructor() {
 		this.log = [];
 		this.logIndex = -1;		

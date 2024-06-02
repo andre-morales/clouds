@@ -16,7 +16,6 @@ export default class AboutApp extends App {
 		this.window.setTitle('About');
 		this.window.setCloseBehavior('exit');
 		
-		//this.window.setSize(380, 360);
 		let $app = this.window.$window.find('.window-body');
 		$app.addClass('app-about');
 		await this.window.setContentToUrl('/app/about/body.html');

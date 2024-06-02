@@ -1,6 +1,21 @@
+import App from "/@sys/app.mjs";
+import { ClientClass } from "/@sys/client_core.mjs";
+import Window from "/@sys/ui/window.mjs";
+
+var Client: ClientClass;
+
 export default class SystemMonitorApp extends App {
-	constructor(...args) {
+	window: Window;
+	currentTab: string;
+	netPolling: boolean;
+	netPollTimeout: any;
+	networkPollInterval: any;
+	dead: boolean;
+	$app: $Element;
+
+	constructor(...args: ConstructorParameters<typeof App>) {
 		super(...args);
+		Client = ClientClass.get();
 		this.window = null;
 		this.currentTab = '';
 		this.netPolling = false;

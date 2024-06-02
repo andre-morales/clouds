@@ -1,8 +1,23 @@
-import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
 import Util from '/@sys/util.mjs';
+import App from '/@sys/app.mjs';
+import Window from '/@sys/ui/window.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+
+var Client: ClientClass;
 
 export default class ConsoleApp extends App {
-	constructor(...args) {
+	window: Window;
+	commandHistory: string[];
+	commandHistoryIndex: number;
+	currentInput: string;
+	logListener: Function;
+	$app: $Element;
+	$content: $Element;
+	$cmdField: $Element;
+	$suggestions: $Element;
+
+	constructor(...args: ConstructorParameters<typeof App>) {
 		super(...args);
 		this.window = null;
 		this.commandHistory = [];
@@ -39,8 +54,7 @@ export default class ConsoleApp extends App {
 		$app.find('.send-btn').click(() => {
 			this.sendCmd();
 		});
-		this.$cmdField.on('keydown', (ev) => {
-			//Client.log('kd: ' + ev.key);
+		this.$cmdField.on('keydown', (ev: KeyboardEvent) => {
 			if (ev.key == 'ArrowUp') {
 				this.goBackHistory();
 				ev.preventDefault();
@@ -51,7 +65,7 @@ export default class ConsoleApp extends App {
 
 			this.doSuggestions();
 		});
-		this.$cmdField.on('keypress', (ev) => {
+		this.$cmdField.on('keypress', (ev: KeyboardEvent) => {
 			if (ev.key == 'Enter') {
 				this.sendCmd();
 			}
@@ -104,8 +118,8 @@ export default class ConsoleApp extends App {
 	}
 
 	createContextMenu() {
-		let ctxMenu = CtxMenu([
-			CtxItem('Clear', () => this.clear())
+		let ctxMenu = CtxMenuClass.fromEntries([
+			['-Clear', () => this.clear()]
 		]);
 		Client.desktop.addCtxMenuOn(this.$app, () => ctxMenu);
 	}
@@ -155,7 +169,7 @@ export default class ConsoleApp extends App {
 		this.$content.empty();
 	}
 
-	updateLog(msg, noNewLine) {
+	updateLog(msg: string, noNewLine?: boolean) {
 		let $span = $('<span class="msg">');
 		if (!noNewLine) {
 			msg += '\n';

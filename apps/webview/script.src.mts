@@ -1,9 +1,20 @@
-import { CtxMenu, CtxItem, CtxCheck } from '/res/js/ui/context_menu.mjs';
+import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
 import { Paths } from '/@sys/bridges/filesystem.mjs';
+import Window from '/@sys/ui/window.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+import App from '/@sys/app.mjs';
+
+var Client: ClientClass;
 
 export default class WebViewApp extends App {
-	constructor(...args) {
+	window: Window;
+	$app: $Element;
+	$iframe: $Element;
+	path: string;
+
+	constructor(...args: ConstructorParameters<typeof App>) {
 		super(...args);
+		Client = ClientClass.get();
 		this.window = null;
 	}
 
@@ -20,13 +31,13 @@ export default class WebViewApp extends App {
 		// Fetch application body
 		await this.window.setContentToUrl('/app/webview/main.html');
 		
-		let fileMenu = CtxMenu([
-			CtxItem('Open...', () => { this.showOpenDialog(); }),
-			'-',
-			CtxItem('Exit', () => { this.window.close(); })
+		let fileMenu = CtxMenuClass.fromEntries([
+			['-Open...', () => { this.showOpenDialog(); }],
+			['|'],
+			['-Exit', () => { this.window.close(); }]
 		]);
 	
-		$app.find('.file-menu').click((ev) => {
+		$app.find('.file-menu').click((ev: MouseEvent) => {
 			Client.desktop.openCtxMenuAt(fileMenu, ev.clientX, ev.clientY);
 		});
 
@@ -41,7 +52,7 @@ export default class WebViewApp extends App {
 	}
 
 	async showOpenDialog() {
-		let app = await Client.runApp('explorer');
+		let app = await Client.runApp('explorer') as any;
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
 		if (!result || !result.length) return;
@@ -64,10 +75,5 @@ export default class WebViewApp extends App {
 		} else {
 			this.$iframe[0].src = path;	
 		}
-	}
-		
-	onClose() {
-		this.saveAppWindowState(this.window);
-		this.window.close();
 	}
 }

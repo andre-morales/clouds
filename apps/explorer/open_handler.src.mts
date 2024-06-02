@@ -1,7 +1,15 @@
 import { Paths } from '/@sys/bridges/filesystem.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+import Window from '/@sys/ui/window.mjs';
+
+var Client;
 
 export default class ExplorerDefaultHandler {
+	explorer: any;
+	window: Window;
+
 	constructor(explorer) {
+		Client = ClientClass.get();
 		this.explorer = explorer;
 		this.window = null;
 	}
@@ -62,7 +70,9 @@ export default class ExplorerDefaultHandler {
 
 		$win.find('.window-body').addClass('openwith-helper');
 		let $list = $win.find('ul');
-		for (let [id, defs] of Object.entries(Client.registeredApps)) {
+		for (let [id, defs_] of Object.entries(Client.registeredApps)) {
+			let defs: any = defs_;
+
 			if (!defs.flags.includes('tool')) continue;
 
 			let $item = $(`<li>${defs.name}</li>`);

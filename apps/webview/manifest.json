@@ -2,7 +2,7 @@
 	"id": "webview",
 	"icon": "/app/webview/icon128.png",
 	"modules": [
-		"/app/webview/script.mjs"	
+		"/app/webview/script.src.mjs"	
 	],
 	"styles": [
 		"/app/webview/style.css"

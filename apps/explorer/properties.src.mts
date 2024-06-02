@@ -1,7 +1,16 @@
 import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
+import { ClientClass } from '/@sys/client_core.mjs';
+import Window from '/@sys/ui/window.mjs';
+
+var Client: ClientClass;
 
 export default class ExplorerProperties {
+	explorer: any;
+	window: Window;
+	$win: $Element;
+
 	constructor(explorer) {
+		Client = ClientClass.get();
 		this.explorer = explorer;
 	}
 
