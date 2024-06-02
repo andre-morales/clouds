@@ -30,6 +30,5 @@ apps/**/*.src.mjs
 docs/sample.png
 
 # Private user folder files
-usr/test/.system/collections.json
 usr/test/.system/favorites.json
-usr/test/.system/desktop.json
+usr/test/.system/preferences.json

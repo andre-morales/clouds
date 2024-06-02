@@ -109,6 +109,17 @@ export default class ConfigsApp extends App {
 			self.unsavedChanges = true;
 		});
 
+		let $usePWAFeatures = $win.find('.use-pwa-features');
+		$usePWAFeatures.prop("checked", Client.desktop.configs.use_pwa_features);
+		$usePWAFeatures.change(async function (){
+			if (this.checked) {
+				Client.desktop.configs.use_pwa_features = true;
+			} else {
+				Client.desktop.configs.use_pwa_features = false;
+			}
+			self.unsavedChanges = true;
+		});
+
 		// Logout
 		$win.find('.logout').click(() => {
 			Client.logout();

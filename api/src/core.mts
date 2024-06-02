@@ -8,6 +8,8 @@ import * as VFSRouter from './vfs_router.mjs';
 import * as Stats from './stats.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
+import * as VFS from './vfs.mjs';
+import * as Files from './files.mjs';
 import Express, { Request, Response, NextFunction } from 'express';
 import FileUpload from 'express-fileupload';
 import Compression from 'compression';
@@ -118,8 +120,18 @@ function initExpress() {
  */
 function apiSetupPages() {
 	// - Entry point page
-	app.get('/', (req, res) => {
-		res.render('entry');
+	app.get('/', async (req, res) => {
+		let user = Auth.getUser(req);
+		let pwa = false;
+		if (user) {
+			try {
+				let fPath = VFS.translate(user, '/usr/.system/preferences.json');
+				let prefs = await Files.readJSON(fPath as string);
+				pwa = Boolean(prefs.use_pwa_features);
+			} catch(err) {}
+		}
+
+		res.render('entry', { use_pwa_features: pwa });
 	});
 
 	// - Login page

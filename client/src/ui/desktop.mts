@@ -107,15 +107,15 @@ export class Desktop {
 	}
 
 	async saveConfigs() {
-		await FileSystem.writeJson('/usr/.system/desktop.json', this.configs);
+		await FileSystem.writeJson('/usr/.system/preferences.json', this.configs);
 	}
 
 	async loadConfigs() {
 		try {
-			this.configs = await FileSystem.readJson('/usr/.system/desktop.json');
+			this.configs = await FileSystem.readJson('/usr/.system/preferences.json');
 		} catch (err) {
 			this.configs = {};
-			console.warn('Desktop.json failed to load. Assuming defaults.', err);
+			console.warn('Preferences.json failed to load. Assuming defaults.', err);
 		}
 		
 

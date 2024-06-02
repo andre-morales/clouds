@@ -61,7 +61,7 @@
 			"group": "build",
 			"problemMatcher": [],
 			"label": "📦 APPS: Build",
-			"detail": "npm run build-apps"
+			"detail": "npm run build-apps-prod"
 		},
 	]
 }
