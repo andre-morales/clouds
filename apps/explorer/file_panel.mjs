@@ -1,5 +1,5 @@
 import { CtxMenuClass } from '/res/js/ui/context_menu.mjs';
-import { FileSystem, Paths, FileTypes } from '/res/js/filesystem.mjs';
+import { FileSystem, Paths, FileTypes } from '/res/js/bridges/filesystem.mjs';
 import Util from '/@sys/util.mjs';
 
 export class FilePanel {

@@ -1,4 +1,4 @@
-import { Paths } from '/res/js/filesystem.mjs';
+import { Paths } from '/@sys/bridges/filesystem.mjs';
 
 export default class ExplorerDefaultHandler {
 	constructor(explorer) {

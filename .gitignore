@@ -20,7 +20,7 @@ usr/test/.system/desktop.json
 config/ssl
 
 # Ignore generated bundled content
-client/res/pack
+client/public/pack
 *.bundle.js
 *.map
 *.tsbuildinfo

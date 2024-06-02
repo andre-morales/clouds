@@ -1,5 +1,5 @@
 import Dialogs from '/res/js/ui/dialogs.mjs';
-import { Paths } from '/res/js/filesystem.mjs';
+import { Paths } from '/@sys/bridges/filesystem.mjs';
 
 export default class ConfigsApp extends App {
 	constructor(...args) {

@@ -136,8 +136,6 @@ export function CtxCheck(): CtxCheckClass {
 function itemsFromEntries(entries: ContextEntry[]): CtxItem[] {
 	let constructed: CtxItem[] = [];
 
-	console.log(entries);
-
 	for (let entry of entries) {
 		let type = entry[0].at(0);
 		let label = entry[0].substring(1);
@@ -159,7 +157,7 @@ function itemsFromEntries(entries: ContextEntry[]): CtxItem[] {
 			let subMenu = itemsFromEntries(subEntries);
 			item = new CtxMenuClass(subMenu, label);
 		} else {
-			throw new BadParameterFault(`Undefined context menu entry type ${type}`);
+			throw new BadParameterFault(`Undefined context menu entry type '${type}' of entry '${entry[0]}'`);
 		}
 		constructed.push(item);
 	}

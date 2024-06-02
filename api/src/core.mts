@@ -64,8 +64,8 @@ function initExpress() {
 	app.use(Stats.getTracker());
 	
 	// Public resources
-	app.use('/res', Express.static('client/res')); 
-	app.use('/@sys', [Auth.guard, Express.static('client/res/js')]);
+	app.use('/res', Express.static('client/public')); 
+	app.use('/@sys', [Auth.guard, Express.static('client/public/js')]);
 
 	// API routes
 	app.use('/auth', Auth.getRouter());            // Auth system 
@@ -139,7 +139,7 @@ function apiSetupApps() {
 	app.get('/app/:app/*', Auth.guard, (req, res) => {
 		let app = req.params.app;
 		let path = req.params[0];	
-		let fPath = './client/apps/' + app + '/' + path;
+		let fPath = './apps/' + app + '/' + path;
 		res.sendFile(Path.resolve(fPath));
 	});
 }
