@@ -284,12 +284,11 @@ export class FilePanel {
 		this.recalculateIcons();
 	}
 
-	filter(query) {
+	filter(query: string) {
 		if (!query) {
 			this.$files.children().removeClass('hidden');
 			return;
 		}
-
 		this.$files.children().each((i, el) => {
 			let $el = $(el);
 			let fname = $el.find('span').text().toLowerCase();
@@ -298,11 +297,11 @@ export class FilePanel {
 			} else {
 				$el.addClass('hidden');
 			}
-			return false;
+			return true;
 		});
 	}
 
-	sortBy(what) {
+	sortBy(what: string) {
 		this.sorting = what;
 		this.setContent(this.files);
 	}

@@ -49,7 +49,15 @@
 		},
 		{
 			"type": "npm",
-			"script": "build-apps",
+			"script": "build-apps-dev",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "🐛 APPS: Build (Development)",
+			"detail": "npm run build-apps-dev"
+		},
+		{
+			"type": "npm",
+			"script": "build-apps-prod",
 			"group": "build",
 			"problemMatcher": [],
 			"label": "📦 APPS: Build",

@@ -9,7 +9,7 @@
 				"<node_internals>/**"
 			],
 			"program": "${workspaceFolder}\\api\\runtime\\main.mjs",
-			"preLaunchTask": "Watch API Build"
+			"preLaunchTask": "👀 API: Watch Build"
 		}
 	]
 }

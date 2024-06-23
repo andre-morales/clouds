@@ -16,6 +16,8 @@ interface AppDefinition {
 
 export class AppManager {
 	definitions: Map<string, AppDefinition>;
+	/** @deprecated Use app entries instead. */
+	allDeclarations: any;
 	#appDeclarations: any;
 
 	constructor() {
@@ -25,6 +27,7 @@ export class AppManager {
 	async init() {
 		// Fetch app definitions from the user profile
 		this.#appDeclarations = await FileSystem.readJson('/usr/.system/apps.json');
+		this.allDeclarations = this.#appDeclarations;
 
 		// Remove disabled apps
 		for (let app of Object.keys(this.#appDeclarations)) {

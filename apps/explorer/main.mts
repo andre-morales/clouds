@@ -209,7 +209,7 @@ export default class ExplorerApp extends App {
 				let src = el.getAttribute('src');;
 				el.dataset.haltSrc = src;
 				el.setAttribute('src', '');
-				return false;
+				return true;
 			});
 		}
 
@@ -239,7 +239,7 @@ export default class ExplorerApp extends App {
 				this.panel.$files.find('img').each((i, el) => {
 					let src = el.dataset.haltSrc;
 					el.setAttribute('src', src);
-					return false;
+					return true;
 				});
 			}
 			return code;

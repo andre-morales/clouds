@@ -1,8 +1,9 @@
 import { Paths } from '/@sys/bridges/filesystem.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
+import Util from '/@sys/util.mjs';
 import Window from '/@sys/ui/window.mjs';
 
-var Client;
+var Client: ClientClass;
 
 export default class ExplorerDefaultHandler {
 	explorer: any;
@@ -50,7 +51,8 @@ export default class ExplorerDefaultHandler {
 		});
 
 		$body.find('.download-option').click(() => {
-			Client.downloadUrl(Paths.toFSV(path));
+			
+			Util.downloadUrl(Paths.toFSV(path));
 			this.window.close();
 		});
 
@@ -70,17 +72,17 @@ export default class ExplorerDefaultHandler {
 
 		$win.find('.window-body').addClass('openwith-helper');
 		let $list = $win.find('ul');
-		for (let [id, defs_] of Object.entries(Client.registeredApps)) {
-			let defs: any = defs_;
+		for (let [id, defs_] of Object.entries(Client.appManager.allDeclarations)) {
+			let defs: any = defs_;	
 
 			if (!defs.flags.includes('tool')) continue;
 
 			let $item = $(`<li>${defs.name}</li>`);
 			$item.click(async () => {
 				let app = await Client.runApp(id, [Paths.toFSV(path)]);
-				if (app.window) {
-					app.window.bringToFront();
-					app.window.focus();
+				if (app.mainWindow) {
+					app.mainWindow.bringToFront();
+					app.mainWindow.focus();
 				}
 				win.close();
 			});
