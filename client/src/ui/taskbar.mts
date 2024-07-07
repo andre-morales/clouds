@@ -52,7 +52,7 @@ export class Taskbar {
 			let icon = appDef.icons[0].url;
 			let $icon = $(`<img src='${icon}'/>`);
 			$icon.on('error', () => {
-				$icon.attr('src', Client.appManager.getDefaultIcon().url);
+				$icon.attr('src', Client.appManager.getDefaultAppIcon().url);
 			})
 
 			// Create the app element

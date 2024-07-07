@@ -29,14 +29,16 @@ export default class ConfigsApp extends App {
 
 				let [win, choice] = Dialogs.showOptions(this, "Configuration", "Do you want to save your changes?", ['Yes', 'No', 'Cancel']);
 
-				choice.then(async (v) => {
+				choice.then(async (v: number) => {
 					switch(v) {
+					// Yes
 					case 0:
 						this.unsavedChanges = false;
 						await Client.desktop.saveConfigs();
 						Client.desktop.loadConfigs();
 						this.window.close();
 						break;
+					// No
 					case 1:
 						Client.desktop.loadConfigs();
 						this.unsavedChanges = false;
