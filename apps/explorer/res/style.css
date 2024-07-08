@@ -110,9 +110,12 @@
 }
 
 .app-explorer .files-container {
+	--file-panel-font: 'Tahoma';
+
 	flex-grow: 1;
 	overflow: auto;
 	touch-action: pan-y;
+	font-family: var(--file-panel-font);
 } 
 
 .app-explorer .files {

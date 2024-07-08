@@ -36,7 +36,7 @@ export class Desktop {
 		this.events = new Reactor();
 		this.events.register("window-created", "window-destroyed");
 		this.iconifiedGroups = {};
-		this.$desktop = $('.desktop');
+		this.$desktop = $('#desktop');
 		this.$windows = $('.windows');
 		this.taskbar = new TaskbarM.Taskbar();
 		this.$contextMenu = $('.context-menu');
@@ -62,9 +62,9 @@ export class Desktop {
 			}],			
 		]);
 
-		this.addCtxMenuOn(this.$desktop.find('.backplane'), () => menu);
+		this.addCtxMenuOn(this.$desktop.find('.back-plane'), () => menu);
 
-		this._installWindowResizeHandlers();
+		this.#installWindowResizeHandlers();
 
 		$(document).on('mousemove', (ev: MouseEvent) => {
 			this.mouseX = ev.clientX;
@@ -151,7 +151,7 @@ export class Desktop {
 
 	bringWindowToFront(win: Window) {
 		this.windows.push(this.windows.splice(this.windows.indexOf(win), 1)[0]);
-		this._restack();
+		this.#restack();
 	}
 
 	getDesktopSize() {
@@ -240,10 +240,10 @@ export class Desktop {
 		document.body.style.cursor = cursor;
 	}
 
-	// Creates an app icon for each registered app and lays it out desktop backplane,
+	// Creates an app icon for each registered app and lays it out desktop back-plane,
 	// also configures their input behavior.
 	setupApps() {
-		let $apps = $('.backplane');
+		let $apps = $('.back-plane');
 		for (let [id, def] of Client.appManager.getAppEntries()) {
 			if (def.flags.includes('disabled')) continue;
 			if (!def.flags.includes('desk')) continue;
@@ -307,7 +307,7 @@ export class Desktop {
 	}
 
 	// Sets windows' z-index to match the windows array.
-	_restack() {
+	#restack() {
 		let index = 1;
 		for (let win of this.windows) {
 			let newZ = index++;
@@ -321,16 +321,16 @@ export class Desktop {
 		}
 	}
 
-	_installWindowResizeHandlers() {
+	#installWindowResizeHandlers() {
 		let resWin = null;
 		let startB;
 		let startMX, startMY;
 		let dragDir;
 		let wx, wy, ww, wh;
 
-		let dragStart = (mx, my, ev) => {
+		let dragStart = (mx: number, my: number, ev: Event) => {
 			for(let win of this.windows.slice().reverse()) {
-				dragDir = this._getResizeDirection(win, mx, my);
+				dragDir = this.#getResizeDirection(win, mx, my);
 
 				if (dragDir) {
 					if (win.maximized) return;
@@ -347,18 +347,18 @@ export class Desktop {
 			};
 		}
 
-		let dragMove = (mx, my) => {
+		let dragMove = (mx: number, my: number) => {
 			if (resWin) {
 				doResize(mx, my);
 				return;
 			}
 
 			for(let win of this.windows.slice().reverse()) {
-				let dir = this._getResizeDirection(win, mx, my);
+				let dir = this.#getResizeDirection(win, mx, my);
 				if (dir) {
 					if (win.maximized) return;
 
-					this.setCursor(this._getDirectionCursor(dir));
+					this.setCursor(this.#getDirectionCursor(dir));
 					return; 
 				}
 
@@ -368,7 +368,7 @@ export class Desktop {
 			this.setCursor(null);
 		};
 
-		let doResize = (mx, my) => {
+		let doResize = (mx: number, my: number) => {
 			if (!dragDir) return;
 
 			let dx = mx - startMX;
@@ -400,7 +400,7 @@ export class Desktop {
 			}
 		};
 
-		let dragEnd = (mx, my) => {
+		let dragEnd = (mx: number, my: number) => {
 			if (!resWin) return;
 			doResize(mx, my);
 			resWin.setBounds(wx, wy, ww, wh);
@@ -436,7 +436,7 @@ export class Desktop {
 		});
 	}
 
-	_getDirectionCursor(dir) {
+	#getDirectionCursor(dir: number[]) {
 		let h = dir[0], v = dir[1];
 		if (h == 0) return "ns-resize";
 		if (v == 0) return "ew-resize";
@@ -445,7 +445,7 @@ export class Desktop {
 		return "initial";
 	}
 
-	_getResizeDirection(w, mx, my) {
+	#getResizeDirection(w, mx, my) {
 		if (!w.visible || !w.decorated) return null;
 
 		const im = 4;  // Inside margin

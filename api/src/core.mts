@@ -126,8 +126,8 @@ function apiSetupPages() {
 		if (user) {
 			try {
 				let fPath = VFS.translate(user, '/usr/.system/preferences.json');
-				let prefs = await Files.readJSON(fPath as string);
-				pwa = Boolean(prefs.use_pwa_features);
+				let preferences = await Files.readJSON(fPath as string);
+				pwa = Boolean(preferences.use_pwa_features);
 			} catch(err) {}
 		}
 
