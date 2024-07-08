@@ -34,13 +34,14 @@ export default class ConfigsApp extends App {
 					// Yes
 					case 0:
 						this.unsavedChanges = false;
-						await Client.desktop.saveConfigs();
-						Client.desktop.loadConfigs();
+						Client.config.preferences.save();
+						await Client.config.preferences.upload();
 						this.window.close();
 						break;
 					// No
 					case 1:
-						Client.desktop.loadConfigs();
+						Client.config.preferences.load();
+						Client.desktop.reload();
 						this.unsavedChanges = false;
 						this.window.close();
 						break;
@@ -58,7 +59,7 @@ export default class ConfigsApp extends App {
 
 		// Background
 		let $input = $win.find('.background-input');
-		$input.val(Client.desktop.configs.background);
+		$input.val(Client.config.preferences.background);
 		$input.on('change', () => {
 			Client.desktop.setBackground($input.val());
 		});
@@ -77,64 +78,64 @@ export default class ConfigsApp extends App {
 
 		// Fullscreen filter
 		let $fullscrFilter = $win.find('.fullscr-filter-toggle');
-		$fullscrFilter.prop("checked", Client.desktop.configs.fullscreen_filter === false);
+		$fullscrFilter.prop("checked", Client.config.preferences.fullscreen_filter === false);
 		$fullscrFilter.change(async function (){
 			if (this.checked) {
-				Client.desktop.configs.fullscreen_filter = false;
+				Client.config.preferences.fullscreen_filter = false;
 			} else {
-				Client.desktop.configs.fullscreen_filter = true;
+				Client.config.preferences.fullscreen_filter = true;
 			}
 			self.unsavedChanges = true;
 		});
 
 		// Fullscreen filter
 		let $winContents = $win.find('.drag-contents-toggle');
-		$winContents.prop("checked", Client.desktop.configs.show_dragged_window_contents);
+		$winContents.prop("checked", Client.config.preferences.show_dragged_window_contents);
 		$winContents.change(async function (){
 			if (this.checked) {
-				Client.desktop.configs.show_dragged_window_contents = true;
+				Client.config.preferences.show_dragged_window_contents = true;
 			} else {
-				Client.desktop.configs.show_dragged_window_contents = false;
+				Client.config.preferences.show_dragged_window_contents = false;
 			}
 			self.unsavedChanges = true;
 		});
 
 		// Fullscreen filter
 		let $pdfViewer = $win.find('.use-pdf-viewer');
-		$pdfViewer.prop("checked", Client.desktop.configs.use_pdf_viewer);
+		$pdfViewer.prop("checked", Client.config.preferences.use_pdf_viewer);
 		$pdfViewer.change(async function (){
 			if (this.checked) {
-				Client.desktop.configs.use_pdf_viewer = true;
+				Client.config.preferences.use_pdf_viewer = true;
 			} else {
-				Client.desktop.configs.use_pdf_viewer = false;
+				Client.config.preferences.use_pdf_viewer = false;
 			}
 			self.unsavedChanges = true;
 		});
 
 		let $usePWAFeatures = $win.find('.use-pwa-features');
-		$usePWAFeatures.prop("checked", Client.desktop.configs.use_pwa_features);
+		$usePWAFeatures.prop("checked", Client.config.preferences.use_pwa_features);
 		$usePWAFeatures.change(async function (){
 			if (this.checked) {
-				Client.desktop.configs.use_pwa_features = true;
+				Client.config.preferences.use_pwa_features = true;
 			} else {
-				Client.desktop.configs.use_pwa_features = false;
+				Client.config.preferences.use_pwa_features = false;
 			}
 			self.unsavedChanges = true;
 		});
 
-		// Logout
 		$win.find('.logout').click(() => {
 			Client.logout();
 		})
 
 		$win.find('.reload').click(() => {
-			Client.desktop.loadConfigs();
+			Client.config.preferences.load();
+			Client.desktop.reload();
 			this.unsavedChanges = false;
 		});
 
 		$win.find('.save').click(async () => {
-			await Client.desktop.saveConfigs();
-			Client.desktop.loadConfigs();
+			Client.config.preferences.save();
+			await Client.config.preferences.upload();
 			this.unsavedChanges = false;
 		});
 

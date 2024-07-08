@@ -248,7 +248,7 @@ export class FilePanel {
 		if (FileTypes.isPicture(absPath)) {
 			menu.push(['-Set as background', () => {
 				Client.desktop.setBackground(fsPath);
-				Client.desktop.saveConfigs();
+				Client.config.preferences.save().upload();
 			}]);
 		}
 

@@ -6,12 +6,12 @@ import App from '../app.mjs';
 import { Reactor } from '../events.mjs';
 import { FileSystem } from '../bridges/filesystem.mjs';
 import Util from '../util.mjs';
+import { ClientClass } from '../client_core.mjs';
 
 export class Desktop {
 	windows: Window[];
 	dwm: App;
 	events: Reactor;
-	configs: any;
 	iconifiedGroups: any;
 	taskbar: Taskbar;
 	focusedWindow: Window;
@@ -19,7 +19,6 @@ export class Desktop {
 	mouseY: number;
 	contextMenuOpen: boolean;
 	dragRectState: any;
-	_configsProm: any;
 	windowsWidth: number;
 	windowsHeight: number;
 	screenWidth: number;
@@ -36,7 +35,6 @@ export class Desktop {
 		});
 		this.events = new Reactor();
 		this.events.register("window-created", "window-destroyed");
-		this.configs = [];
 		this.iconifiedGroups = {};
 		this.$desktop = $('.desktop');
 		this.$windows = $('.windows');
@@ -47,8 +45,6 @@ export class Desktop {
 		this.mouseY = 0;
 		this.contextMenuOpen = false;
 		this.dragRectState = {};
-
-		this._configsProm = this.loadConfigs();
 
 		let menu = CtxMenuClass.fromEntries([
 			["-System Settings", () => {
@@ -102,34 +98,22 @@ export class Desktop {
 		this._queryBounds();	
 	}
 
-	async start() {
-		await this._configsProm;
-	}
-
-	async saveConfigs() {
-		await FileSystem.writeJson('/usr/.system/preferences.json', this.configs);
-	}
-
-	async loadConfigs() {
-		try {
-			this.configs = await FileSystem.readJson('/usr/.system/preferences.json');
-		} catch (err) {
-			this.configs = {};
-			console.warn('Preferences.json failed to load. Assuming defaults.', err);
-		}
-		
-
-		let bg = this.configs.background;
+	/**
+	 * Reload preferences.
+	 */
+	async reload() {
+		let bg = ClientClass.get().config.preferences.background;
 		if (bg) this.setBackground(bg);
 
-		if (this.configs.fullscreen_filter === false) {
+		let useFilter = ClientClass.get().config.preferences.fullscreen_filter;
+		if (useFilter === false) {
 			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-off)');
 		} else {
 			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-on)');
 		}
 	}
 
-	createWindow(app) {
+	createWindow(app: App) {
 		let win = new Window(app);
 		this.windows.push(win);
 		app.windows.push(win);
@@ -139,7 +123,7 @@ export class Desktop {
 		return win;
 	}
 
-	destroyWindow(win) {
+	destroyWindow(win: Window) {
 		// Remove window from windows list
 		if (Util.arrErase(this.windows, win) < 0) return;
 
@@ -151,7 +135,7 @@ export class Desktop {
 			Client.desktop.destroyWindow(c);
 		}
 
-		// Relase window resources
+		// Release window resources
 		win._dispose();
 		
 		// Remove window from list
@@ -165,7 +149,7 @@ export class Desktop {
 		this.events.dispatch('window-destroyed');
 	}
 
-	bringWindowToFront(win) {
+	bringWindowToFront(win: Window) {
 		this.windows.push(this.windows.splice(this.windows.indexOf(win), 1)[0]);
 		this._restack();
 	}
@@ -193,7 +177,7 @@ export class Desktop {
 	}
 
 	// Repositions the window so that it doesn't stay directly on top of any other window
-	realignWindow(win) {
+	realignWindow(win: Window) {
 		if (win.maximized) return;
 
 		let x = win.posX;
@@ -212,9 +196,9 @@ export class Desktop {
 		win.setPosition(x, y);
 	}
 
-	setBackground(url) {
+	setBackground(url: string) {
 		this.$desktop.css('background-image', 'url("' + url + '")');
-		this.configs.background = url;
+		Client.config.preferences.background = url;
 	}
 
 	openCtxMenuAt(menu, x, y) {
@@ -409,7 +393,7 @@ export class Desktop {
 			if (dragDir[0] < 0) { wx += dx; }
 			if (dragDir[1] < 0) { wy += dy; }
 
-			if (this.configs.show_dragged_window_contents) {
+			if (Client.config.preferences.show_dragged_window_contents) {
 				resWin.setBounds(wx, wy, ww, wh);
 			} else {
 				this.setDragRectangle(wx, wy, ww, wh);

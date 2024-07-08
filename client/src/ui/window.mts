@@ -237,7 +237,7 @@ export default class Window {
 				return;
 			}
 
-			if (Client.desktop.configs.show_dragged_window_contents) {
+			if (Client.config.preferences.show_dragged_window_contents) {
 				this.setPosition(startX + dx, startY + dy);
 			} else {
 				Client.desktop.setDragRectangle(startX + dx, startY + dy, this.width, this.height);
