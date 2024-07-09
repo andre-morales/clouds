@@ -1,3 +1,9 @@
+:root {
+	--fullscreen-filter-on: blur(2px);
+	--fullscreen-filter-off: none;
+	--fullscreen-filter: var(--fullscreen-filter-on);
+}
+
 html {
 	width: 100%;
 	height: 100%;
@@ -19,9 +25,6 @@ body {
 #desktop {
 	--dark-window-bg: hsla(220, 5%, 10%, 0.8);
 	--taskbar-height: 32px;
-	--fullscreen-filter-on: blur(2px);
-	--fullscreen-filter-off: none;
-	--fullscreen-filter: var(--fullscreen-filter-on);
 
 	--base-color: hsl(220, 100%, 60%);
 	--base-color-dark: hsl(220, 70%, 45%);

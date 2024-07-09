@@ -38,7 +38,7 @@
 
 .field {
 	width: 10em;
-	min-width: 0;
+	min-width: 5em;
 	margin: .15em;
 	padding: .1em .2em;
 	border: none;

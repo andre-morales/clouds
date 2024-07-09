@@ -72,14 +72,14 @@ export class Desktop {
 		});
 
 		$(document).on('mousedown', (ev) => {
-			let $cmenu = this.$contextMenu;
+			let $cMenu = this.$contextMenu;
 			let el = ev.target as HTMLElement;
 
 			// If the context menu *is not* and *does not contain*
 			// the clicked element.
-			if ($cmenu[0] != el && $cmenu.has(el).length === 0) {
+			if ($cMenu[0] != el && $cMenu.has(el).length === 0) {
 				this.contextMenuOpen = false;
-				$cmenu.removeClass('visible');
+				$cMenu.removeClass('visible');
 			}
 		});
 
@@ -93,24 +93,30 @@ export class Desktop {
 			}
 		});	
 		
+		this.#initPrefBindings();
+
 		// Ready fullscreen system
 		Fullscreen.init();
 		this._queryBounds();	
 	}
 
 	/**
-	 * Reload preferences.
+	 * Watch changes to important preferences keys.
 	 */
-	async reload() {
-		let bg = ClientClass.get().config.preferences.background;
-		if (bg) this.setBackground(bg);
+	#initPrefBindings() {
+		let pref = ClientClass.get().config.preferencesMgr;
 
-		let useFilter = ClientClass.get().config.preferences.fullscreen_filter;
-		if (useFilter === false) {
-			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-off)');
-		} else {
-			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-on)');
-		}
+		pref.observeProperty("background", () => {
+			this.#reloadBackground();
+		});
+
+		pref.observeProperty("fullscreen_filter", (value) => {
+			if (value === false) {
+				document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-off)');
+			} else {
+				document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-on)');
+			}
+		});
 	}
 
 	createWindow(app: App) {
@@ -197,7 +203,6 @@ export class Desktop {
 	}
 
 	setBackground(url: string) {
-		this.$desktop.css('background-image', 'url("' + url + '")');
 		Client.config.preferences.background = url;
 	}
 
@@ -210,13 +215,13 @@ export class Desktop {
 		menu.buildIn($menu, this.$contextMenu, this.screenWidth, this.screenHeight);
 
 		$menu.addClass('visible');
-		let mwidth = $menu[0].offsetWidth;
-		let mheight = $menu[0].offsetHeight;
+		let mWidth = $menu[0].offsetWidth;
+		let mHeight = $menu[0].offsetHeight;
 
-		if (x + mwidth > this.screenWidth) x -= mwidth;
+		if (x + mWidth > this.screenWidth) x -= mWidth;
 		if (x < 0) x = 0;
 
-		if (y + mheight > this.screenHeight) y -= mheight;
+		if (y + mHeight > this.screenHeight) y -= mHeight;
 		if (y < 0) y = 0;
 
 		$menu.css('left', x);
@@ -450,7 +455,6 @@ export class Desktop {
 
 		const im = 4;  // Inside margin
 		const om = 8;  // Outside margin
-		const abs = Math.abs;
 
 		let dx = mx - w.posX,  dy = my - w.posY;
 		let dw = dx - w.width, dh = dy - w.height;
@@ -470,6 +474,11 @@ export class Desktop {
 		if (h == 0 && v == 0) return null;
 		return [h, v]
 	};
+
+	#reloadBackground() {
+		let url = ClientClass.get().config.preferences.background;
+		this.$desktop.css('background-image', 'url("' + url + '")');
+	}
 }
 
 export default Desktop;

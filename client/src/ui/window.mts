@@ -244,7 +244,7 @@ export default class Window {
 			}
 		};
 
-		let dragEnd = (mx, my) => {
+		let dragEnd = (mx: number, my: number) => {
 			if (!dragging) return;
 
 			dragging = false;

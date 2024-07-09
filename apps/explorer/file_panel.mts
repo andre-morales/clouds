@@ -106,55 +106,56 @@ export class FilePanel {
 		this.recalculateIcons();
 	}
 
-	makeFileIcon(fentry) {
-		let [fpath, ftags="", fcreation=0] = fentry;
+	makeFileIcon(fEntry) {
+		let [fPath, fTags="", fCreation=0] = fEntry;
 
 		// Get file name between slashes in the entry
-		let fname = fpath;
-		let ls = fpath.lastIndexOf('/', fpath.length-2);
-		if (ls != -1) fname = fpath.substring(ls + 1);
-		if (fname.endsWith('/')) fname = fname.slice(0, -1);
+		let fName = fPath;
+		let ls = fPath.lastIndexOf('/', fPath.length-2);
+		if (ls != -1) fName = fPath.substring(ls + 1);
+		if (fName.endsWith('/')) fName = fName.slice(0, -1);
 
 		// Absolute path of the entry
 		let absPath;
 		if (!this.app.cwd.startsWith('$')) {
-			absPath = Paths.join(this.app.cwd, fpath);
+			absPath = Paths.join(this.app.cwd, fPath);
 		} else {
-			absPath = fpath;
+			absPath = fPath;
 		}
 
 		// Obtain file classes
 		let classes = ['file'];
-		if (fpath.endsWith('/')) {
+		if (fPath.endsWith('/')) {
 			classes.push('dir');
 		}
-		if (ftags.includes('i')) {
+		if (fTags.includes('i')) {
 			classes.push('blocked');
 		}
-		if (ftags.includes('s')) {
+		if (fTags.includes('s')) {
 			classes.push('symbolic');
 		}
 
 		// Get file type given file extension
-		let cl = getFileClassByExt(fpath);
+		let cl = getFileClassByExt(fPath);
 		if (cl) classes.push(cl);
 
 		// Create thumbnail image if needed
 		let $img = null;
-		let hasThumb = FileTypes.isVideo(fname) || FileTypes.isPicture(fname);
+		let hasThumb = FileTypes.isVideo(fName) || FileTypes.isPicture(fName);
 		if (hasThumb) {
 			$img = $(`<img src='/fsv${absPath}?thumb' draggable='false'>`);
 			classes.push('thumbbed');
 		}
 
 		// Create file element itself
-		let iconText = fname;
-		if (fname.length > 20) {
-			iconText = fname.substring(0, 20) + "…";
+		let iconText = fName;
+		if (fName.length > 20) {
+			iconText = fName.substring(0, 20) + "…";
 		}
 		
 		let $file = $(`<div><span>${iconText}</span></div>`, {
-			'class': classes.join(' ')
+			title: fName,
+			class: classes.join(' ')
 		});
 
 		// Add thumbnail element
@@ -248,7 +249,6 @@ export class FilePanel {
 		if (FileTypes.isPicture(absPath)) {
 			menu.push(['-Set as background', () => {
 				Client.desktop.setBackground(fsPath);
-				Client.config.preferences.save().upload();
 			}]);
 		}
 
