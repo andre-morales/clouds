@@ -77,8 +77,8 @@ export default class ConfigsApp extends App {
 		let $usePWAFeatures = $win.find('.use-pwa-features');
 		this.bindCheckboxToProp($usePWAFeatures, 'use_pwa_features');
 
-		let $pdfViewer = $win.find('.use-pdf-viewer');
-		this.bindCheckboxToProp($pdfViewer, 'use_pdf_viewer');
+		let $pdfViewer = $win.find('.pdf-viewer');
+		this.bindFieldToProp($pdfViewer, 'pdf_viewer');
 
 		$win.find('.logout').click(() => {
 			Client.logout();

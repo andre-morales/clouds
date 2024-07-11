@@ -70,10 +70,28 @@ export default class WebViewApp extends App {
 
 		this.window.setTitle(Paths.file(path));
 
-		if (path.endsWith('.pdf') && Client.config.preferences.use_pdf_viewer) {
-			this.$iframe[0].src = `/res/lib/pdfjs.proto/2.16.105-legacy/web/viewer.html?file=${encodeURIComponent(path)}`;
-		} else {
-			this.$iframe[0].src = path;	
+		if (path.endsWith('.pdf')) {
+			let url = this.getPDFViewerURL(path);
+			if (url != null) {
+				this.$iframe[0].src = url;
+				return;
+			}
 		}
+
+		// Use native viewer for resource
+		this.$iframe[0].src = path;	
+	}
+
+	getPDFViewerURL(path: string) {
+		let viewer: string = Client.config.preferences.pdf_viewer;
+		if (!viewer) return null;
+
+		if (viewer.startsWith('pdfjs-')) {
+			let [_, version, variant] = viewer.split('-');
+
+			return `/res/lib/pdfjs/${version}-${variant}/web/viewer.html?file=${encodeURIComponent(path)}`;
+		}
+
+		return null;
 	}
 }

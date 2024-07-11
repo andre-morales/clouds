@@ -20,7 +20,7 @@
 
 .app-configs .input .field {
 	flex: 1;
-	margin-left: 1rem;
+	margin-left: .5rem;
 	align-self: stretch;
 }
 

@@ -6,6 +6,7 @@
 		"moduleResolution": "Bundler",
 		"noEmit": true,
 		"incremental": true,
+		"sourceMap": true,
 		"paths": {
 			"/@sys/*": ["./../client/src/*"]
 		}

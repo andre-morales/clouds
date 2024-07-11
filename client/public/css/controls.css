@@ -167,3 +167,21 @@ ui-tabs .ui-tab {
 ui-tabs .ui-tab.visible {
 	display: block;
 }
+
+select {
+	height: 2rem;
+	padding: 0 4px;
+	border: solid 1px var(--base-color);
+	color: white;
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+select:focus {
+	border: solid 1px var(--accent-color-dark);
+	outline: none;
+}
+
+select option {
+	background: rgba(0, 0, 0, 0.8);
+}
+

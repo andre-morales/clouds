@@ -8,11 +8,14 @@
 # Modules should be obtained from npm
 node_modules
 
-# Runtime API JS should be compiled from TS
-api/runtime
+# PDFjs should be obtained externally
+client/public/lib/pdfjs/
 
 # SSL configuration should be kept private
 config/ssl
+
+# Runtime API JS should be compiled from TS
+api/runtime
 
 # Ignore generated client bundled content
 client/public/pack
@@ -22,9 +25,6 @@ client/types
 *.bundle.mjs
 *.map
 *.tsbuildinfo
-
-# Ignore apps generated executables, only keep their typescript source code
-apps/**/*.src.mjs
 
 # Original sample image shouldn't be tracked
 docs/sample.png
