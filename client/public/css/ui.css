@@ -233,7 +233,7 @@
 	padding: .35em .5em;
 	font-family: var(--base-font);
 	font-size: 13pt;
-	color: white;
+	color: var(--base-text-color);
 }
 
 .window-body .menu-bar {
@@ -249,7 +249,7 @@
 	font-family: var(--base-font);
 	font-size: 11pt;
 	background: none;
-	color: white;
+	color: var(--base-text-color);
 }
 
 .menu-button:hover {

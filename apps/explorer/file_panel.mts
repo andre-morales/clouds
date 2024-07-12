@@ -1,9 +1,6 @@
-import { ContextEntry, CtxMenuClass } from '/@sys/ui/context_menu.mjs';
-import { FileSystem, Paths, FileTypes } from '/@sys/bridges/filesystem.mjs';
-import Util from '/@sys/util.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import { FileIcon } from './file_icon.mjs';
-import ExplorerApp from './main.mjs';
+import ExplorerApp, { FileEntry } from './main.mjs';
 
 var Client: ClientClass;
 
@@ -66,7 +63,7 @@ export class FilePanel {
 		});
 	}
 
-	setContent(files) {
+	setContent(files: FileEntry[]) {
 		this.fileEntries = files;
 		this.fileIcons = {};
 		this.$files.addClass('d-none');
@@ -113,7 +110,7 @@ export class FilePanel {
 		this.recalculateIcons();
 	}
 
-	makeFileIcon(fEntry) {
+	makeFileIcon(fEntry: FileEntry) {
 		let fileIcon = new FileIcon(this.app, fEntry);
 
 		// Clicking behavior

@@ -7,13 +7,14 @@ import Util from '/@sys/util.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
-
 import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
 import ExplorerDefaultHandler from './open_handler.mjs';
 import ExplorerProperties from './properties.mjs';
 
 var Client: ClientClass;
+
+export type FileEntry = any[];
 
 export default class ExplorerApp extends App {
 	window: Window;
@@ -201,7 +202,7 @@ export default class ExplorerApp extends App {
 		await this.go(this.getNavPath(path));
 	}
 
-	async go(path) {
+	async go(path: string) {
 		// If cancel fetches is enabled, remove src attribute of every image
 		// but save the sources in another attribute in case the navigation fails.
 		if (this.cancelFetches) {
@@ -258,7 +259,7 @@ export default class ExplorerApp extends App {
 			this.window.setTitle(fname);
 		}
 
-		let files = await fres.json();
+		let files: FileEntry[] = await fres.json();
 		this.panel.setContent(files);
 	}
 

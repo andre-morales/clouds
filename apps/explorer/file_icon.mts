@@ -1,5 +1,5 @@
 import { FileTypes, Paths } from "/@sys/bridges/filesystem.mjs";
-import ExplorerApp from "./main.mjs";
+import ExplorerApp, { FileEntry } from "./main.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import { ContextEntry, CtxMenuClass } from "/@sys/ui/context_menu.mjs";
 import { FileSystem } from "/@sys/bridges/filesystem.mjs";
@@ -12,7 +12,7 @@ export class FileIcon {
 	absolutePath: string;
 	#app: ExplorerApp;
 
-	constructor(app: ExplorerApp, fEntry) {
+	constructor(app: ExplorerApp, fEntry: FileEntry) {
 		this.#app = app;
 
 		let [fPath, fTags="", fCreation=0] = fEntry;
