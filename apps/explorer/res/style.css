@@ -12,29 +12,13 @@
 	background-size: 21px;
 }
 
-.app-explorer .back-btn {
-	background-image: url('/res/img/icons/arrow.png');
-	transform: rotate(-90deg);
-}
-
-.app-explorer .up-btn {
-	background-image: url('/res/img/icons/arrow.png');
-}
-
-.app-explorer .refresh-btn {
-	background-image: url('/res/img/icons/refresh.png');
-}
-
-.app-explorer .context-btn {
-	background-image: url('/app/explorer/icons/menu.png');
-}
-
 .app-explorer .navigation {
 	display: flex;
 	padding: 4px;
 	font-size: 12pt;
 	justify-content: stretch;
 	justify-items: stretch;
+	position: relative;
 }
 
 .app-explorer .address-field {
@@ -43,7 +27,24 @@
 }
 
 .app-explorer .search-field {
-	margin: 0;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: auto;
+	min-width: 0;
+	height: auto;
+	background-color: #333;
+}
+
+.app-explorer .search-field:not(:focus) {
+	width: 0;
+	padding: 0;
+}
+
+.app-explorer .search-field::placeholder {
+	color: gray;
 }
 
 .app-explorer .body {
@@ -77,23 +78,20 @@
 	width: 10%;
 	min-width: 7em;
 	flex-shrink: 0;
-	background: rgba(0, 0, 0, 0.1);
+	border-right: solid 1px #555;
+}
+
+.app-explorer aside hr {
+	margin: 4px;
+	border: none;
+	border-bottom: solid 1px #555;
 }
 
 .app-explorer aside.hidden {
 	display: none;
 }
 
-.app-explorer .favorites-btn {
-	margin: 0px 2px 0 0;
-	border: none;
-	border-left: white;
-	font-size: 11pt;
-	background: rgba(128, 128, 128, 0.1);
-	flex-shrink: 0;
-}
-
-.app-explorer .favorites li {
+.app-explorer .link {
 	margin: 4px;
 	padding-left: 1.75rem;
 	overflow-x: hidden;
@@ -102,23 +100,19 @@
 	background-image: url('/res/img/ftypes/folder128.png');
 	background-size: contain;
 	background-repeat: no-repeat;
+}
+
+.app-explorer .favorites .link {
 	filter: hue-rotate(150deg);
 }
 
-.app-explorer .collections li {
-	margin: 4px;
-	padding-left: 1.75rem;
-	font-size: 12pt;
-	background-image: url('/res/img/ftypes/folder128.png');
-	background-size: contain;
-	background-repeat: no-repeat;
-	filter: hue-rotate(60deg);
-}
-
 .app-explorer .files-area {
+	--file-panel-font: 'Tahoma';
+
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
+	background: rgba(255, 255, 255, 0.025);	
 } 
 
 .app-explorer .selection-options {
@@ -127,6 +121,7 @@
 	height: 32px;
 	flex-shrink: 0;
 	background-color: #FFF1;
+	font-size: 0;
 }
 
 .app-explorer .selection-options .button {
@@ -134,12 +129,18 @@
 	width: 32px;
 	height: 32px;
 	min-width: 32px;
+	border-left: solid 1px dimgray;
 	background-size: 21px;
 }
 
-.app-explorer .files-container {
-	--file-panel-font: 'Tahoma';
+.app-explorer .selection-status {
+	float: left;
+	font: 11pt var(--file-panel-font);
+	padding-left: 1em;
+	line-height: 32px;
+}
 
+.app-explorer .files-container {
 	flex-grow: 1;
 	overflow: auto;
 	touch-action: pan-y;
@@ -340,4 +341,32 @@
 
 .selection-options.visible {
 	display: block;
+}
+.app-explorer .back-btn {
+	background-image: url('/res/img/icons/arrow.png');
+	transform: rotate(-90deg);
+}
+
+.app-explorer .menu-btn {
+	background-image: url('/app/explorer/icons/menu.png');
+}
+
+.app-explorer .up-btn {
+	background-image: url('/res/img/icons/arrow.png');
+}
+
+.app-explorer .refresh-btn {
+	background-image: url('/res/img/icons/refresh.png');
+}
+
+.app-explorer .search-btn {
+	background-image: url('/app/explorer/icons/search.png');
+}
+
+.app-explorer .context-btn {
+	background-image: url('/app/explorer/icons/selection-options.png');
+}
+
+.app-explorer .clear-selection-btn {
+	background-image: url('/app/explorer/icons/clear_selection.png');
 }

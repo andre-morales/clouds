@@ -1,28 +1,30 @@
-<!--<div class='menu-bar'>
-	<button class="button menu-button view-button">View</button>
-</div>-->
 <div class='head'>
 	<div class='navigation'>
+		<button class='button menu-btn'></button>
 		<button class='button back-btn'></button>
 		<button class='button up-btn'></button>
 		<button class='button refresh-btn'></button>
 		<input class='field address-field' value='/'>
 		<input class='field search-field' placeholder="Search...">
+		<button class='button search-btn'></button>
 	</div>
 </div>
 <div class='body'>
 	<aside>
+		<ul class='roots'>
+			<li class='link home-link'>Home</li>
+		</ul>
+		<hr/>
 		<ul class='favorites'></ul>
-		<hr>
-		<ul class='collections'></ul>
 	</aside>
-	<button class='button favorites-btn'>&lt;</button>
 	<div class='files-area'>
-		<div class='selection-options'>
-			<button class='button context-btn'></button>
-		</div>
 		<div class='files-container'>
 			<div class='files'></div>
+		</div>
+		<div class='selection-options'>
+			<span class='selection-status'></span>
+			<button class='button clear-selection-btn'></button>
+			<button class='button context-btn'></button>
 		</div>
 	</div>
 </div>

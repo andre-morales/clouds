@@ -1,6 +1,6 @@
 import { ClientClass } from '/@sys/client_core.mjs';
 import { FileIcon } from './file_icon.mjs';
-import ExplorerApp, { FileEntry } from './main.mjs';
+import ExplorerApp, { FileEntry } from './explorer.mjs';
 import Util from '/@sys/util.mjs';
 
 interface FileIconMap {
@@ -54,6 +54,7 @@ export class FilePanel {
 	$files: $Element;
 	$filesContainer: $Element;
 	$selectionOptions: $Element;
+	$selectionStatus: $Element;
 
 	constructor(explorer: ExplorerApp) {
 		this.app = explorer;
@@ -87,6 +88,7 @@ export class FilePanel {
 		this.$filesContainer = this.app.$app.find('.files-container');
 		this.$files = this.app.$app.find('.files');
 		this.$selectionOptions = this.app.$app.find('.selection-options');
+		this.$selectionStatus = this.$selectionOptions.find('.selection-status');
 
 		// Configure touch gestures
 		let hammer = new Hammer.Manager(this.app.$app[0], {
@@ -113,6 +115,10 @@ export class FilePanel {
 			this.setZoom(this.zoom - scale);
 
 			ev.preventDefault();
+		});
+
+		this.$selectionOptions.find('.clear-selection-btn').click(() => {
+			this.clearSelection();
 		});
 
 		this.$selectionOptions.find('.context-btn').click((ev: MouseEvent) => {
@@ -186,10 +192,6 @@ export class FilePanel {
 		return fileIcon;
 	}
 
-	enableSelection() {
-		this.performSelection(Object.values(this.fileIcons)[0], true);
-	}
-
 	executeBehavior(behavior: PointerBehavior, fileIcon: FileIcon, ev?: MouseEvent) {
 		let noSelectedItem = this.selectedIcons.length == 0;
 		let onlySelectedItem = Util.arrEquals(this.selectedIcons, [fileIcon]);
@@ -248,6 +250,7 @@ export class FilePanel {
 		this.selectedIcons.push(icon);
 		this.selectedFiles.push(icon.absolutePath);
 		icon.$icon.addClass('selected');
+		this.#updateSelectionStatus();
 	}
 
 	unselectIcon(icon: FileIcon) {
@@ -257,6 +260,7 @@ export class FilePanel {
 			this.selectedIcons.splice(i, 1);
 			icon.$icon.removeClass('selected');
 		}
+		this.#updateSelectionStatus();
 	}
 
 	clearSelection() {
@@ -266,6 +270,14 @@ export class FilePanel {
 		}		
 		this.selectedFiles = [];
 		this.selectedIcons = [];
+	}
+
+	#updateSelectionStatus() {
+		let text = "";
+		if (this.selectedIcons.length > 0) {
+			text = `${this.selectedIcons.length} items selected`;
+		}
+		this.$selectionStatus.text(text);
 	}
 
 	recalculateIcons() {

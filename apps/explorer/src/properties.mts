@@ -1,7 +1,7 @@
 import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Window from '/@sys/ui/window.mjs';
-import ExplorerApp from './main.mjs';
+import ExplorerApp from '../main.mjs';
 
 var Client: ClientClass;
 

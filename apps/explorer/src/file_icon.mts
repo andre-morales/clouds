@@ -1,5 +1,5 @@
 import { FileTypes, Paths } from "/@sys/bridges/filesystem.mjs";
-import ExplorerApp, { FileEntry } from "./main.mjs";
+import ExplorerApp, { type FileEntry } from "./explorer.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import { ContextEntry, CtxMenuClass } from "/@sys/ui/context_menu.mjs";
 import { FileSystem } from "/@sys/bridges/filesystem.mjs";
