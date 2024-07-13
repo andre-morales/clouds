@@ -25,7 +25,7 @@ export default class ConfigsApp extends App {
 			if (this.unsavedChanges) {
 				ev.cancel();
 
-				let [win, choice] = Dialogs.showOptions(this, "Configuration", "Do you want to save your changes?", ['Yes', 'No', 'Cancel']);
+				let [choice] = Dialogs.showOptions(this, "Configuration", "Do you want to save your changes?", ['Yes', 'No', 'Cancel']);
 
 				choice.then(async (v: number) => {
 					switch(v) {

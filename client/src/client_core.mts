@@ -70,7 +70,7 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.214';
+	static readonly CLIENT_VERSION = '1.0.215';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Early Test 2`;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	static readonly API_VERSION: string;
@@ -276,7 +276,7 @@ export class ClientClass {
 
 	showErrorDialog(title, msg, error?: Error) {
 		try {
-			let [win, p] = Dialogs.showError(this.desktop.dwm, title, msg);
+			let [_, win] = Dialogs.showError(this.desktop.dwm, title, msg);
 			win.$window.find('.options button').focus();
 		} catch (err) {
 			console.log("---- Couldn't display the error ----");

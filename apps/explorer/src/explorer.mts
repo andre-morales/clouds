@@ -358,6 +358,17 @@ export default class ExplorerApp extends App {
 		});
 	}
 
+	/**
+	 * Puts in the clipboard an array of paths to copy.
+	 * @param paths An array of absolute paths to copy.
+	 */
+	copyAll(paths: string[]) {
+		LocalClipboard.saveObject('path-array', { 
+			operation: "copy",
+			paths: paths
+		});
+	}
+
 	cut(path: string) {
 		LocalClipboard.saveObject('path', { 
 			operation: "cut",
@@ -365,10 +376,17 @@ export default class ExplorerApp extends App {
 		});
 	}
 
+	cutAll(paths: string[]) {
+		LocalClipboard.saveObject('path-array', { 
+			operation: "cut",
+			paths: paths
+		});
+	}
+
 	// Returns whether there is a copy/cut operation in the clipboard
 	canPaste() {
 		let type = LocalClipboard.getType();
-		if (type != 'path') return false;
+		if (type != 'path' && type != 'path-array') return false;
 
 		let op = LocalClipboard.getObject();
 		return op.operation == 'cut' || op.operation == 'copy';
@@ -377,17 +395,34 @@ export default class ExplorerApp extends App {
 	async paste() {
 		if (!this.canPaste()) return;
 
-		let obj = LocalClipboard.getObject();
-		let from = obj.path;
-		let to = this.cwd + Paths.file(from);
+		let cliType = LocalClipboard.getType();
+		let cliObj = LocalClipboard.getObject();
+		let operation = cliObj.operation;
 
-		let op = obj.operation;
-		if (op == 'cut') {
+		if (cliType == 'path') {
+			let from = cliObj.path;
+			let to = this.cwd + Paths.file(from);
+
+			if (operation == 'cut') {
+				await FileSystem.rename(from, to);
+			} else if (operation == 'copy') {
+				await FileSystem.copy(from, to);
+			}
+		} else if (cliType == 'path-array') {
+			for (let path of cliObj.paths) {
+				let from = path;
+				let to = this.cwd + Paths.file(from);
+
+				if (operation == 'cut') {
+					await FileSystem.rename(from, to);
+				} else if (operation == 'copy') {
+					await FileSystem.copy(from, to);
+				}
+			}
+		}
+
+		if (operation == 'cut') {
 			LocalClipboard.clear();
-
-			await FileSystem.rename(from, to);
-		} else if (op == 'copy') {
-			await FileSystem.copy(from, to);
 		}
 
 		this.refresh();
@@ -411,23 +446,78 @@ export default class ExplorerApp extends App {
 		icon.enableRename();
 	}
 
-	async erase(path) {
-		let file = Paths.file(path);
-		let msg;
-		if (path.endsWith('/')) {
-			msg = `This will permanently delete the folder:\n"${file}"\n and everything inside of it.\n\nAre you sure?`;
-		} else {
-			msg = `This will permanently delete:\n"${file}".\n\nAre you sure?`;
-		}
+	async erase(path: string | string[]) {
+		// If trying to delete more files than this, don't show their names.
+		const LIST_FILES_LIMIT = 32;
 
-		let [win, prom] = Dialogs.showOptions(this, "Erase", msg, ['Yes', 'No'], {
-			icon: 'warning'
-		});
+		if (Array.isArray(path)) {
+			const paths = path;
+			const count = paths.length;
 
-		let opt = await prom;
-		if (opt === 0) {
-			await FileSystem.erase(path);
+			// Make sure all files come from the same directory, otherwise, don't allow operation.
+			let parent = Paths.parent(paths[0]);
+			for (let p of paths) {
+				if (parent != Paths.parent(p)) throw new Error("Bad file operation! Erase shouldn't erase files from different directories!");
+			}
+
+			// Determine the message that will show up in the confirmation box
+			let msg: string;
+			if (count <= LIST_FILES_LIMIT) {
+				// Sort the file names making sure directories always appear on top
+				let fileNames = paths.map(p => Paths.file(p));
+				fileNames.sort((a, b) => {
+					let aDir = a.endsWith('/');
+					let bDir = b.endsWith('/');
+					if (aDir != bDir) return aDir ? -1 : 1;
+					return a.localeCompare(b);
+				});
+
+				// Append the file names to the message, directories appear in bold and italics.
+				msg = `This will permanently delete these ${count} items:\n`;
+				for (let name of fileNames) {
+					if (name.endsWith('/')) {
+						msg += `<b><i>\n${name}</i></b>`;
+					} else {
+						msg += `\n${name}`;
+					}
+				}
+				msg += '\n\nAre you sure?';
+			} else {
+				msg = `This will permanently delete ${count} items.\n\nAre you sure?`;
+			}
+
+			let [prom] = Dialogs.showOptions(this, "Erasing many items", msg, ['Delete all', 'Cancel'], {
+				icon: 'warning'
+			});
+
+			// Await for the user to confirm the operation.
+			let opt = await prom;
+			if (opt !== 0) return;
+
+			for (let p of paths) {
+				await FileSystem.erase(p);
+			}
 			this.refresh();
+		} else {
+			let file = Paths.file(path);
+
+			let msg: string;
+			if (path.endsWith('/')) {
+				msg = `This will permanently delete the folder:\n"${file}"\n and everything inside of it.\n\nAre you sure?`;
+			} else {
+				msg = `This will permanently delete:\n"${file}".\n\nAre you sure?`;
+			}
+
+			let [prom] = Dialogs.showOptions(this, "Erase", msg, ['Yes', 'No'], {
+				icon: 'warning'
+			});
+
+			// Await for the user to confirm the operation.
+			let opt = await prom;
+			if (opt === 0) {
+				await FileSystem.erase(path);
+				this.refresh();
+			}
 		}
 	}
 

@@ -2,6 +2,7 @@ import { ClientClass } from '/@sys/client_core.mjs';
 import { FileIcon } from './file_icon.mjs';
 import ExplorerApp, { FileEntry } from './explorer.mjs';
 import Util from '/@sys/util.mjs';
+import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
 
 interface FileIconMap {
 	[path: string]: FileIcon;
@@ -49,7 +50,7 @@ export class FilePanel {
 	fileIcons: FileIconMap;
 	sorting: string;
 	selectionMode: string;
-	selectedFiles: any[];
+	selectedFiles: string[];
 	selectedIcons: FileIcon[];
 	$files: $Element;
 	$filesContainer: $Element;
@@ -122,7 +123,16 @@ export class FilePanel {
 		});
 
 		this.$selectionOptions.find('.context-btn').click((ev: MouseEvent) => {
-			this.selectedIcons[0].openContextMenuAt(ev.clientX, ev.clientY);
+			// Returns an array of the absolute paths of all the files selected
+			let getSelectedPaths = () => this.selectedIcons.map(icon => icon.absolutePath);
+
+			let menu = CtxMenuClass.fromEntries([
+				['-Copy',  () => this.app.copyAll(getSelectedPaths())],
+				['-Cut',   () => this.app.cutAll(getSelectedPaths())],
+				['-Erase', () => this.app.erase(getSelectedPaths())],
+			]);
+			
+			ClientClass.get().desktop.openCtxMenuAt(menu, ev.clientX, ev.clientY);
 		});
 	}
 

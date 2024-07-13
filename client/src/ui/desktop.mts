@@ -206,7 +206,7 @@ export class Desktop {
 		Client.config.preferences.background = url;
 	}
 
-	openCtxMenuAt(menu, x, y) {
+	openCtxMenuAt(menu: CtxMenuClass, x: number, y: number) {
 		this.contextMenuOpen = true;
 		let $menu = this.$contextMenu;
 		$menu.removeClass('.visible');
@@ -228,7 +228,7 @@ export class Desktop {
 		$menu.css('top', y);
 	}
 
-	addCtxMenuOn(element, menuFn) {
+	addCtxMenuOn(element: HTMLElement | $Element, menuFn: (ev: MouseEvent) => CtxMenuClass) {
 		$(element).on('contextmenu', (ev: MouseEvent) => {
 			let mx = ev.clientX, my = ev.clientY;
 	

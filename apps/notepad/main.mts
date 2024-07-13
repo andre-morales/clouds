@@ -29,7 +29,7 @@ export default class NotepadApp extends App {
 				return;
 			}
 
-			let [win, promise] = Dialogs.showOptions(this, 'Notepad', 'Do you want to save before closing?', [
+			let [promise] = Dialogs.showOptions(this, 'Notepad', 'Do you want to save before closing?', [
 				"Save", "Don't save", "Cancel"]);
 			
 			promise.then(async (r) => {
@@ -122,7 +122,7 @@ export default class NotepadApp extends App {
 
 	async open() {
 		if (this.unsavedChanges) {
-			let [win, promise] = Dialogs.showOptions(this, 'Notepad', 'Do you want to save your changes', [
+			let [promise] = Dialogs.showOptions(this, 'Notepad', 'Do you want to save your changes', [
 				"Save", "Don't save", "Cancel"]);
 
 			let btn = await promise;
