@@ -1,27 +1,61 @@
 import { ClientClass } from '/@sys/client_core.mjs';
 import { FileIcon } from './file_icon.mjs';
 import ExplorerApp, { FileEntry } from './main.mjs';
-
-var Client: ClientClass;
+import Util from '/@sys/util.mjs';
 
 interface FileIconMap {
 	[path: string]: FileIcon;
 }
 
+enum PointerAction {
+	CLICK,
+	DBL_CLICK,
+	R_CLICK
+}
+
+enum PointerBehavior {
+	NOTHING,
+	/** Open the clicked file regardless of selection status. */
+	OPEN,
+
+	/**
+	 * Open the file if no other files are selected. Replace the selection with this file.
+	 * Additionally, add this file to the selection if CTRL is pressed.
+	 */
+	OPEN_OR_SELECT_ONE,
+
+	/**
+	 * Open the file if no other files are selected. If there is an active selection, a single 
+	 * click will add a file to the selection.
+	 */
+	OPEN_OR_SELECT_MANY,
+
+	/** Replace the current selection with this file, or add it to the selection if the user is
+	 * holding CTRL. */
+	SELECT_ONE,
+
+	/** Add this file to the selection. */
+	SELECT_MANY,
+
+	/** Open the context menu for this file. */
+	CTX_MENU
+}
+
 export class FilePanel {
 	app: ExplorerApp;
 	zoom: number;
+	pointerBehaviors: Map<PointerAction, PointerBehavior>;
 	fileEntries: any;
 	fileIcons: FileIconMap;
 	sorting: string;
 	selectionMode: string;
 	selectedFiles: any[];
-	selectedElems: any[];
+	selectedIcons: FileIcon[];
 	$files: $Element;
 	$filesContainer: $Element;
+	$selectionOptions: $Element;
 
 	constructor(explorer: ExplorerApp) {
-		Client = ClientClass.get();
 		this.app = explorer;
 		this.zoom = 1;
 		this.fileEntries = null;
@@ -30,12 +64,29 @@ export class FilePanel {
 		this.sorting = '';
 		this.selectionMode = 'default';
 		this.selectedFiles = [];
-		this.selectedElems = [];
+		this.selectedIcons = [];
+		this.pointerBehaviors = new Map<PointerAction, PointerBehavior>();
+		
+		// PC
+		/*this.pointerBehaviors.set(PointerAction.CLICK, PointerBehavior.SELECT_ONE_OR_MANY);
+		this.pointerBehaviors.set(PointerAction.R_CLICK, PointerBehavior.CTX_MENU);
+		this.pointerBehaviors.set(PointerAction.DBL_CLICK, PointerBehavior.OPEN);*/
+
+		// Phone
+		/*this.pointerBehaviors.set(PointerAction.CLICK, PointerBehavior.OPEN_OR_SELECT);
+		this.pointerBehaviors.set(PointerAction.R_CLICK, PointerBehavior.SELECT_MANY);
+		this.pointerBehaviors.set(PointerAction.DBL_CLICK, PointerBehavior.NOTHING);*/
+
+		// Hybrid
+		this.pointerBehaviors.set(PointerAction.CLICK, PointerBehavior.OPEN_OR_SELECT_MANY);
+		this.pointerBehaviors.set(PointerAction.R_CLICK, PointerBehavior.CTX_MENU);
+		this.pointerBehaviors.set(PointerAction.DBL_CLICK, PointerBehavior.OPEN);
 	}
 
 	init() {
 		this.$filesContainer = this.app.$app.find('.files-container');
 		this.$files = this.app.$app.find('.files');
+		this.$selectionOptions = this.app.$app.find('.selection-options');
 
 		// Configure touch gestures
 		let hammer = new Hammer.Manager(this.app.$app[0], {
@@ -44,6 +95,7 @@ export class FilePanel {
 			]
 		});
 
+		// Zoom on pinch
 		let beginZoom = 1;
 		hammer.on('pinchstart', (ev) => {
 			beginZoom = this.zoom;
@@ -53,6 +105,7 @@ export class FilePanel {
 			this.setZoom(beginZoom * ev.scale);
 		});
 
+		// Zoom on mouse wheel
 		this.$filesContainer.on('wheel', (ev: WheelEvent) => {
 			if (!ev.ctrlKey) return;
 			
@@ -61,6 +114,10 @@ export class FilePanel {
 
 			ev.preventDefault();
 		});
+
+		this.$selectionOptions.find('.context-btn').click((ev: MouseEvent) => {
+			this.selectedIcons[0].openContextMenuAt(ev.clientX, ev.clientY);
+		});
 	}
 
 	setContent(files: FileEntry[]) {
@@ -68,6 +125,7 @@ export class FilePanel {
 		this.fileIcons = {};
 		this.$files.addClass('d-none');
 		this.$files.empty();
+		this.clearSelection();
 
 		let isDir = (en) => {
 			return (en[0].endsWith('/'))? 1 : 0;
@@ -112,50 +170,102 @@ export class FilePanel {
 
 	makeFileIcon(fEntry: FileEntry) {
 		let fileIcon = new FileIcon(this.app, fEntry);
-
-		// Clicking behavior
-		fileIcon.$icon.click(() => {
-			if (Client.desktop.contextMenuOpen) return;
-			if (this.selectionMode == 'default') {
-				this.app.openHandler(fileIcon.absolutePath);
-				return;
-			}
-
-			switch(this.selectionMode) {
-			case 'one':
-				if (fileIcon.$icon.hasClass('selected')) {
-					this.selectedFiles = [];
-					this.selectedElems = [];
-				} else {
-					for (let $el of this.selectedElems) {
-						$el.removeClass('selected');
-					};	
-					this.selectedFiles = [fileIcon.absolutePath];
-					this.selectedElems = [fileIcon.$icon];
-				}
-				break;
-			case 'many':
-				let i = this.selectedFiles.indexOf(fileIcon.absolutePath);
-				if (i == -1) {
-					this.selectedFiles.push(fileIcon.absolutePath);
-					this.selectedElems.push(fileIcon.$icon);
-				} else {
-					this.selectedFiles.splice(i, 1);
-					this.selectedElems.splice(i, 1);
-				}
-				break;
-			}
-			fileIcon.$icon.toggleClass('selected');
+		
+		// Behaviors
+		fileIcon.$icon.click((ev: MouseEvent) => {
+			this.executeBehavior(this.pointerBehaviors.get(PointerAction.CLICK), fileIcon, ev);
 		});
-
-		fileIcon.$icon.dblclick(() => {
-			if (this.selectionMode != 'default') {
-				this.app.openHandler(fileIcon.absolutePath);
-			}
+		fileIcon.$icon.dblclick((ev: MouseEvent) => {
+			this.executeBehavior(this.pointerBehaviors.get(PointerAction.DBL_CLICK), fileIcon, ev);
 		});
-
-		Client.desktop.addCtxMenuOn(fileIcon.$icon, () => fileIcon.createContextMenu());
+		fileIcon.$icon.on('contextmenu', (ev: MouseEvent) => {
+			this.executeBehavior(this.pointerBehaviors.get(PointerAction.R_CLICK), fileIcon, ev);
+			ev.preventDefault();
+			ev.stopPropagation();
+		});
 		return fileIcon;
+	}
+
+	enableSelection() {
+		this.performSelection(Object.values(this.fileIcons)[0], true);
+	}
+
+	executeBehavior(behavior: PointerBehavior, fileIcon: FileIcon, ev?: MouseEvent) {
+		let noSelectedItem = this.selectedIcons.length == 0;
+		let onlySelectedItem = Util.arrEquals(this.selectedIcons, [fileIcon]);
+
+		switch(behavior) {
+		case PointerBehavior.OPEN:
+			this.app.openHandler(fileIcon.absolutePath);
+			break;
+		case PointerBehavior.OPEN_OR_SELECT_ONE: {
+			if (!ev.ctrlKey && (noSelectedItem || onlySelectedItem)) {
+				this.app.openHandler(fileIcon.absolutePath);
+			} else {
+				this.performSelection(fileIcon, !ev.ctrlKey);
+			}
+			break;
+		}
+		case PointerBehavior.OPEN_OR_SELECT_MANY:
+			if (!ev.ctrlKey && noSelectedItem) {
+				this.app.openHandler(fileIcon.absolutePath);
+			} else {
+				this.performSelection(fileIcon, false);
+			}
+			break;
+		case PointerBehavior.CTX_MENU:
+			let menu = fileIcon.createContextMenu();
+			ClientClass.get().desktop.openCtxMenuAt(menu, ev.clientX, ev.clientY);
+			break;
+		case PointerBehavior.SELECT_ONE:
+			this.performSelection(fileIcon, !ev.ctrlKey);
+			break;
+		case PointerBehavior.SELECT_MANY:
+			this.performSelection(fileIcon, false);
+			break;
+		}
+	}
+
+	performSelection(fileIcon: FileIcon, single: boolean) {
+		// On single selection mode, only keep a single file selected
+		if (single || this.selectionMode == 'one') {
+			this.clearSelection();
+			this.selectIcon(fileIcon);
+		} else {
+			// On multi-selection mode, flip the selection status
+			if (this.selectedIcons.includes(fileIcon)) {
+				this.unselectIcon(fileIcon);
+			} else {
+				this.selectIcon(fileIcon);
+			}			
+		}
+		
+		// The options bar should be visible if at least one item is selected
+		this.$selectionOptions.toggleClass('visible', (this.selectedIcons.length > 0));
+	}
+
+	selectIcon(icon: FileIcon) {
+		this.selectedIcons.push(icon);
+		this.selectedFiles.push(icon.absolutePath);
+		icon.$icon.addClass('selected');
+	}
+
+	unselectIcon(icon: FileIcon) {
+		let i = this.selectedIcons.indexOf(icon);
+		if (i != -1) { 
+			this.selectedFiles.splice(i, 1);
+			this.selectedIcons.splice(i, 1);
+			icon.$icon.removeClass('selected');
+		}
+	}
+
+	clearSelection() {
+		this.$selectionOptions.removeClass('visible');
+		for (let icon of this.selectedIcons) {
+			icon.$icon.removeClass('selected');
+		}		
+		this.selectedFiles = [];
+		this.selectedIcons = [];
 	}
 
 	recalculateIcons() {

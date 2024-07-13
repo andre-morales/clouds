@@ -63,6 +63,7 @@ export class FileIcon {
 		let fsPath = Paths.toFSV(absPath);
 
 		let menu: ContextEntry[] = [
+			['-Select', () => this.select()],
 			['-Open', () => this.#app.openHandler(absPath)],
 		];
 
@@ -103,6 +104,11 @@ export class FileIcon {
 			['-Properties', () => {this.#app.openFileProperties(absPath)}]
 		);
 		return CtxMenuClass.fromEntries(menu);
+	}
+
+	openContextMenuAt(x: number, y: number) {
+		let menu = this.createContextMenu();
+		ClientClass.get().desktop.openCtxMenuAt(menu, x, y);
 	}
 
 	/** Enable renaming the file in the Ui */
@@ -180,6 +186,10 @@ export class FileIcon {
 				input.selectionEnd = input.value.length;
 			}
 		}, 0);
+	}
+
+	select() {
+		this.#app.panel.performSelection(this, false);
 	}
 
 	/** Get file name between slashes in the entry */

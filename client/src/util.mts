@@ -24,6 +24,17 @@ export function arrErase(arr: unknown[], val: unknown): number {
 	return i;
 }
 
+function arrEquals(a, b) {
+	if (a === b) return true;
+	if (a.length !== b.length) return false;
+
+	for (let i = 0; i < a.length; i++) {
+		if (a[i] !== b[i]) return false;
+	}
+
+	return true;
+}
+
 export function endsWithAny(str: string, arr: string[]): boolean {
 	for (let end of arr) {
 		if (str.endsWith(end)) return true;
@@ -135,5 +146,6 @@ export function downloadUrl(path) {
 
 export default {
 	getObjectByName, arrErase, endsWithAny, cloneTemplate, sleep, getURLParams, strReplaceAll,
-	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript, downloadUrl
+	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript, downloadUrl,
+	arrEquals
 };

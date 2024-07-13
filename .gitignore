@@ -9,7 +9,7 @@
 node_modules
 
 # PDFjs should be obtained externally
-client/public/lib/pdfjs/
+client/public/lib/pdfjs
 
 # SSL configuration should be kept private
 config/ssl

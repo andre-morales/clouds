@@ -93,6 +93,8 @@ export default class ExplorerApp extends App {
 		// Context menus
 		let $filesContainer = $app.find('.files-container');
 		Client.desktop.addCtxMenuOn($filesContainer, () => CtxMenuClass.fromEntries([
+			['-Select files', () => this.panel.enableSelection()],
+			['|'],
 			['>Sort by', [
 				['-Name', () => this.panel.sortBy('name')],
 				['-Date', () => this.panel.sortBy('date')]

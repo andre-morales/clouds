@@ -25,6 +25,10 @@
 	background-image: url('/res/img/icons/refresh.png');
 }
 
+.app-explorer .context-btn {
+	background-image: url('/app/explorer/icons/menu.png');
+}
+
 .app-explorer .navigation {
 	display: flex;
 	padding: 4px;
@@ -81,10 +85,12 @@
 }
 
 .app-explorer .favorites-btn {
-	font-size: 11pt;
+	margin: 0px 2px 0 0;
 	border: none;
 	border-left: white;
+	font-size: 11pt;
 	background: rgba(128, 128, 128, 0.1);
+	flex-shrink: 0;
 }
 
 .app-explorer .favorites li {
@@ -107,6 +113,28 @@
 	background-size: contain;
 	background-repeat: no-repeat;
 	filter: hue-rotate(60deg);
+}
+
+.app-explorer .files-area {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+} 
+
+.app-explorer .selection-options {
+	display: none;
+	text-align: right;
+	height: 32px;
+	flex-shrink: 0;
+	background-color: #FFF1;
+}
+
+.app-explorer .selection-options .button {
+	margin: 0;
+	width: 32px;
+	height: 32px;
+	min-width: 32px;
+	background-size: 21px;
 }
 
 .app-explorer .files-container {
@@ -308,4 +336,8 @@
 
 .properties-win {
 	padding: 1rem;
+}
+
+.selection-options.visible {
+	display: block;
 }
