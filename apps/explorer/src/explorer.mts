@@ -11,6 +11,9 @@ import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
 import ExplorerDefaultHandler from './open_handler.mjs';
 import ExplorerProperties from './properties.mjs';
+import { FileOperation, FileOperationKind } from './file_operation.mjs';
+
+const OPERATION_REFRESH_TIMEOUT = 200;
 
 var Client: ClientClass;
 
@@ -31,6 +34,7 @@ export default class ExplorerApp extends App {
 	$filePanel: $Element;
 	$addressField: $Element;
 	$favorites: $Element;
+	$fileOperations: $Element;
 
 	constructor(...args: ConstructorParameters<typeof App>) {	
 		super(...args);
@@ -71,6 +75,7 @@ export default class ExplorerApp extends App {
 		this.$filePanel = $app.find('.files-container');
 		this.$addressField = $app.find('.address-field');
 		this.$favorites = $app.find('.favorites');
+		this.$fileOperations = $app.find('.file-operations-list');
 
 		// Setup file panel
 		this.panel.init();
@@ -220,9 +225,9 @@ export default class ExplorerApp extends App {
 		this.$addressField.val(path);
 
 		// Fetching and fetch error handling
-		let fres = await fetch('/fsv' + path);
-		if (fres.status != 200) {
-			let code = fres.status;
+		let fRes = await fetch('/fsv' + path);
+		if (fRes.status != 200) {
+			let code = fRes.status;
 			let msg = '';
 			switch (code) {
 				case 400:
@@ -262,7 +267,7 @@ export default class ExplorerApp extends App {
 			this.window.setTitle(fname);
 		}
 
-		let files: FileEntry[] = await fres.json();
+		let files: FileEntry[] = await fRes.json();
 		this.panel.setContent(files);
 	}
 
@@ -351,32 +356,18 @@ export default class ExplorerApp extends App {
 		}
 	}
 
-	copy(path: string) {
-		LocalClipboard.saveObject('path', { 
-			operation: "copy",
-			path: path
-		});
-	}
-
 	/**
 	 * Puts in the clipboard an array of paths to copy.
 	 * @param paths An array of absolute paths to copy.
 	 */
-	copyAll(paths: string[]) {
+	copy(paths: string[]) {
 		LocalClipboard.saveObject('path-array', { 
 			operation: "copy",
 			paths: paths
 		});
 	}
 
-	cut(path: string) {
-		LocalClipboard.saveObject('path', { 
-			operation: "cut",
-			path: path
-		});
-	}
-
-	cutAll(paths: string[]) {
+	cut(paths: string[]) {
 		LocalClipboard.saveObject('path-array', { 
 			operation: "cut",
 			paths: paths
@@ -397,35 +388,21 @@ export default class ExplorerApp extends App {
 
 		let cliType = LocalClipboard.getType();
 		let cliObj = LocalClipboard.getObject();
-		let operation = cliObj.operation;
 
-		if (cliType == 'path') {
-			let from = cliObj.path;
-			let to = this.cwd + Paths.file(from);
+		let paths = cliObj.paths;
+		let operationType = cliObj.operation;
 
-			if (operation == 'cut') {
-				await FileSystem.rename(from, to);
-			} else if (operation == 'copy') {
-				await FileSystem.copy(from, to);
-			}
-		} else if (cliType == 'path-array') {
-			for (let path of cliObj.paths) {
-				let from = path;
-				let to = this.cwd + Paths.file(from);
+		if (cliType !== 'path-array') return;
 
-				if (operation == 'cut') {
-					await FileSystem.rename(from, to);
-				} else if (operation == 'copy') {
-					await FileSystem.copy(from, to);
-				}
-			}
-		}
-
-		if (operation == 'cut') {
+		let operation = new FileOperation(paths);
+		if (operationType == 'copy') {
+			operation.copyTo(this.cwd);
+		} else if (operationType == 'cut'){
+			operation.cutTo(this.cwd);
 			LocalClipboard.clear();
 		}
 
-		this.refresh();
+		this.doFileOperation(operation);	
 	}
 
 	async create(type: string) {
@@ -446,79 +423,96 @@ export default class ExplorerApp extends App {
 		icon.enableRename();
 	}
 
-	async erase(path: string | string[]) {
+	async erase(paths: string[]) {
 		// If trying to delete more files than this, don't show their names.
 		const LIST_FILES_LIMIT = 32;
+		const count = paths.length;
 
-		if (Array.isArray(path)) {
-			const paths = path;
-			const count = paths.length;
+		// Make sure all files come from the same directory, otherwise, don't allow operation.
+		let parent = Paths.parent(paths[0]);
+		for (let p of paths) {
+			if (parent != Paths.parent(p)) throw new Error("Bad file operation! Erase shouldn't erase files from different directories!");
+		}
 
-			// Make sure all files come from the same directory, otherwise, don't allow operation.
-			let parent = Paths.parent(paths[0]);
-			for (let p of paths) {
-				if (parent != Paths.parent(p)) throw new Error("Bad file operation! Erase shouldn't erase files from different directories!");
-			}
-
-			// Determine the message that will show up in the confirmation box
-			let msg: string;
-			if (count <= LIST_FILES_LIMIT) {
-				// Sort the file names making sure directories always appear on top
-				let fileNames = paths.map(p => Paths.file(p));
-				fileNames.sort((a, b) => {
-					let aDir = a.endsWith('/');
-					let bDir = b.endsWith('/');
-					if (aDir != bDir) return aDir ? -1 : 1;
-					return a.localeCompare(b);
-				});
-
-				// Append the file names to the message, directories appear in bold and italics.
-				msg = `This will permanently delete these ${count} items:\n`;
-				for (let name of fileNames) {
-					if (name.endsWith('/')) {
-						msg += `<b><i>\n${name}</i></b>`;
-					} else {
-						msg += `\n${name}`;
-					}
-				}
-				msg += '\n\nAre you sure?';
-			} else {
-				msg = `This will permanently delete ${count} items.\n\nAre you sure?`;
-			}
-
-			let [prom] = Dialogs.showOptions(this, "Erasing many items", msg, ['Delete all', 'Cancel'], {
-				icon: 'warning'
-			});
-
-			// Await for the user to confirm the operation.
-			let opt = await prom;
-			if (opt !== 0) return;
-
-			for (let p of paths) {
-				await FileSystem.erase(p);
-			}
-			this.refresh();
-		} else {
-			let file = Paths.file(path);
-
-			let msg: string;
-			if (path.endsWith('/')) {
+		// Determine the message that will show up in the confirmation box
+		let msg: string;
+		if (count == 1) {
+			let file = paths[0];
+			if (file.endsWith('/')) {
 				msg = `This will permanently delete the folder:\n"${file}"\n and everything inside of it.\n\nAre you sure?`;
 			} else {
 				msg = `This will permanently delete:\n"${file}".\n\nAre you sure?`;
-			}
-
-			let [prom] = Dialogs.showOptions(this, "Erase", msg, ['Yes', 'No'], {
-				icon: 'warning'
+			}	
+		} else if (count <= LIST_FILES_LIMIT) {
+			// Sort the file names making sure directories always appear on top
+			let fileNames = paths.map(p => Paths.file(p));
+			fileNames.sort((a, b) => {
+				let aDir = a.endsWith('/');
+				let bDir = b.endsWith('/');
+				if (aDir != bDir) return aDir ? -1 : 1;
+				return a.localeCompare(b);
 			});
 
-			// Await for the user to confirm the operation.
-			let opt = await prom;
-			if (opt === 0) {
-				await FileSystem.erase(path);
-				this.refresh();
+			// Append the file names to the message, directories appear in bold and italics.
+			msg = `This will permanently delete these ${count} items:\n`;
+			for (let name of fileNames) {
+				if (name.endsWith('/')) {
+					msg += `<b><i>\n${name}</i></b>`;
+				} else {
+					msg += `\n${name}`;
+				}
 			}
+			msg += '\n\nAre you sure?';
+		} else {
+			msg = `This will permanently delete ${count} items.\n\nAre you sure?`;
 		}
+
+		let [prom] = Dialogs.showOptions(this, "Delete", msg, ['Yes, delete', 'Cancel'], {
+			icon: 'warning'
+		});
+
+		// Await for the user to confirm the operation.
+		let opt = await prom;
+		if (opt !== 0) return;
+
+		let operation = new FileOperation(paths);
+		operation.erase();
+		this.doFileOperation(operation);
+	}
+
+	doFileOperation(operation: FileOperation) {
+		operation.getCompletionPromise(OPERATION_REFRESH_TIMEOUT)
+		.then(() => this.refresh())
+		.catch(() => {});
+
+		// Text description for the operation
+		let description = "";
+		switch(operation.kind) {
+			case FileOperationKind.COPY: description += 'Copy'; break;
+			case FileOperationKind.CUT: description += 'Cut'; break;
+			case FileOperationKind.ERASE: description += 'Delete'; break;
+			default: description += "? ";
+		}
+		description += ` ${operation.sources.length} items`;
+
+		// Create list item element
+		let $operation = $(`<li><span>${description}</span></li>`, {
+			class: 'file-operation'
+		});
+		let $progress = $('<progress></progress>');
+		$operation.append($progress);
+		this.$fileOperations.prepend($operation);
+
+		// Update progress as sub-operations continue
+		operation.onProgress = (v) => { $progress.val(v); };
+
+		// Hide and remove the item once the operation is finished
+		operation.wholePromise.then(async () => {
+			await Util.sleep(4000);
+			$operation.addClass('hide');
+			await Util.sleep(500);
+			$operation.remove();
+		});		
 	}
 
 	openFileProperties(path) {

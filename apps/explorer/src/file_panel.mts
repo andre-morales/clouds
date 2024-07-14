@@ -127,11 +127,13 @@ export class FilePanel {
 			let getSelectedPaths = () => this.selectedIcons.map(icon => icon.absolutePath);
 
 			let menu = CtxMenuClass.fromEntries([
-				['-Copy',  () => this.app.copyAll(getSelectedPaths())],
-				['-Cut',   () => this.app.cutAll(getSelectedPaths())],
+				['-Select all', () => this.selectAll()],
+				['|'],
+				['-Copy',  () => this.app.copy(getSelectedPaths())],
+				['-Cut',   () => this.app.cut(getSelectedPaths())],
 				['-Erase', () => this.app.erase(getSelectedPaths())],
 			]);
-			
+
 			ClientClass.get().desktop.openCtxMenuAt(menu, ev.clientX, ev.clientY);
 		});
 	}
@@ -236,6 +238,17 @@ export class FilePanel {
 			this.performSelection(fileIcon, false);
 			break;
 		}
+	}
+
+	selectAll() {
+		this.selectedIcons = [];
+		this.selectedFiles = [];
+		for (let icon of Object.values(this.fileIcons)) {
+			this.selectedIcons.push(icon);
+			this.selectedFiles.push(icon.absolutePath);
+			icon.$icon.addClass('selected');
+		}
+		this.#updateSelectionStatus();
 	}
 
 	performSelection(fileIcon: FileIcon, single: boolean) {

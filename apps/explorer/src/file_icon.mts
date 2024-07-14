@@ -95,11 +95,11 @@ export class FileIcon {
 
 		menu.push(
 			['|'],
-			['-Copy', () => { this.#app.copy(absPath) }],
-			['-Cut', () => { this.#app.cut(absPath) }],
+			['-Copy', () => { this.#app.copy([absPath]) }],
+			['-Cut', () => { this.#app.cut([absPath]) }],
 			['|'],
 			['-Rename', () => { this.enableRename() }],
-			['-Erase', () => { this.#app.erase(absPath) }],
+			['-Erase', () => { this.#app.erase([absPath]) }],
 			['|'],
 			['-Properties', () => {this.#app.openFileProperties(absPath)}]
 		);
