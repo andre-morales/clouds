@@ -8,8 +8,9 @@
 # Modules should be obtained from npm
 node_modules
 
-# PDFjs should be obtained externally
+# PDFjs and Prism.js should be obtained externally
 client/public/lib/pdfjs
+client/public/lib/prism
 
 # SSL configuration should be kept private
 config/ssl

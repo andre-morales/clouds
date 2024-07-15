@@ -1,4 +1,4 @@
-import Util from './util.mjs';
+import Arrays from './utils/arrays.mjs';
 
 export class ReactorClass {
 	listeners: any[];
@@ -43,7 +43,7 @@ export class Reactor {
 		let list = this.classes[name];
 		if (!list) throw Error(`No class ${name} registered.`);
 
-		Util.arrErase(list.listeners, callback);
+		Arrays.erase(list.listeners, callback);
 	}
 
 	default(name, callback) {

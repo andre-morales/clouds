@@ -12,8 +12,16 @@ import ExplorerUploader from './uploader.mjs';
 import ExplorerDefaultHandler from './open_handler.mjs';
 import ExplorerProperties from './properties.mjs';
 import { FileOperation, FileOperationKind } from './file_operation.mjs';
+import Arrays from '/@sys/utils/arrays.mjs';
 
+/** If an operation finished this fast, automatically refresh explorer */
 const OPERATION_REFRESH_TIMEOUT = 200;
+
+/** Hide away finished operations after this amount of time */
+const OPERATION_HIDE_DELAY = 4000;
+
+/** If trying to delete more files than this, don't show their names */
+const LIST_FILES_LIMIT = 32;
 
 var Client: ClientClass;
 
@@ -320,7 +328,7 @@ export default class ExplorerApp extends App {
 	}
 
 	removeFavorite(path) {
-		Util.arrErase(this.favorites, path);
+		Arrays.erase(this.favorites, path);
 
 		this.saveFavorites();
 		this.refreshFavorites();
@@ -424,8 +432,6 @@ export default class ExplorerApp extends App {
 	}
 
 	async erase(paths: string[]) {
-		// If trying to delete more files than this, don't show their names.
-		const LIST_FILES_LIMIT = 32;
 		const count = paths.length;
 
 		// Make sure all files come from the same directory, otherwise, don't allow operation.
@@ -496,11 +502,9 @@ export default class ExplorerApp extends App {
 		description += ` ${operation.sources.length} items`;
 
 		// Create list item element
-		let $operation = $(`<li><span>${description}</span></li>`, {
-			class: 'file-operation'
-		});
-		let $progress = $('<progress></progress>');
-		$operation.append($progress);
+		let $operation = $(`<li class='file-operation'></li>`);
+		let $description = $(`<span>${description}</span>`).appendTo($operation);
+		let $progress = $('<progress></progress>').appendTo($operation);
 		this.$fileOperations.prepend($operation);
 
 		// Update progress as sub-operations continue
@@ -508,7 +512,8 @@ export default class ExplorerApp extends App {
 
 		// Hide and remove the item once the operation is finished
 		operation.wholePromise.then(async () => {
-			await Util.sleep(4000);
+			$description.text(description + ". Done!");
+			await Util.sleep(OPERATION_HIDE_DELAY);
 			$operation.addClass('hide');
 			await Util.sleep(500);
 			$operation.remove();

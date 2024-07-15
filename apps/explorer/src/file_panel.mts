@@ -1,8 +1,8 @@
 import { ClientClass } from '/@sys/client_core.mjs';
 import { FileIcon } from './file_icon.mjs';
 import ExplorerApp, { FileEntry } from './explorer.mjs';
-import Util from '/@sys/util.mjs';
 import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import Arrays from '/@sys/utils/arrays.mjs';
 
 interface FileIconMap {
 	[path: string]: FileIcon;
@@ -206,7 +206,7 @@ export class FilePanel {
 
 	executeBehavior(behavior: PointerBehavior, fileIcon: FileIcon, ev?: MouseEvent) {
 		let noSelectedItem = this.selectedIcons.length == 0;
-		let onlySelectedItem = Util.arrEquals(this.selectedIcons, [fileIcon]);
+		let onlySelectedItem = Arrays.equals(this.selectedIcons, [fileIcon]);
 
 		switch(behavior) {
 		case PointerBehavior.OPEN:

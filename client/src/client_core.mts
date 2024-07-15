@@ -11,6 +11,7 @@ import ResourceManager from './resource_manager.mjs';
 import AppRunner from './app_runner.mjs';
 import { AppManager } from './app_manager.mjs';
 import { ConfigManager } from './config_manager.mjs';
+import Arrays from './utils/arrays.mjs';
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
@@ -70,7 +71,7 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.215';
+	static readonly CLIENT_VERSION = '1.0.217';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Early Test 2`;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	static readonly API_VERSION: string;
@@ -189,7 +190,7 @@ export class ClientClass {
 		instance._dispose(exitCode);
 
 		// Remove app from app list
-		Util.arrErase(this.runningApps, instance);
+		Arrays.erase(this.runningApps, instance);
 		this.events.dispatch('apps-rem');
 	}
 
@@ -200,7 +201,7 @@ export class ClientClass {
 	initLogging() {
 		window.addEventListener('error', (ev) => {
 			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
-			if (ev.error.stack) {
+			if (ev.error && ev.error.stack) {
 				msg += ev.error.stack;
 			} else {
 				msg += 'unavailable';
@@ -216,13 +217,13 @@ export class ClientClass {
 	initGraphicalErrors() {
 		window.addEventListener('error', (ev) => {
 			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
-			if (ev.error.stack) {
+			if (ev.error && ev.error.stack) {
 				msg += ev.error.stack;
 			} else {
 				msg += 'unavailable';
 			}
 			let stack = '';
-			if (ev.error.stack) {
+			if (ev.error && ev.error.stack) {
 				stack = `\n${ev.error.stack}`;
 			}
 			this.showErrorDialog("Error", `Unhandled error:\n${ev.message}${stack}`);

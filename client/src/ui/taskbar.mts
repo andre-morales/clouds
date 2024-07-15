@@ -1,7 +1,7 @@
 import { CtxMenuClass } from './context_menu.mjs';
 import Window from './window.mjs';
-import Util from '../util.mjs';
 import App from '../app.mjs';
+import Arrays from '../utils/arrays.mjs';
 
 export class Taskbar {
 	DEFAULT_TASKBAR_ICON: string;
@@ -144,11 +144,11 @@ export class TaskbarButton {
 	}
 
 	removeWindow(win: Window) {
-		Util.arrErase(this.windows, win);
+		Arrays.erase(this.windows, win);
 
 		// If all windows were closed
 		if (this.windows.length == 0) {
-			Util.arrErase(Client.desktop.taskbar.buttons, this.taskButton);
+			Arrays.erase(Client.desktop.taskbar.buttons, this.taskButton);
 
 			this.$button.remove();
 			this.$button = null;

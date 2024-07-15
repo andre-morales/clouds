@@ -223,7 +223,7 @@ export default class ConsoleApp extends App {
 			let value = obj[key];
 			properties += `\n${key}: ${this.stringifyObject(value, depth - 1)}`;
 		}
-		properties = Util.strReplaceAll(properties, '\n', '\n  ');
+		properties = properties.replaceAll('\n', '\n  ');
 		return `${obj.constructor.name}: {${properties}\n}`;
 	}
 }

@@ -4,6 +4,7 @@ import { Reactor, ReactorEvent } from '../events.mjs';
 import { InternalFault, IllegalStateFault } from '../faults.mjs';
 import { App } from '../app.mjs';
 import Util from '../util.mjs';
+import Arrays from '../utils/arrays.mjs';
 
 export default class Window {
 	app: App;
@@ -299,7 +300,7 @@ export default class Window {
 
 	setOwner(window: Window) {
 		if (this.owner) {
-			Util.arrErase(this.owner.children, this);
+			Arrays.erase(this.owner.children, this);
 		}
 		
 		if (window) window.children.push(this);

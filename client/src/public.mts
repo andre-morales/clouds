@@ -9,3 +9,4 @@ export * as UtilM from './util.mjs';
 export * as UIFullscreenM from './ui/fullscreen.mjs';
 export * as UIDialogsM from './ui/dialogs.mjs';
 export * as UICtxMenuM from './ui/context_menu.mjs';
+export * as UtilsArraysM from './utils/arrays.mjs';

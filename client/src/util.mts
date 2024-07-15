@@ -16,25 +16,6 @@ export function cloneTemplate(id: string): Node {
 	return el.content.cloneNode(true);
 }
 
-export function arrErase(arr: unknown[], val: unknown): number {
-	let i = arr.indexOf(val);
-	if (i >= 0) {
-		arr.splice(i, 1);
-	}
-	return i;
-}
-
-function arrEquals(a, b) {
-	if (a === b) return true;
-	if (a.length !== b.length) return false;
-
-	for (let i = 0; i < a.length; i++) {
-		if (a[i] !== b[i]) return false;
-	}
-
-	return true;
-}
-
 export function endsWithAny(str: string, arr: string[]): boolean {
 	for (let end of arr) {
 		if (str.endsWith(end)) return true;
@@ -50,17 +31,6 @@ export function getURLParams(): ProxyConstructor {
 	return new Proxy(new URLSearchParams(window.location.search), {
  		get: (searchParams: any, prop) => searchParams.get(prop),
 	});
-}
-
-function strReplaceAll(text, token, newToken) {
-	let escapedToken = token.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&");
-	let regexp = new RegExp(escapedToken, 'g');
-
-	if (typeof(newToken) == "string") {
-		newToken = newToken.replace(/\$/g, "$$$$");
-	}
-
-	return text.replace(regexp, newToken);
 }
 
 export function setCookie(name: string, value: string, time = 365) {
@@ -145,7 +115,7 @@ export function downloadUrl(path) {
 }
 
 export default {
-	getObjectByName, arrErase, endsWithAny, cloneTemplate, sleep, getURLParams, strReplaceAll,
+	cloneTemplate, getURLParams, 
 	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript, downloadUrl,
-	arrEquals
+	sleep, getObjectByName, endsWithAny, 
 };

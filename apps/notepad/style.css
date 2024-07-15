@@ -3,19 +3,123 @@
 	flex-direction: column;
 }
 
-.app-notepad textarea {
-	flex-grow: 1;
+.app-notepad .editor {
+	--font-size: 12pt;
+	--font-family: 'Consolas', 'Lucida Console', monospace;
+	--font-weight: 500;
+	--line-height: 1.15;
+	--padding: 0 0 0 4px;
+
+	display: flex;
+	height: 100%;
+	overflow: auto;
+	white-space: pre;
+	tab-size: 4;
+
+	font: var(--font-weight) var(--font-size) var(--font-family);
+	line-height: var(--line-height);
+	background: #272822;
+}
+
+.app-notepad .editor.wrapping {
+	white-space: pre-wrap;
+}
+
+.app-notepad .editor-stack {
+	position: relative;
+	flex-grow: 1;	
+	height: 100%;
+}
+
+.app-notepad pre {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	margin: 0;
+	padding: var(--padding);
 	border: none;
-	padding: .25em .5em;
+	font: inherit;
+	line-height: inherit;
+	white-space: inherit;
+	background: none;
+}
+
+.app-notepad code {
+	border: none;
+	white-space: inherit;
+	font: inherit;
+	line-height: inherit;
+	background: none;
+}
+
+.app-notepad .line-numbers {
+	flex-shrink: 0;
+	overflow: hidden;
+	padding: 0 4px;
+	padding-bottom: 2ch;
+	text-align: right;
+	color: gray;
+	background-color: #222;
+}
+
+.app-notepad textarea {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+
+	border: none;
+	margin: 0;
+	padding: var(--padding);
 	outline: none;
 	resize: none;
+
+	font: inherit;
+	line-height: inherit;
+	tab-size: 4;
+	white-space: inherit;
+
+	background: none;
+	color: transparent;
+	caret-color: white;
 }
 
-.app-notepad.dark textarea {
-	background: #202020;
-	color: white;	
+.token.directive {
+	color: #F82B72;
 }
 
-.app-notepad textarea:focused {
-	outline: none;
+.token.data-directive {
+	color: #F82B72;
+}
+
+.token.register {
+	color: #FC9737;
+}
+
+.token.comment {
+	color: #888470;
+	font-weight: normal;
+}
+
+.token.op-code {
+	color: #69D9ED;
+}
+
+.token.control {
+	color: #6B92FF;
+}
+
+.token.label {
+	color: #E6DB7D;
+}
+
+.token.label-call {
+	color: #A7E248;
+}
+
+.token.punctuation {
+	color: #F8F8F2;
 }

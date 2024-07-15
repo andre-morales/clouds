@@ -4,9 +4,8 @@ import Fullscreen from './fullscreen.mjs';
 import { CtxMenuClass } from './context_menu.mjs';
 import App from '../app.mjs';
 import { Reactor } from '../events.mjs';
-import { FileSystem } from '../bridges/filesystem.mjs';
-import Util from '../util.mjs';
 import { ClientClass } from '../client_core.mjs';
+import Arrays from '../utils/arrays.mjs';
 
 export class Desktop {
 	windows: Window[];
@@ -131,7 +130,7 @@ export class Desktop {
 
 	destroyWindow(win: Window) {
 		// Remove window from windows list
-		if (Util.arrErase(this.windows, win) < 0) return;
+		if (Arrays.erase(this.windows, win) < 0) return;
 
 		// Dispatch closed event
 		win.events.dispatch('closed');
@@ -145,7 +144,7 @@ export class Desktop {
 		win._dispose();
 		
 		// Remove window from list
-		Util.arrErase(win.app.windows, win);
+		Arrays.erase(win.app.windows, win);
 
 		// If this was the main window, exit the owner app
 		if (win.app.exitMode == 'last-win-closed') {
@@ -205,7 +204,7 @@ export class Desktop {
 	setBackground(url: string) {
 		Client.config.preferences.background = url;
 	}
-
+	
 	openCtxMenuAt(menu: CtxMenuClass, x: number, y: number) {
 		this.contextMenuOpen = true;
 		let $menu = this.$contextMenu;
