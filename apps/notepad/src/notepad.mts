@@ -1,5 +1,5 @@
 import Dialogs from '/@sys/ui/dialogs.mjs';
-import { CtxCheckClass, CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { ContextCheckbox, ContextMenu } from '/@sys/ui/context_menu.mjs';
 import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
@@ -10,7 +10,7 @@ var Client: ClientClass;
 
 interface Language {
 	name: string;
-	menuItem?: CtxCheckClass;
+	menuItem?: ContextCheckbox;
 }
 
 export default class NotepadApp extends App {
@@ -18,7 +18,7 @@ export default class NotepadApp extends App {
 	editor: Editor;
 	unsavedChanges: boolean;
 	path: string;
-	syntaxViewMenu: CtxMenuClass;
+	syntaxViewMenu: ContextMenu;
 	syntaxOptions: { [name: string]: Language };
 	$app: $Element;
 	$editor: $Element;
@@ -80,12 +80,12 @@ export default class NotepadApp extends App {
 		this.$textArea.on('change', () => this.unsavedChanges = true);
 		
 		// Create view menu options
-		let viewMenu = CtxMenuClass.fromEntries([
+		let viewMenu = ContextMenu.fromDefinition([
 			['*Line numbers', (v) => this.setLineNumbersVisible(v), { checked: true }],
 			['*Wrap lines', (v) => this.editor.setLineWrapping(v)],
 		]);
-		this.syntaxViewMenu = new CtxMenuClass([], "Syntax");
-		viewMenu.entries.push(this.syntaxViewMenu);
+		this.syntaxViewMenu = new ContextMenu([], "Syntax");
+		viewMenu.addItem(this.syntaxViewMenu);
 
 		$app.find('.view-menu').click((ev: MouseEvent) => {
 			let bounds = (ev.target as HTMLElement).getBoundingClientRect();
@@ -94,7 +94,7 @@ export default class NotepadApp extends App {
 
 		// Create file menu options
 		$app.find('.file-menu').click((ev: MouseEvent) => {
-			let fileMenu = CtxMenuClass.fromEntries([
+			let fileMenu = ContextMenu.fromDefinition([
 				['-Open...', () => { this.open(); }],
 				['-Save', () => { this.save(); }],
 				['-Save as...', () => { this.saveAs(); }],
@@ -139,17 +139,17 @@ export default class NotepadApp extends App {
 
 	#addSyntaxOptions() {
 		for (let [id, syn] of Object.entries(this.syntaxOptions)) {
-			syn.menuItem = new CtxCheckClass(syn.name, () => this.#setSyntax(id), false);
-			this.syntaxViewMenu.entries.push(syn.menuItem);
+			syn.menuItem = new ContextCheckbox(syn.name, () => this.#setSyntax(id), false);
+			this.syntaxViewMenu.addItem(syn.menuItem);
 		}
 	}
 
 	#setSyntax(lang: string) {
 		for (let entry of Object.values(this.syntaxOptions)) {
-			entry.menuItem.checked = false;
+			entry.menuItem.setChecked(false);
 		}
 
-		this.syntaxOptions[lang].menuItem.checked = true;
+		this.syntaxOptions[lang].menuItem.setChecked(true);
 		this.editor.setLanguage(lang);
 	}
 

@@ -1,7 +1,7 @@
 import { FileTypes, Paths } from "/@sys/bridges/filesystem.mjs";
 import ExplorerApp, { type FileEntry } from "./explorer.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
-import { ContextEntry, CtxMenuClass } from "/@sys/ui/context_menu.mjs";
+import { CtxEntry, ContextMenu } from "/@sys/ui/context_menu.mjs";
 import { FileSystem } from "/@sys/bridges/filesystem.mjs";
 import Util from "/@sys/util.mjs";
 
@@ -62,7 +62,7 @@ export class FileIcon {
 		let isDir = absPath.endsWith('/');
 		let fsPath = Paths.toFSV(absPath);
 
-		let menu: ContextEntry[] = [
+		let menu: CtxEntry[] = [
 			['-Select', () => this.select()],
 			['-Open', () => this.#app.openHandler(absPath)],
 		];
@@ -103,7 +103,7 @@ export class FileIcon {
 			['|'],
 			['-Properties', () => {this.#app.openFileProperties(absPath)}]
 		);
-		return CtxMenuClass.fromEntries(menu);
+		return ContextMenu.fromDefinition(menu);
 	}
 
 	openContextMenuAt(x: number, y: number) {

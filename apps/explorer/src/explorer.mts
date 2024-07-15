@@ -1,6 +1,6 @@
 import LocalClipboard from '/@sys/bridges/clipboard.mjs';
 import Dialogs from '/@sys/ui/dialogs.mjs';
-import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
 import { Deferred } from '/@sys/events.mjs';
 import Util from '/@sys/util.mjs';
@@ -110,7 +110,7 @@ export default class ExplorerApp extends App {
 
 		// Context menus
 		let $filesContainer = $app.find('.files-container');
-		Client.desktop.addCtxMenuOn($filesContainer, () => CtxMenuClass.fromEntries([
+		Client.desktop.addCtxMenuOn($filesContainer, () => ContextMenu.fromDefinition([
 			['>Sort by', [
 				['-Name', () => this.panel.sortBy('name')],
 				['-Date', () => this.panel.sortBy('date')]
@@ -345,7 +345,7 @@ export default class ExplorerApp extends App {
 			$item.click(() => {
 				this.openHandler(path);
 			});
-			Client.desktop.addCtxMenuOn($item, () => CtxMenuClass.fromEntries([
+			Client.desktop.addCtxMenuOn($item, () => ContextMenu.fromDefinition([
 				['-Remove', () => this.removeFavorite(path)]
 			]));
 			this.$favorites.append($item);

@@ -1,4 +1,4 @@
-import { CtxMenuClass } from './context_menu.mjs';
+import { ContextMenu } from './context_menu.mjs';
 import { TaskbarButton } from './taskbar.mjs';
 import { Reactor, ReactorEvent } from '../events.mjs';
 import { InternalFault, IllegalStateFault } from '../faults.mjs';
@@ -28,7 +28,7 @@ export default class Window {
 	_initialPosition: string;
 	destroyed: boolean;
 	taskButton: TaskbarButton;
-	optionsCtxMenu: CtxMenuClass;
+	optionsCtxMenu: ContextMenu;
 	decorated: boolean;
 	zIndex: number;
 	$window: $Element;
@@ -286,8 +286,8 @@ export default class Window {
 		});
 	}
 
-	makeOptionsCtxMenu(): CtxMenuClass {
-		return CtxMenuClass.fromEntries([
+	makeOptionsCtxMenu(): ContextMenu {
+		return ContextMenu.fromDefinition([
 			['-Fullscreen', () => this.goFullscreen()],
 			['-Maximize', () => this.setMaximized(true)],
 			['-Minimize', () => this.minimize()],

@@ -1,7 +1,7 @@
 import { ClientClass } from '/@sys/client_core.mjs';
 import { FileIcon } from './file_icon.mjs';
 import ExplorerApp, { FileEntry } from './explorer.mjs';
-import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import Arrays from '/@sys/utils/arrays.mjs';
 
 interface FileIconMap {
@@ -126,7 +126,7 @@ export class FilePanel {
 			// Returns an array of the absolute paths of all the files selected
 			let getSelectedPaths = () => this.selectedIcons.map(icon => icon.absolutePath);
 
-			let menu = CtxMenuClass.fromEntries([
+			let menu = ContextMenu.fromDefinition([
 				['-Select all', () => this.selectAll()],
 				['|'],
 				['-Copy',  () => this.app.copy(getSelectedPaths())],

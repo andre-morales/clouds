@@ -1,7 +1,7 @@
 import TaskbarM, { Taskbar } from './taskbar.mjs'
 import Window from './window.mjs';
 import Fullscreen from './fullscreen.mjs';
-import { CtxMenuClass } from './context_menu.mjs';
+import { ContextMenu } from './context_menu.mjs';
 import App from '../app.mjs';
 import { Reactor } from '../events.mjs';
 import { ClientClass } from '../client_core.mjs';
@@ -22,6 +22,7 @@ export class Desktop {
 	windowsHeight: number;
 	screenWidth: number;
 	screenHeight: number;
+	#currentContextMenu: ContextMenu;
 	$desktop: $Element;
 	$windows: $Element;
 	$contextMenu: $Element;
@@ -45,7 +46,7 @@ export class Desktop {
 		this.contextMenuOpen = false;
 		this.dragRectState = {};
 
-		let menu = CtxMenuClass.fromEntries([
+		let menu = ContextMenu.fromDefinition([
 			["-System Settings", () => {
 				Client.runApp('configs');
 			}],
@@ -78,7 +79,9 @@ export class Desktop {
 			// the clicked element.
 			if ($cMenu[0] != el && $cMenu.has(el).length === 0) {
 				this.contextMenuOpen = false;
+				this.#currentContextMenu = null;
 				$cMenu.removeClass('visible');
+				$cMenu.find('.context-menu').removeClass('visible');
 			}
 		});
 
@@ -205,13 +208,18 @@ export class Desktop {
 		Client.config.preferences.background = url;
 	}
 	
-	openCtxMenuAt(menu: CtxMenuClass, x: number, y: number) {
+	openCtxMenuAt(menu: ContextMenu, x: number, y: number) {
+		if (this.#currentContextMenu) {
+			this.#currentContextMenu.close();
+		}
+		this.#currentContextMenu = menu;
+		
 		this.contextMenuOpen = true;
 		let $menu = this.$contextMenu;
 		$menu.removeClass('.visible');
 		$menu.empty();
-
-		menu.buildIn($menu, this.$contextMenu, this.screenWidth, this.screenHeight);
+		menu.setBase($menu)
+		menu.build();
 
 		$menu.addClass('visible');
 		let mWidth = $menu[0].offsetWidth;
@@ -227,7 +235,7 @@ export class Desktop {
 		$menu.css('top', y);
 	}
 
-	addCtxMenuOn(element: HTMLElement | $Element, menuFn: (ev: MouseEvent) => CtxMenuClass) {
+	addCtxMenuOn(element: HTMLElement | $Element, menuFn: (ev: MouseEvent) => ContextMenu) {
 		$(element).on('contextmenu', (ev: MouseEvent) => {
 			let mx = ev.clientX, my = ev.clientY;
 	

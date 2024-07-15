@@ -1,8 +1,7 @@
 import App from '/@sys/app.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
-import { CtxMenu, CtxItem, CtxCheck, CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import Window from '/@sys/ui/window.mjs';
-import Util from '/@sys/util.mjs';
 
 var Client: ClientClass;
 
@@ -46,8 +45,8 @@ export default class RemoteShellApp extends App {
 		await this.window.setContentToUrl('/app/remoteshell/res/main.html');
 		this.$content = $app.find('.content');
 
-		let fileMenu = CtxMenu([
-			CtxItem('Exit', () => { this.window.close(); })
+		let fileMenu = ContextMenu.fromDefinition([
+			['-Exit', () => { this.window.close(); }]
 		]);
 	
 		$app.find('.file-menu').click((ev: MouseEvent) => {
@@ -55,7 +54,7 @@ export default class RemoteShellApp extends App {
 		});
 
 		$app.find('.view-menu').click((ev: MouseEvent) => {
-			let menu = CtxMenuClass.fromEntries([
+			let menu = ContextMenu.fromDefinition([
 				['*Wrap text', (v) => { this.setTextWrapping(v); }, { checked: this.textWrapping} ],
 				['-Clear', () => { this.clear(); }]
 			]);

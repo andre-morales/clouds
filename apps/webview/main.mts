@@ -1,4 +1,4 @@
-import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import { Paths } from '/@sys/bridges/filesystem.mjs';
 import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
@@ -31,7 +31,7 @@ export default class WebViewApp extends App {
 		// Fetch application body
 		await this.window.setContentToUrl('/app/webview/main.html');
 		
-		let fileMenu = CtxMenuClass.fromEntries([
+		let fileMenu = ContextMenu.fromDefinition([
 			['-Open...', () => { this.showOpenDialog(); }],
 			['|'],
 			['-Exit', () => { this.window.close(); }]

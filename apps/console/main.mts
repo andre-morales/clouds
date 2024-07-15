@@ -1,4 +1,4 @@
-import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import Util from '/@sys/util.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
@@ -119,7 +119,7 @@ export default class ConsoleApp extends App {
 	}
 
 	createContextMenu() {
-		let ctxMenu = CtxMenuClass.fromEntries([
+		let ctxMenu = ContextMenu.fromDefinition([
 			['-Clear', () => this.clear()]
 		]);
 		Client.desktop.addCtxMenuOn(this.$app, () => ctxMenu);
