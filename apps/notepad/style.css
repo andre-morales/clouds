@@ -5,20 +5,19 @@
 
 .app-notepad .editor {
 	--font-size: 12pt;
-	--font-family: 'Consolas', 'Lucida Console', monospace;
+	--font-family: 'Consolas', 'Lucida Console', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
 	--font-weight: 500;
 	--line-height: 1.15;
 	--padding: 0 0 0 4px;
 
 	display: flex;
 	height: 100%;
-	overflow: auto;
+	overflow: hidden;
 	white-space: pre;
 	tab-size: 4;
 
 	font: var(--font-weight) var(--font-size) var(--font-family);
 	line-height: var(--line-height);
-	background: #272822;
 }
 
 .app-notepad .editor.wrapping {
@@ -37,13 +36,13 @@
 	right: 0;
 	top: 0;
 	bottom: 0;
+	overflow: auto;
 	margin: 0;
 	padding: var(--padding);
 	border: none;
 	font: inherit;
 	line-height: inherit;
 	white-space: inherit;
-	background: none;
 }
 
 .app-notepad code {
@@ -51,7 +50,7 @@
 	white-space: inherit;
 	font: inherit;
 	line-height: inherit;
-	background: none;
+	word-break: break-word;
 }
 
 .app-notepad .line-numbers {
@@ -60,8 +59,6 @@
 	padding: 0 4px;
 	padding-bottom: 2ch;
 	text-align: right;
-	color: gray;
-	background-color: #222;
 }
 
 .app-notepad textarea {
@@ -84,42 +81,4 @@
 
 	background: none;
 	color: transparent;
-	caret-color: white;
-}
-
-.token.directive {
-	color: #F82B72;
-}
-
-.token.data-directive {
-	color: #F82B72;
-}
-
-.token.register {
-	color: #FC9737;
-}
-
-.token.comment {
-	color: #888470;
-	font-weight: normal;
-}
-
-.token.op-code {
-	color: #69D9ED;
-}
-
-.token.control {
-	color: #6B92FF;
-}
-
-.token.label {
-	color: #E6DB7D;
-}
-
-.token.label-call {
-	color: #A7E248;
-}
-
-.token.punctuation {
-	color: #F8F8F2;
 }

@@ -1,0 +1,62 @@
+.app-notepad .editor {
+	background: #272822;
+}
+
+.app-notepad .line-numbers {
+	color: gray;
+	background-color: #222;
+}
+
+.app-notepad textarea {
+	caret-color: white;
+}
+
+.app-notepad code {
+	color: #f8f8f2;
+	text-shadow: 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.app-notepad .token.comment {
+	color: #888470;
+}
+
+.app-notepad .token.punctuation {
+	color: #f8f8f2;
+}
+
+.app-notepad .token.property,
+.app-notepad .token.constant,
+.app-notepad .token.symbol {
+	color: #a6e22e;
+}
+
+.app-notepad .token.boolean,
+.app-notepad .token.number {
+	color: #ae81ff;
+}
+
+.app-notepad .token.selector,
+.app-notepad .token.string,
+.app-notepad .token.builtin {
+	color: #e6db74;
+}
+
+.app-notepad .token.operator,
+.app-notepad .token.entity,
+.app-notepad .token.url,
+.app-notepad .token.variable {
+	color: #f8f8f2;
+}
+
+.app-notepad .token.function,
+.app-notepad .token.class-name {
+	color: #f92672;
+}
+
+.app-notepad .token.keyword {
+	color: #66d9ef;
+}
+
+.app-notepad .token.important {
+	color: #fd971f;
+}

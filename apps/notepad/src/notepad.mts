@@ -6,6 +6,11 @@ import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import { Editor } from './editor.mjs';
 
+const EXTENSION_SYNTAX_TABLE = {
+	'txt': 'plain',
+	'json': 'json'
+};
+
 var Client: ClientClass;
 
 interface Language {
@@ -62,9 +67,16 @@ export default class NotepadApp extends App {
 		this.$app = $app;
 
 		// If notepad was launched with a path (opening a file), load the text from the argument
+		let defaultSyntax = 'plain';
 		let fileTextProm: Promise<string>;
 		if (this.buildArgs.length > 0) {
-			this.setPath(Paths.removeFSPrefix(this.buildArgs[0] as string));
+			const pathArg = this.buildArgs[0] as string;
+
+			let ext = Paths.getExtension(pathArg).toLowerCase();
+			let syntax = EXTENSION_SYNTAX_TABLE[ext];
+			if (syntax) defaultSyntax = syntax;
+
+			this.setPath(Paths.removeFSPrefix(pathArg));
 			fileTextProm = FileSystem.readText(this.path);
 		}
 
@@ -119,10 +131,10 @@ export default class NotepadApp extends App {
 		// Initialize possible syntaxes
 		this.syntaxOptions = {
 			'plain': { name: 'Plain text' },
-			'proto-asm': { name: 'Proto asm' }
+			'json': { name: "JSON" }
 		}
 		this.#addSyntaxOptions();
-		this.#setSyntax('plain');
+		this.#setSyntax(defaultSyntax);
 
 		// Await for text content to arrive
 		if (fileTextProm) {

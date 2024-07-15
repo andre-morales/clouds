@@ -54,7 +54,7 @@ export class Editor {
 		
 		this.setLineWrapping(this.lineWrapping);
 		this.setFontSize(this.fontSize);
-		Languages.registerProtoAsm();
+		Languages.registerJSON();
 	}
 
 	setContent(text: string) {

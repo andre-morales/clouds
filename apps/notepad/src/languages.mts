@@ -1,47 +1,28 @@
 declare var Prism: any;
 
-export function registerProtoAsm() {
-	Prism.languages['proto-asm'] = {
-		'comment': /;.*/,
-		'directive': {
-			pattern: /^\.[\w]+/m,
-			alias: 'property'
+export function registerJSON() {
+	Prism.languages.json = {
+		'property': {
+			pattern: /(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?=\s*:)/,
+			lookbehind: true,
+			greedy: true
 		},
-		'data-directive': {
-			pattern: /\b(?:dw|times)\b/i,
-			alias: 'property'
+		'string': {
+			pattern: /(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?!\s*:)/,
+			lookbehind: true,
+			greedy: true
 		},
-		'label': {
-			pattern: /^[\s]*[^\s]+\:/m,
-			alias: 'function'
+		'comment': {
+			pattern: /\/\/.*|\/\*[\s\S]*?(?:\*\/|$)/,
+			greedy: true
 		},
-		'label-call': {
-			pattern: /\ \:[\w.]+$/m
-		},
-		'op-code': {
-			pattern: /\b(?:NOP|LDA|STA|ARIT|CALC)\b/i,
-		},
-		'control': {
-			pattern: /\b(?:JMP|JNZ|RET|HLT)\b/i,
-		},
-		'hex-number': {
-			pattern: /0x[\da-f]{1,4}\b/i,
-			alias: 'number'
-		},
-		'binary-number': {
-			pattern: /0b[01]+\b/,
-			alias: 'number'
-		},
-		'decimal-number': {
-			pattern: /\b\d+\b/,
-			alias: 'number'
-		},
-		'register': {
-			pattern: /\b([abcdr]|psw)\b/i,
-			alias: 'variable'
-		},
-		'punctuation': {
-			pattern: /[=+\-~&|^]/
+		'number': /-?\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b/i,
+		'punctuation': /[{}[\],]/,
+		'operator': /:/,
+		'boolean': /\b(?:false|true)\b/,
+		'null': {
+			pattern: /\bnull\b/,
+			alias: 'keyword'
 		}
-	}
+	};
 }

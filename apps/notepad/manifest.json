@@ -8,7 +8,7 @@
 		"/res/lib/prism/prism.js"
 	],
 	"styles": [
-		"/res/lib/prism/prism.css",
-		"/app/notepad/style.css"
+		"/app/notepad/style.css",
+		"/app/notepad/monokai.css"
 	]
 }

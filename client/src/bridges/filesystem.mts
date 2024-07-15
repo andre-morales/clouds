@@ -127,21 +127,6 @@ export class FileSystem {
 }
 
 export class Paths {
-	static toFS(path: string, op: string) {
-		// If it is already a FS path, replace the op	
-		if (Paths.isFS(path)) {
-			// Remove fs-op prefix and add new one
-			let p = path.substring(path.indexOf('/', 4));
-			return `/fs/${op}${p}`;
-		} else {
-			// Make sure path is absolute
-			if (!path.startsWith('/')) {
-				throw new BadParameterFault("FS path doesn't start with /. Paths must be absolute before being converted.");
-			}
-			return `/fs/${op}${path}`
-		}
-	}
-
 	static toFSV(path: string) {
 		// If it is already a FSV path, don't alter anything
 		if (Paths.isFSV(path)) return path;
@@ -192,6 +177,14 @@ export class Paths {
 		} else {
 			return path.substring(path.lastIndexOf('/') + 1);
 		}
+	}
+
+	static getExtension(path: string) {
+		let file = Paths.file(path);
+		let i = file.lastIndexOf('.');
+		if (i == -1) return null;
+
+		return file.substring(i + 1);
 	}
 
 	static join(base: string, child: string) {
