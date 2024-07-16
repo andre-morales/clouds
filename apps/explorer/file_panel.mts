@@ -2,14 +2,20 @@ import { ContextEntry, CtxMenuClass } from '/@sys/ui/context_menu.mjs';
 import { FileSystem, Paths, FileTypes } from '/@sys/bridges/filesystem.mjs';
 import Util from '/@sys/util.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
+import { FileIcon } from './file_icon.mjs';
+import ExplorerApp from './main.mjs';
 
 var Client: ClientClass;
 
+interface FileIconMap {
+	[path: string]: FileIcon;
+}
+
 export class FilePanel {
-	app: any;
+	app: ExplorerApp;
 	zoom: number;
-	files: any;
-	fileIcons: any;
+	fileEntries: any;
+	fileIcons: FileIconMap;
 	sorting: string;
 	selectionMode: string;
 	selectedFiles: any[];
@@ -17,11 +23,11 @@ export class FilePanel {
 	$files: $Element;
 	$filesContainer: $Element;
 
-	constructor(explorer) {
+	constructor(explorer: ExplorerApp) {
 		Client = ClientClass.get();
 		this.app = explorer;
 		this.zoom = 1;
-		this.files = null;
+		this.fileEntries = null;
 		this.fileIcons = {};
 		this.$files = null;
 		this.sorting = '';
@@ -61,7 +67,7 @@ export class FilePanel {
 	}
 
 	setContent(files) {
-		this.files = files;
+		this.fileEntries = files;
 		this.fileIcons = {};
 		this.$files.addClass('d-none');
 		this.$files.empty();
@@ -96,9 +102,10 @@ export class FilePanel {
 
 		// Make icons
 		for (let file of files) {
-			let $ic = this.makeFileIcon(file);
-			this.fileIcons[file[0]] = $ic;
-			$ic.appendTo(this.$files);
+			let icon = this.makeFileIcon(file);
+			this.fileIcons[file[0]] = icon;
+
+			this.$files.append(icon.$icon);
 		}	
 
 		// Make the panel visible
@@ -107,162 +114,51 @@ export class FilePanel {
 	}
 
 	makeFileIcon(fEntry) {
-		let [fPath, fTags="", fCreation=0] = fEntry;
+		let fileIcon = new FileIcon(this.app, fEntry);
 
-		// Get file name between slashes in the entry
-		let fName = fPath;
-		let ls = fPath.lastIndexOf('/', fPath.length-2);
-		if (ls != -1) fName = fPath.substring(ls + 1);
-		if (fName.endsWith('/')) fName = fName.slice(0, -1);
-
-		// Absolute path of the entry
-		let absPath;
-		if (!this.app.cwd.startsWith('$')) {
-			absPath = Paths.join(this.app.cwd, fPath);
-		} else {
-			absPath = fPath;
-		}
-
-		// Obtain file classes
-		let classes = ['file'];
-		if (fPath.endsWith('/')) {
-			classes.push('dir');
-		}
-		if (fTags.includes('i')) {
-			classes.push('blocked');
-		}
-		if (fTags.includes('s')) {
-			classes.push('symbolic');
-		}
-
-		// Get file type given file extension
-		let cl = getFileClassByExt(fPath);
-		if (cl) classes.push(cl);
-
-		// Create thumbnail image if needed
-		let $img = null;
-		let hasThumb = FileTypes.isVideo(fName) || FileTypes.isPicture(fName);
-		if (hasThumb) {
-			$img = $(`<img src='/fsv${absPath}?thumb' draggable='false'>`);
-			classes.push('thumbbed');
-		}
-
-		// Create file element itself
-		let iconText = fName;
-		if (fName.length > 20) {
-			iconText = fName.substring(0, 20) + "…";
-		}
-		
-		let $file = $(`<div><span>${iconText}</span></div>`, {
-			title: fName,
-			class: classes.join(' ')
-		});
-
-		// Add thumbnail element
-		let $ic = $('<i></i>');
-		if ($img) {
-			$ic.append($img);
-			$img.on('error', () => {
-				// If image loading was just halted, don't remove anything.
-				if ($img[0].dataset.haltSrc) return;
-
-				// Remove image and thumb class to allow loading of regular file icon
-				$img.remove();
-				$file.removeClass('thumbbed');
-			});
-		}
-		$file.prepend($ic);
-
-		// Clicking behaviour
-		$file.click(() => {
+		// Clicking behavior
+		fileIcon.$icon.click(() => {
 			if (Client.desktop.contextMenuOpen) return;
 			if (this.selectionMode == 'default') {
-				this.app.openHandler(absPath);
+				this.app.openHandler(fileIcon.absolutePath);
 				return;
 			}
 
 			switch(this.selectionMode) {
 			case 'one':
-				if ($file.hasClass('selected')) {
+				if (fileIcon.$icon.hasClass('selected')) {
 					this.selectedFiles = [];
 					this.selectedElems = [];
 				} else {
 					for (let $el of this.selectedElems) {
 						$el.removeClass('selected');
 					};	
-					this.selectedFiles = [absPath];
-					this.selectedElems = [$file];
+					this.selectedFiles = [fileIcon.absolutePath];
+					this.selectedElems = [fileIcon.$icon];
 				}
 				break;
 			case 'many':
-				let i = this.selectedFiles.indexOf(absPath);
+				let i = this.selectedFiles.indexOf(fileIcon.absolutePath);
 				if (i == -1) {
-					this.selectedFiles.push(absPath);
-					this.selectedElems.push($file);
+					this.selectedFiles.push(fileIcon.absolutePath);
+					this.selectedElems.push(fileIcon.$icon);
 				} else {
 					this.selectedFiles.splice(i, 1);
 					this.selectedElems.splice(i, 1);
 				}
 				break;
 			}
-			$file.toggleClass('selected');
+			fileIcon.$icon.toggleClass('selected');
 		});
 
-		$file.dblclick(() => {
+		fileIcon.$icon.dblclick(() => {
 			if (this.selectionMode != 'default') {
-				this.app.openHandler(absPath);
+				this.app.openHandler(fileIcon.absolutePath);
 			}
 		});
 
-		Client.desktop.addCtxMenuOn($file, () => this.makeFileMenu(absPath, $file));
-		return $file;
-	}
-
-	makeFileMenu(absPath, $file) {
-		let isDir = absPath.endsWith('/');
-		let fsPath = Paths.toFSV(absPath);
-
-		let menu: ContextEntry[] = [
-			['-Open', () => this.app.openHandler(absPath)],
-		];
-
-		if (isDir) {
-			menu.push(
-				['-Open in another window', async () => {
-					let app = await Client.runApp('explorer') as any;
-					app.go(absPath);
-				}],
-				['-Add to favorites', () => {
-					this.app.addFavorite(absPath)
-				}]
-			);
-		} else {
-			menu.push(
-				['>Open...', [
-					['-With',  () => this.app.openFileWith(absPath)],
-					['-Outside', () => this.app.openFileExt(absPath)]
-				]],
-				['-Download', () => Util.downloadUrl(fsPath)]
-			);
-		}
-
-		if (FileTypes.isPicture(absPath)) {
-			menu.push(['-Set as background', () => {
-				Client.desktop.setBackground(fsPath);
-			}]);
-		}
-
-		menu.push(
-			['|'],
-			['-Copy', () => { this.app.copy(absPath) }],
-			['-Cut', () => { this.app.cut(absPath) }],
-			['|'],
-			['-Rename', () => { this.enableRename(absPath) }],
-			['-Erase', () => { this.app.erase(absPath) }],
-			['|'],
-			['-Properties', () => {this.app.openFileProperties(absPath)}]
-		);
-		return CtxMenuClass.fromEntries(menu);
+		Client.desktop.addCtxMenuOn(fileIcon.$icon, () => fileIcon.createContextMenu());
+		return fileIcon;
 	}
 
 	recalculateIcons() {
@@ -275,7 +171,7 @@ export class FilePanel {
 		this.$files.css('--icon-border', m + 'px');
 	}
 
-	setZoom(v) {
+	setZoom(v: number) {
 		if (v < 0.2) v = 0.2;
 		if (v > 5) v = 5;
 		this.zoom = v;
@@ -303,90 +199,6 @@ export class FilePanel {
 
 	sortBy(what: string) {
 		this.sorting = what;
-		this.setContent(this.files);
+		this.setContent(this.fileEntries);
 	}
-
-	enableRename(path) {
-		let file = Paths.file(path);
-		let $file = this.fileIcons[file];
-
-		let removed = false;
-		let isFolder = path.endsWith('/');
-		let currentName = file.replace('/', '');
-
-		// Hide icon text with the file name
-		let $name = $file.find('span');
-		$name.addClass('d-none');
-
-		// Add a text input replacing the file name
-		let $nameContainer = $name.parent();
-		let $input = $(`<input class='field rename-field' value='${currentName}'/>`);
-		$nameContainer.append($input);
-		let input = $input[0];
-
-		// When clicking the field, do not open the file/folder
-		$input.click((ev) => {
-			ev.stopPropagation();
-		});
-
-		// Function that performs the actual renaming
-		let doRename = async () => {
-			// If the input was removed, do nothing
-			if (removed) return;
-			removed = true;
-
-			// Get new name, remove the field and redisplay the file label
-			let newName = $input.val();
-			$input.remove();
-			$name.removeClass('d-none');
-
-			// Do the actual path renaming
-			let newPath = Paths.parent(path) + newName + ((isFolder)?'/':'');
-			await FileSystem.rename(path, newPath);
-
-			// Set the new name on the span
-			$name.text(newName);
-
-			this.app.refresh();
-		};
-
-		// When leaving the input, perform the rename op
-		$input.on('focusout', () => {
-			doRename();
-		});
-
-		$input.on('keydown', (ev: KeyboardEvent) => {
-			switch (ev.key) {
-			case 'Enter':
-				doRename();
-				break;
-			case 'Escape':
-				// Cancel renaming
-				removed = true;
-				$input.remove();
-				$name.removeClass('d-none');
-				break;
-			}
-		});
-
-		// Make the file name selected by default
-		$input.focus();
-		setTimeout(() => {
-			input.selectionStart = 0;
-			
-			let i = input.value.lastIndexOf('.');
-			if (!isFolder && i != -1) {
-				input.selectionEnd = i;
-			} else {
-				input.selectionEnd = input.value.length;
-			}
-		}, 0);
-	}
-}
-
-function getFileClassByExt(file) {
-	if (FileTypes.isAudio(file)) return 'audio';
-	if (FileTypes.isVideo(file)) return 'video';
-	if (FileTypes.isText(file)) return 'text';
-	return null;
 }

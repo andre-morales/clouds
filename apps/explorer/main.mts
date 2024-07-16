@@ -387,24 +387,22 @@ export default class ExplorerApp extends App {
 		this.refresh();
 	}
 
-	async create(type) {
-		let fileName;
-
+	async create(type: string) {
+		let fileName: string;
 		switch (type) {
-		case 'text':
+		case 'text': 
 			fileName = 'New Text File.txt';
 			await FileSystem.writeText(this.cwd + fileName, '');
-			await this.refresh();
-			this.panel.enableRename(this.cwd + fileName);
 			break;
-
 		case 'dir':
 			fileName = 'New Directory/';
 			await FileSystem.makeDirectory(this.cwd + fileName);
-			await this.refresh();
-			this.panel.enableRename(this.cwd + fileName);
 			break;
 		}
+
+		await this.refresh();
+		let icon = this.panel.fileIcons[fileName];
+		icon.enableRename();
 	}
 
 	async erase(path) {
