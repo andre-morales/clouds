@@ -51,6 +51,7 @@
 	font: inherit;
 	line-height: inherit;
 	word-break: break-word;
+	user-select: text;
 }
 
 .app-notepad .line-numbers {
@@ -81,4 +82,14 @@
 
 	background: none;
 	color: transparent;
+}
+
+.notepad-find .row {
+	width: 100%;
+	display: flex;
+	padding: 2px 0;
+}
+
+.notepad-find .row > * {
+	flex-grow: 1;
 }

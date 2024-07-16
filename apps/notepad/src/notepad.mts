@@ -5,6 +5,7 @@ import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import { Editor } from './editor.mjs';
+import { FindHelper } from './find.mjs';
 
 const EXTENSION_SYNTAX_TABLE = {
 	'txt': 'plain',
@@ -25,6 +26,7 @@ export default class NotepadApp extends App {
 	path: string;
 	syntaxViewMenu: ContextMenu;
 	syntaxOptions: { [name: string]: Language };
+	findHelper: FindHelper;
 	$app: $Element;
 	$editor: $Element;
 	$textArea: $Element;
@@ -81,7 +83,7 @@ export default class NotepadApp extends App {
 		}
 
 		// Fetch application body
-		await this.window.setContentToUrl('/app/notepad/main.html');
+		await this.window.setContentToUrl('/app/notepad/pages/main.html');
 		
 		// Instantiate editor
 		this.editor = new Editor(this);
@@ -91,32 +93,7 @@ export default class NotepadApp extends App {
 		this.$textArea = $app.find('textarea');
 		this.$textArea.on('change', () => this.unsavedChanges = true);
 		
-		// Create view menu options
-		let viewMenu = ContextMenu.fromDefinition([
-			['*Line numbers', (v) => this.setLineNumbersVisible(v), { checked: true }],
-			['*Wrap lines', (v) => this.editor.setLineWrapping(v)],
-		]);
-		this.syntaxViewMenu = new ContextMenu([], "Syntax");
-		viewMenu.addItem(this.syntaxViewMenu);
-
-		$app.find('.view-menu').click((ev: MouseEvent) => {
-			let bounds = (ev.target as HTMLElement).getBoundingClientRect();
-			Client.desktop.openCtxMenuAt(viewMenu, bounds.left, bounds.bottom);
-		});
-
-		// Create file menu options
-		$app.find('.file-menu').click((ev: MouseEvent) => {
-			let fileMenu = ContextMenu.fromDefinition([
-				['-Open...', () => { this.open(); }],
-				['-Save', () => { this.save(); }],
-				['-Save as...', () => { this.saveAs(); }],
-				['|'],
-				['-Exit', () => { this.window.close(); }]
-			]);
-
-			let bounds = (ev.target as HTMLElement).getBoundingClientRect();
-			Client.desktop.openCtxMenuAt(fileMenu, bounds.left, bounds.bottom);
-		});
+		this.#initMenuBar();
 		
 		// Zoom on Ctrl + Mouse wheel
 		this.$textArea.on('wheel', (ev: WheelEvent) => {
@@ -143,6 +120,56 @@ export default class NotepadApp extends App {
 
 		// Make the window visible
 		this.window.setVisible(true);
+	}
+
+	#initMenuBar() {
+		let $app = this.$app;
+
+		// Create file menu options
+		$app.find('.file-menu').click((ev: MouseEvent) => {
+			let fileMenu = ContextMenu.fromDefinition([
+				['-Open...', () => { this.open(); }],
+				['-Save', () => { this.save(); }],
+				['-Save as...', () => { this.saveAs(); }],
+				['|'],
+				['-Exit', () => { this.window.close(); }]
+			]);
+
+			let bounds = (ev.target as HTMLElement).getBoundingClientRect();
+			Client.desktop.openCtxMenuAt(fileMenu, bounds.left, bounds.bottom);
+		});
+
+		// Edit menu
+		$app.find('.edit-menu').click((ev: MouseEvent) => {
+			let menu = ContextMenu.fromDefinition([
+				['-Find...', () => { this.openFindWindow(); }],
+			]);
+
+			let bounds = (ev.target as HTMLElement).getBoundingClientRect();
+			Client.desktop.openCtxMenuAt(menu, bounds.left, bounds.bottom);
+		});
+
+		// Create view menu options
+		let viewMenu = ContextMenu.fromDefinition([
+			['*Line numbers', (v) => this.setLineNumbersVisible(v), { checked: true }],
+			['*Wrap lines', (v) => this.editor.setLineWrapping(v)],
+		]);
+		this.syntaxViewMenu = new ContextMenu([], "Syntax");
+		viewMenu.addItem(this.syntaxViewMenu);
+
+		$app.find('.view-menu').click((ev: MouseEvent) => {
+			let bounds = (ev.target as HTMLElement).getBoundingClientRect();
+			Client.desktop.openCtxMenuAt(viewMenu, bounds.left, bounds.bottom);
+		});
+	}
+
+	async openFindWindow() {
+		if (!this.findHelper) {
+			this.findHelper = new FindHelper(this);
+			await this.findHelper.init();
+		}
+
+		this.findHelper.show();
 	}
 
 	setLineNumbersVisible(visible: boolean) {

@@ -53,14 +53,18 @@
 	border-bottom-color: var(--accent-color);
 }
 
+.field::placeholder {
+	font-style: italic;
+}
+
 .checkbox {
 	display: inline-grid;
 	-webkit-appearance: none;
 	appearance: none;
-	width: 20px;
-	height: 20px;
+	width: 22px;
+	height: 22px;
 	margin: .15em;
-	outline: solid 1px var(--base-color);
+	border: solid 1px var(--base-color);
 	vertical-align: middle;
 	place-content: center;
 	font-family: var(--base-font);
@@ -74,7 +78,7 @@
 }
 
 .checkbox:hover {
-	outline: solid 1px var(--accent-color);
+	border: solid 1px var(--accent-color);
 }
 
 progress {

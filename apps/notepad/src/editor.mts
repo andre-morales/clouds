@@ -1,5 +1,6 @@
 import * as Languages from "./languages.mjs";
 import NotepadApp from "./notepad.mjs";
+import ranges from "./ranges.mjs";
 
 declare var Prism: any;
 
@@ -59,6 +60,7 @@ export class Editor {
 
 	setContent(text: string) {
 		this.$textArea.val(text);
+		this.$textArea[0].setSelectionRange(0, 0);
 		this.#highlightText();
 		this.#updateLineNumbers();
 	}
@@ -84,6 +86,16 @@ export class Editor {
 		this.grContext.font = styles.font;
 		this.#updateLineNumbers();
 		this.#syncScroll();
+	}
+
+	/**
+	 * Find a Range into the highlighted \<code\> element corresponding with the begin and
+	 * end positions given.
+	 * @param begin Position of the first character in the text to be included in the range.
+	 * @param end Position after the last character in the text to be included in the range.
+	 */
+	getHighlightedRange(begin: number, end: number) {
+		return ranges.findWithBounds(this.$code, begin, end);
 	}
 
 	#highlightText() {
