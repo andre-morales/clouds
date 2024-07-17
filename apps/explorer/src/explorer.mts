@@ -10,7 +10,7 @@ import { ClientClass } from '/@sys/client_core.mjs';
 import { FilePanel } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
 import ExplorerDefaultHandler from './open_handler.mjs';
-import ExplorerProperties from './properties.mjs';
+import ExplorerProperties from './properties_dialog.mjs';
 import { FileOperation, FileOperationKind } from './file_operation.mjs';
 import Arrays from '/@sys/utils/arrays.mjs';
 
@@ -106,24 +106,15 @@ export default class ExplorerApp extends App {
 		});
 
 		// Aside links
-		$app.find('.home-link').click(() => this.go('/'));
+		$app.find('.dir-context-btn').click((ev: MouseEvent) => {
+			let menu = this.getFolderContextMenu();
+			ClientClass.get().desktop.openCtxMenuAt(menu, ev.clientX, ev.clientY);
+		});
+		$app.find('.root-link').click(() => this.go('/'));
 
 		// Context menus
 		let $filesContainer = $app.find('.files-container');
-		Client.desktop.addCtxMenuOn($filesContainer, () => ContextMenu.fromDefinition([
-			['>Sort by', [
-				['-Name', () => this.panel.sortBy('name')],
-				['-Date', () => this.panel.sortBy('date')]
-			]],
-			['|'],
-			['-Paste', () => this.paste(), { disabled: !this.canPaste() }],
-			['-Upload...', () => this.openUploadDialog()],
-			['|'],
-			['>Create', [
-				['-Directory', () => this.create('dir')],
-				['-Text File', () => this.create('text')]
-			]],
-		]));
+		Client.desktop.addCtxMenuOn($filesContainer, () => this.getFolderContextMenu());
 
 		// Read file type associations. Fail silently if the file doesn't exist.
 		try {
@@ -142,6 +133,23 @@ export default class ExplorerApp extends App {
 		// Go to the root directory and save it in history
 		await this.goHome();
 		this.history.save(this.cwd);
+	}
+
+	getFolderContextMenu() {
+		return ContextMenu.fromDefinition([
+			['>Sort by', [
+				['-Name', () => this.panel.sortBy('name')],
+				['-Date', () => this.panel.sortBy('date')]
+			]],
+			['|'],
+			['-Paste', () => this.paste(), { disabled: !this.canPaste() }],
+			['-Upload...', () => this.openUploadDialog()],
+			['|'],
+			['>Create', [
+				['-Directory', () => this.create('dir')],
+				['-Text File', () => this.create('text')]
+			]],
+		]);
 	}
 
 	async openUploadDialog() {
@@ -518,11 +526,6 @@ export default class ExplorerApp extends App {
 			await Util.sleep(500);
 			$operation.remove();
 		});		
-	}
-
-	openFileProperties(path) {
-		let dialog = new ExplorerProperties(this);
-		dialog.open(path);
 	}
 
 	openDefaultHandler(path) {

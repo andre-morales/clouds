@@ -1,6 +1,6 @@
 declare var Prism: any;
 
-export function registerJSON() {
+export function registerLanguages() {
 	Prism.languages.json = {
 		'property': {
 			pattern: /(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?=\s*:)/,

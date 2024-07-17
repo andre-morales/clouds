@@ -4,8 +4,7 @@
 }
 
 .app-notepad .editor {
-	--font-size: 12pt;
-	--font-family: 'Consolas', 'Lucida Console', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+	--font-family: 'Consolas', 'Lucida Console', 'Cascadia Mono', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
 	--font-weight: 500;
 	--line-height: 1.15;
 	--padding: 0 0 0 4px;
@@ -16,7 +15,7 @@
 	white-space: pre;
 	tab-size: 4;
 
-	font: var(--font-weight) var(--font-size) var(--font-family);
+	font: var(--font-weight) 12pt var(--font-family);
 	line-height: var(--line-height);
 }
 

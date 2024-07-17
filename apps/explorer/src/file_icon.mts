@@ -1,5 +1,6 @@
-import { FileTypes, Paths } from "/@sys/bridges/filesystem.mjs";
 import ExplorerApp, { type FileEntry } from "./explorer.mjs";
+import ExplorerProperties from "./properties_dialog.mjs";
+import { FileTypes, Paths } from "/@sys/bridges/filesystem.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import { CtxEntry, ContextMenu } from "/@sys/ui/context_menu.mjs";
 import { FileSystem } from "/@sys/bridges/filesystem.mjs";
@@ -64,6 +65,7 @@ export class FileIcon {
 
 		let menu: CtxEntry[] = [
 			['-Select', () => this.select()],
+			['|'],
 			['-Open', () => this.#app.openHandler(absPath)],
 		];
 
@@ -101,7 +103,7 @@ export class FileIcon {
 			['-Rename', () => { this.enableRename() }],
 			['-Erase', () => { this.#app.erase([absPath]) }],
 			['|'],
-			['-Properties', () => {this.#app.openFileProperties(absPath)}]
+			['-Properties', () => { ExplorerProperties.openPath(this.#app, absPath)}]
 		);
 		return ContextMenu.fromDefinition(menu);
 	}

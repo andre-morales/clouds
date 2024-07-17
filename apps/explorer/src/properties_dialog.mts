@@ -15,7 +15,12 @@ export default class ExplorerProperties {
 		this.explorer = explorer;
 	}
 
-	async open(path) {
+	static openPath(app: ExplorerApp, path: string) {
+		let helper = new ExplorerProperties(app);
+		helper.open(path);
+	}
+
+	async open(path: string) {
 		let statsProm = FileSystem.stats(path);
 		
 		this.window = Client.desktop.createWindow(this.explorer);

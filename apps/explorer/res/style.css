@@ -76,10 +76,18 @@
 
 .app-explorer aside {
 	width: 10%;
-	min-width: 7em;
+	min-width: 7.5em;
 	flex-shrink: 0;
 	border-right: solid 1px #555;
 	overflow: auto;
+	font-size: 12pt;
+	color: #eee;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.app-explorer aside.hidden {
+	display: none;
 }
 
 .app-explorer aside hr {
@@ -88,14 +96,25 @@
 	border-bottom: solid 1px #555;
 }
 
-.app-explorer aside.hidden {
-	display: none;
+.app-explorer .directory-options-list {
+	color: #f0f0f0;
+}
+
+.app-explorer .directory-opt {
+	margin: 3px;
+	padding: 1px;
+	padding-left: 1.75rem;
+	overflow-x: hidden;
+	white-space: wrap;
+	background-size: 20px 20px;
+	background-repeat: no-repeat;
+	background-position: left center;
 }
 
 .app-explorer .file-operations-list {
 	line-height: 0;
 	font-size: 11pt;
-	color: #eee;
+	white-space: normal;
 }
 
 .app-explorer .file-operation {
@@ -127,9 +146,6 @@
 .app-explorer .link {
 	margin: 4px;
 	padding-left: 1.75rem;
-	overflow-x: hidden;
-	text-overflow: ellipsis;
-	font-size: 12pt;
 	background-image: url('/res/img/ftypes/folder128.png');
 	background-size: contain;
 	background-repeat: no-repeat;
@@ -138,15 +154,6 @@
 .app-explorer .favorites .link {
 	filter: hue-rotate(150deg);
 }
-
-.app-explorer .files-area {
-	--file-panel-font: 'Tahoma';
-
-	display: flex;
-	flex-direction: column;
-	flex-grow: 1;
-	background: rgba(255, 255, 255, 0.025);	
-} 
 
 .app-explorer .selection-options {
 	display: none;
@@ -172,6 +179,15 @@
 	padding-left: 1em;
 	line-height: 32px;
 }
+
+.app-explorer .files-area {
+	--file-panel-font: 'Tahoma';
+
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	background: rgba(255, 255, 255, 0.025);	
+} 
 
 .app-explorer .files-container {
 	flex-grow: 1;
@@ -376,7 +392,7 @@
 	display: block;
 }
 .app-explorer .back-btn {
-	background-image: url('/res/img/icons/arrow.png');
+	background-image: url('/app/explorer/icons/arrow.png');
 	transform: rotate(-90deg);
 }
 
@@ -385,11 +401,11 @@
 }
 
 .app-explorer .up-btn {
-	background-image: url('/res/img/icons/arrow.png');
+	background-image: url('/app/explorer/icons/arrow.png');
 }
 
 .app-explorer .refresh-btn {
-	background-image: url('/res/img/icons/refresh.png');
+	background-image: url('/app/explorer/icons/refresh.png');
 }
 
 .app-explorer .search-btn {
@@ -402,4 +418,12 @@
 
 .app-explorer .clear-selection-btn {
 	background-image: url('/app/explorer/icons/clear_selection.png');
+}
+
+.app-explorer .refresh-opt {
+	background-image: url('/app/explorer/icons/refresh.png');
+}
+
+.app-explorer .dir-context-btn {
+	background-image: url('/res/img/icons/menu.png');
 }

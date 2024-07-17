@@ -6,6 +6,7 @@ import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import { Editor } from './editor.mjs';
 import { FindHelper } from './find.mjs';
+import { Deferred } from '/@sys/events.mjs';
 
 const EXTENSION_SYNTAX_TABLE = {
 	'txt': 'plain',
@@ -79,7 +80,7 @@ export default class NotepadApp extends App {
 			if (syntax) defaultSyntax = syntax;
 
 			this.setPath(Paths.removeFSPrefix(pathArg));
-			fileTextProm = FileSystem.readText(this.path);
+			fileTextProm = this.loadContent();
 		}
 
 		// Fetch application body
@@ -219,9 +220,31 @@ export default class NotepadApp extends App {
 		
 		// A path was chosen, set it and load the text
 		this.setPath(result[0]);
-		let text = await FileSystem.readText(this.path);
-
+		
+		let text = await this.loadContent();
 		this.editor.setContent(text);
+	}
+
+	async loadContent(): Promise<string> {
+		const charset = 'utf-8';
+
+		// Load file content
+		let blob = await FileSystem.readBlob(this.path);
+
+		// Read blob as text using the specified charset
+		let deferred = new Deferred();
+		let reader = new FileReader();
+		reader.onload = () => {
+			deferred.resolve(reader.result);
+		};
+		reader.onerror = () => {
+			deferred.reject('Failed to read blob as text');
+		};
+		reader.readAsText(blob, charset);
+		
+		// Await text decoding
+		let result = await deferred.promise;
+		return result;
 	}
 
 	async save() {

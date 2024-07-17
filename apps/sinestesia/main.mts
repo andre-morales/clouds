@@ -458,7 +458,7 @@ export default class SinestesiaApp extends App {
 		if (this.playlist.list) return;
 
 		// Files outside the filesystem can't be converted to playlists
-		if (!Paths.isFS(this.currentUrl) && !Paths.isFSV(this.currentUrl)) return;
+		if (!Paths.isFSV(this.currentUrl)) return;
 
 		// Convert the URL back to path form and remove FS prefix
 		let currentPath = Paths.removeFSPrefix(decodeURI(this.currentUrl));

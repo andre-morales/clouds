@@ -26,7 +26,7 @@ export class Editor {
 		this.app = app;
 		this.tabWidth = 4;
 		this.lineWrapping = false;
-		this.fontSize = 14;
+		this.fontSize = 12;
 
 		let $editor = this.app.$app.find('.editor');
 		this.$editor = $editor;
@@ -55,7 +55,7 @@ export class Editor {
 		
 		this.setLineWrapping(this.lineWrapping);
 		this.setFontSize(this.fontSize);
-		Languages.registerJSON();
+		Languages.registerLanguages();
 	}
 
 	setContent(text: string) {
