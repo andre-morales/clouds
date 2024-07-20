@@ -1,5 +1,5 @@
 import { Paths } from './filesystem.mjs';
-import Util from '../util.mjs';
+import Arrays from '../utils/arrays.mjs';
 
 var activeMediaElements: ActiveMedia[] = null;
 var currentMedia: ActiveMedia = null;
@@ -85,7 +85,7 @@ function setCurrentMedia(media: ActiveMedia) {
 	let srcUrlString = decodeURI(elem.currentSrc);
 	let srcUrl = new URL(srcUrlString);
 
-	let mdata: any = {};
+	let mData: any = {};
 
 	let fileName = Paths.file(srcUrlString);
 	// If filename has an extension, remove it
@@ -105,15 +105,15 @@ function setCurrentMedia(media: ActiveMedia) {
 		}
 	}
 		
-	mdata.title = fileName;
-	mdata.artist = "Clouds";
+	mData.title = fileName;
+	mData.artist = "Clouds";
 	if (thumb) {
-		mdata.artwork = [{
+		mData.artwork = [{
 			src: thumb
 		}];
 	}
 
-	navigator.mediaSession.metadata = new MediaMetadata(mdata);
+	navigator.mediaSession.metadata = new MediaMetadata(mData);
 }
 
 function updatePosition() {
@@ -142,7 +142,7 @@ function refreshActiveMedia() {
 		let me = activeMediaElements[i];
 		if (me.valid()) continue;
 		
-		Util.arrErase(activeMediaElements, me);
+		Arrays.erase(activeMediaElements, me);
 		if (currentMedia === me) {
 			currentMedia = null;
 		}

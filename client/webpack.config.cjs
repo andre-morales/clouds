@@ -4,7 +4,7 @@ const ROOT = path.resolve(__dirname, '../');
 module.exports = function(env, args) {
 	return {
 		mode:    (env.production) ? 'production' : 'development',
-		devtool: (env.production) ? 'source-map' : 'eval',
+		devtool: (env.production) ? 'source-map' : 'eval-source-map',
 
 		entry: {
 			shared: {

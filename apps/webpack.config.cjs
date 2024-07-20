@@ -18,7 +18,7 @@ let entryPoints = Object.fromEntries(entries);
 module.exports = function(env) {
 	return {
 		mode:    (env.production) ? 'production' : 'development',
-		devtool: (env.production) ? 'source-map' : 'eval',
+		devtool: (env.production) ? 'source-map' : 'eval-source-map',
 		entry: entryPoints,
 		module: {
 			rules: [

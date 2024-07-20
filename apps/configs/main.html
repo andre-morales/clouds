@@ -5,13 +5,17 @@
 	</nav>
 	<div class='ui-tab general-tab visible' data-tab='general'>
 		<div class='row input'>
-			<span>Background: </span>
+			<span>Background:</span>
 			<input class='field background-input'/>
 			<button class='button find'>Find...</button>
 		</div>
 		<label class='row'>
+			<input type="checkbox" class='checkbox use-pwa-features'/>
+			<span>Enable PWA features</span>
+		</label>
+		<label class='row'>
 			<input type="checkbox" class='checkbox fullscr-filter-toggle'/>
-			<span>Disable fullscreen filter</span>
+			<span>Enable fullscreen filter</span>
 		</label>
 		<label class='row'>
 			<input type="checkbox" class='checkbox drag-contents-toggle'/>
@@ -23,8 +27,12 @@
 	</div>
 	<div class='ui-tab debug-tab' data-tab='debug'>
 		<label class='row'>
-			<input type="checkbox" class='checkbox use-pdf-viewer'/>
-			<span>Use experimental PDF viewer</span>
+			<span>PDF viewer: </span>
+			<select class="pdf-viewer">
+				<option value="native">Native</option>
+				<option value="pdfjs-4.4.168-dist">PDF.js 4.4.168</option>
+				<option value="pdfjs-2.16.105-legacy">PDF.js 2.16.105 (Legacy)</option>
+			</select>
 		</label>
 		<div class='row'>
 			<button class='button' onclick='throw new Fault("Manually triggered fault.")'>Throw Fault</button>
@@ -38,6 +46,6 @@
 <div class='spacer'>
 </div>
 <nav class="row bottom">
-	<button class='button reload'>Reload</button>
+	<button class='button reload'>Discard changes</button>
 	<button class='button save'>Save</button>
 </nav>

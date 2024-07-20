@@ -1,7 +1,14 @@
 import App from '../app.mjs';
 import { Deferred } from '../events.mjs';
+import Window from './window.mjs';
 
-export function showOptions(app: App, title: string, msg: string, options: string[], settings: any = {}) {
+type DialogTuple = [Promise<number>, Window];
+
+interface DialogOptions {
+	icon?: string;
+}
+
+export function showOptions(app: App, title: string, msg: string, options: string[], settings: DialogOptions = {}): DialogTuple {
 	if (!msg) msg = "";
 
 	let deferred = new Deferred();
@@ -21,9 +28,8 @@ export function showOptions(app: App, title: string, msg: string, options: strin
 	$msg.append($('<span class="dialog-text"><br/>' + html + '</span>'));
 	$body.append($msg);
 
+	// Create a button for each option
 	let $options = $('<div class="options"></div>');
-	$body.append($options);
-
 	for (let i = 0; i < options.length; i++) {
 		let $btn = $(`<button class="button">${options[i]}</button>`);
 		$btn.click(() => {
@@ -32,6 +38,9 @@ export function showOptions(app: App, title: string, msg: string, options: strin
 		});
 		$options.append($btn);
 	}
+	$body.append($options);
+
+	// Resolve the promise when the window is finally closed.
 	win.on('closed', () => {
 		deferred.resolve(-1);
 	});
@@ -40,14 +49,14 @@ export function showOptions(app: App, title: string, msg: string, options: strin
 	win.setInitialPosition('center');
 	win.setVisible(true);
 
-	return [win, deferred.promise];
+	return [deferred.promise, win];
 }
 
-export function showError(app: App, title: string, msg: string) {
-	let [win, prom] = showOptions(app, title, msg, ["OK"], {
+export function showError(app: App, title: string, msg: string): DialogTuple {
+	let [prom, win] = showOptions(app, title, msg, ["OK"], {
 		icon: 'error'
 	});
-	return [win, prom];
+	return [prom, win];
 }
 
 export default { showOptions, showError };

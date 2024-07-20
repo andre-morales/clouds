@@ -1,9 +1,17 @@
-import { CtxMenuClass } from './context_menu.mjs';
+import { ContextMenu } from './context_menu.mjs';
 import { TaskbarButton } from './taskbar.mjs';
 import { Reactor, ReactorEvent } from '../events.mjs';
-import { InternalFault, IllegalStateFault } from '../faults.mjs';
+import { InternalFault, IllegalStateFault, BadParameterFault } from '../faults.mjs';
 import { App } from '../app.mjs';
 import Util from '../util.mjs';
+import Arrays from '../utils/arrays.mjs';
+
+export enum CloseBehavior {
+	NOTHING,
+	HIDE_WINDOW,
+	DISPOSE_WINDOW,
+	EXIT_APP
+}
 
 export default class Window {
 	app: App;
@@ -23,11 +31,11 @@ export default class Window {
 	minHeight: number;
 	restoreBounds: number[];
 	events: Reactor;
-	_closeBehavior: string;
+	#closeBehavior: CloseBehavior;
 	_initialPosition: string;
 	destroyed: boolean;
 	taskButton: TaskbarButton;
-	optionsCtxMenu: CtxMenuClass;
+	optionsCtxMenu: ContextMenu;
 	decorated: boolean;
 	zIndex: number;
 	$window: $Element;
@@ -61,8 +69,7 @@ export default class Window {
 		this.events = new Reactor();
 		this.events.register('closing', 'closed', 'backnav', 'resize', 'closereq');
 
-		// None | Close | Exit
-		this._closeBehavior = 'close';
+		this.#closeBehavior = CloseBehavior.DISPOSE_WINDOW;
 		this._initialPosition = 'default';
 
 		if (app.icon && app.mainWindow == this) {
@@ -138,12 +145,15 @@ export default class Window {
 		this.events.default('closing', (ev) => {
 			if (ev && ev.canceled) return;
 	
-			switch (this._closeBehavior) {
-			case 'exit':
+			switch (this.#closeBehavior) {
+			case CloseBehavior.EXIT_APP:
 				this.app.exit();
 				break;
-			case 'close':
+			case CloseBehavior.DISPOSE_WINDOW:
 				Client.desktop.destroyWindow(this);
+				break;
+			case CloseBehavior.HIDE_WINDOW:
+				this.setVisible(false);
 				break;
 			}
 		});
@@ -237,14 +247,14 @@ export default class Window {
 				return;
 			}
 
-			if (Client.desktop.configs.show_dragged_window_contents) {
+			if (Client.config.preferences.show_dragged_window_contents) {
 				this.setPosition(startX + dx, startY + dy);
 			} else {
 				Client.desktop.setDragRectangle(startX + dx, startY + dy, this.width, this.height);
 			}
 		};
 
-		let dragEnd = (mx, my) => {
+		let dragEnd = (mx: number, my: number) => {
 			if (!dragging) return;
 
 			dragging = false;
@@ -285,8 +295,8 @@ export default class Window {
 		});
 	}
 
-	makeOptionsCtxMenu(): CtxMenuClass {
-		return CtxMenuClass.fromEntries([
+	makeOptionsCtxMenu(): ContextMenu {
+		return ContextMenu.fromDefinition([
 			['-Fullscreen', () => this.goFullscreen()],
 			['-Maximize', () => this.setMaximized(true)],
 			['-Minimize', () => this.minimize()],
@@ -299,7 +309,7 @@ export default class Window {
 
 	setOwner(window: Window) {
 		if (this.owner) {
-			Util.arrErase(this.owner.children, this);
+			Arrays.erase(this.owner.children, this);
 		}
 		
 		if (window) window.children.push(this);
@@ -311,8 +321,7 @@ export default class Window {
 		this.events.dispatch('closing', new ReactorEvent());
 	}
 
-	// Resizes this window to fit its content
-	async pack() {
+	async getPackedDimensions() {
 		// If the window isn't visible, insert it into the layout but don't display its contents.
 		// This has to be done, otherwise its dimensions won't be calculated.
 		if (!this.visible) {
@@ -328,17 +337,22 @@ export default class Window {
 		await Util.sleep(0);
 
 		// Get computed dimensions and compensate 2px for borders		
-		let ow = this.$window.width() + 2;
-		let oh = this.$window.height() + 2;
-
-		// Set the size back with the computed values
-		this.setSize(ow, oh);
+		let pw = this.$window.width() + 2;
+		let ph = this.$window.height() + 2;
 
 		// If the window is invisible, restore its old status
 		if (!this.visible) {
 			this.$window.css('display', '');
 			this.$window.css('visibility', '');
 		}
+
+		return [pw, ph];
+	}
+
+	// Resizes this window to fit its content
+	async pack() {
+		let [ow, oh] = await this.getPackedDimensions();
+		this.setSize(ow, oh);
 	}
 
 	saveState() {
@@ -366,8 +380,18 @@ export default class Window {
 		return true;
 	}
 
-	setCloseBehavior(action) {
-		this._closeBehavior = action;
+	setCloseBehavior(action: CloseBehavior | string) {
+		if (typeof action !== 'string') {
+			this.#closeBehavior = action;
+			return;
+		}
+
+		switch(action) {
+			case 'exit': this.#closeBehavior = CloseBehavior.EXIT_APP; break;
+			case 'close': this.#closeBehavior = CloseBehavior.DISPOSE_WINDOW; break;
+			default:
+				throw new BadParameterFault("Invalid close behavior!");
+		}
 	}
 
 	setInitialPosition(position) {
@@ -405,13 +429,10 @@ export default class Window {
 		x = Math.trunc(x);
 		y = Math.trunc(y);
 
-		//	this.$window[0].style.left = `${x}px`;
-		//	this.$window[0].style.top = `${y}px`;
-
 		this.$window[0].style.transform = `translate(${x}px, ${y}px)`;
 	}
 
-	setSize(w, h) {
+	setSize(w: number, h: number) {
 		if (!isFinite(w) || !isFinite(h)) return;
 
 		if (w < this.minWidth) w = this.minWidth;

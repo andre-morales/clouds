@@ -17,8 +17,6 @@ export default class ConfigsApp extends App {
 	}
 
 	async init() {
-		let self = this;
-
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
 		this.window.setCloseBehavior('exit');
@@ -27,18 +25,20 @@ export default class ConfigsApp extends App {
 			if (this.unsavedChanges) {
 				ev.cancel();
 
-				let [win, choice] = Dialogs.showOptions(this, "Configuration", "Do you want to save your changes?", ['Yes', 'No', 'Cancel']);
+				let [choice] = Dialogs.showOptions(this, "Configuration", "Do you want to save your changes?", ['Yes', 'No', 'Cancel']);
 
-				choice.then(async (v) => {
+				choice.then(async (v: number) => {
 					switch(v) {
+					// Yes
 					case 0:
 						this.unsavedChanges = false;
-						await Client.desktop.saveConfigs();
-						Client.desktop.loadConfigs();
+						Client.config.preferencesMgr.save();
+						await Client.config.preferencesMgr.upload();
 						this.window.close();
 						break;
+					// No
 					case 1:
-						Client.desktop.loadConfigs();
+						Client.config.preferencesMgr.load();
 						this.unsavedChanges = false;
 						this.window.close();
 						break;
@@ -56,10 +56,7 @@ export default class ConfigsApp extends App {
 
 		// Background
 		let $input = $win.find('.background-input');
-		$input.val(Client.desktop.configs.background);
-		$input.on('change', () => {
-			Client.desktop.setBackground($input.val());
-		});
+		this.bindFieldToProp($input, 'background');
 
 		$win.find('.find').click(async () => {
 			let app = await Client.runApp('explorer') as any;
@@ -68,63 +65,84 @@ export default class ConfigsApp extends App {
 			if (!result || !result.length) return;
 
 			let file = Paths.toFSV(result[0]);
-			$input.val(file);
-			Client.desktop.setBackground(file);
-			this.unsavedChanges = true;
+			$input.val(file).change();
 		});
 
-		// Fullscreen filter
 		let $fullscrFilter = $win.find('.fullscr-filter-toggle');
-		$fullscrFilter.prop("checked", Client.desktop.configs.fullscreen_filter === false);
-		$fullscrFilter.change(async function (){
-			if (this.checked) {
-				Client.desktop.configs.fullscreen_filter = false;
-			} else {
-				Client.desktop.configs.fullscreen_filter = true;
-			}
-			self.unsavedChanges = true;
-		});
+		this.bindCheckboxToProp($fullscrFilter, 'fullscreen_filter');	
 
-		// Fullscreen filter
 		let $winContents = $win.find('.drag-contents-toggle');
-		$winContents.prop("checked", Client.desktop.configs.show_dragged_window_contents);
-		$winContents.change(async function (){
-			if (this.checked) {
-				Client.desktop.configs.show_dragged_window_contents = true;
-			} else {
-				Client.desktop.configs.show_dragged_window_contents = false;
-			}
-			self.unsavedChanges = true;
-		});
+		this.bindCheckboxToProp($winContents, 'show_dragged_window_contents');		
 
-		// Fullscreen filter
-		let $pdfViewer = $win.find('.use-pdf-viewer');
-		$pdfViewer.prop("checked", Client.desktop.configs.use_pdf_viewer);
-		$pdfViewer.change(async function (){
-			if (this.checked) {
-				Client.desktop.configs.use_pdf_viewer = true;
-			} else {
-				Client.desktop.configs.use_pdf_viewer = false;
-			}
-			self.unsavedChanges = true;
-		});
+		let $usePWAFeatures = $win.find('.use-pwa-features');
+		this.bindCheckboxToProp($usePWAFeatures, 'use_pwa_features');
 
-		// Logout
+		let $pdfViewer = $win.find('.pdf-viewer');
+		this.bindFieldToProp($pdfViewer, 'pdf_viewer');
+
 		$win.find('.logout').click(() => {
 			Client.logout();
 		})
 
 		$win.find('.reload').click(() => {
-			Client.desktop.loadConfigs();
+			Client.config.preferencesMgr.load();
 			this.unsavedChanges = false;
 		});
 
 		$win.find('.save').click(async () => {
-			await Client.desktop.saveConfigs();
-			Client.desktop.loadConfigs();
+			Client.config.preferencesMgr.save();
+			await Client.config.preferencesMgr.upload();
 			this.unsavedChanges = false;
 		});
 
 		this.window.setVisible(true);
+	}
+
+	/**
+	 * Associates a field element with a string property in preferences configuration, making sure
+	 * their states are synchronized with each other.
+	 */
+	bindFieldToProp($field: $Element, propertyName: string) {
+		const config = ClientClass.get().config;
+
+		$field.val(config.preferences[propertyName]);
+
+		// Mirror field changes to the property
+		$field.change(() => {
+			config.preferences[propertyName] = $field.val();
+			this.unsavedChanges = true;
+		});
+
+		// Watch the property for changes and modify our field accordingly
+		let observer = config.preferencesMgr.observeChain([propertyName], (value) => {
+			$field.val(value);
+		});
+
+		// Remove this observer when quitting the app
+		this.on('exit', () => observer.destroy());
+	}
+
+	/**
+	 * Associates a checkbox element with a boolean property in preferences configuration,
+	 * making sure their states are synchronized with each other.
+	 */
+	bindCheckboxToProp($checkbox: $Element, propertyName: string) {
+		const config = ClientClass.get().config;
+		
+		$checkbox.prop("checked", config.preferences[propertyName]);
+
+		// Mirror checkbox changes to the property
+		$checkbox.change(() => {
+			config.preferences[propertyName] = $checkbox[0].checked;
+			this.unsavedChanges = true;
+		});
+
+		// Watch the property for changes and modify our checkbox accordingly
+		let observer = config.preferencesMgr.observeChain([propertyName], (value) => {
+			$checkbox[0].checked = value;
+		});
+
+		// Remove this observer when quitting the app
+		this.on('exit', () => observer.destroy());
 	}
 }

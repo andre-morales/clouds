@@ -371,10 +371,15 @@ function decorateRequest(req: Request) {
 }
 
 function encodePath(path: string): string {
-	let stripped = path.replaceAll('/', '_')
-	.replaceAll('\\', '_')
-	.replaceAll('.', '_')
-	.replaceAll(':', '_');
-	return btoa(stripped);
+	// Remove special characters from path
+	let stripped = path.replaceAll(/[\\/.:']/g, '_');
 	
+	// Encode path string into UTF-8 bytes
+	let bytes = new TextEncoder().encode(stripped);
+
+	// Convert the bytes into a full string
+	let chars = Array.from(bytes, (byte) => String.fromCodePoint(byte));
+	let str = chars.join("");
+
+	return btoa(str);
 }

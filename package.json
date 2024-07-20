@@ -1,26 +1,30 @@
 {
   "name": "clouds",
   "version": "1.0.0",
-  "description": "",
+  "description": "Clouds",
   "private": true,
   "main": "api/runtime/main.mjs",
   "type": "module",
   "scripts": {
     "build-api-dist": "tsc -p api",
-    
+    "clean-api": "del \"api\\runtime\\*.*\" /Q /S",
     "build-client-dev": "webpack --config client/webpack.config.cjs --env development",
     "build-client-prod": "webpack --config client/webpack.config.cjs --env production",
     "build-client-types": "tsc -b client",
     "check-client-stats": "webpack --config client/webpack.config.cjs --env production --json > client/res/pack/.stats.json && npx webpack-bundle-analyzer client/res/pack/.stats.json",
-    
+    "clean-client": "del \"client\\types\\*.*\" \"client\\public\\pack\" /Q /S",
     "build-apps-dev": "webpack --config apps/webpack.config.cjs --env development",
     "build-apps-prod": "webpack --config apps/webpack.config.cjs --env production",
     "check-apps-types": "tsc -b apps",
-    "check-apps-stats": "webpack --config apps/webpack.config.cjs --env production --json > apps/.stats.json && npx webpack-bundle-analyzer apps/.stats.json"
+    "check-apps-stats": "webpack --config apps/webpack.config.cjs --env production --json > apps/.stats.json && npx webpack-bundle-analyzer apps/.stats.json",
+    "clean-apps": "",
+    "clean-all": "npm run clean-api && npm run clean-client && npm run clean-apps",
+    "build-all-prod": "npm run build-api-dist && npm run build-client-types && npm run build-client-prod && npm run check-apps-types && npm run build-apps-prod"
   },
-  "author": "",
+  "author": "André Morales",
   "license": "ISC",
   "dependencies": {
+    "@types/prismjs": "^1.26.4",
     "@types/zepto": "^1.0.36",
     "chalk": "^5.3.0",
     "compression": "^1.7.4",

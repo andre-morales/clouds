@@ -10,9 +10,11 @@ import UIControls from './ui/controls/controls.mjs';
 import ResourceManager from './resource_manager.mjs';
 import AppRunner from './app_runner.mjs';
 import { AppManager } from './app_manager.mjs';
+import { ConfigManager } from './config_manager.mjs';
+import Arrays from './utils/arrays.mjs';
 
-var clientInstance;
-var loadingText;
+var clientInstance: ClientClass;
+var loadingText: HTMLElement;
 
 export async function main() {
 	loadingText = document.getElementById('loading-text');
@@ -67,10 +69,10 @@ export async function main() {
 
 	clientInstance.start(Util.getURLParams());
 }
-
+	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.208';
-	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Early Test 2`;
+	static readonly CLIENT_VERSION = '1.0.220';
+	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	static readonly API_VERSION: string;
 
@@ -78,15 +80,17 @@ export class ClientClass {
 	desktop: Desktop;
 	audio: AudioSystem;
 	appManager: AppManager;
+	config: ConfigManager;
 	mediaSessionBridge: any;
 	logHistory: string;
 	runningApps: App[];
 	events: Reactor;
 
-	constructor() {
-	}
+	constructor() {}
 
 	async init() {
+		let promises: Promise<any>[] = [];
+
 		// Export global names
 		window.Client = clientInstance;
 		(window as any).App = App;
@@ -94,13 +98,7 @@ export class ClientClass {
 		// Start logging record
 		this.logHistory = '[Begin]\n';
 		this.initLogging();
-
-		// Create main structures
-		this.runningApps = [];
-		this.resources = new ResourceManager();
-		this.events = new Reactor();
-		this.events.register('log', 'apps-add', 'apps-rem');
-		
+	
 		// Display API version
 		fetch('/stat/version').then(async (fRes) => {
 			if (fRes.status != 200) return;
@@ -111,7 +109,16 @@ export class ClientClass {
 			$('#api-ver').text('API ' + version);
 		});
 
+		// Create main structures
+		this.runningApps = [];
+		this.resources = new ResourceManager();
+		this.events = new Reactor();
+		this.events.register('log', 'apps-add', 'apps-rem');
+		this.config = new ConfigManager();
 		UIControls.init();
+
+		// Fetch and load configuration
+		promises.push(this.config.init());
 
 		// Create desktop subsystem
 		this.desktop = new Desktop();
@@ -143,11 +150,11 @@ export class ClientClass {
 
 		// Initialize audio subsystem
 		this.audio = new AudioSystem();
+
+		await Promise.all(promises);
 	}
 
-	async start(args) {
-		this.desktop.start();
-
+	async start(args: any) {
 		if (args && args.loc) {
 			let app: any = await this.runApp('explorer');
 			app.go(args.loc);
@@ -182,7 +189,7 @@ export class ClientClass {
 		instance._dispose(exitCode);
 
 		// Remove app from app list
-		Util.arrErase(this.runningApps, instance);
+		Arrays.erase(this.runningApps, instance);
 		this.events.dispatch('apps-rem');
 	}
 
@@ -193,7 +200,7 @@ export class ClientClass {
 	initLogging() {
 		window.addEventListener('error', (ev) => {
 			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
-			if (ev.error.stack) {
+			if (ev.error && ev.error.stack) {
 				msg += ev.error.stack;
 			} else {
 				msg += 'unavailable';
@@ -209,13 +216,13 @@ export class ClientClass {
 	initGraphicalErrors() {
 		window.addEventListener('error', (ev) => {
 			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
-			if (ev.error.stack) {
+			if (ev.error && ev.error.stack) {
 				msg += ev.error.stack;
 			} else {
 				msg += 'unavailable';
 			}
 			let stack = '';
-			if (ev.error.stack) {
+			if (ev.error && ev.error.stack) {
 				stack = `\n${ev.error.stack}`;
 			}
 			this.showErrorDialog("Error", `Unhandled error:\n${ev.message}${stack}`);
@@ -230,7 +237,7 @@ export class ClientClass {
 		window.onunhandledrejection = undefined;
 	}
 
-	log(msg) {
+	log(msg: string) {
 		console.log(msg);
 
 		try {
@@ -269,7 +276,7 @@ export class ClientClass {
 
 	showErrorDialog(title, msg, error?: Error) {
 		try {
-			let [win, p] = Dialogs.showError(this.desktop.dwm, title, msg);
+			let [_, win] = Dialogs.showError(this.desktop.dwm, title, msg);
 			win.$window.find('.options button').focus();
 		} catch (err) {
 			console.log("---- Couldn't display the error ----");

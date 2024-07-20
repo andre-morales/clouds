@@ -5,6 +5,9 @@ interface ResourceMap {
 	[key: string]: Resource;
 }
 
+/**
+ * Holds and manages resources by ids. A resource can be shared across multiple managers.
+ */
 export class ResourceManager {
 	resources: ResourceMap;
 
@@ -73,8 +76,9 @@ export class ResourceManager {
 
 	/**
 	 * Loads the module with the given url and registers a user.
-	 * If the module is already loaded, just register another user for it. Otherwise, load it and register its first user.
-	 * Returns the resource object that represents this module.
+	 * If the module is already loaded, just register another user for it. Otherwise, load it and
+	 * register its first user.
+	 * @returns The resource object that represents this module.
 	 */
 	async fetchModule(url: string, user: unknown): Promise<Resource> {
 		return this.#fetchWebResource(url, user, async (id) => {

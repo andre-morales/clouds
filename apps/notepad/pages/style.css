@@ -1,0 +1,94 @@
+.app-notepad {
+	display: flex;
+	flex-direction: column;
+}
+
+.app-notepad .editor {
+	--font-family: 'Consolas', 'Lucida Console', 'Cascadia Mono', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+	--font-weight: 500;
+	--line-height: 1.15;
+	--padding: 0 0 0 4px;
+
+	display: flex;
+	height: 100%;
+	overflow: hidden;
+	white-space: pre;
+	tab-size: 4;
+
+	font: var(--font-weight) 12pt var(--font-family);
+	line-height: var(--line-height);
+}
+
+.app-notepad .editor.wrapping {
+	white-space: pre-wrap;
+}
+
+.app-notepad .editor-stack {
+	position: relative;
+	flex-grow: 1;	
+	height: 100%;
+}
+
+.app-notepad pre {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	overflow: auto;
+	margin: 0;
+	padding: var(--padding);
+	border: none;
+	font: inherit;
+	line-height: inherit;
+	white-space: inherit;
+}
+
+.app-notepad code {
+	border: none;
+	white-space: inherit;
+	font: inherit;
+	line-height: inherit;
+	word-break: break-word;
+	user-select: text;
+}
+
+.app-notepad .line-numbers {
+	flex-shrink: 0;
+	overflow: hidden;
+	padding: 0 4px;
+	padding-bottom: 2ch;
+	text-align: right;
+}
+
+.app-notepad textarea {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+
+	border: none;
+	margin: 0;
+	padding: var(--padding);
+	outline: none;
+	resize: none;
+
+	font: inherit;
+	line-height: inherit;
+	tab-size: 4;
+	white-space: inherit;
+
+	background: none;
+	color: transparent;
+}
+
+.notepad-find .row {
+	width: 100%;
+	display: flex;
+	padding: 2px 0;
+}
+
+.notepad-find .row > * {
+	flex-grow: 1;
+}

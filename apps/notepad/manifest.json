@@ -2,9 +2,13 @@
 	"id": "notepad",
 	"icon": "/app/notepad/icon96.png",
 	"modules": [
-		"/app/notepad/app.bundle.mjs"	
+		"/app/notepad/app.bundle.mjs"
+	],
+	"scripts": [
+		"/res/lib/prism/prism.js"
 	],
 	"styles": [
-		"/app/notepad/style.css"
+		"/app/notepad/pages/style.css",
+		"/app/notepad/pages/monokai.css"
 	]
 }

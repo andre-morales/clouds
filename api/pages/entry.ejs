@@ -8,7 +8,9 @@
 	<script src='/res/boot/entry.mjs' type='module'></script>
 	<link rel="stylesheet" type="text/css" href="/res/css/base.css">
 	<link rel="icon" type="image/x-icon" href="/res/favicon.png">
-	<link rel="manifest" href="/res/manifest.json">
+	<% if (use_pwa_features) { %>
+		<link rel="manifest" href="/res/manifest.json">
+	<% } %>
 	<style id="fullscreen-style"></style>
 </head>
 <body></body>

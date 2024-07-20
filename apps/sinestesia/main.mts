@@ -1,4 +1,4 @@
-import { CtxMenuClass } from '/@sys/ui/context_menu.mjs';
+import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import { FileSystem, Paths, FileTypes } from '/@sys/bridges/filesystem.mjs';
 import Fullscreen from '/@sys/ui/fullscreen.mjs';
 import Util from '/@sys/util.mjs';
@@ -264,14 +264,14 @@ export default class SinestesiaApp extends App {
 
 	createContextMenu() {
 		let $win = this.window.$window;
-		let ctxMenu = CtxMenuClass.fromEntries([
+		let ctxMenu = ContextMenu.fromDefinition([
 			['-Open...', () => this.showOpenDialog()],
 			['-Open folder...', () => this.showOpenFolderDialog()],
 			['|'],
-			['-Autoplay', (v) => {
+			['*Autoplay', (v) => {
 				this.autoPlay = v;
 			}],
-			['-Lock playback', (v) => {
+			['*Lock playback', (v) => {
 				this.lockedPlayback = v;
 				this.cancelPauseEvents = v;
 			}],
@@ -458,7 +458,7 @@ export default class SinestesiaApp extends App {
 		if (this.playlist.list) return;
 
 		// Files outside the filesystem can't be converted to playlists
-		if (!Paths.isFS(this.currentUrl) && !Paths.isFSV(this.currentUrl)) return;
+		if (!Paths.isFSV(this.currentUrl)) return;
 
 		// Convert the URL back to path form and remove FS prefix
 		let currentPath = Paths.removeFSPrefix(decodeURI(this.currentUrl));

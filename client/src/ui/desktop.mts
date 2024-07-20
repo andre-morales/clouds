@@ -1,17 +1,16 @@
 import TaskbarM, { Taskbar } from './taskbar.mjs'
 import Window from './window.mjs';
 import Fullscreen from './fullscreen.mjs';
-import { CtxMenuClass } from './context_menu.mjs';
+import { ContextMenu } from './context_menu.mjs';
 import App from '../app.mjs';
 import { Reactor } from '../events.mjs';
-import { FileSystem } from '../bridges/filesystem.mjs';
-import Util from '../util.mjs';
+import { ClientClass } from '../client_core.mjs';
+import Arrays from '../utils/arrays.mjs';
 
 export class Desktop {
 	windows: Window[];
 	dwm: App;
 	events: Reactor;
-	configs: any;
 	iconifiedGroups: any;
 	taskbar: Taskbar;
 	focusedWindow: Window;
@@ -19,11 +18,11 @@ export class Desktop {
 	mouseY: number;
 	contextMenuOpen: boolean;
 	dragRectState: any;
-	_configsProm: any;
 	windowsWidth: number;
 	windowsHeight: number;
 	screenWidth: number;
 	screenHeight: number;
+	#currentContextMenu: ContextMenu;
 	$desktop: $Element;
 	$windows: $Element;
 	$contextMenu: $Element;
@@ -36,9 +35,8 @@ export class Desktop {
 		});
 		this.events = new Reactor();
 		this.events.register("window-created", "window-destroyed");
-		this.configs = [];
 		this.iconifiedGroups = {};
-		this.$desktop = $('.desktop');
+		this.$desktop = $('#desktop');
 		this.$windows = $('.windows');
 		this.taskbar = new TaskbarM.Taskbar();
 		this.$contextMenu = $('.context-menu');
@@ -48,9 +46,7 @@ export class Desktop {
 		this.contextMenuOpen = false;
 		this.dragRectState = {};
 
-		this._configsProm = this.loadConfigs();
-
-		let menu = CtxMenuClass.fromEntries([
+		let menu = ContextMenu.fromDefinition([
 			["-System Settings", () => {
 				Client.runApp('configs');
 			}],
@@ -66,9 +62,9 @@ export class Desktop {
 			}],			
 		]);
 
-		this.addCtxMenuOn(this.$desktop.find('.backplane'), () => menu);
+		this.addCtxMenuOn(this.$desktop.find('.back-plane'), () => menu);
 
-		this._installWindowResizeHandlers();
+		this.#installWindowResizeHandlers();
 
 		$(document).on('mousemove', (ev: MouseEvent) => {
 			this.mouseX = ev.clientX;
@@ -76,14 +72,16 @@ export class Desktop {
 		});
 
 		$(document).on('mousedown', (ev) => {
-			let $cmenu = this.$contextMenu;
+			let $cMenu = this.$contextMenu;
 			let el = ev.target as HTMLElement;
 
 			// If the context menu *is not* and *does not contain*
 			// the clicked element.
-			if ($cmenu[0] != el && $cmenu.has(el).length === 0) {
+			if ($cMenu[0] != el && $cMenu.has(el).length === 0) {
 				this.contextMenuOpen = false;
-				$cmenu.removeClass('visible');
+				this.#currentContextMenu = null;
+				$cMenu.removeClass('visible');
+				$cMenu.find('.context-menu').removeClass('visible');
 			}
 		});
 
@@ -97,39 +95,33 @@ export class Desktop {
 			}
 		});	
 		
+		this.#initPrefBindings();
+
 		// Ready fullscreen system
 		Fullscreen.init();
 		this._queryBounds();	
 	}
 
-	async start() {
-		await this._configsProm;
+	/**
+	 * Watch changes to important preferences keys.
+	 */
+	#initPrefBindings() {
+		let pref = ClientClass.get().config.preferencesMgr;
+
+		pref.observeProperty("background", () => {
+			this.#reloadBackground();
+		});
+
+		pref.observeProperty("fullscreen_filter", (value) => {
+			if (value === false) {
+				document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-off)');
+			} else {
+				document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-on)');
+			}
+		});
 	}
 
-	async saveConfigs() {
-		await FileSystem.writeJson('/usr/.system/desktop.json', this.configs);
-	}
-
-	async loadConfigs() {
-		try {
-			this.configs = await FileSystem.readJson('/usr/.system/desktop.json');
-		} catch (err) {
-			this.configs = {};
-			console.warn('Desktop.json failed to load. Assuming defaults.', err);
-		}
-		
-
-		let bg = this.configs.background;
-		if (bg) this.setBackground(bg);
-
-		if (this.configs.fullscreen_filter === false) {
-			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-off)');
-		} else {
-			document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-on)');
-		}
-	}
-
-	createWindow(app) {
+	createWindow(app: App) {
 		let win = new Window(app);
 		this.windows.push(win);
 		app.windows.push(win);
@@ -139,9 +131,9 @@ export class Desktop {
 		return win;
 	}
 
-	destroyWindow(win) {
+	destroyWindow(win: Window) {
 		// Remove window from windows list
-		if (Util.arrErase(this.windows, win) < 0) return;
+		if (Arrays.erase(this.windows, win) < 0) return;
 
 		// Dispatch closed event
 		win.events.dispatch('closed');
@@ -151,11 +143,11 @@ export class Desktop {
 			Client.desktop.destroyWindow(c);
 		}
 
-		// Relase window resources
+		// Release window resources
 		win._dispose();
 		
 		// Remove window from list
-		Util.arrErase(win.app.windows, win);
+		Arrays.erase(win.app.windows, win);
 
 		// If this was the main window, exit the owner app
 		if (win.app.exitMode == 'last-win-closed') {
@@ -165,9 +157,9 @@ export class Desktop {
 		this.events.dispatch('window-destroyed');
 	}
 
-	bringWindowToFront(win) {
+	bringWindowToFront(win: Window) {
 		this.windows.push(this.windows.splice(this.windows.indexOf(win), 1)[0]);
-		this._restack();
+		this.#restack();
 	}
 
 	getDesktopSize() {
@@ -193,7 +185,7 @@ export class Desktop {
 	}
 
 	// Repositions the window so that it doesn't stay directly on top of any other window
-	realignWindow(win) {
+	realignWindow(win: Window) {
 		if (win.maximized) return;
 
 		let x = win.posX;
@@ -212,34 +204,38 @@ export class Desktop {
 		win.setPosition(x, y);
 	}
 
-	setBackground(url) {
-		this.$desktop.css('background-image', 'url("' + url + '")');
-		this.configs.background = url;
+	setBackground(url: string) {
+		Client.config.preferences.background = url;
 	}
-
-	openCtxMenuAt(menu, x, y) {
+	
+	openCtxMenuAt(menu: ContextMenu, x: number, y: number) {
+		if (this.#currentContextMenu) {
+			this.#currentContextMenu.close();
+		}
+		this.#currentContextMenu = menu;
+		
 		this.contextMenuOpen = true;
 		let $menu = this.$contextMenu;
 		$menu.removeClass('.visible');
 		$menu.empty();
-
-		menu.buildIn($menu, this.$contextMenu, this.screenWidth, this.screenHeight);
+		menu.setBase($menu)
+		menu.build();
 
 		$menu.addClass('visible');
-		let mwidth = $menu[0].offsetWidth;
-		let mheight = $menu[0].offsetHeight;
+		let mWidth = $menu[0].offsetWidth;
+		let mHeight = $menu[0].offsetHeight;
 
-		if (x + mwidth > this.screenWidth) x -= mwidth;
+		if (x + mWidth > this.screenWidth) x -= mWidth;
 		if (x < 0) x = 0;
 
-		if (y + mheight > this.screenHeight) y -= mheight;
+		if (y + mHeight > this.screenHeight) y -= mHeight;
 		if (y < 0) y = 0;
 
 		$menu.css('left', x);
 		$menu.css('top', y);
 	}
 
-	addCtxMenuOn(element, menuFn) {
+	addCtxMenuOn(element: HTMLElement | $Element, menuFn: (ev: MouseEvent) => ContextMenu) {
 		$(element).on('contextmenu', (ev: MouseEvent) => {
 			let mx = ev.clientX, my = ev.clientY;
 	
@@ -256,10 +252,10 @@ export class Desktop {
 		document.body.style.cursor = cursor;
 	}
 
-	// Creates an app icon for each registered app and lays it out desktop backplane,
+	// Creates an app icon for each registered app and lays it out desktop back-plane,
 	// also configures their input behavior.
 	setupApps() {
-		let $apps = $('.backplane');
+		let $apps = $('.back-plane');
 		for (let [id, def] of Client.appManager.getAppEntries()) {
 			if (def.flags.includes('disabled')) continue;
 			if (!def.flags.includes('desk')) continue;
@@ -323,7 +319,7 @@ export class Desktop {
 	}
 
 	// Sets windows' z-index to match the windows array.
-	_restack() {
+	#restack() {
 		let index = 1;
 		for (let win of this.windows) {
 			let newZ = index++;
@@ -337,16 +333,16 @@ export class Desktop {
 		}
 	}
 
-	_installWindowResizeHandlers() {
+	#installWindowResizeHandlers() {
 		let resWin = null;
 		let startB;
 		let startMX, startMY;
 		let dragDir;
 		let wx, wy, ww, wh;
 
-		let dragStart = (mx, my, ev) => {
+		let dragStart = (mx: number, my: number, ev: Event) => {
 			for(let win of this.windows.slice().reverse()) {
-				dragDir = this._getResizeDirection(win, mx, my);
+				dragDir = this.#getResizeDirection(win, mx, my);
 
 				if (dragDir) {
 					if (win.maximized) return;
@@ -363,18 +359,18 @@ export class Desktop {
 			};
 		}
 
-		let dragMove = (mx, my) => {
+		let dragMove = (mx: number, my: number) => {
 			if (resWin) {
 				doResize(mx, my);
 				return;
 			}
 
 			for(let win of this.windows.slice().reverse()) {
-				let dir = this._getResizeDirection(win, mx, my);
+				let dir = this.#getResizeDirection(win, mx, my);
 				if (dir) {
 					if (win.maximized) return;
 
-					this.setCursor(this._getDirectionCursor(dir));
+					this.setCursor(this.#getDirectionCursor(dir));
 					return; 
 				}
 
@@ -384,7 +380,7 @@ export class Desktop {
 			this.setCursor(null);
 		};
 
-		let doResize = (mx, my) => {
+		let doResize = (mx: number, my: number) => {
 			if (!dragDir) return;
 
 			let dx = mx - startMX;
@@ -409,14 +405,14 @@ export class Desktop {
 			if (dragDir[0] < 0) { wx += dx; }
 			if (dragDir[1] < 0) { wy += dy; }
 
-			if (this.configs.show_dragged_window_contents) {
+			if (Client.config.preferences.show_dragged_window_contents) {
 				resWin.setBounds(wx, wy, ww, wh);
 			} else {
 				this.setDragRectangle(wx, wy, ww, wh);
 			}
 		};
 
-		let dragEnd = (mx, my) => {
+		let dragEnd = (mx: number, my: number) => {
 			if (!resWin) return;
 			doResize(mx, my);
 			resWin.setBounds(wx, wy, ww, wh);
@@ -452,7 +448,7 @@ export class Desktop {
 		});
 	}
 
-	_getDirectionCursor(dir) {
+	#getDirectionCursor(dir: number[]) {
 		let h = dir[0], v = dir[1];
 		if (h == 0) return "ns-resize";
 		if (v == 0) return "ew-resize";
@@ -461,12 +457,11 @@ export class Desktop {
 		return "initial";
 	}
 
-	_getResizeDirection(w, mx, my) {
+	#getResizeDirection(w, mx, my) {
 		if (!w.visible || !w.decorated) return null;
 
 		const im = 4;  // Inside margin
 		const om = 8;  // Outside margin
-		const abs = Math.abs;
 
 		let dx = mx - w.posX,  dy = my - w.posY;
 		let dw = dx - w.width, dh = dy - w.height;
@@ -486,6 +481,11 @@ export class Desktop {
 		if (h == 0 && v == 0) return null;
 		return [h, v]
 	};
+
+	#reloadBackground() {
+		let url = ClientClass.get().config.preferences.background;
+		this.$desktop.css('background-image', 'url("' + url + '")');
+	}
 }
 
 export default Desktop;

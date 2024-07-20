@@ -1,7 +1,7 @@
 import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Window from '/@sys/ui/window.mjs';
-import ExplorerApp from './main.mjs';
+import ExplorerApp from '../main.mjs';
 
 var Client: ClientClass;
 
@@ -15,7 +15,12 @@ export default class ExplorerProperties {
 		this.explorer = explorer;
 	}
 
-	async open(path) {
+	static openPath(app: ExplorerApp, path: string) {
+		let helper = new ExplorerProperties(app);
+		helper.open(path);
+	}
+
+	async open(path: string) {
 		let statsProm = FileSystem.stats(path);
 		
 		this.window = Client.desktop.createWindow(this.explorer);

@@ -24,6 +24,17 @@
 			"detail": "tsc: watch - client/tsconfig.json"
 		},
 		{
+			"type": "typescript",
+			"tsconfig": "apps/tsconfig.json",
+			"option": "watch",
+			"problemMatcher": [
+				"$tsc-watch"
+			],
+			"group": "build",
+			"label": "👀 APPS: Watch Typechecking",
+			"detail": "tsc: watch - apps/tsconfig.json"
+		},
+		{
 			"type": "npm",
 			"script": "build-api-dist",
 			"group": "build",
@@ -61,7 +72,7 @@
 			"group": "build",
 			"problemMatcher": [],
 			"label": "📦 APPS: Build",
-			"detail": "npm run build-apps"
+			"detail": "npm run build-apps-prod"
 		},
 	]
 }

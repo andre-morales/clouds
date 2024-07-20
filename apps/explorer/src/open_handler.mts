@@ -2,6 +2,7 @@ import { Paths } from '/@sys/bridges/filesystem.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Util from '/@sys/util.mjs';
 import Window from '/@sys/ui/window.mjs';
+import { type AppDefinition } from '/@sys/app_manager.mjs';
 
 var Client: ClientClass;
 
@@ -72,12 +73,15 @@ export default class ExplorerDefaultHandler {
 
 		$win.find('.window-body').addClass('openwith-helper');
 		let $list = $win.find('ul');
-		for (let [id, defs_] of Object.entries(Client.appManager.allDeclarations)) {
-			let defs: any = defs_;	
+		for (let [id, defs_] of Client.appManager.getAppEntries()) {
+			let defs: AppDefinition = defs_;	
 
 			if (!defs.flags.includes('tool')) continue;
+			
+			let name = defs.displayName;
+			let iconUrl = defs.getIcon(24).url;
 
-			let $item = $(`<li>${defs.name}</li>`);
+			let $item = $(`<li><img src='${iconUrl}'>${name}</li>`);
 			$item.click(async () => {
 				let app = await Client.runApp(id, [Paths.toFSV(path)]);
 				if (app.mainWindow) {

@@ -8,11 +8,15 @@
 # Modules should be obtained from npm
 node_modules
 
-# Runtime API JS should be compiled from TS
-api/runtime
+# PDFjs and Prism.js should be obtained externally
+client/public/lib/pdfjs
+client/public/lib/prism
 
 # SSL configuration should be kept private
 config/ssl
+
+# Runtime API JS should be compiled from TS
+api/runtime
 
 # Ignore generated client bundled content
 client/public/pack
@@ -23,13 +27,9 @@ client/types
 *.map
 *.tsbuildinfo
 
-# Ignore apps generated executables, only keep their typescript source code
-apps/**/*.src.mjs
-
 # Original sample image shouldn't be tracked
 docs/sample.png
 
 # Private user folder files
-usr/test/.system/collections.json
 usr/test/.system/favorites.json
-usr/test/.system/desktop.json
+usr/test/.system/preferences.json

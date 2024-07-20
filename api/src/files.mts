@@ -135,6 +135,15 @@ export async function copy(source: string, destination: string): Promise<void> {
 	}
 }
 
+export async function readJSON(path: string): Promise<any> {
+	try {
+		let contents = await FS.promises.readFile(path);
+		return JSON.parse(contents.toString());
+	} catch(err) {
+		throw wrapIOError(err);
+	}
+}
+
 /**
  * Wrap a general IO error within a FileOperationError.
  * @param err IO error with code property.

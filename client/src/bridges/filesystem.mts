@@ -2,9 +2,14 @@ import Util from '../util.mjs';
 import { BadParameterFault, FetchException, Exception } from '../faults.mjs';
 
 export class FileSystem {
-	static async readText(path: string) {
+	static async readText(path: string): Promise<string> {
 		let res = await fetch(Paths.toFSV(path));
 		return await res.text();
+	}
+
+	static async readBlob(path: string): Promise<Blob> {
+		let res = await fetch(Paths.toFSV(path));
+		return await res.blob();
 	}
 
 	static async readJson(path: string) {
@@ -127,41 +132,15 @@ export class FileSystem {
 }
 
 export class Paths {
-	static toFS(path: string, op: string) {
-		// If it is already a FS path, replace the op	
-		if (Paths.isFS(path)) {
-			// Remove fs-op prefix and add new one
-			let p = path.substring(path.indexOf('/', 4));
-			return `/fs/${op}${p}`;
-		} else {
-			// Make sure path is absolute
-			if (!path.startsWith('/')) {
-				throw new BadParameterFault("FS path doesn't start with /. Paths must be absolute before being converted.");
-			}
-			return `/fs/${op}${path}`
-		}
-	}
-
 	static toFSV(path: string) {
 		// If it is already a FSV path, don't alter anything
 		if (Paths.isFSV(path)) return path;
 
-		// If is a FS path, remove the op
-		if (Paths.isFS(path)) {
-			// Remove fs-op prefix
-			let p = path.substring(path.indexOf('/', 4));
-			return `/fsv${p}`;
-		} else {
-			// Make sure path is absolute
-			if (!path.startsWith('/')) {
-				throw new BadParameterFault("FSV path doesn't start with /. Paths must be absolute before being converted.");
-			}
-			return `/fsv${path}`
+		// Make sure path is absolute
+		if (!path.startsWith('/')) {
+			throw new BadParameterFault("FSV path doesn't start with /. Paths must be absolute before being converted.");
 		}
-	}
-
-	static isFS(path: string) {
-		return path.startsWith('/fs/');
+		return `/fsv${path}`
 	}
 
 	static isFSV(path: string) {
@@ -172,8 +151,6 @@ export class Paths {
 	static removeFSPrefix(path: string) {
 		if (Paths.isFSV(path)) {
 			return path.substring(path.indexOf('/', 1));		
-		} else if (Paths.isFS(path)) {
-			return path.substring(path.indexOf('/', 4));
 		}
 		return path;
 	}
@@ -192,6 +169,14 @@ export class Paths {
 		} else {
 			return path.substring(path.lastIndexOf('/') + 1);
 		}
+	}
+
+	static getExtension(path: string) {
+		let file = Paths.file(path);
+		let i = file.lastIndexOf('.');
+		if (i == -1) return null;
+
+		return file.substring(i + 1);
 	}
 
 	static join(base: string, child: string) {

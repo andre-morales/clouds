@@ -12,25 +12,13 @@
 	background-size: 21px;
 }
 
-.app-explorer .back-btn {
-	background-image: url('/res/img/icons/arrow.png');
-	transform: rotate(-90deg);
-}
-
-.app-explorer .up-btn {
-	background-image: url('/res/img/icons/arrow.png');
-}
-
-.app-explorer .refresh-btn {
-	background-image: url('/res/img/icons/refresh.png');
-}
-
 .app-explorer .navigation {
 	display: flex;
 	padding: 4px;
 	font-size: 12pt;
 	justify-content: stretch;
 	justify-items: stretch;
+	position: relative;
 }
 
 .app-explorer .address-field {
@@ -39,7 +27,24 @@
 }
 
 .app-explorer .search-field {
-	margin: 0;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: auto;
+	min-width: 0;
+	height: auto;
+	background-color: #333;
+}
+
+.app-explorer .search-field:not(:focus) {
+	width: 0;
+	padding: 0;
+}
+
+.app-explorer .search-field::placeholder {
+	color: gray;
 }
 
 .app-explorer .body {
@@ -71,48 +76,124 @@
 
 .app-explorer aside {
 	width: 10%;
-	min-width: 7em;
+	min-width: 7.5em;
 	flex-shrink: 0;
-	background: rgba(0, 0, 0, 0.1);
+	border-right: solid 1px #555;
+	overflow: auto;
+	font-size: 12pt;
+	color: #eee;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .app-explorer aside.hidden {
 	display: none;
 }
 
-.app-explorer .favorites-btn {
-	font-size: 11pt;
+.app-explorer aside hr {
+	margin: 4px;
 	border: none;
-	border-left: white;
-	background: rgba(128, 128, 128, 0.1);
+	border-bottom: solid 1px #555;
 }
 
-.app-explorer .favorites li {
-	margin: 4px;
+.app-explorer .directory-options-list {
+	color: #f0f0f0;
+}
+
+.app-explorer .directory-opt {
+	margin: 3px;
+	padding: 1px;
 	padding-left: 1.75rem;
 	overflow-x: hidden;
-	text-overflow: ellipsis;
-	font-size: 12pt;
+	white-space: wrap;
+	background-size: 20px 20px;
+	background-repeat: no-repeat;
+	background-position: left center;
+}
+
+.app-explorer .file-operations-list {
+	line-height: 0;
+	font-size: 11pt;
+	white-space: normal;
+}
+
+.app-explorer .file-operation {
+	padding: 0 4px 8px 4px;
+}
+
+.app-explorer .file-operation.hide {
+	opacity: 0;
+	animation: 500ms ease-in hide-away;
+}
+
+@keyframes hide-away {
+	0% { opacity: 1; }
+	100% { opacity: 0; }
+}
+
+.app-explorer .file-operation span {
+	line-height: 1;
+}
+
+.app-explorer .file-operation progress {
+	width: 100%;
+	height: 0.25em;
+
+	--color: var(--accent-color-dark);
+	--background: var(--base-color-dark);
+}
+
+.app-explorer .link {
+	margin: 4px;
+	padding-left: 1.75rem;
 	background-image: url('/res/img/ftypes/folder128.png');
 	background-size: contain;
 	background-repeat: no-repeat;
+}
+
+.app-explorer .favorites .link {
 	filter: hue-rotate(150deg);
 }
 
-.app-explorer .collections li {
-	margin: 4px;
-	padding-left: 1.75rem;
-	font-size: 12pt;
-	background-image: url('/res/img/ftypes/folder128.png');
-	background-size: contain;
-	background-repeat: no-repeat;
-	filter: hue-rotate(60deg);
+.app-explorer .selection-options {
+	display: none;
+	text-align: right;
+	height: 32px;
+	flex-shrink: 0;
+	background-color: #FFF1;
+	font-size: 0;
 }
+
+.app-explorer .selection-options .button {
+	margin: 0;
+	width: 32px;
+	height: 32px;
+	min-width: 32px;
+	border-left: solid 1px dimgray;
+	background-size: 21px;
+}
+
+.app-explorer .selection-status {
+	float: left;
+	font: 11pt var(--file-panel-font);
+	padding-left: 1em;
+	line-height: 32px;
+}
+
+.app-explorer .files-area {
+	--file-panel-font: 'Tahoma';
+
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	background: rgba(255, 255, 255, 0.025);	
+} 
 
 .app-explorer .files-container {
 	flex-grow: 1;
 	overflow: auto;
 	touch-action: pan-y;
+	font-family: var(--file-panel-font);
 } 
 
 .app-explorer .files {
@@ -274,6 +355,12 @@
 	border-bottom: solid 1px lightgray;
 }
 
+.openwith-helper .list img {
+	width: 24px;
+	vertical-align: middle;
+	margin-right: 2px;
+}
+
 .default-handler-helper p {
 	margin: 1rem;
 }
@@ -299,4 +386,44 @@
 
 .properties-win {
 	padding: 1rem;
+}
+
+.selection-options.visible {
+	display: block;
+}
+.app-explorer .back-btn {
+	background-image: url('/app/explorer/icons/arrow.png');
+	transform: rotate(-90deg);
+}
+
+.app-explorer .menu-btn {
+	background-image: url('/app/explorer/icons/menu.png');
+}
+
+.app-explorer .up-btn {
+	background-image: url('/app/explorer/icons/arrow.png');
+}
+
+.app-explorer .refresh-btn {
+	background-image: url('/app/explorer/icons/refresh.png');
+}
+
+.app-explorer .search-btn {
+	background-image: url('/app/explorer/icons/search.png');
+}
+
+.app-explorer .context-btn {
+	background-image: url('/app/explorer/icons/selection-options.png');
+}
+
+.app-explorer .clear-selection-btn {
+	background-image: url('/app/explorer/icons/clear_selection.png');
+}
+
+.app-explorer .refresh-opt {
+	background-image: url('/app/explorer/icons/refresh.png');
+}
+
+.app-explorer .dir-context-btn {
+	background-image: url('/res/img/icons/menu.png');
 }

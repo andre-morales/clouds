@@ -17,7 +17,7 @@
 }
 
 .button:focus {
-	outline: solid 1px #B28;
+	outline: solid 1px var(--accent-color-dark);
 }
 
 .button:focus-visible {
@@ -38,43 +38,47 @@
 
 .field {
 	width: 10em;
-	min-width: 0;
+	min-width: 5em;
 	margin: .15em;
 	padding: .1em .2em;
 	border: none;
-	border-bottom: ridge 2px #47F;
+	border-bottom: ridge 2px var(--base-color);
 	font-size: 13pt;
 	background-color: rgba(255, 255, 255, 0.05);
-	color: white;	
+	color: var(--base-text-color);
 }
 
 .field:focus {
 	outline: none;
-	border-bottom-color: hsl(320, 70%, 60%);
+	border-bottom-color: var(--accent-color);
+}
+
+.field::placeholder {
+	font-style: italic;
 }
 
 .checkbox {
 	display: inline-grid;
 	-webkit-appearance: none;
 	appearance: none;
-	width: 20px;
-	height: 20px;
+	width: 22px;
+	height: 22px;
 	margin: .15em;
-	border: solid 1px #124;
-	outline: solid 1px #18F;
+	border: solid 1px var(--base-color);
 	vertical-align: middle;
 	place-content: center;
+	font-family: var(--base-font);
 }
 
 .checkbox:checked::before {
 	content: "";
 	width: 16px;
 	height: 16px;
-	background: linear-gradient(45deg, #D4A, #18F);
+	background: linear-gradient(45deg, var(--accent-color), var(--base-color));
 }
 
 .checkbox:hover {
-	outline: solid 1px #D4A;
+	border: solid 1px var(--accent-color);
 }
 
 progress {
@@ -108,7 +112,11 @@ ui-tabs {
 ui-tabs .ui-tabs-header {
 	width: 100%;
 	display: flex;
+	flex-shrink: 0;
+	overflow-x: auto;
+	white-space: nowrap;
 	font-size: 0;
+	scrollbar-color: hsl(320, 70%, 40%) rgba(0, 0, 0, 0.2);
 }
 
 ui-tabs .ui-tabs-switch {
@@ -116,14 +124,14 @@ ui-tabs .ui-tabs-switch {
 	margin: 0;
 	padding: .35em .5em;
 	border: none;
-	border-bottom: ridge 2px #47F;
+	border-bottom: ridge 2px var(--base-color);
 	font: 13pt 'Tahoma';
 	background-color: rgba(255, 255, 255, 0.075);
 	background-position: center;
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-clip: padding-box;
-	color: white;
+	color: var(--base-text-color);
 }
 
 ui-tabs .ui-tabs-switch:hover {
@@ -146,7 +154,7 @@ ui-tabs .ui-tabs-switch:focus-visible {
 }
 
 ui-tabs .ui-tabs-header .ui-tabs-switch.selected {
-	border-bottom-color: hsl(320, 70%, 60%);
+	border-bottom-color: var(--accent-color);
 	background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -162,4 +170,21 @@ ui-tabs .ui-tab {
 
 ui-tabs .ui-tab.visible {
 	display: block;
+}
+
+select {
+	height: 2rem;
+	padding: 0 4px;
+	border: solid 1px var(--base-color);
+	color: white;
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+select:focus {
+	border: solid 1px var(--accent-color-dark);
+	outline: none;
+}
+
+select option {
+	background: rgba(0, 0, 0, 0.8);
 }

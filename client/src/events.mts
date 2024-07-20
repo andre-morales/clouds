@@ -1,4 +1,4 @@
-import Util from './util.mjs';
+import Arrays from './utils/arrays.mjs';
 
 export class ReactorClass {
 	listeners: any[];
@@ -43,37 +43,37 @@ export class Reactor {
 		let list = this.classes[name];
 		if (!list) throw Error(`No class ${name} registered.`);
 
-		Util.arrErase(list.listeners, callback);
+		Arrays.erase(list.listeners, callback);
 	}
 
 	default(name, callback) {
-		let evclass = this.classes[name];
-		if (!evclass) throw Error(`No class ${name} registered.`);
+		let evClass = this.classes[name];
+		if (!evClass) throw Error(`No class ${name} registered.`);
 
-		evclass.defaultHandler = callback;
+		evClass.defaultHandler = callback;
 	}
 
-	// Invoke event handlers immediatly
+	// Invoke event handlers immediately
 	fire(name, event, handler) {
-		let evclass = this.classes[name];
-		if (!evclass) throw Error(`No class ${name} registered.`);
+		let evClass = this.classes[name];
+		if (!evClass) throw Error(`No class ${name} registered.`);
 
 		// If a handler was provided, call it with each listener and the same event
 		// Otherwise, invoke all listeners directly
 		if (handler) {
-			for (let fn of evclass.listeners) {
+			for (let fn of evClass.listeners) {
 				handler(fn, event);
 			}
 		} else {
-			for (let fn of evclass.listeners) {
+			for (let fn of evClass.listeners) {
 				fn(event);
 			}
 		}
 		
 		// If an event object was provided and it wasn't canceled, call default behavior
 		if (event && event.canceled) return;
-		if (evclass.defaultHandler) {
-			evclass.defaultHandler(event);
+		if (evClass.defaultHandler) {
+			evClass.defaultHandler(event);
 		}
 	}
 
@@ -89,9 +89,9 @@ export class Reactor {
 }
 
 export class Deferred {
-	promise: any;
-	resolve: any;
-	reject: any;
+	promise: Promise<any>;
+	resolve: (value?: any) => void;
+	reject: (value?: any) => void;
 
 	constructor() {
 		this.promise = new Promise((resolve, reject) => {
