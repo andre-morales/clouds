@@ -3,17 +3,19 @@ import { BadParameterFault, FetchException, Exception } from '../faults.mjs';
 
 export class FileSystem {
 	static async readText(path: string): Promise<string> {
-		let res = await fetch(Paths.toFSV(path));
+		let url = Paths.toURL(Paths.toFSV(path));
+		let res = await fetch(url);
 		return await res.text();
 	}
 
 	static async readBlob(path: string): Promise<Blob> {
-		let res = await fetch(Paths.toFSV(path));
+		let url = Paths.toURL(Paths.toFSV(path));
+		let res = await fetch(url);
 		return await res.blob();
 	}
 
 	static async readJson(path: string) {
-		let url = Paths.toFSV(path);
+		let url = Paths.toURL(Paths.toFSV(path));
 		try {
 			let res = await fetch(url);
 			if (res.status != 200) throw new FetchException(`JSON fetch of '${path}' failed with status ${res.status}.`);
@@ -25,7 +27,8 @@ export class FileSystem {
 	}	
 
 	static async writeText(path: string, text: string) {
-		await fetch(Paths.toFSV(path), {
+		let url = Paths.toURL(Paths.toFSV(path));
+		await fetch(url, {
 			method: 'PUT',
 			body: text,
 			headers: {
@@ -44,7 +47,8 @@ export class FileSystem {
 		
 		if (listeners) listeners(req);
 
-		req.open('POST', Paths.toFSV(path));
+		let url = Paths.toURL(Paths.toFSV(path));
+		req.open('POST', url);
 		req.timeout = 40000;
 		req.send(formData);
 
@@ -54,9 +58,9 @@ export class FileSystem {
 	static async list(path: string) {
 		// Convert the path to a list cmd
 		if (!path.endsWith('/')) path += '/';
-		let cmd = Paths.toFSV(path);
+		let url = Paths.toURL(Paths.toFSV(path));
 
-		let fRes = await fetch(cmd);
+		let fRes = await fetch(url);
 		if (fRes.status != 200) {
 			throw new FileSystemException(`List operation failed with status ${fRes.status}`);
 		}
@@ -66,7 +70,7 @@ export class FileSystem {
 	}
 
 	static async rename(from: string, to: string) {
-		let fromPath = Paths.toFSV(from);
+		let fromPath = Paths.toURL(Paths.toFSV(from));
 		let toPath = Paths.removeFSPrefix(to);
 
 		let cmd = fromPath + "?rename=" + encodeURIComponent(toPath);
@@ -79,7 +83,7 @@ export class FileSystem {
 	}
 
 	static async copy(from: string, to: string) {
-		let fromPath = Paths.toFSV(from);
+		let fromPath = Paths.toURL(Paths.toFSV(from));
 		let toPath = Paths.removeFSPrefix(to);
 
 		let cmd = fromPath + "?copy=" + encodeURIComponent(toPath);
@@ -93,7 +97,7 @@ export class FileSystem {
 
 	static async erase(path: string) {
 		// Convert the path
-		let cmd = Paths.toFSV(path);
+		let cmd = Paths.toURL(Paths.toFSV(path));
 
 		// Perform the operation
 		let fRes = await fetch(cmd, {
@@ -106,7 +110,7 @@ export class FileSystem {
 
 	static async stats(path: string) {
 		// Convert the path
-		let cmd = Paths.toFSV(path) + '?stats';
+		let cmd = Paths.toURL(Paths.toFSV(path)) + '?stats';
 
 		let fRes = await fetch(cmd);
 		if (fRes.status != 200) {
@@ -119,7 +123,7 @@ export class FileSystem {
 
 	static async makeDirectory(path: string) {
 		// Convert the path
-		let cmd = Paths.toFSV(path) + '?make';
+		let cmd = Paths.toURL(Paths.toFSV(path)) + '?make';
 
 		// Perform the operation
 		let fRes = await fetch(cmd, {
@@ -132,6 +136,12 @@ export class FileSystem {
 }
 
 export class Paths {
+	static toURL(path: string): string {
+		return path.split('/')
+			.map(piece => encodeURIComponent(piece))
+			.join('/');
+	}
+
 	static toFSV(path: string) {
 		// If it is already a FSV path, don't alter anything
 		if (Paths.isFSV(path)) return path;

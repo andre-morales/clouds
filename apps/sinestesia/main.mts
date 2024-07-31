@@ -86,7 +86,7 @@ export default class SinestesiaApp extends App {
 		//prepareSliders();
 
 		if (this.buildArgs.length > 0) {
-			this.openFile(this.buildArgs[0]);
+			this.openFile(this.buildArgs[0] as string);
 		}
 	}
 
@@ -330,7 +330,7 @@ export default class SinestesiaApp extends App {
 		this.openFile('/fsv' + dir + this.playlist.list[0][0]);
 	}
 
-	openFile(path) {	
+	openFile(path: string) {	
 		// Set window title
 		let fname = path.replace(/\/+$/, ''); // Remove trailing slash
 		fname = fname.slice(fname.lastIndexOf('/') + 1);
@@ -339,7 +339,7 @@ export default class SinestesiaApp extends App {
 		this.unload();
 
 		// Judge filetype and play accordingly
-		let url = encodeURI(path);
+		let url = Paths.toURL(path);
 		if (FileTypes.isPicture(path)) {
 			this.openPicture(url);
 		} else if (FileTypes.isVideo(path)) {

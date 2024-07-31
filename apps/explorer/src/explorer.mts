@@ -241,7 +241,8 @@ export default class ExplorerApp extends App {
 		this.$addressField.val(path);
 
 		// Fetching and fetch error handling
-		let fRes = await fetch('/fsv' + path);
+		let url = Paths.toURL(Paths.toFSV(path));
+		let fRes = await fetch(url);
 		if (fRes.status != 200) {
 			let code = fRes.status;
 			let msg = '';
