@@ -172,8 +172,8 @@ export class Desktop {
 		}
 	}
 	
-	getWindowingArea() {
-		let rect = this.$windows[0].getBoundingClientRect();
+	getWindowingArea(): [width: number, height: number] {
+		let rect: DOMRect = this.$windows[0].getBoundingClientRect();
 		return [rect.width, rect.height];
 	}
 

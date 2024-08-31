@@ -321,17 +321,20 @@ export default class Window {
 		this.events.dispatch('closing', new ReactorEvent());
 	}
 
-	async getPackedDimensions() {
+	/**
+	* Queries the window for the size it would be, had its contents been layed out naturally.
+	* @returns A tuple of width/height dimensions.
+	 */
+	async getPackedDimensions(): Promise<[number, number]> {
+		// Remove any hard with/height properties
+		this.$window.css('width', '');
+		this.$window.css('height', '');
+
 		// If the window isn't visible, insert it into the layout but don't display its contents.
-		// This has to be done, otherwise its dimensions won't be calculated.
 		if (!this.visible) {
 			this.$window.css('visibility', 'hidden');
 			this.$window.css('display', 'flex');
 		}
-
-		// Remove any hard with/height properties
-		this.$window.css('width', '');
-		this.$window.css('height', '');
 
 		// Wait an engine cycle to update the layout
 		await Util.sleep(0);
@@ -349,10 +352,16 @@ export default class Window {
 		return [pw, ph];
 	}
 
-	// Resizes this window to fit its content
+	/** Resizes this window to fit its content naturally */
 	async pack() {
-		let [ow, oh] = await this.getPackedDimensions();
-		this.setSize(ow, oh);
+		let [packWidth, packHeight] = await this.getPackedDimensions();
+		
+		// Do not let the window get bigger than the desktop area
+		let [dtWidth, dtHeight] = Client.desktop.getWindowingArea();
+		let finalWidth = Math.min(packWidth, dtWidth);
+		let finalHeight = Math.min(packHeight, dtHeight);
+
+		this.setSize(finalWidth, finalHeight);
 	}
 
 	saveState() {
@@ -398,7 +407,7 @@ export default class Window {
 		this._initialPosition = position;
 	}
 
-	setTitle(title) {
+	setTitle(title: string) {
 		this.title = title;
 		this.$windowTitle.text(title);
 		if (this.taskButton && this.taskButton.single) this.taskButton.setText(title);
