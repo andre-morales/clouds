@@ -1,6 +1,6 @@
 import { ClientClass } from "/@sys/client_core.mjs";
 import { App } from '/@sys/app.mjs';
-import Window from '/@sys/ui/window.mjs';
+import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 
 export default class AboutApp extends App {
 	window: Window;
@@ -14,7 +14,7 @@ export default class AboutApp extends App {
 	async init() {
 		this.window = ClientClass.get().desktop.createWindow(this);
 		this.window.setTitle('About');
-		this.window.setCloseBehavior('exit');
+		this.window.setCloseBehavior(CloseBehavior.EXIT_APP);
 		
 		let $app = this.window.$window.find('.window-body');
 		$app.addClass('app-about');

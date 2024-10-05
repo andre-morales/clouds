@@ -1,7 +1,7 @@
 {
 	"http_port": 8000,
 	"https_port": 0,
-	"log_fs_operations": true,
+	"log_fs_operations": false,
 	"log_requests": false,
 	"no_auth_user": "test"
 }

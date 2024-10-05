@@ -71,7 +71,7 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.221';
+	static readonly CLIENT_VERSION = '1.0.222';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	static readonly API_VERSION: string;

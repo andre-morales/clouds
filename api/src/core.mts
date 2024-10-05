@@ -42,6 +42,7 @@ export async function main(args: string[]) {
 	FFmpeg.init();
 	RShell.init();
 	initExpress();
+	initServer();
 }
 
 /**
@@ -87,11 +88,12 @@ function initExpress() {
 		next(err);
 	});
 
-
 	app.set('view engine', 'ejs');
 	app.set('views', 'api/pages');
 	app.disable('x-powered-by');
+}
 
+function initServer() {
 	// Enable HTTP listening server
 	if (config.http_port) {
 		let http = HTTP.createServer(app);
@@ -115,6 +117,7 @@ function initExpress() {
 		});
 	}
 }
+
 /**
  * Configure main pages on the app router.
  */

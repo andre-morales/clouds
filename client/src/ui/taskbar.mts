@@ -158,7 +158,7 @@ export class TaskbarButton {
 		// If there's a single window left
 		if (this.windows.length == 1) {
 			this.single = true;
-			this.setText(this.windows[0].title);
+			this.setText(this.windows[0].getTitle());
 		}
 
 		this.updateCount();
@@ -171,7 +171,7 @@ export class TaskbarButton {
 		this.$button = $(`<div class='task-button'><span class='count'>2</span></div>`);
 		let $icon = $(`<img src='${this.icon}'/>`);
 		this.$button.append($icon);
-		this.$button.append(`<span class='text'>${firstWindow.title}</span>`);
+		this.$button.append(`<span class='text'>${firstWindow.getTitle()}</span>`);
 
 		// If taskbar icon fails to load, set a default one
 		$icon.on('error', () => {
@@ -221,7 +221,7 @@ export class TaskbarButton {
 
 		for (let w of this.windows) {
 			let icon = (w.icon) ? w.icon : this.icon;
-			let $item = $(`<li><img src='${icon}'/>${w.title}</li>`);
+			let $item = $(`<li><img src='${icon}'/>${w.getTitle()}</li>`);
 			Client.desktop.addCtxMenuOn($item, () => w.optionsCtxMenu);
 			$item.click(() => {
 				if (w.minimized) {

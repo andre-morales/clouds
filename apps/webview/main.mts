@@ -1,6 +1,6 @@
 import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import { Paths } from '/@sys/bridges/filesystem.mjs';
-import Window from '/@sys/ui/window.mjs';
+import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import App from '/@sys/app.mjs';
 
@@ -21,7 +21,7 @@ export default class WebViewApp extends App {
 	async init() {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
-		this.window.setCloseBehavior('exit');
+		this.window.setCloseBehavior(CloseBehavior.EXIT_APP);
 		this.window.setTitle('WebView');
 
 		let $app = this.window.$window.find('.window-body');

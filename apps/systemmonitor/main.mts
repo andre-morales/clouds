@@ -72,7 +72,7 @@ export default class SystemMonitorApp extends App {
 			$windowsTab.empty();
 			for (let win of Client.desktop.windows) {
 
-				let $win = $(`<div class='win'>${win.title}</div>`);
+				let $win = $(`<div class='win'>${win.getTitle()}</div>`);
 
 				let $closeBtn = $('<button class="button">Close</button>');
 				$closeBtn.click(() => {

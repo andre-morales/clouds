@@ -1,7 +1,7 @@
 import { ContextMenu } from './context_menu.mjs';
 import { TaskbarButton } from './taskbar.mjs';
 import { Reactor, ReactorEvent } from '../events.mjs';
-import { InternalFault, IllegalStateFault, BadParameterFault } from '../faults.mjs';
+import { InternalFault, IllegalStateFault } from '../faults.mjs';
 import { App } from '../app.mjs';
 import Util from '../util.mjs';
 import Arrays from '../utils/arrays.mjs';
@@ -13,36 +13,40 @@ export enum CloseBehavior {
 	EXIT_APP
 }
 
+export enum InitialPosition {
+	DEFAULT, CENTER
+}
+
 export default class Window {
 	app: App;
-	owner: Window;
 	children: Window[];
 	icon: string;
-	visible: boolean;
 	maximized: boolean;
 	minimized: boolean;
-	title: string;
-	firstShow: boolean;
 	posX: number;
 	posY: number;
-	width: number;
-	height: number;
-	minWidth: number;
-	minHeight: number;
 	restoreBounds: number[];
 	events: Reactor;
-	#closeBehavior: CloseBehavior;
-	_initialPosition: string;
-	destroyed: boolean;
-	taskButton: TaskbarButton;
 	optionsCtxMenu: ContextMenu;
-	decorated: boolean;
 	zIndex: number;
 	$window: $Element;
-	$windowHeader: $Element;
-	$windowButton: $Element;
-	$windowTitle: $Element;
-
+	private owner: Window;
+	private closeBehavior: CloseBehavior;
+	private initialPosition: InitialPosition;
+	private visible: boolean;
+	private title: string;
+	private decorated: boolean;
+	private width: number;
+	private height: number;
+	private minWidth: number;
+	private minHeight: number;
+	private destroyed: boolean;
+	private firstShow: boolean;
+	private taskButton: TaskbarButton;
+	private $windowHeader: $Element;
+	private $windowButton: $Element;
+	private $windowTitle: $Element;
+	
 	constructor(app: App) {
 		if (!app) throw new InternalFault("Windows must have valid owner apps.");
 
@@ -69,8 +73,8 @@ export default class Window {
 		this.events = new Reactor();
 		this.events.register('closing', 'closed', 'backnav', 'resize', 'closereq');
 
-		this.#closeBehavior = CloseBehavior.DISPOSE_WINDOW;
-		this._initialPosition = 'default';
+		this.closeBehavior = CloseBehavior.DISPOSE_WINDOW;
+		this.initialPosition = InitialPosition.DEFAULT;
 
 		if (app.icon && app.mainWindow == this) {
 			this.icon = app.icon;	
@@ -145,7 +149,7 @@ export default class Window {
 		this.events.default('closing', (ev) => {
 			if (ev && ev.canceled) return;
 	
-			switch (this.#closeBehavior) {
+			switch (this.closeBehavior) {
 			case CloseBehavior.EXIT_APP:
 				this.app.exit();
 				break;
@@ -207,7 +211,7 @@ export default class Window {
 			this.setSize(size[0], size[1]);
 		}
 
-		if (this._initialPosition == 'center') {
+		if (this.initialPosition == InitialPosition.CENTER) {
 			this.bringToCenter();
 		}
 	}
@@ -389,28 +393,22 @@ export default class Window {
 		return true;
 	}
 
-	setCloseBehavior(action: CloseBehavior | string) {
-		if (typeof action !== 'string') {
-			this.#closeBehavior = action;
-			return;
-		}
-
-		switch(action) {
-			case 'exit': this.#closeBehavior = CloseBehavior.EXIT_APP; break;
-			case 'close': this.#closeBehavior = CloseBehavior.DISPOSE_WINDOW; break;
-			default:
-				throw new BadParameterFault("Invalid close behavior!");
-		}
+	setCloseBehavior(action: CloseBehavior) {
+		this.closeBehavior = action;
 	}
 
 	setInitialPosition(position) {
-		this._initialPosition = position;
+		this.initialPosition = position;
 	}
 
 	setTitle(title: string) {
 		this.title = title;
 		this.$windowTitle.text(title);
 		if (this.taskButton && this.taskButton.single) this.taskButton.setText(title);
+	}
+
+	getTitle(): string {
+		return this.title;
 	}
 
 	setPosition(x, y) {

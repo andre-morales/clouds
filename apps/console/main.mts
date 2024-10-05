@@ -1,7 +1,7 @@
 import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import Util from '/@sys/util.mjs';
 import App from '/@sys/app.mjs';
-import Window from '/@sys/ui/window.mjs';
+import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 
 var Client: ClientClass;
@@ -30,7 +30,7 @@ export default class ConsoleApp extends App {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
 		this.window.setTitle('Console');
-		this.window.setCloseBehavior('exit');
+		this.window.setCloseBehavior(CloseBehavior.EXIT_APP);
 
 		// Fetch app body
 		await this.window.setContentToUrl('/app/console/main.html');

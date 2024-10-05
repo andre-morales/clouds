@@ -141,6 +141,10 @@ export class ContextMenu extends ContextItem {
 		this.#items.push(it);
 	}
 
+	getItems(): readonly ContextItem[] {
+		return this.#items;
+	}
+
 	close() {
 		this.$menuBase.removeClass('visible');
 		this.$menuBase.find('.context-menu').removeClass('visible');
