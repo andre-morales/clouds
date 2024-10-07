@@ -4,6 +4,7 @@ export abstract class Container {
 	protected player: MediaPlayer;
 	protected contentUrl: string;
 	protected $root: $Element;
+	protected enabled: boolean;
 
 	constructor(player: MediaPlayer, $root: $Element) {
 		this.player = player;
@@ -19,7 +20,12 @@ export abstract class Container {
 	}
 
 	setEnabled(enabled: boolean): void {
+		this.enabled = enabled;
 		this.$root.toggleClass('enabled', enabled);
+	}
+
+	isEnabled() {
+		return this.isEnabled;
 	}
 
 	getRoot() {

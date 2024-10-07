@@ -94,6 +94,10 @@ export class UISlider extends HTMLElement {
 		});
 	}
 
+	get trackContainer() {
+		return this._container;
+	}
+
 	get value() {
 		return this._value;
 	}

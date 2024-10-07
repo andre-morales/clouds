@@ -59,7 +59,7 @@ export function init() {
     });
 }
 
-export function registerMediaElement(elem) {
+export function registerMediaElement(elem: HTMLMediaElement) {
 	if (!enabled) return;
 
 	let activeMedia = new ActiveMedia(elem);
@@ -167,12 +167,12 @@ function getMediaToPlay(): ActiveMedia {
     return activeMediaElements[0];
 }
 
-class ActiveMedia {
-	element: any;
-	nextTrackCallback: any;
-	previousTrackCallback: any;
+export class ActiveMedia {
+	element: HTMLMediaElement;
+	nextTrackCallback: Function;
+	previousTrackCallback: Function;
 
-	constructor(elem) {
+	constructor(elem: HTMLMediaElement) {
 		this.element = elem;
 		this.nextTrackCallback = null;
 		this.previousTrackCallback = null;

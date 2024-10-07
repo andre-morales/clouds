@@ -193,7 +193,7 @@ export class ClientClass {
 		this.events.dispatch('apps-rem');
 	}
 
-	registerMediaElement(elem) {
+	registerMediaElement(elem: HTMLElement): MediaSessionBridge.ActiveMedia {
 		return this.mediaSessionBridge.registerMediaElement(elem);
 	}
 
