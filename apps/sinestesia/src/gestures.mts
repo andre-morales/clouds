@@ -1,24 +1,24 @@
 export class Gestures {
-	#enabled: boolean;
-	#transform: any;
-	#onUpdate: Function;
+	private enabled: boolean;
+	private transform: any;
+	private onUpdate: Function;
 
 	constructor(updateCallback: Function) {
-		this.#onUpdate = updateCallback;
+		this.onUpdate = updateCallback;
 	}
 
 	setEnabled(enabled: boolean) {
-		this.#enabled = enabled;
+		this.enabled = enabled;
 	}
 
 	setTransform(transform: any) {
-		this.#transform = transform;
+		this.transform = transform;
 	}
 
 	cleanTransform() {
-		this.#transform.x = 0;
-		this.#transform.y = 0;
-		this.#transform.scale = 1;	
+		this.transform.x = 0;
+		this.transform.y = 0;
+		this.transform.scale = 1;	
 	}
 
 	on(element: HTMLElement) {
@@ -26,10 +26,10 @@ export class Gestures {
 		if (element.getAttribute('data-has-gestures')) return;
 		element.setAttribute('data-has-gestures', 'true');
 
-		let trans = this.#transform;
+		let trans = this.transform;
 		
-		let _lx = 0, _ly = 0;
-		let _lscale = 1;
+		let lX = 0, lY = 0;
+		let lScale = 1;
 		
 		let hammer = new Hammer.Manager(element, {
 			recognizers: [
@@ -39,27 +39,27 @@ export class Gestures {
 		});
 		
 		hammer.on('pinchstart', () => {
-			_lscale = trans.scale;
+			lScale = trans.scale;
 		});
-		hammer.on('pinch', (ev) => {
-			if (!this.#enabled) return;
 
-			trans.scale = _lscale * ev.scale; 
-			//this.updateTransform();
-			this.#onUpdate();
+		hammer.on('pinch', (ev) => {
+			if (!this.enabled) return;
+			
+			trans.scale = lScale * ev.scale; 
+			this.onUpdate();
 		});
 
 		hammer.on('panstart', () => {
-			_lx = trans.x;
-			_ly = trans.y;
+			lX = trans.x;
+			lY = trans.y;
 		});
-		hammer.on('pan', (ev) => {
-			if (!this.#enabled) return;
 
-			trans.x = _lx + ev.deltaX / trans.scale;
-			trans.y = _ly + ev.deltaY / trans.scale;
-			//this.updateTransform();
-			this.#onUpdate();
+		hammer.on('pan', (ev) => {
+			if (!this.enabled) return;
+
+			trans.x = lX + ev.deltaX / trans.scale;
+			trans.y = lY + ev.deltaY / trans.scale;
+			this.onUpdate();
 		});
 	}
 }

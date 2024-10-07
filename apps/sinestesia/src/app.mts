@@ -15,12 +15,11 @@ export default class SinestesiaApp extends App {
 	public window: Window;
 	public playlist: Playlist;
 	private transform: any;
-	cancelPauseEvents: boolean;
-	lockedPlayback: boolean;
+	private lockedPlayback: boolean;
+	private autoPlay: boolean;
 	private fullscreen: HTMLElement;
 	private contextMenu: ContextMenu;
-	private autoPlay: boolean;
-
+	
 	constructor(...args: ConstructorParameters<typeof App>) {
 		super(...args);
 		this.player = new MediaPlayer(this);
@@ -36,10 +35,10 @@ export default class SinestesiaApp extends App {
 		this.playlist = new Playlist(this);
 	}
 
-	async init() {
+	protected async init() {
 		this.on('exit', () => {
 			this.playlist = null;
-			this.cancelPauseEvents = false;
+			this.lockedPlayback = false;
 		});
 
 		// Create window and fetch app body
@@ -87,7 +86,6 @@ export default class SinestesiaApp extends App {
 			}],
 			['*Lock playback', (v) => {
 				this.lockedPlayback = v;
-				this.cancelPauseEvents = v;
 			}],
 			['|'],
 			['-Flip horizontally', () => {
@@ -128,7 +126,29 @@ export default class SinestesiaApp extends App {
 		return this.autoPlay;
 	}
 
-	async showOpenDialog() {
+	setLockPlayback(val: boolean) {
+		this.lockedPlayback = val;
+	}
+
+	isPlaybackLocked() {
+		return this.lockedPlayback;
+	}
+
+	/**
+	 * Enables fullscreen on the player for the given element.
+	 * @param elem The element to be fullscreen. If null, rewinds the fullscreen mode.
+	 */
+	setFullscreen(elem: HTMLElement) {
+		if (elem) {
+			this.fullscreen = elem;
+			Fullscreen.on(elem);
+		} else {
+			this.fullscreen = null;
+			Fullscreen.rewind();
+		}
+	}
+
+	private async showOpenDialog() {
 		let app = await ClientClass.get().runApp('explorer') as ExplorerApp;
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
@@ -138,7 +158,7 @@ export default class SinestesiaApp extends App {
 		this.openFile('/fsv' + file);
 	}
 
-	async showOpenFolderDialog() {
+	private async showOpenFolderDialog() {
 		let app = await ClientClass.get().runApp('explorer') as any;
 		app.asFileSelector('open', 'one');
 		let result = await app.waitFileSelection();
@@ -148,7 +168,7 @@ export default class SinestesiaApp extends App {
 		this.openFolder(folder);
 	}
 
-	async openFolder(dir: string) {
+	private async openFolder(dir: string) {
 		let files = await FileSystem.list(dir);
 
 		this.playlist.list = files;
@@ -158,7 +178,7 @@ export default class SinestesiaApp extends App {
 		this.openFile('/fsv' + dir + this.playlist.list[0][0]);
 	}
 
-	openFile(path: string) {	
+	private openFile(path: string) {	
 		// Set window title
 		let fname = path.replace(/\/+$/, ''); // Remove trailing slash
 		fname = fname.slice(fname.lastIndexOf('/') + 1);
@@ -178,23 +198,9 @@ export default class SinestesiaApp extends App {
 	}
 
 	// -- Gestures and transformation --
-	updateTransform() {
+	private updateTransform() {
 		let t = this.transform;
 		let css = `scale(${t.scale}, ${t.scale}) translate(${t.x}px, ${t.y}px) scale(${t.flipX}, ${t.flipY}) rotate(${t.rotation}deg)`;
 		this.player.getMediaElement().css('transform', css);
-	}
-
-	/**
-	 * Enables fullscreen on the player for the given element.
-	 * @param elem The element to be fullscreen. If null, rewinds the fullscreen mode.
-	 */
-	setFullscreen(elem: HTMLElement) {
-		if (elem) {
-			this.fullscreen = elem;
-			Fullscreen.on(elem);
-		} else {
-			this.fullscreen = null;
-			Fullscreen.rewind();
-		}
 	}
 }

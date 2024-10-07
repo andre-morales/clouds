@@ -3,6 +3,9 @@ import MediaPlayer from "./media_player.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import Fullscreen from "/@sys/ui/fullscreen.mjs";
 
+const AUTOPLAY_DELAY = 500;
+const BUFFERED_RANGES_INTERVAL = 200;
+
 interface $VideoElement extends $Element {
 	[0]?: HTMLVideoElement;
 }
@@ -12,6 +15,7 @@ export class VideoContainer extends Container {
 	private video: HTMLVideoElement;
 	private $bufferedRanges: $Element;
 	private bufferedRanges: TimeRanges;
+	private allowPauseEventLatch: boolean;
 
 	constructor(player: MediaPlayer, $root: $Element) {
 		super(player, $root);
@@ -23,8 +27,10 @@ export class VideoContainer extends Container {
 	initControls() {
 		let progressBarHeld = false;
 
+		const client = ClientClass.get();
 		const $ui = this.$root.find('.video-container');
 		const $video = this.$video;
+		const video = this.video;
 		const $controls = $ui.find('.controls');
 		const $time = $ui.find('.time');
 		const $duration = $ui.find('.duration');
@@ -35,7 +41,7 @@ export class VideoContainer extends Container {
 			if (this.isPaused()) {
 				this.play();
 			} else {
-				this.player.app.cancelPauseEvents = false;
+				this.allowPauseEventLatch = true;
 				this.pause();
 			}
 		});
@@ -85,7 +91,7 @@ export class VideoContainer extends Container {
 			if (!this.isEnabled()) return;
 
 			this.updateBufferedRanges();
-		}, 200);
+		}, BUFFERED_RANGES_INTERVAL);
 
 		this.player.app.on('exit', () => {
 			clearInterval(interval);
@@ -114,58 +120,62 @@ export class VideoContainer extends Container {
 		});
 
 		// Video reactive events
-		$video.on('loadedmetadata', function() {
-			$duration.text(timeToString(this.duration));
+		$video.on('loadedmetadata', () => {
+			$duration.text(timeToString(video.duration));
 		});
 
-		$video.on("timeupdate", function() {
+		$video.on("timeupdate", () => {
 			if (progressBarHeld) return;
 			
-			let prog = this.currentTime / this.duration * 100;
+			let prog = video.currentTime / video.duration * 100;
 			$progressBar[0].value = prog;
 
-			$time.text(timeToString(this.currentTime));
+			$time.text(timeToString(video.currentTime));
 		});
 
-		$video.on('play', (ev) => {
+		$video.on('play', () => {
 			$ui.addClass('playing');
 		});
 
-		$video.on('pause', (ev) => {
-			if (this.player.app.cancelPauseEvents) {
-				$video[0].play();
+		$video.on('pause', () => {
+			if (this.player.app.isPlaybackLocked() && !this.allowPauseEventLatch) {
+				// If the playback is locked and the single event latch hasn't been enabled,
+				// prevent the pause event.
+				this.video.play();
 			} else {
+				// Remove the playing class and disable the latch.
 				$ui.removeClass('playing');
+				this.allowPauseEventLatch = false;
 			}
-
-			if (this.player.app.lockedPlayback)
-				this.player.app.cancelPauseEvents = true;
 		});
 
 		$video.on('ended', (ev) => {
-			if (!this.player.app.isAutoPlayEnabled()) return;
-			setTimeout(() => this.player.goNextFile(), 500);
+			// Advance to the next file in the folder if autoplay is enabled
+			if (this.player.app.isAutoPlayEnabled()) {
+				setTimeout(() => this.player.goNextFile(), AUTOPLAY_DELAY);
+			}
 		});
 
 		// Enable transform gestures on this element
-		this.player.app.gestures.on($video[0]);
+		this.player.app.gestures.on(video);
 
 		// Create audio track and integrate it with the audio subsystem
-		if (ClientClass.get().audio.begin()) {
-			let track = ClientClass.get().audio.context.createMediaElementSource($video[0]);
-			track.connect(ClientClass.get().audio.destination);
+		if (client.audio.begin()) {
+			let track = client.audio.context.createMediaElementSource(video);
+			track.connect(client.audio.destination);
 		}
 
 		// Register active media element for integration with browser controls
-		let media = ClientClass.get().registerMediaElement($video[0]);
+		let media = client.registerMediaElement(video);
 		media.nextTrackCallback = () => { this.player.goNextFile() };
 		media.previousTrackCallback = () => { this.player.goPreviousFile() };
 	}
 
 	updateBufferedRanges() {
-		let ranges = this.video.buffered;
+		// Do not update ranges if they haven't changed
+		const ranges = this.video.buffered;
 		if (timeRangesEqual(ranges, this.bufferedRanges)) return;
-
+		
 		this.bufferedRanges = ranges;
 		this.$bufferedRanges.empty();
 		
