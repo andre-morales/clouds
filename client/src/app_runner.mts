@@ -14,7 +14,7 @@ export async function runUrl(manifestURL: string, buildArgs = []): Promise<App> 
 		let manifest = await getManifest(manifestURL);
 
 		return run(manifest, buildArgs);
-	} catch(err) {
+	} catch(err: any) {
 		if (err instanceof AppInitializationError) throw err;
 
 		throw new AppInitializationError('Failed to instantiate "' + manifestURL + '" - ' + err, err);
@@ -50,7 +50,7 @@ export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
 		// Fire the app initialization and return its instance
 		await appObj.init();
 		return app;
-	} catch(err) {
+	} catch(err: any) {
 		throw new AppInitializationError(`Failed to instantiate "${manifest.id} (${manifest.displayName ?? ""})"` + ' - ' + err, err);
 	}
 }
@@ -106,11 +106,22 @@ function fetchAppResources(manifest: AppManifest, userId: string): AppResources 
 async function getAppConstructor(manifest: AppManifest, modules: any): Promise<any> {
 	let AppClass: any;
 
+	//let builder = window["AppModule_" + manifest.id].default;
+	//return builder;
+
 	// Obtain the app class declared in the manifest from the global namespace
 	if (manifest.builder) {
 		AppClass = getObjectByName(manifest.builder);
 	// Obtain the app class as the default export of the first module
 	} else {
+		// If the app publishes an umd module in the global namespace, try to use it
+		let umdModuleId: any = "AppModule_" + manifest.id;
+		let umdModule: any = window[umdModuleId]
+		if (umdModule && umdModule.default) {
+			return umdModule.default;
+		}
+
+		// If the app has ES modules, use the default export of the first one
 		if (modules.length < 1) {
 			throw Error('Undisclosed builder and no modules declared.');
 		}

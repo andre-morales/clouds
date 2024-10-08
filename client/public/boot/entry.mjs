@@ -59,14 +59,15 @@ export async function initDesktop() {
 
 	// Add system script and let it do the setup
 	loadingText.innerHTML = "Loading core...";
-	await addScript('/res/pack/shared.bundle.js');
+	await addScript('/res/pack/runtime.chk.js');
+	await addScript('/res/pack/shared.chk.js');
 	
 	CoreModule.main();
 }
 
 async function authIsKeyValid() {
-	let fres = await fetch('/auth/test');
-	let res = await fres.json();
+	let fRes = await fetch('/auth/test');
+	let res = await fRes.json();
 	return res.ok;
 }
 

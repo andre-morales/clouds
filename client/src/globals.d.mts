@@ -3,6 +3,9 @@ import { ClientClass } from "./client_core.mts";
 
 declare global {
 	type $Element = ZeptoCollection;
+	interface ZeptoCollection {
+		[0]: HTMLElement
+	}
 
 	var Hammer: HammerStatic;
 	var App: App;

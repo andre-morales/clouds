@@ -16,7 +16,7 @@ function getType() {
 
 function clear() {
 	itemValue = null;
-	itemType = null;
+	itemType = '';
 }
 
 export default { saveObject, getObject, getType, clear };

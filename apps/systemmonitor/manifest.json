@@ -1,5 +1,5 @@
 {
-	"id": "sysmonitor",
+	"id": "systemmonitor",
 	"icon": "/app/systemmonitor/icon128.png",
 	"modules": [
 		"/app/systemmonitor/app.bundle.mjs"	

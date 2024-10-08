@@ -42,7 +42,8 @@ export async function main() {
 
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
-		Util.addScript('/res/pack/public.bundle.js'),
+		Util.addScript('/res/pack/public.chk.js'),
+		Util.addScript('/res/pack/platform.chk.js'),
 		Util.addScript('/res/lib/hammer.min.js')
 	]);
 
@@ -71,7 +72,7 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.222';
+	static readonly CLIENT_VERSION = '1.0.223';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING}`;
 	static readonly API_VERSION: string;

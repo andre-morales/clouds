@@ -1,5 +1,5 @@
 var staticInit = false;
-var stylesheet;
+var stylesheet: CSSStyleSheet;
 
 export class UISlider extends HTMLElement {
 	#value: number;
@@ -45,7 +45,7 @@ export class UISlider extends HTMLElement {
 	}
 
 	connectedCallback() {
-		let valueChange = (coff) => {
+		let valueChange = (coff: number) => {
 			if (coff < 0) coff = 0;
 			if (coff > 1) coff = 1;
 			let val = this.#min + (this.#max - this.#min) * coff;
@@ -55,7 +55,7 @@ export class UISlider extends HTMLElement {
 			$(this).trigger('change');
 		};
 
-		let dragX = (ev) => {
+		let dragX = (ev: any) => {
 			let mx = ev.pageX;
 
 			let touches = ev.changedTouches;
@@ -183,6 +183,7 @@ export class SliderTrackRange {
 async function doStaticInitialization() {
 	staticInit = true;
 	stylesheet = new CSSStyleSheet();
+
 	fetch('/res/css/slider.css')
 		.then(res => res.text())
 		.then(css => stylesheet.replace(css));

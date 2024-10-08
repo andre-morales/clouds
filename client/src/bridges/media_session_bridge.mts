@@ -1,8 +1,8 @@
 import { Paths } from './filesystem.mjs';
 import Arrays from '../utils/arrays.mjs';
 
-var activeMediaElements: ActiveMedia[] = null;
-var currentMedia: ActiveMedia = null;
+var activeMediaElements: ActiveMedia[];
+var currentMedia: ActiveMedia | null;
 var enabled: boolean = false;
 
 export function init() {
@@ -47,7 +47,7 @@ export function init() {
 	navigator.mediaSession.setActionHandler("previoustrack", () => {
 		if (!currentMedia) return;
 		
-    	if (currentMedia.nextTrackCallback) {
+    	if (currentMedia.previousTrackCallback) {
     		currentMedia.previousTrackCallback();
     	}
   	});
@@ -55,7 +55,9 @@ export function init() {
 	navigator.mediaSession.setActionHandler('seekto', (ev) => {
 		if (!currentMedia) return;
 
-    	currentMedia.element.currentTime = ev.seekTime;
+		if (ev.seekTime !== undefined) {
+    		currentMedia.element.currentTime = ev.seekTime;
+		}
     });
 }
 
@@ -118,6 +120,7 @@ function setCurrentMedia(media: ActiveMedia) {
 
 function updatePosition() {
 	if (!enabled) return;
+	if (!currentMedia) return;
 	if (!navigator.mediaSession.setPositionState) return;
 	
 	let mElem = currentMedia.element;
@@ -150,8 +153,8 @@ function refreshActiveMedia() {
 	}
 }
 
-function getMediaToPlay(): ActiveMedia {
-	if (activeMediaElements.length == 0) return;
+function getMediaToPlay(): ActiveMedia | null {
+	if (activeMediaElements.length == 0) return null;
 
 	refreshActiveMedia();
 
@@ -169,13 +172,11 @@ function getMediaToPlay(): ActiveMedia {
 
 export class ActiveMedia {
 	element: HTMLMediaElement;
-	nextTrackCallback: Function;
-	previousTrackCallback: Function;
+	nextTrackCallback?: Function;
+	previousTrackCallback?: Function;
 
 	constructor(elem: HTMLMediaElement) {
 		this.element = elem;
-		this.nextTrackCallback = null;
-		this.previousTrackCallback = null;
 	}
 
 	valid() {

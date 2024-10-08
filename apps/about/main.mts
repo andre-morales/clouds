@@ -31,9 +31,9 @@ export default class AboutApp extends App {
 		let secure = window.isSecureContext;
 		$app.find('.secure-ctx').text((secure) ? 'Yes' : 'No');
 		
-		let devmem = (navigator as any).deviceMemory;
-		if (devmem) {
-			let str = (devmem < 1) ? devmem * 1000 + ' MB' : devmem + ' GB';
+		let devMem = (navigator as any).deviceMemory;
+		if (devMem) {
+			let str = (devMem < 1) ? devMem * 1000 + ' MB' : devMem + ' GB';
 			$app.find('.dev-memory').text('Device Memory: ' + str);
 		}
 

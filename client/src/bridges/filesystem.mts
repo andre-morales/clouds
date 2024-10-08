@@ -21,7 +21,7 @@ export class FileSystem {
 			if (res.status != 200) throw new FetchException(`JSON fetch of '${path}' failed with status ${res.status}.`);
 
 			return await res.json();
-		} catch (err) {
+		} catch (err: any) {
 			throw new FetchException(err);
 		}
 	}	
@@ -41,7 +41,7 @@ export class FileSystem {
 		await FileSystem.writeText(path, JSON.stringify(obj));
 	}
 
-	static writeUploadForm(path: string, form, listeners) {
+	static writeUploadForm(path: string, form: HTMLFormElement, listeners) {
 		let formData = new FormData(form);
 		let req = new XMLHttpRequest();
 		

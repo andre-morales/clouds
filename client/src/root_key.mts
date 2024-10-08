@@ -156,7 +156,7 @@ class ChainObserver {
 /**
  * Find the property name chain leading to a key object contained in a parent.
  */
-function findChain(parent: any, keyObject: unknown) {
+function findChain(parent: any, keyObject: unknown): string[] | null {
 	if (parent === keyObject) return [];
 
 	for (let [property, value] of Object.entries(parent)) {
@@ -170,7 +170,7 @@ function findChain(parent: any, keyObject: unknown) {
 		if (Array.isArray(value)) continue;
 
 		// Try to find the key in this sub property
-		let result = this.findChain(value, keyObject);
+		let result = findChain(value, keyObject);
 		if (result !== null) {
 			// Concatenate the chain found with our property name
 			return [property].concat(result);

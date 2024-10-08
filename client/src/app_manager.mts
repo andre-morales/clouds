@@ -40,7 +40,7 @@ export class AppManager {
 		}
 
 		for (let [appId, decl_] of Object.entries(this.#appDeclarations)) {
-			let decl: AppDeclaration = decl_;
+			let decl = decl_ as AppDeclaration;
 
 			// Construct definition from config declaration
 			let definition = {} as AppDefinition;

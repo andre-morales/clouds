@@ -125,12 +125,12 @@ export class AudioSystem {
 		this.context.resume();
 	}
 
-	setReverbBalance(b) {
+	setReverbBalance(b: number) {
 		this.reverbWetGain.gain.value = b;
 		this.reverbDryGain.gain.value = 1 - b;
 	}
 
-	impulseResponse( duration, decay, reverse ) {
+	impulseResponse(duration: number, decay: number, reverse: number) {
 		var sampleRate = this.context.sampleRate;
 		var length = sampleRate * duration;
 		var impulse = this.context.createBuffer(2, length, sampleRate);
@@ -146,7 +146,7 @@ export class AudioSystem {
 		return impulse;
 	}
 
-	connectArr(arr) {
+	connectArr(arr: AudioNode[]) {
 		for (let i = 0; i < arr.length - 1;) {
 			arr[i].connect(arr[++i]);
 		}

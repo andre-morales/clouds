@@ -31,7 +31,7 @@ export class Reactor {
 		return this.classes[name];
 	}
 
-	on(name: string, callback) {
+	on(name: string, callback: Function) {
 		let list = this.classes[name];
 		if (!list) throw Error(`No class ${name} registered.`);
 
@@ -39,7 +39,7 @@ export class Reactor {
 		return callback;
 	}
 
-	off(name, callback) {
+	off(name: string, callback: Function) {
 		let list = this.classes[name];
 		if (!list) throw Error(`No class ${name} registered.`);
 

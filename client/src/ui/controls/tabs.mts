@@ -1,9 +1,8 @@
 export class UITabs extends HTMLElement {
-	onTabChanged: Function;
+	onTabChanged?: Function;
 
 	constructor() {
 		super();
-		this.onTabChanged = null;
 	}
 
 	connectedCallback() {
@@ -11,12 +10,12 @@ export class UITabs extends HTMLElement {
 		for (let $switch of $switchers) {
 			$switch.addEventListener('click', () => {
 				let tab = $switch.getAttribute('data-tab');
-				this.setActiveTab(tab);
+				if (tab) this.setActiveTab(tab);
 			});
 		}
 	}
 
-	setActiveTab(tab) {
+	setActiveTab(tab: string) {
 		let $tabPane = $(this);
 		$tabPane.find('.ui-tabs-switch').removeClass('selected');
 		$tabPane.find('.ui-tab').removeClass('visible');

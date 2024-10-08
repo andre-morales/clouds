@@ -56,7 +56,7 @@ export function getCookie(cname: string): string {
 	return "";
 }
 
-export function destroyElementById(id) {
+export function destroyElementById(id: string) {
 	let el = document.getElementById(id);
 	if (el) el.remove();
 	return el;
@@ -104,7 +104,7 @@ export function addScript(src: string, id?: string) {
 	});
 }
 
-export function downloadUrl(path) {
+export function downloadUrl(path: string) {
 	let link = document.createElement('a');
 	link.style.display = 'none';
 	link.href = path;

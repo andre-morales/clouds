@@ -113,7 +113,7 @@ export class ResourceManager {
 	 * and scripts. Sets the resource id to the url of the resource requested.
 	 */
 	async #fetchWebResource(url: string, user: unknown, creator: (id: string) => Promise<void>): Promise<Resource> {
-		let resource = this.get(url);
+		let resource: Resource | null = this.get(url);
 
 		// If an unloaded resource with this URL exists, delete it to load it again.
 		if (resource && resource.isUnloaded()) {

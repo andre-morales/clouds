@@ -13,17 +13,16 @@ export interface CtxEntry {
 }
 
 export class ContextItem {
-	label: string;
-	action: Function;
 	enabled: boolean;
-	_menu: ContextMenu;
-	protected $menuItem: $Element;
+	label?: string;
+	action?: Function;
+	_menu?: ContextMenu;
+	protected $menuItem?: $Element;
 
-	constructor(label: string, action: Function) {
+	constructor(label?: string, action?: Function) {
 		this.label = label;
 		this.action = action;
 		this.enabled = true;
-		this._menu = null;
 	}
 
 	/**
@@ -80,7 +79,7 @@ export class ContextItem {
 
 export class ContextMenuSeparator extends ContextItem {
 	constructor() {
-		super(null, null);
+		super('', null);
 	}
 
 	protected createElement(): $Element {
@@ -124,7 +123,7 @@ export class ContextCheckbox extends ContextItem {
 }
 
 export class ContextMenu extends ContextItem {
-	$menuBase: $Element;
+	$menuBase?: $Element;
 	#items: ContextItem[];
 
 	constructor(items: ContextItem[], label?: string) {
@@ -146,6 +145,8 @@ export class ContextMenu extends ContextItem {
 	}
 
 	close() {
+		if (!this.$menuBase) return;
+
 		this.$menuBase.removeClass('visible');
 		this.$menuBase.find('.context-menu').removeClass('visible');
 	}
@@ -165,11 +166,16 @@ export class ContextMenu extends ContextItem {
 	 * Opens this context submenu item.
 	 */
 	click() {
+		if (!this.$menuBase) throw new IllegalStateFault("No menu base.");
+		if (!this.$menuItem) throw new IllegalStateFault("No menu item.");
+
 		const { screenWidth, screenHeight } = ClientClass.get().desktop;
 
 		this.$menuBase.addClass('visible');
 
-		let $parentMenu: HTMLElement = this.getMenu().$menuBase[0];
+		let parentMenu = this.getMenu();
+		
+		let $parentMenu: HTMLElement = parentMenu.$menuBase[0];
 		let $base: HTMLElement = this.$menuBase[0];
 		let $item: HTMLElement = this.$menuItem[0];
 
@@ -212,6 +218,8 @@ export class ContextMenu extends ContextItem {
 	 * Constructs the elements in this menu base element.
 	 */
 	build() {
+		if (!this.$menuBase) throw new IllegalStateFault("No menu base.");
+
 		this.$menuBase.empty();
 
 		for (let item of this.#items) {

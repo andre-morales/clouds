@@ -9,7 +9,6 @@ module.exports = function(env, args) {
 		cache: {
 			type: (env.production) ? 'filesystem' : 'memory'
 		},
-		
 		entry: {
 			shared: {
 				import: './client/src/client_core.mjs',
@@ -26,6 +25,10 @@ module.exports = function(env, args) {
 					type: 'umd'
 				}
 			}
+		},
+		output: {
+			filename: '[name].chk.js',
+			path: path.resolve(ROOT, 'client/public/pack'),
 		},
 		module: {
 			rules: [
@@ -46,9 +49,8 @@ module.exports = function(env, args) {
 				'.mjs': ['.mts', '.mjs']
 			},
 		},
-		output: {
-			filename: '[name].bundle.js',
-			path: path.resolve(ROOT, 'client/public/pack'),
+		optimization: {
+			runtimeChunk: 'single'
 		}
 	}
 };

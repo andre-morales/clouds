@@ -1,8 +1,8 @@
 {
 	"compilerOptions": {
 		"strict": false,
-		"module": "ES2015",
-		"target": "ES2021",
+		"module": "ESNext",
+		"target": "ES2022",
 		"moduleResolution": "Bundler",
 		"noEmit": true,
 		"incremental": true,
@@ -11,7 +11,7 @@
 			"/@sys/*": ["./../client/src/*"]
 		}
 	},
-	"include": ["./**/*.mts", "./../client/globals.d.mts"],
+	"include": ["./**/*.mts"],
 	"exclude": [
 		"node_modules",
 		"**/node_modules/*",

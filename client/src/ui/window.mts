@@ -634,11 +634,11 @@ export default class Window {
 		this.$window.find('.window-body').html(await fRes.text());
 	}
 
-	on(evClass: string, callback: unknown) {
+	on(evClass: string, callback: Function) {
 		this.events.on(evClass, callback);
 	}
 
-	off(evClass: string, callback: unknown) {
+	off(evClass: string, callback: Function) {
 		this.events.off(evClass, callback);
 	}
 
