@@ -4,7 +4,7 @@ import { ClientClass } from "./client_core.mts";
 declare global {
 	type $Element = ZeptoCollection;
 
-	var Hammer: any;
+	var Hammer: HammerStatic;
 	var App: App;
 	var Client: ClientClass;
 	var _systemPanic: Function;

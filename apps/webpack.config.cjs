@@ -19,6 +19,10 @@ module.exports = function(env) {
 	return {
 		mode:    (env.production) ? 'production' : 'development',
 		devtool: (env.production) ? 'source-map' : 'eval-source-map',
+		watch: !env.production,
+		cache: {
+			type: (env.production) ? 'filesystem' : 'memory'
+		},
 		entry: entryPoints,
 		module: {
 			rules: [

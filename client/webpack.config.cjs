@@ -5,7 +5,11 @@ module.exports = function(env, args) {
 	return {
 		mode:    (env.production) ? 'production' : 'development',
 		devtool: (env.production) ? 'source-map' : 'eval-source-map',
-
+		watch: !env.production,
+		cache: {
+			type: (env.production) ? 'filesystem' : 'memory'
+		},
+		
 		entry: {
 			shared: {
 				import: './client/src/client_core.mjs',

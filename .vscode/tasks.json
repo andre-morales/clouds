@@ -13,6 +13,14 @@
 			"detail": "tsc: watch - api/tsconfig.json"
 		},
 		{
+			"type": "npm",
+			"script": "build-api-dist",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "📦 API: Build",
+			"detail": "npm run build-api-dist: tsc -p api"
+		},
+		{
 			"type": "typescript",
 			"tsconfig": "client/tsconfig.json",
 			"option": "watch",
@@ -22,6 +30,22 @@
 			"group": "build",
 			"label": "👀 CLIENT: Watch Typechecking",
 			"detail": "tsc: watch - client/tsconfig.json"
+		},
+		{
+			"type": "npm",
+			"script": "build-client-dev",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "👀🐛 CLIENT: Watch Build Development",
+			"detail": "npm run build-client-dev"
+		},
+		{
+			"type": "npm",
+			"script": "build-client-prod",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "📦 CLIENT: Build Production",
+			"detail": "npm run build-client-prod"
 		},
 		{
 			"type": "typescript",
@@ -36,34 +60,10 @@
 		},
 		{
 			"type": "npm",
-			"script": "build-api-dist",
-			"group": "build",
-			"problemMatcher": [],
-			"label": "📦 API: Build",
-			"detail": "npm run build-api-dist: tsc -p api"
-		},
-		{
-			"type": "npm",
-			"script": "build-client-dev",
-			"group": "build",
-			"problemMatcher": [],
-			"label": "🐛 CLIENT: Build (Development)",
-			"detail": "npm run build-client-dev"
-		},
-		{
-			"type": "npm",
-			"script": "build-client-prod",
-			"group": "build",
-			"problemMatcher": [],
-			"label": "📦 CLIENT: Build (Production)",
-			"detail": "npm run build-client-prod"
-		},
-		{
-			"type": "npm",
 			"script": "build-apps-dev",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "🐛 APPS: Build (Development)",
+			"label": "👀🐛 APPS: Watch Build Development",
 			"detail": "npm run build-apps-dev"
 		},
 		{
@@ -71,7 +71,7 @@
 			"script": "build-apps-prod",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "📦 APPS: Build",
+			"label": "📦 APPS: Build Production",
 			"detail": "npm run build-apps-prod"
 		},
 	]

@@ -1,7 +1,7 @@
 declare global {
 	type $Element = ZeptoCollection;
 
-	var Hammer: any;
+	var Hammer: HammerStatic;
 	var _systemPanic: Function;
 }
 

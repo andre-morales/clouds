@@ -2,12 +2,12 @@ var staticInit = false;
 var stylesheet;
 
 export class UISlider extends HTMLElement {
-	_value: number;
-	_min: number;
-	_max: number;
-	_container: HTMLElement;
-	_lower: HTMLElement;
-	_thumb: HTMLElement;
+	#value: number;
+	#min: number;
+	#max: number;
+	#container: HTMLElement;
+	#lower: HTMLElement;
+	#thumb: HTMLElement;
 
 	constructor() {
 		super();
@@ -16,37 +16,39 @@ export class UISlider extends HTMLElement {
 			doStaticInitialization();
 		}
 
-		this._value = Number(this.getAttribute('value'));
-		this._min = Number(this.getAttribute('min'));
-		this._max = Number(this.getAttribute('max'));
-		if (!this._value) this._value = 0;
-		if (!this._min) this._min = 0;
-		if (!this._max) this._max = 100;
+		this.#value = Number(this.getAttribute('value'));
+		this.#min = Number(this.getAttribute('min'));
+		this.#max = Number(this.getAttribute('max'));
+		if (!this.#value) this.#value = 0;
+		if (!this.#min) this.#min = 0;
+		if (!this.#max) this.#max = 100;
 
 		// Create shadow DOM
 		let shadow = this.attachShadow({ mode: 'open' });
 		shadow.adoptedStyleSheets = [stylesheet];
 
 		let container = document.createElement('div');
+		container.classList.add('root');
 		shadow.append(container);
-		this._container = container;
+		this.#container = container;
 
 		let lower = document.createElement('span');
+		lower.classList.add('track');
 		lower.classList.add('lower');
 		container.append(lower);
-		this._lower = lower;
+		this.#lower = lower;
 
 		let thumb = document.createElement('span');
 		thumb.classList.add('thumb');
 		container.append(thumb);
-		this._thumb = thumb;
+		this.#thumb = thumb;
 	}
 
 	connectedCallback() {
 		let valueChange = (coff) => {
 			if (coff < 0) coff = 0;
 			if (coff > 1) coff = 1;
-			let val = this._min + (this._max - this._min) * coff;
+			let val = this.#min + (this.#max - this.#min) * coff;
 
 			this.value = val;
 
@@ -61,7 +63,7 @@ export class UISlider extends HTMLElement {
 				mx = touches[0].pageX;
 			}
 
-			let rect = this._container.getBoundingClientRect();
+			let rect = this.#container.getBoundingClientRect();
 			return (mx - rect.left) / rect.width;
 		};
 
@@ -74,17 +76,17 @@ export class UISlider extends HTMLElement {
 			valueChange(dragX(ev));	
 		});
 		
-		this._container.addEventListener('mousedown', (ev) => {
+		this.#container.addEventListener('mousedown', (ev) => {
 			held = true;
 			valueChange(dragX(ev));
 		});
-		this._container.addEventListener('touchstart', (ev) => {
+		this.#container.addEventListener('touchstart', (ev) => {
 			held = true;
 			valueChange(dragX(ev));
 		});
 
-		this._thumb.addEventListener('mousedown', () => held = true);
-		this._thumb.addEventListener('touchstart', () => held = true);
+		this.#thumb.addEventListener('mousedown', () => held = true);
+		this.#thumb.addEventListener('touchstart', () => held = true);
 
 		$(document).on('mouseup touchend', (ev) => {
 			if(!held) return;
@@ -94,24 +96,87 @@ export class UISlider extends HTMLElement {
 		});
 	}
 
+	private createTrack() {
+		let $track = $("<div class='track'>");
+		let track = new SliderTrack($track);
+		return track;
+	}
+
+	addUnderTrack() {
+		let track = this.createTrack();
+		track.root.prependTo(this.#container);
+		return track;
+	}
+
+	addOverTrack() {
+		let track = this.createTrack();
+		track.root.insertBefore(this.#thumb);
+		return track;
+	}
+
 	get trackContainer() {
-		return this._container;
+		return this.#container;
 	}
 
 	get value() {
-		return this._value;
+		return this.#value;
 	}
 
 	set value(val) {
 		if (isNaN(val)) val = 0;
-		this._value = val;
+		this.#value = val;
 
-		let sliderWidth = this._container.getBoundingClientRect().width;
-		let thumbWidth = this._thumb.getBoundingClientRect().width;
+		let sliderWidth = this.#container.getBoundingClientRect().width;
+		let thumbWidth = this.#thumb.getBoundingClientRect().width;
 
-		let x = (val - this._min) / (this._max - this._min);
-		this._lower.style.width = `${x * 100}%`;
-		this._thumb.style.left = `${x * sliderWidth - thumbWidth/2}px`;
+		let x = (val - this.#min) / (this.#max - this.#min);
+		this.#lower.style.width = `${x * 100}%`;
+		this.#thumb.style.left = `${x * sliderWidth - thumbWidth/2}px`;
+	}
+}
+
+export class SliderTrack {
+	private $root: $Element;
+
+	constructor($root: $Element) {
+		this.$root = $root;
+	}
+
+	setColor(color: string) {
+		this.$root.css("--track-color", color);
+	}
+
+	addRange(begin: number, width: number) {
+		let $segment = $('<div class="track-range">');
+		let range = new SliderTrackRange($segment);
+		range.begin = begin;
+		range.width = width;
+		this.$root.append($segment);
+		return range;
+	}
+
+	clearRanges() {
+		this.$root.empty();
+	}
+
+	get root() {
+		return this.$root;
+	}
+}
+
+export class SliderTrackRange {
+	private $range: $Element;
+
+	constructor($range: $Element) {
+		this.$range = $range;
+	}
+
+	set begin(val: number) {
+		this.$range.css("left", `${val * 100}%`)
+	}
+
+	set width(val: number) {
+		this.$range.css("width", `${val * 100}%`)
 	}
 }
 

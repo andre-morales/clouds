@@ -178,7 +178,7 @@ export default class SinestesiaApp extends App {
 		this.openFile('/fsv' + dir + this.playlist.list[0][0]);
 	}
 
-	private openFile(path: string) {	
+	public openFile(path: string) {	
 		// Set window title
 		let fname = path.replace(/\/+$/, ''); // Remove trailing slash
 		fname = fname.slice(fname.lastIndexOf('/') + 1);

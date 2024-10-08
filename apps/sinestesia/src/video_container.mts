@@ -1,6 +1,7 @@
 import { Container } from "./container.mjs";
 import MediaPlayer from "./media_player.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
+import { type SliderTrack, type UISlider } from "/@sys/ui/controls/slider.mjs";
 import Fullscreen from "/@sys/ui/fullscreen.mjs";
 
 const AUTOPLAY_DELAY = 500;
@@ -13,9 +14,9 @@ interface $VideoElement extends $Element {
 export class VideoContainer extends Container {
 	private $video: $VideoElement;
 	private video: HTMLVideoElement;
-	private $bufferedRanges: $Element;
-	private bufferedRanges: TimeRanges;
 	private allowPauseEventLatch: boolean;
+	private bufferedRanges: TimeRanges;
+	private bufferedRangesTrack: SliderTrack;
 
 	constructor(player: MediaPlayer, $root: $Element) {
 		super(player, $root);
@@ -80,13 +81,9 @@ export class VideoContainer extends Container {
 		});
 		
 		// Track buffered parts of the video
-		this.$bufferedRanges = $("<div>")
-		this.$bufferedRanges.css("width", "100%")
-		.css('height', '100%')
-		.css('top', '0')
-		.css('left', '0');
-		this.$bufferedRanges.prependTo($progressBar[0].trackContainer);
-
+		this.bufferedRangesTrack = $progressBar[0].addUnderTrack() as SliderTrack;
+		this.bufferedRangesTrack.setColor("#BBB");
+		
 		let interval = setInterval(() => {
 			if (!this.isEnabled()) return;
 
@@ -177,7 +174,7 @@ export class VideoContainer extends Container {
 		if (timeRangesEqual(ranges, this.bufferedRanges)) return;
 		
 		this.bufferedRanges = ranges;
-		this.$bufferedRanges.empty();
+		this.bufferedRangesTrack.clearRanges();
 		
 		let fullLength = this.video.duration;
 		for (let i = 0; i < ranges.length; i++) {
@@ -185,14 +182,7 @@ export class VideoContainer extends Container {
 			let end = ranges.end(i);
 			let duration = end - start;
 
-			let $segment = $('<div>');
-			$segment.css("height", "100%")
-			.css("position", "absolute")
-			.css('top', '0')
-			.css("left", `${start / fullLength * 100}%`)
-			.css("width", `${duration / fullLength * 100}%`)
-			.css("background", "#BBB");
-			this.$bufferedRanges.append($segment);
+			this.bufferedRangesTrack.addRange(start / fullLength, duration / fullLength);
 		}
 	}
 
