@@ -59,4 +59,11 @@ export function showError(app: App, title: string, msg: string): DialogTuple {
 	return [prom, win];
 }
 
-export default { showOptions, showError };
+export function showMessage(app: App, title: string, msg: string): DialogTuple {
+	let [prom, win] = showOptions(app, title, msg, ["OK"], {
+		icon: 'info'
+	});
+	return [prom, win];
+}
+
+export default { showOptions, showError, showMessage };

@@ -1,7 +1,8 @@
 import { Container } from "./container.mjs";
-import MediaPlayer from "./media_player.mjs";
+import MediaPlayer, { timeToString } from "./media_player.mjs";
+import { TrackMarker } from "./track_marker.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
-import { type SliderTrack, type UISlider } from "/@sys/ui/controls/slider.mjs";
+import { type SliderTrack } from "/@sys/ui/controls/slider.mjs";
 import Fullscreen from "/@sys/ui/fullscreen.mjs";
 
 const AUTOPLAY_DELAY = 500;
@@ -17,6 +18,7 @@ export class VideoContainer extends Container {
 	private allowPauseEventLatch: boolean;
 	private bufferedRanges: TimeRanges;
 	private bufferedRangesTrack: SliderTrack;
+	private trackMarker: TrackMarker;
 
 	constructor(player: MediaPlayer, $root: $Element) {
 		super(player, $root);
@@ -55,7 +57,7 @@ export class VideoContainer extends Container {
 			this.player.goNextFile();
 		});
 
-		$ui.dblclick((ev: MouseEvent) => {
+		$video.dblclick((ev: MouseEvent) => {
 			let cPos = $ui.offset();
 			let x = 1.0 * (ev.pageX - cPos.left) / cPos.width;
 			
@@ -192,6 +194,15 @@ export class VideoContainer extends Container {
 		this.$video[0].load();
 	}
 
+	setTrackMarkerEnabled(enabled: boolean) {
+		if (!enabled && !this.trackMarker) return;
+
+		if (!this.trackMarker)
+			this.trackMarker = new TrackMarker(this);
+
+		this.trackMarker.setEnabled(enabled);
+	}
+
 	async play() {
 		ClientClass.get().audio.resume();
 
@@ -226,6 +237,10 @@ export class VideoContainer extends Container {
 	getMediaElement(): $Element {
 		return this.$video;
 	}
+
+	public getPlayer(): MediaPlayer {
+		return this.player;
+	}
 }
 
 function timeRangesEqual(a: TimeRanges, b: TimeRanges) {
@@ -243,24 +258,3 @@ function timeRangesEqual(a: TimeRanges, b: TimeRanges) {
 
 	return true;
 }
-
-function padNumber (n: number) {
-	return n.toLocaleString(undefined, {
-		minimumIntegerDigits: 2,
-		useGrouping: false
-	})
-}
-
-function timeToString (time: number) {
-	let hours = Math.floor(time / 60 / 60);
-	let minutes = Math.floor(time / 60 - hours * 60);
-	let seconds = Math.floor(time) % 60;
-
-	let strSec = padNumber(seconds);
-	if (hours) {
-		let strMin = padNumber(minutes);
-		return `${hours}:${strMin}:${strSec}`;
-	} else {
-		return `${minutes}:${strSec}`;
-	}
-};

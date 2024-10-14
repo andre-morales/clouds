@@ -523,6 +523,13 @@ export default class Window {
 			&& (y <= this.posY + this.height));
 	}
 
+	getLocalCoordinates(ev: MouseEvent): [number, number] {
+		let coords = this.$window.offset()
+		let x = ev.clientX - coords.left;
+		let y = ev.clientY - coords.top;
+		return [x, y]
+	}
+
 	unfocus() {
 		if (Client.desktop.focusedWindow != this) return;
 

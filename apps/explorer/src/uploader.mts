@@ -106,3 +106,20 @@ export default class ExplorerUploader {
 		this.$win.find(`.${name}-step`).removeClass('d-none');
 	}
 }
+
+function toProgressString(x: number, total: number) {
+	const units = ['KB', 'MB', 'GB'];
+
+	let unit: string;
+	const val = () => `${x.toFixed(2)} / ${total.toFixed(2)} ${unit}`;
+
+	for(let u of units) {
+		unit = u;
+		x /= 1024;
+		total /= 1024;
+
+		if (total < 2048) break;	
+	}
+
+	return val();
+}

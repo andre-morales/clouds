@@ -2,29 +2,32 @@ import SinestesiaApp from "./app.mjs";
 import { Container } from "./container.mjs";
 import { ImageContainer } from "./image_container.mjs";
 import { VideoContainer } from "./video_container.mjs";
-import { ClientClass } from "/@sys/client_core.mjs";
+import { Reactor } from "/@sys/events.mjs";
 
 export enum ContentType {
 	NONE, IMAGE, VIDEO
 }
 
-export class MediaPlayer {
+export default class MediaPlayer {
 	public readonly app: SinestesiaApp;
 	private contentType: ContentType;
 	private activeContainer: Container;
 	private containers: Map<ContentType, Container>;
+	private reactor: Reactor;
 
 	constructor(app: SinestesiaApp) {
 		this.app = app;
 		this.contentType = ContentType.NONE;
+		this.reactor = new Reactor();
+		this.reactor.register('media-change');
 	}
 
 	init() {
 		let $win = this.app.window.$window;
 		this.containers = new Map();
 		
-		let videoContainer = new VideoContainer(this, $win.find('.contentw.video'));
-		let imageContainer = new ImageContainer(this, $win.find('.contentw.img'));
+		let videoContainer = new VideoContainer(this, $win.find('.content-w.video'));
+		let imageContainer = new ImageContainer(this, $win.find('.content-w.img'));
 
 		this.containers.set(ContentType.IMAGE, imageContainer);
 		this.containers.set(ContentType.VIDEO, videoContainer);
@@ -38,6 +41,10 @@ export class MediaPlayer {
 		this.activeContainer = cont;
 		cont.setContentUrl(url);
 		cont.setEnabled(true);
+		
+		this.reactor.dispatch('media-change', {
+			contentType: type
+		});
 	}
 
 	async play() {
@@ -61,7 +68,7 @@ export class MediaPlayer {
 		}
 
 		// Guarantee hiding of the empty container
-		this.app.window.$window.find('.contentw').removeClass('enabled');
+		this.app.window.$window.find('.content-w').removeClass('enabled');
 	}
 
 	goNextFile() {
@@ -72,13 +79,44 @@ export class MediaPlayer {
 		this.app.playlist.goPrevious();
 	}
 
-	getMediaElement() {
+	getMediaElement(): $Element {
+		if (!this.activeContainer) return null;
+
 		return this.activeContainer.getMediaElement();
 	}
 
 	getCurrentUrl() {
+		if (!this.activeContainer) return null;
+
 		return this.activeContainer.getContentUrl();
+	}
+
+	public getContainer(type: ContentType) {
+		return this.containers.get(type);
+	}
+
+	public on(evClass: string, callback: Function) {
+		this.reactor.on(evClass, callback);
 	}
 }
 
-export default MediaPlayer;
+function padNumber (n: number) {
+	return n.toLocaleString(undefined, {
+		minimumIntegerDigits: 2,
+		useGrouping: false
+	})
+}
+
+export function timeToString (time: number) {
+	let hours = Math.floor(time / 60 / 60);
+	let minutes = Math.floor(time / 60 - hours * 60);
+	let seconds = Math.floor(time) % 60;
+
+	let strSec = padNumber(seconds);
+	if (hours) {
+		let strMin = padNumber(minutes);
+		return `${hours}:${strMin}:${strSec}`;
+	} else {
+		return `${minutes}:${strSec}`;
+	}
+};

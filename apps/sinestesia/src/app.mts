@@ -1,4 +1,4 @@
-import { MediaPlayer, ContentType } from './media_player.mjs'
+import MediaPlayer, { ContentType } from './media_player.mjs'
 import { Playlist } from './playlist.mjs';
 import { Gestures } from './gestures.mjs';
 import type ExplorerApp from '../../explorer/main.mjs';
@@ -8,6 +8,7 @@ import Fullscreen from '/@sys/ui/fullscreen.mjs';
 import App from '/@sys/app.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
+import { VideoContainer } from './video_container.mjs';
 
 export default class SinestesiaApp extends App {
 	public readonly player: MediaPlayer;
@@ -96,22 +97,27 @@ export default class SinestesiaApp extends App {
 				this.transform.flipY *= -1;
 				this.updateTransform();
 			}],
-			['-Rotate right', () => {
-				this.transform.rotation += 90;
-				this.updateTransform();
-			}],
 			['-Rotate left', () => {
 				this.transform.rotation -= 90;
+				this.updateTransform();
+			}],
+			['-Rotate right', () => {
+				this.transform.rotation += 90;
 				this.updateTransform();
 			}],
 			['*Allow zoom/pan', (v) => {
 				this.gestures.setEnabled(v);
 			}, {checked: false}],
 			['-Reset transform', () => {this.gestures.cleanTransform(); this.updateTransform()}],
+			['|'],
+			['*Track marker', (v) => {
+				let videoContainer = this.player.getContainer(ContentType.VIDEO) as VideoContainer;
+				videoContainer.setTrackMarkerEnabled(v);
+			}]
 		]);
 		
 		this.contextMenu = ctxMenu;
-		ClientClass.get().desktop.addCtxMenuOn($win.find('.window-body'), () => ctxMenu);
+		ClientClass.get().desktop.addCtxMenuOn($win.find('.content-windows'), () => ctxMenu);
 	}
 
 	setAutoPlay(auto: boolean) {

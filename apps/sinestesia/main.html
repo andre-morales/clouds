@@ -1,34 +1,54 @@
-<div class='contentw img'>
-	<div class="container image-container">
-		<img draggable="false"/>
-		<nav class="controls">
-			<div class='center'>
-				<button class='button prev-btn'></button>
-				<button class='button next-btn'></button>
-			</div>
-		</nav>
+<div class="content-windows">
+	<div class='content-w img'>
+		<div class="container image-container">
+			<img draggable="false"/>
+			<nav class="controls">
+				<div class='center'>
+					<button class='button prev-btn'></button>
+					<button class='button next-btn'></button>
+				</div>
+			</nav>
+		</div>
 	</div>
-</div>
-<div class='contentw video'>
-	<div class='container video-container'>
-		<video></video>
-		<nav class="controls">
-			<div class='center'>
-				<button class='button prev-btn'></button>
-				<button class='button play-btn'></button>
-				<button class='button next-btn'></button>
+	<div class='content-w video'>
+		<div class='container video-container'>
+			<video></video>
+			<nav class="controls">
+				<div class='center'>
+					<button class='button prev-btn'></button>
+					<button class='button play-btn'></button>
+					<button class='button next-btn'></button>
+				</div>
+				<div class='bottom'>
+					<ui-slider class='progressbar'></ui-slider>
+					<div class='video-time'>
+						<span class='time'>0:00</span>
+						&sol;
+						<span class='duration'>0:00</span>
+					</div>
+				</div>
+			</nav>
+		</div>
+		<div class='segment-marker' style="display: none;" tabindex="0">
+			<div class="segment-list">
+				<ul></ul>
 			</div>
-			<div class='bottom'>
-				<ui-slider class='progressbar'></ui-slider>
-				<div class='video-time'>
-					<span class='time'>0:00</span>
-					&sol;
-					<span class='duration'>0:00</span>
+			<button class="button expand-sts-list-btn" style="padding: 4px; margin: 0">::</button>
+			<div style="flex-grow: 1;">
+				<div class="ribbon">
+					<button class="button export-st-btn">Export segments...</button>
+					<button class="button mark-btn">Mark segment (M)</button>
+					<button class="button play-st-btn">Play segment (Space)</button>
+				</div>
+				<div class='track'>
+					<div class="segment selection"></div>
+					<div class="segment play-line"></div>
 				</div>
 			</div>
-		</nav>
+			<div class="tooltip">00:00</div>
+		</div>
 	</div>
-</div>
-<div class="contentw empty enabled">
-	Nothing playing.
+	<div class="content-w empty enabled">
+		Nothing playing.
+	</div>
 </div>
