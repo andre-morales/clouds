@@ -12,6 +12,7 @@ declare global {
 	var Client: ClientClass;
 	var _systemPanic: Function;
 	var IMPORT: Function;
+	let __BUILD_MODE__: string;
 }
 
 export default global;

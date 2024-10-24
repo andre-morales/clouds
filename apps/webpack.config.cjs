@@ -1,5 +1,6 @@
 const Path = require('path');
 const Glob = require('glob');
+const Webpack = require('webpack');
 
 const ROOT = Path.resolve(__dirname, '../');
 
@@ -77,6 +78,11 @@ module.exports = function(env) {
 				  },
 				},
 			}
-		}
+		},
+		plugins: [
+			new Webpack.DefinePlugin({
+				'__BUILD_MODE__': JSON.stringify((env.production) ? 'Production' : 'Development')
+			})
+		]
 	}
 };

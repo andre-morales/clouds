@@ -1,6 +1,6 @@
 import App from '../app.mjs';
 import { Deferred } from '../events.mjs';
-import Window from './window.mjs';
+import Window, { InitialPosition } from './window.mjs';
 
 type DialogTuple = [Promise<number>, Window];
 
@@ -46,7 +46,7 @@ export function showOptions(app: App, title: string, msg: string, options: strin
 	});
 
 	win.bringToFront();
-	win.setInitialPosition('center');
+	win.setInitialPosition(InitialPosition.CENTER);
 	win.setVisible(true);
 
 	return [deferred.promise, win];

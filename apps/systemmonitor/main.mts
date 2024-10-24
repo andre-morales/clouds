@@ -70,7 +70,7 @@ export default class SystemMonitorApp extends App {
 		let $windowsTab = $win.find('.ui-tab[data-tab="windows"]');
 		let makeWindowsEntries = () => {
 			$windowsTab.empty();
-			for (let win of Client.desktop.windows) {
+			for (let win of Client.desktop.getWindowManager().getWindows()) {
 
 				let $win = $(`<div class='win'>${win.getTitle()}</div>`);
 

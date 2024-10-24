@@ -44,3 +44,11 @@
 .app-about .properties {
 	margin: 1rem;
 }
+
+.app-about p {
+	margin: 0 0 .4rem 1rem;
+}
+
+.app-about h3 {
+	margin: 1rem 0 .5rem 0;
+}

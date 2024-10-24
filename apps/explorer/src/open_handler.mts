@@ -1,7 +1,7 @@
 import { Paths } from '/@sys/bridges/filesystem.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Util from '/@sys/util.mjs';
-import Window from '/@sys/ui/window.mjs';
+import Window, { InitialPosition } from '/@sys/ui/window.mjs';
 import { type AppDefinition } from '/@sys/app_manager.mjs';
 
 var Client: ClientClass;
@@ -57,7 +57,7 @@ export default class ExplorerDefaultHandler {
 			this.window.close();
 		});
 
-		this.window.setInitialPosition('center');
+		this.window.setInitialPosition(InitialPosition.CENTER);
 		this.window.setVisible(true);
 	}
 

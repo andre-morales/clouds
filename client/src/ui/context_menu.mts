@@ -169,7 +169,7 @@ export class ContextMenu extends ContextItem {
 		if (!this.$menuBase) throw new IllegalStateFault("No menu base.");
 		if (!this.$menuItem) throw new IllegalStateFault("No menu item.");
 
-		const { screenWidth, screenHeight } = ClientClass.get().desktop;
+		const [screenWidth, screenHeight] = ClientClass.get().desktop.getDesktopSize();
 
 		this.$menuBase.addClass('visible');
 

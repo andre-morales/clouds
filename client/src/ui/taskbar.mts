@@ -165,7 +165,8 @@ export class TaskbarButton {
 	}
 
 	createButton(firstWindow: Window) {
-		if (firstWindow.icon) this.icon = firstWindow.icon;
+		let winIcon = firstWindow.getIcon();
+		if (winIcon) this.icon = winIcon;
 
 		// Create taskbar button
 		this.$button = $(`<div class='task-button'><span class='count'>2</span></div>`);
@@ -220,7 +221,7 @@ export class TaskbarButton {
 		let $list = Client.desktop.taskbar.$windowList;
 
 		for (let w of this.windows) {
-			let icon = (w.icon) ? w.icon : this.icon;
+			let icon = w.getIcon() ?? this.icon;
 			let $item = $(`<li><img src='${icon}'/>${w.getTitle()}</li>`);
 			Client.desktop.addCtxMenuOn($item, () => w.optionsCtxMenu);
 			$item.click(() => {
@@ -236,7 +237,7 @@ export class TaskbarButton {
 		}
 
 		$list.css('left', `${x}px`);
-		$list.css('bottom', `${Client.desktop.screenHeight - y}px`);
+		$list.css('bottom', `${Client.desktop.getDesktopSize()[1] - y}px`);
 		$list.css('display', 'block');
 	}
 

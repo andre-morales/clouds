@@ -6,29 +6,27 @@ import App from '../app.mjs';
 import { Reactor } from '../events.mjs';
 import { ClientClass } from '../client_core.mjs';
 import Arrays from '../utils/arrays.mjs';
+import { WindowManager } from './window_manager.mjs';
 
 export class Desktop {
-	windows: Window[];
 	dwm: App;
 	events: Reactor;
 	iconifiedGroups: any;
 	taskbar: Taskbar;
 	focusedWindow: Window;
-	mouseX: number;
-	mouseY: number;
 	contextMenuOpen: boolean;
-	dragRectState: any;
-	windowsWidth: number;
-	windowsHeight: number;
-	screenWidth: number;
-	screenHeight: number;
+	private dragRectState: any;
+	private windowManager: WindowManager;
+	private windowsWidth: number;
+	private windowsHeight: number;
+	private screenWidth: number;
+	private screenHeight: number;
 	#currentContextMenu: ContextMenu;
 	$desktop: $Element;
 	$windows: $Element;
 	$contextMenu: $Element;
 
 	constructor() {
-		this.windows = [];
 		this.dwm = new App({
 			id: 'dwm',
 			noWindowGrouping: true
@@ -38,11 +36,10 @@ export class Desktop {
 		this.iconifiedGroups = {};
 		this.$desktop = $('#desktop');
 		this.$windows = $('.windows');
+		this.windowManager = new WindowManager(this);
 		this.taskbar = new TaskbarM.Taskbar();
 		this.$contextMenu = $('.context-menu');
 		this.focusedWindow = null;
-		this.mouseX = 0;
-		this.mouseY = 0;
 		this.contextMenuOpen = false;
 		this.dragRectState = {};
 
@@ -64,13 +61,6 @@ export class Desktop {
 
 		this.addCtxMenuOn(this.$desktop.find('.back-plane'), () => menu);
 
-		this.#installWindowResizeHandlers();
-
-		$(document).on('mousemove', (ev: MouseEvent) => {
-			this.mouseX = ev.clientX;
-			this.mouseY = ev.clientY;
-		});
-
 		$(document).on('mousedown', (ev) => {
 			let $cMenu = this.$contextMenu;
 			let el = ev.target as HTMLElement;
@@ -87,7 +77,7 @@ export class Desktop {
 
 		$(window).on('resize', () => {
 			this._queryBounds();
-			for (let w of this.windows) {
+			for (let w of this.windowManager.getWindows()) {
 				if (w.maximized) {
 					w.setStyledSize(this.windowsWidth, this.windowsHeight);
 					w.dispatch('resize');
@@ -121,22 +111,20 @@ export class Desktop {
 		});
 	}
 
-	createWindow(app: App) {
+	public createWindow(app: App): Window {
 		let win = new Window(app);
-		this.windows.push(win);
 		app.windows.push(win);
+		this.windowManager.addWindow(win);
 		win.init();
-
 		this.events.dispatch('window-created');
 		return win;
 	}
 
-	destroyWindow(win: Window) {
-		// Remove window from windows list
-		if (Arrays.erase(this.windows, win) < 0) return;
+	public destroyWindow(win: Window): void {
+		if(!this.windowManager.removeWindow(win)) return;
 
 		// Dispatch closed event
-		win.events.dispatch('closed');
+		win.dispatch('closed');
 
 		// Destroy all children windows
 		for (let c of win.children) {
@@ -146,7 +134,7 @@ export class Desktop {
 		// Release window resources
 		win._dispose();
 		
-		// Remove window from list
+		// Remove window from app windows list
 		Arrays.erase(win.app.windows, win);
 
 		// If this was the main window, exit the owner app
@@ -158,8 +146,7 @@ export class Desktop {
 	}
 
 	bringWindowToFront(win: Window) {
-		this.windows.push(this.windows.splice(this.windows.indexOf(win), 1)[0]);
-		this.#restack();
+		this.windowManager.bringToFront(win);
 	}
 
 	getDesktopSize() {
@@ -177,6 +164,10 @@ export class Desktop {
 		return [rect.width, rect.height];
 	}
 
+	getWindowManager() {
+		return this.windowManager;
+	}
+
 	getDefaultWindowSize() {
 		let rect = this.getWindowingArea();
 		let w = (rect[0] * 0.9 < 512) ? rect[0] * 0.9 : 512;
@@ -188,13 +179,14 @@ export class Desktop {
 	realignWindow(win: Window) {
 		if (win.maximized) return;
 
-		let x = win.posX;
-		let y = win.posY;
+		let [wx, wy] = win.getPosition();
+		let x = wx, y = wy;
 
-		for (let i = 0; i < this.windows.length; i++) {
-			let w = this.windows[i];
+		let windows = this.windowManager.getWindows();
+		for (let i = 0; i < windows.length; i++) {
+			let w = windows[i];
 			if (w === win) continue;
-			if (Math.abs(w.posX - x) > 31 && Math.abs(w.posY - y) > 31) continue;
+			if (Math.abs(wx- x) > 31 && Math.abs(wy - y) > 31) continue;
 
 			x += 32;
 			y += 32;
@@ -248,7 +240,7 @@ export class Desktop {
 		});
 	}
 
-	setCursor(cursor) {
+	setCursor(cursor: string) {
 		document.body.style.cursor = cursor;
 	}
 
@@ -310,177 +302,14 @@ export class Desktop {
 
 	// Updates desktop area to match client window area
 	_queryBounds() {
-		let bounds = this.$desktop[0].getBoundingClientRect();
-		this.screenWidth = bounds.width;
-		this.screenHeight = bounds.height;
-		bounds = this.$windows[0].getBoundingClientRect();
-		this.windowsWidth = bounds.width;
-		this.windowsHeight = bounds.height;
+		let screenBounds = this.$desktop[0].getBoundingClientRect();
+		this.screenWidth = screenBounds.width;
+		this.screenHeight = screenBounds.height;
+		
+		let dtBounds = this.$windows[0].getBoundingClientRect();
+		this.windowsWidth = dtBounds.width;
+		this.windowsHeight = dtBounds.height;
 	}
-
-	// Sets windows' z-index to match the windows array.
-	#restack() {
-		let index = 1;
-		for (let win of this.windows) {
-			let newZ = index++;
-			if (win.zIndex != newZ) {
-				win.zIndex = newZ;
-
-				if (win.$window) {
-					win.$window.css('z-index', newZ);
-				}
-			}
-		}
-	}
-
-	#installWindowResizeHandlers() {
-		let resWin = null;
-		let startB;
-		let startMX, startMY;
-		let dragDir;
-		let wx, wy, ww, wh;
-
-		let dragStart = (mx: number, my: number, ev: Event) => {
-			for(let win of this.windows.slice().reverse()) {
-				dragDir = this.#getResizeDirection(win, mx, my);
-
-				if (dragDir) {
-					if (win.maximized) return;
-
-					resWin = win;
-					startMX = mx,       startMY = my;
-					startB = win.getBounds();
-					Client.desktop.setPointerEvents(false);
-					ev.stopPropagation();
-					return;
-				} else {
-					if (win.isPointInside(mx, my)) return;
-				}
-			};
-		}
-
-		let dragMove = (mx: number, my: number) => {
-			if (resWin) {
-				doResize(mx, my);
-				return;
-			}
-
-			for(let win of this.windows.slice().reverse()) {
-				let dir = this.#getResizeDirection(win, mx, my);
-				if (dir) {
-					if (win.maximized) return;
-
-					this.setCursor(this.#getDirectionCursor(dir));
-					return; 
-				}
-
-				if (win.isPointInside(mx, my)) break;
-			}
-
-			this.setCursor(null);
-		};
-
-		let doResize = (mx: number, my: number) => {
-			if (!dragDir) return;
-
-			let dx = mx - startMX;
-			let dy = my - startMY;
-
-			wx = startB[0], wy = startB[1];
-			ww = startB[2], wh = startB[3];
-
-			ww += dx * dragDir[0];
-			wh += dy * dragDir[1];
-
-			if (ww < resWin.minWidth) {
-				dx -= resWin.minWidth - ww;
-				ww = resWin.minWidth;
-			}
-
-			if (wh < resWin.minHeight) {
-				dy -= resWin.minHeight - wh;
-				wh = resWin.minHeight;
-			}
-
-			if (dragDir[0] < 0) { wx += dx; }
-			if (dragDir[1] < 0) { wy += dy; }
-
-			if (Client.config.preferences.show_dragged_window_contents) {
-				resWin.setBounds(wx, wy, ww, wh);
-			} else {
-				this.setDragRectangle(wx, wy, ww, wh);
-			}
-		};
-
-		let dragEnd = (mx: number, my: number) => {
-			if (!resWin) return;
-			doResize(mx, my);
-			resWin.setBounds(wx, wy, ww, wh);
-			this.setDragRectangle(null);
-			Client.desktop.setPointerEvents(true);
-			resWin = null;
-		};
-
-		this.$desktop[0].addEventListener("mousedown", (ev) => {
-			let mx = ev.pageX, my = ev.pageY;
-			dragStart(mx, my, ev);
-		}, true);
-		this.$desktop[0].addEventListener("touchstart", (ev) => {
-			let { pageX, pageY } = ev.changedTouches[0];
-			dragStart(pageX, pageY, ev);
-		}, true);
-
-		this.$desktop.on("mousemove", (ev: MouseEvent) => {
-			let mx = ev.pageX, my = ev.pageY;	
-			dragMove(mx, my);
-		});
-		this.$desktop.on("touchmove", (ev: TouchEvent) => {
-			let { pageX, pageY } = ev.changedTouches[0];
-			dragMove(pageX, pageY);
-		});
-		this.$desktop.on("mouseup", (ev: MouseEvent) => {
-			let mx = ev.pageX, my = ev.pageY;	
-			dragEnd(mx, my);
-		});
-		this.$desktop.on("touchend", (ev: TouchEvent) => {
-			let { pageX, pageY } = ev.changedTouches[0];
-			dragEnd(pageX, pageY);
-		});
-	}
-
-	#getDirectionCursor(dir: number[]) {
-		let h = dir[0], v = dir[1];
-		if (h == 0) return "ns-resize";
-		if (v == 0) return "ew-resize";
-		if (h == v) return "nwse-resize";
-		if (h != v) return "nesw-resize";
-		return "initial";
-	}
-
-	#getResizeDirection(w, mx, my) {
-		if (!w.visible || !w.decorated) return null;
-
-		const im = 4;  // Inside margin
-		const om = 8;  // Outside margin
-
-		let dx = mx - w.posX,  dy = my - w.posY;
-		let dw = dx - w.width, dh = dy - w.height;
-
-		// If the mouse is outside the window + pixel border
-		if (dx < -om || dw > om ||
-			dy < -om || dh > om) return null;
-
-		// Left or Right Edge
-		let h = 0, v = 0;
-		if (dx <=  im) h = -1;
-		if (dw >= -im) h = 1;
-
-		if (dy <=  im) v = -1;	 
-		if (dh >= -im) v = 1;
-
-		if (h == 0 && v == 0) return null;
-		return [h, v]
-	};
 
 	#reloadBackground() {
 		let url = ClientClass.get().config.preferences.background;

@@ -1,5 +1,6 @@
-const path = require('path');
-const ROOT = path.resolve(__dirname, '../');
+const Path = require('path');
+const Webpack = require('webpack');
+const ROOT = Path.resolve(__dirname, '../');
 
 module.exports = function(env, args) {
 	return {
@@ -28,7 +29,7 @@ module.exports = function(env, args) {
 		},
 		output: {
 			filename: '[name].chk.js',
-			path: path.resolve(ROOT, 'client/public/pack'),
+			path: Path.resolve(ROOT, 'client/public/pack'),
 		},
 		module: {
 			rules: [
@@ -51,6 +52,11 @@ module.exports = function(env, args) {
 		},
 		optimization: {
 			runtimeChunk: 'single'
-		}
+		},
+		plugins: [
+			new Webpack.DefinePlugin({
+				'__BUILD_MODE__': JSON.stringify((env.production) ? 'Production' : 'Development')
+			})
+		]
 	}
 };

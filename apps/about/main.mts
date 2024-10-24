@@ -46,6 +46,10 @@ export default class AboutApp extends App {
 		let userAgentStr = navigator.userAgent;
 		$app.find('.user-agent').text("User Agent: " + userAgentStr);
 
+		// Build modes
+		$app.find('.core-build-mode').text(ClientClass.BUILD_MODE);
+		$app.find('.apps-build-mode').text(__BUILD_MODE__);
+
 		this.window.setVisible(true);
 	}
 

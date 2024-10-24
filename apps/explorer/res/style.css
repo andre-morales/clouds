@@ -344,6 +344,13 @@
 	width: 15em;
 }
 
+.fileupload-helper .progress-text {
+	position: absolute;
+	left: 0;
+	right: 0;
+	text-align: center;
+}
+
 /* Open with helper window */
 .openwith-helper .list {
 	height: 100%;

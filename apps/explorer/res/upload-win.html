@@ -5,7 +5,7 @@
 	</button>
 </div>
 
-<div class="step upload-step d-none">
+<div class="step confirm-step d-none">
 	<div class="upload-btns">
 		<button class="button clear-btn">Clear file selection</button>
 		<button class="button upload-btn">Upload files</button>
@@ -15,7 +15,12 @@
 <div class="step progress-step d-none">
 	<span>Uploading...</span>
 	<br/>
-	<progress value="0"></progress>
+	<div style="position: relative;">
+		<progress value="0"></progress>
+		<span class='progress-text'></span>
+	</div>
+	<br/>
+	<button class='button cancel-btn'>Cancel</button>
 </div>
 
 <div class="step finish-step d-none">

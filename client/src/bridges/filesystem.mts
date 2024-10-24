@@ -1,5 +1,8 @@
 import Util from '../util.mjs';
 import { BadParameterFault, FetchException, Exception } from '../faults.mjs';
+import { Timeout } from '../utils/timeout.mjs';
+
+const UPLOAD_TIMEOUT = 30000;
 
 export class FileSystem {
 	static async readText(path: string): Promise<string> {
@@ -41,17 +44,27 @@ export class FileSystem {
 		await FileSystem.writeText(path, JSON.stringify(obj));
 	}
 
-	static writeUploadForm(path: string, form: HTMLFormElement, listeners) {
+	static writeUploadForm(path: string, form: HTMLFormElement, prepareFn: (req: XMLHttpRequest) => void) {
+		const url = Paths.toURL(Paths.toFSV(path));
+
+		// Create request objects
 		let formData = new FormData(form);
 		let req = new XMLHttpRequest();
+
+		// Invoke prepare callback
+		if (prepareFn) prepareFn(req);
+
+		// Prepare a timeout to abort the request in case too much time has elapsed.
+		let timeout = new Timeout(UPLOAD_TIMEOUT, () => req.abort());
 		
-		if (listeners) listeners(req);
-
-		let url = Paths.toURL(Paths.toFSV(path));
+		// Open the fetch operation
 		req.open('POST', url);
-		req.timeout = 40000;
-		req.send(formData);
 
+		// When progress occurs, reset the timeout.
+		req.upload.addEventListener('progress', () => timeout.set());
+		req.upload.addEventListener('loadend', () => timeout.stop());
+
+		req.send(formData);
 		return req;
 	}
 

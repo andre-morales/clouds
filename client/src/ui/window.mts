@@ -6,6 +6,10 @@ import { App } from '../app.mjs';
 import Util from '../util.mjs';
 import Arrays from '../utils/arrays.mjs';
 
+enum LiveState {
+	NIL, INIT, READY, DYING, DEAD
+}
+
 export enum CloseBehavior {
 	NOTHING,
 	HIDE_WINDOW,
@@ -17,34 +21,37 @@ export enum InitialPosition {
 	DEFAULT, CENTER
 }
 
+export enum DisplayState {
+	HIDDEN, MINIMIZED, NORMAL, MAXIMIZED
+}
+
 export default class Window {
 	app: App;
 	children: Window[];
-	icon: string;
 	maximized: boolean;
 	minimized: boolean;
-	posX: number;
-	posY: number;
-	restoreBounds: number[];
-	events: Reactor;
 	optionsCtxMenu: ContextMenu;
 	zIndex: number;
-	$window: $Element;
+	private liveState: LiveState;
+	private $windowRoot: $Element;
+	private events: Reactor;
 	private owner: Window;
 	private closeBehavior: CloseBehavior;
 	private initialPosition: InitialPosition;
 	private visible: boolean;
 	private title: string;
 	private decorated: boolean;
+	private posX: number;
+	private posY: number;
 	private width: number;
 	private height: number;
 	private minWidth: number;
 	private minHeight: number;
-	private destroyed: boolean;
+	private restoreBounds: number[];
 	private firstShow: boolean;
 	private taskButton: TaskbarButton;
+	private icon: string;
 	private $windowHeader: $Element;
-	private $windowButton: $Element;
 	private $windowTitle: $Element;
 	
 	constructor(app: App) {
@@ -71,7 +78,7 @@ export default class Window {
 		this.restoreBounds = [8, 8, 600, 400];
 
 		this.events = new Reactor();
-		this.events.register('closing', 'closed', 'backnav', 'resize', 'closereq');
+		this.events.register('init', 'closing', 'closed', 'backnav', 'resize');
 
 		this.closeBehavior = CloseBehavior.DISPOSE_WINDOW;
 		this.initialPosition = InitialPosition.DEFAULT;
@@ -80,12 +87,12 @@ export default class Window {
 			this.icon = app.icon;	
 		}
 
-		this.$window = null;
+		this.$windowRoot = null;
 	}
 
 	_dispose() {
-		if (this.destroyed) return;	
-		this.destroyed = true;
+		if (this.liveState != LiveState.READY) throw new IllegalStateFault("Can't dispose a window that isn't ready.");	
+		this.liveState = LiveState.DYING;
 
 		// If this is the app main window, save its state
 		if (this.app.mainWindow == this) {
@@ -98,20 +105,23 @@ export default class Window {
 
 		// Optimization: Nullify all sources of media this window contained.
 		// This cancels the fetch of any resources this window could make
-		this.$window.find("img").attr("src", "");
-		this.$window.find("source").attr("src", "");
-		this.$window.find("video").attr("src", "");
-		this.$window.remove();
-		this.$window = null;
+		this.$windowRoot.find("img").attr("src", "");
+		this.$windowRoot.find("source").attr("src", "");
+		this.$windowRoot.find("video").attr("src", "");
+		this.$windowRoot.remove();
+		this.$windowRoot = null;
 
 		// Remove taskbar button
 		if (!this.taskButton) return;
 		this.taskButton.removeWindow(this);
 		this.taskButton = null;
+		this.liveState = LiveState.DEAD;
 	}
 
-	init() {
-		if (this.$window) throw new IllegalStateFault('Double initialization of window object.');
+	init(): void {
+		if (this.$windowRoot) throw new IllegalStateFault('Double initialization of window object.');
+
+		this.liveState = LiveState.INIT;
 
 		// Instantiation
 		let $win = $(Util.cloneTemplate('window')).find('.window');
@@ -119,12 +129,12 @@ export default class Window {
 		this.optionsCtxMenu = this.makeOptionsCtxMenu();
 
 		// Queries
-		this.$window = $win;
+		this.$windowRoot = $win;
 		this.$windowHeader = $win.find('.window-head');
 		this.$windowTitle = $win.find('.window-title');
 
 		// Behavior
-		let hammer = new Hammer.Manager(this.$window.find('.window-body')[0], {
+		let hammer = new Hammer.Manager(this.$windowRoot.find('.window-body')[0], {
 			recognizers: [
 				[Hammer.Swipe, {
 					direction: Hammer.DIRECTION_LEFT,
@@ -137,9 +147,9 @@ export default class Window {
 			this.dispatch('backnav');
 		});
 
-		this.$window.on("mousedown", () => this.focus());
-		this.$window.on("touchstart", () => this.focus());
-		this.$window.on("focusin", () => this.focus());
+		this.$windowRoot.on("mousedown", () => this.focus());
+		this.$windowRoot.on("touchstart", () => this.focus());
+		this.$windowRoot.on("focusin", () => this.focus());
 
 		$win.find('.close-btn').click(() => {
 			let closingEv = new ReactorEvent();
@@ -172,17 +182,18 @@ export default class Window {
 		});
 		Client.desktop.addCtxMenuOn(this.$windowHeader, () => this.optionsCtxMenu)
 		this.$windowTitle.dblclick(() => this.setMaximized(!this.maximized));
-		this.initDragListeners();
 
 		// Styling
 		if (this.icon) this.setIcon(this.icon);
 		this.setDecorated(true);
 		
 		this.initPosition();
+		this.events.dispatch('init');
+		this.liveState = LiveState.READY;
 	}
 
 	// Determine initial window position
-	initPosition() {
+	private initPosition() {
 		if (this.app.mainWindow === this) {
 			this.restoreState();
 		}
@@ -196,7 +207,7 @@ export default class Window {
 		this.bringToFront();
 	}
 
-	async doFirstShowSetup() {
+	private async doFirstShowSetup() {
 		this.firstShow = false;
 		this.taskButton = Client.desktop.taskbar.addWindow(this);
 
@@ -216,90 +227,7 @@ export default class Window {
 		}
 	}
 
-	initDragListeners() {
-		let dragging = false;
-		let startX, startY;
-		let startMX, startMY;
-
-		let dragStart = (mx, my) => {
-			dragging = true;
-
-			startMX = mx,        startMY = my;
-			startX  = this.posX, startY  = this.posY;
-			Client.desktop.setPointerEvents(false);
-		};
-
-		let dragMove = (mx, my) => {
-			if (!dragging) return;
-
-			let dx = mx - startMX;
-			let dy = my - startMY;
-
-			if (this.maximized) {
-				if (dy > 8) {
-					let wb = this.restoreBounds;
-					let nx = mx - wb[2] * startMX / this.width;
-					let ny = my - wb[3] * startMY / this.height;
-					
-					this.restoreBounds[0] = nx;
-					this.restoreBounds[1] = ny;
-					this.restore();
-
-					startX  = nx, startY  = ny;
-					startMX = mx, startMY = my;
-				}
-				return;
-			}
-
-			if (Client.config.preferences.show_dragged_window_contents) {
-				this.setPosition(startX + dx, startY + dy);
-			} else {
-				Client.desktop.setDragRectangle(startX + dx, startY + dy, this.width, this.height);
-			}
-		};
-
-		let dragEnd = (mx: number, my: number) => {
-			if (!dragging) return;
-
-			dragging = false;
-			this.setPosition(startX + mx - startMX, startY + my - startMY);
-			Client.desktop.setPointerEvents(true);
-			Client.desktop.setDragRectangle(null);
-		};
-
-		let $doc = $(document);
-		let $wh = this.$windowHeader;
-
-		let $title = this.$windowTitle;
-		$title.on("mousedown", (e: MouseEvent) => {
-			dragStart(e.pageX, e.pageY);
-		});
-		$title.on("touchstart", (e: TouchEvent) => {
-			let mx = e.changedTouches[0].pageX;
-			let my = e.changedTouches[0].pageY;
-			dragStart(mx, my);
-		});
-		
-		$doc.on("mousemove", (e: MouseEvent) => {
-			dragMove(e.pageX, e.pageY);
-		});
-		$doc.on("touchmove", (e: TouchEvent) => {
-			let mx = e.changedTouches[0].pageX;
-			let my = e.changedTouches[0].pageY;
-			dragMove(mx, my);
-		});
-
-		$doc.on("mouseup", (ev: MouseEvent) => {
-			dragEnd(ev.pageX, ev.pageY);
-		});
-		$doc.on("touchend", (ev: TouchEvent) => {
-			let mx = ev.changedTouches[0].pageX;
-			let my = ev.changedTouches[0].pageY;
-			dragEnd(mx, my);
-		});
-	}
-
-	makeOptionsCtxMenu(): ContextMenu {
+	private makeOptionsCtxMenu(): ContextMenu {
 		return ContextMenu.fromDefinition([
 			['-Fullscreen', () => this.goFullscreen()],
 			['-Maximize', () => this.setMaximized(true)],
@@ -311,7 +239,11 @@ export default class Window {
 		]);
 	}
 
-	setOwner(window: Window) {
+	get $window() {
+		return this.$windowRoot;
+	}
+
+	public setOwner(window: Window) {
 		if (this.owner) {
 			Arrays.erase(this.owner.children, this);
 		}
@@ -321,7 +253,7 @@ export default class Window {
 	}
 
 	// Requests this window to close. This invokes the closing event on the window.
-	close() {
+	public close() {
 		this.events.dispatch('closing', new ReactorEvent());
 	}
 
@@ -329,35 +261,35 @@ export default class Window {
 	* Queries the window for the size it would be, had its contents been layed out naturally.
 	* @returns A tuple of width/height dimensions.
 	 */
-	async getPackedDimensions(): Promise<[number, number]> {
+	public async getPackedDimensions(): Promise<[number, number]> {
 		// Remove any hard with/height properties
-		this.$window.css('width', '');
-		this.$window.css('height', '');
+		this.$windowRoot.css('width', '');
+		this.$windowRoot.css('height', '');
 
 		// If the window isn't visible, insert it into the layout but don't display its contents.
 		if (!this.visible) {
-			this.$window.css('visibility', 'hidden');
-			this.$window.css('display', 'flex');
+			this.$windowRoot.css('visibility', 'hidden');
+			this.$windowRoot.css('display', 'flex');
 		}
 
 		// Wait an engine cycle to update the layout
 		await Util.sleep(0);
 
 		// Get computed dimensions and compensate 2px for borders		
-		let pw = this.$window.width() + 2;
-		let ph = this.$window.height() + 2;
+		let pw = this.$windowRoot.width() + 2;
+		let ph = this.$windowRoot.height() + 2;
 
 		// If the window is invisible, restore its old status
 		if (!this.visible) {
-			this.$window.css('display', '');
-			this.$window.css('visibility', '');
+			this.$windowRoot.css('display', '');
+			this.$windowRoot.css('visibility', '');
 		}
 
 		return [pw, ph];
 	}
 
 	/** Resizes this window to fit its content naturally */
-	async pack() {
+	public async pack() {
 		let [packWidth, packHeight] = await this.getPackedDimensions();
 		
 		// Do not let the window get bigger than the desktop area
@@ -368,7 +300,7 @@ export default class Window {
 		this.setSize(finalWidth, finalHeight);
 	}
 
-	saveState() {
+	public saveState() {
 		let state;
 		if (this.maximized) {
 			state = [this.maximized, this.restoreBounds];
@@ -380,7 +312,7 @@ export default class Window {
 		localStorage.setItem(regName, JSON.stringify(state));
 	}
 
-	restoreState() {
+	public restoreState() {
 		let regName = 'app.' + this.app.classId + '.winstate';
 		let item = localStorage.getItem(regName);
 		if (!item) return false;
@@ -393,25 +325,25 @@ export default class Window {
 		return true;
 	}
 
-	setCloseBehavior(action: CloseBehavior) {
+	public setCloseBehavior(action: CloseBehavior) {
 		this.closeBehavior = action;
 	}
 
-	setInitialPosition(position) {
+	public setInitialPosition(position: InitialPosition) {
 		this.initialPosition = position;
 	}
 
-	setTitle(title: string) {
+	public setTitle(title: string) {
 		this.title = title;
 		this.$windowTitle.text(title);
 		if (this.taskButton && this.taskButton.single) this.taskButton.setText(title);
 	}
 
-	getTitle(): string {
+	public getTitle(): string {
 		return this.title;
 	}
 
-	setPosition(x, y) {
+	public setPosition(x: number, y: number) {
 		if (!isFinite(x) || !isFinite(y)) return;
 		if (y < 0) y = 0;
 
@@ -429,17 +361,21 @@ export default class Window {
 		this.setStyledPosition(x, y);
 	}
 
-	setStyledPosition(x, y) {
-		if (!this.$window) return;
+	private setStyledPosition(x: number, y: number) {
+		if (!this.$windowRoot) return;
 
 		// Don't allow window on fractional pixel (reduces blurring)
 		x = Math.trunc(x);
 		y = Math.trunc(y);
 
-		this.$window[0].style.transform = `translate(${x}px, ${y}px)`;
+		this.$windowRoot[0].style.transform = `translate(${x}px, ${y}px)`;
 	}
 
-	setSize(w: number, h: number) {
+	public getPosition(): [number, number] {
+		return [this.posX, this.posY];
+	}
+
+	public setSize(w: number, h: number) {
 		if (!isFinite(w) || !isFinite(h)) return;
 
 		if (w < this.minWidth) w = this.minWidth;
@@ -460,14 +396,18 @@ export default class Window {
 		this.dispatch('resize');
 	}
 
-	setStyledSize(w, h) {
-		if (!this.$window) return;
-
-		this.$window[0].style.width = w + "px";
-		this.$window[0].style.height = h + "px";
+	public getMinSize(): [number, number] {
+		return [this.minWidth, this.minHeight]
 	}
 
-	setBounds(x: number[] | number, y?: number, w?: number, h?: number) {
+	setStyledSize(w: number, h: number) {
+		if (!this.$windowRoot) return;
+
+		this.$windowRoot[0].style.width = w + "px";
+		this.$windowRoot[0].style.height = h + "px";
+	}
+
+	public setBounds(x: number[] | number, y?: number, w?: number, h?: number) {
 		if (Array.isArray(x)) {
 			this.setPosition(x[0], x[1]);
 			this.setSize(x[2], x[3]);	
@@ -477,97 +417,109 @@ export default class Window {
 		}
 	}
 
-	getBounds() {
+	public getBounds() {
 		return [this.posX, this.posY, this.width, this.height];
 	}
 
-	async setVisible(visible: boolean) {
+	public getRestoredBounds() : readonly number[]{
+		return this.restoreBounds;
+	}
+
+	public async setVisible(visible: boolean) {
 		if (visible) {
 			if (this.firstShow) {
 				await this.doFirstShowSetup();
 			}
 
-			this.$window.addClass('visible');			
+			this.$windowRoot.addClass('visible');			
 		} else {
-			this.$window.removeClass('visible');
+			this.$windowRoot.removeClass('visible');
 		}
 
 		this.visible = visible;
 	}
 
-	setIcon(icon: string) {
+	public setIcon(icon: string) {
 		this.icon = icon;
-		this.$window.find('.options-btn').css('background-image', `url('${icon}')`);
+		this.$windowRoot.find('.options-btn').css('background-image', `url('${icon}')`);
 		if (this.taskButton) {
 			this.taskButton.$button.find("img").src = icon;
 		}
 	}
 
-	setDecorated(decorated: boolean) {
+	public getIcon() {
+		return this.icon;
+	}
+
+	public setDecorated(decorated: boolean) {
 		this.decorated = decorated;
 		if (decorated) {
-			this.$window.addClass('decorated');
+			this.$windowRoot.addClass('decorated');
 		} else {
-			this.$window.removeClass('decorated');
+			this.$windowRoot.removeClass('decorated');
 		}
 	}
 
-	setPointerEvents(val: boolean) {
-		this.$window.css('pointer-events', (val) ? '' : 'none');
+	public isDecorated() {
+		return this.decorated;
 	}
 
-	isPointInside(x: number, y: number) {
+	public setPointerEvents(val: boolean) {
+		this.$windowRoot.css('pointer-events', (val) ? '' : 'none');
+	}
+
+	public isPointInside(x: number, y: number) {
 		return ((x >= this.posX)
 			&& (x <= this.posX + this.width)
 			&& (y >= this.posY)
 			&& (y <= this.posY + this.height));
 	}
 
-	getLocalCoordinates(ev: MouseEvent): [number, number] {
-		let coords = this.$window.offset()
+	public getLocalCoordinates(ev: MouseEvent): [number, number] {
+		let coords = this.$windowRoot.offset()
 		let x = ev.clientX - coords.left;
 		let y = ev.clientY - coords.top;
 		return [x, y]
 	}
 
-	unfocus() {
+	public unfocus() {
 		if (Client.desktop.focusedWindow != this) return;
 
 		Client.desktop.focusedWindow = null;
-		if (this.$window) this.$window.removeClass('focused');
+		if (this.$windowRoot) this.$windowRoot.removeClass('focused');
 	}
 
-	focus() {
+	public focus() {
 		if (Client.desktop.focusedWindow) {
 			Client.desktop.focusedWindow.unfocus();		
 		}
 
 		Client.desktop.focusedWindow = this;
-		this.$window.addClass('focused');
+		this.$windowRoot.addClass('focused');
 
 		this.bringToFront();
 	}
 
-	bringToFront() {
+	public bringToFront() {
 		Client.desktop.bringWindowToFront(this);
 	}
 
-	bringToCenter() {
+	public bringToCenter() {
 		let rect = Client.desktop.$desktop[0].getBoundingClientRect();
 		let x = (rect.width  - this.width) / 2;
 		let y = (rect.height - this.height) / 2;
 		this.setPosition(x, y);
 	}
 
-	goFullscreen() {
+	public goFullscreen() {
 		if (this.minimized) this.restore();
 
 		import('./fullscreen.mjs').then(M => {
-			M.default.on(this.$window.find('.window-body')[0]);
+			M.default.on(this.$windowRoot.find('.window-body')[0]);
 		});
 	}
 
-	setMaximized(max: boolean) {
+	public setMaximized(max: boolean) {
 		if (this.maximized == max) return;
 
 		if (max) {
@@ -578,16 +530,16 @@ export default class Window {
 			this.setSize(rect[0], rect[1]);
 			this.maximized = true;
 
-			this.$window.addClass('maximized');
+			this.$windowRoot.addClass('maximized');
 		} else {
 			this.maximized = false;
 			this.setBounds(this.restoreBounds);
 
-			this.$window.removeClass('maximized');
+			this.$windowRoot.removeClass('maximized');
 		}
 	}
 
-	restore() {
+	public restore() {
 		if (this.minimized) {
 			this.setVisible(true);
 			this.minimized = false;
@@ -599,17 +551,25 @@ export default class Window {
 		}
 	}
 
-	minimize() {
+	public minimize() {
 		if (this.minimized) return;
-
-		let icon = this.icon;
-		let title = this.title;
 
 		this.minimized = true;
 		this.setVisible(false);
 	}
-	
-	refit() {
+
+	/**
+	 * Queries the current display form of the window. This state always refers to the exact current
+	 * way the window is being presented.
+	 */
+	public getDisplayState() {
+		if (!this.visible) return DisplayState.HIDDEN;
+		if (this.minimized) return DisplayState.MINIMIZED;
+		if (this.maximized) return DisplayState.MAXIMIZED;
+		return DisplayState.NORMAL;
+	}
+
+	public refit() {
 		if (this.maximized) return;
 
 		let [scrWidth, scrHeight] = Client.desktop.getWindowingArea();
@@ -636,20 +596,20 @@ export default class Window {
 		this.setBounds(x, y, width, height);
 	}
 
-	async setContentToUrl(url: string) {
+	public async setContentToUrl(url: string) {
 		let fRes = await fetch(url);
-		this.$window.find('.window-body').html(await fRes.text());
+		this.$windowRoot.find('.window-body').html(await fRes.text());
 	}
 
-	on(evClass: string, callback: Function) {
+	public on(evClass: string, callback: Function) {
 		this.events.on(evClass, callback);
 	}
 
-	off(evClass: string, callback: Function) {
+	public off(evClass: string, callback: Function) {
 		this.events.off(evClass, callback);
 	}
 
-	dispatch(evClass: string, args?: any) {
+	public dispatch(evClass: string, args?: any) {
 		this.events.dispatch(evClass, args);
 	}
 }

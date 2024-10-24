@@ -1,6 +1,6 @@
 import NotepadApp from "./notepad.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
-import Window, { CloseBehavior } from "/@sys/ui/window.mjs";
+import Window, { CloseBehavior, InitialPosition } from "/@sys/ui/window.mjs";
 import Util from "/@sys/util.mjs";
 
 export class FindHelper {
@@ -16,7 +16,7 @@ export class FindHelper {
 		this.window = ClientClass.get().desktop.createWindow(app);
 		this.window.setTitle('Find text');
 		this.window.$window.addClass('notepad-find');
-		this.window.setInitialPosition('center');
+		this.window.setInitialPosition(InitialPosition.CENTER);
 		this.window.setCloseBehavior(CloseBehavior.HIDE_WINDOW);
 	}
 
