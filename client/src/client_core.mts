@@ -1,7 +1,7 @@
 import App from '/@sys/app.mjs';
 import { AudioSystem } from './bridges/audio_system.mjs';
 import { Reactor } from './events.mjs';
-import Util from './util.mjs';
+import Util from './utils/browser.mjs';
 import { IllegalStateFault } from './faults.mjs';
 import * as MediaSessionBridge from './bridges/media_session_bridge.mjs';
 import * as Dialogs from './ui/dialogs.mjs';
@@ -72,7 +72,7 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.225';
+	static readonly CLIENT_VERSION = '1.0.226';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;

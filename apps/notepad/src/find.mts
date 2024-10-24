@@ -1,7 +1,7 @@
 import NotepadApp from "./notepad.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import Window, { CloseBehavior, InitialPosition } from "/@sys/ui/window.mjs";
-import Util from "/@sys/util.mjs";
+import Utils from "/@sys/utils/utils.mjs";
 
 export class FindHelper {
 	app: NotepadApp;
@@ -30,7 +30,7 @@ export class FindHelper {
 
 		this.$input.keydown(async (ev: KeyboardEvent) => {
 			// Enter pressed, do search in the same direction as the previous search
-			await Util.sleep(0);
+			await Utils.sleep(0);
 			if (ev.which == 13) {
 				this.find(this.searchedBackwards);
 			}

@@ -1,8 +1,9 @@
 import { ContextMenu } from '/@sys/ui/context_menu.mjs';
-import Util from '/@sys/util.mjs';
 import App from '/@sys/app.mjs';
 import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
+import Objects from '/@sys/utils/objects.mjs';
+import Utils from '/@sys/utils/utils.mjs';
 
 var Client: ClientClass;
 
@@ -79,7 +80,7 @@ export default class ConsoleApp extends App {
 
 	async doSuggestions() {
 		// Wait a cycle for input field update
-		await Util.sleep(0);
+		await Utils.sleep(0);
 
 		// Clear the current suggestions. If the field is empty, don't suggest anything
 		this.$suggestions.empty();
@@ -100,7 +101,7 @@ export default class ConsoleApp extends App {
 		}
 
 		// Get the object itself and list the properties that start with the same name
-		let object = Util.getObjectByName(objectName);
+		let object = Objects.getObjectByName(objectName);
 		let suggestionAmount = 0;
 		for (let key in object) {
 			if (suggestionAmount > 5) break;

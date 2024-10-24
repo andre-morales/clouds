@@ -1,6 +1,6 @@
 import SinestesiaApp from "./app.mjs";
 import { FileSystem, Paths } from "/@sys/bridges/filesystem.mjs";
-import Util from "/@sys/util.mjs";
+import Utils from "/@sys/utils/utils.mjs";
 
 class Playlist {
 	app: SinestesiaApp;
@@ -23,7 +23,7 @@ class Playlist {
 			let nextUrl = '/fsv' + this.dir + nextFile;
 			this.app.openFile(nextUrl);
 
-			await Util.sleep(100);
+			await Utils.sleep(100);
 			this.app.player.play();
 		}
 	}
@@ -41,7 +41,7 @@ class Playlist {
 
 			this.app.openFile(prevUrl);
 
-			await Util.sleep(100);
+			await Utils.sleep(100);
 			this.app.player.play();
 		}
 	}

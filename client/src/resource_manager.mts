@@ -1,5 +1,5 @@
 import Resource from "./resource.mjs"
-import Util from "./util.mjs";
+import Util from "./utils/browser.mjs";
 
 interface ResourceMap {
 	[key: string]: Resource;

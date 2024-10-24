@@ -4,7 +4,7 @@ import { FileTypes, Paths } from "/@sys/bridges/filesystem.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import { CtxEntry, ContextMenu } from "/@sys/ui/context_menu.mjs";
 import { FileSystem } from "/@sys/bridges/filesystem.mjs";
-import Util from "/@sys/util.mjs";
+import Util from "/@sys/utils/browser.mjs";
 
 export class FileIcon {
 	$icon: $Element;

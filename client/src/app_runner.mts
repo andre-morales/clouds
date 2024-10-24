@@ -1,6 +1,6 @@
 import App, { AppManifest } from "./app.mjs";
 import Resource from "./resource.mjs";
-import { getObjectByName } from "./util.mjs";
+import Objects from "./utils/objects.mjs";
 
 interface AppResources {
 	scripts: Promise<Resource[]>;
@@ -111,7 +111,7 @@ async function getAppConstructor(manifest: AppManifest, modules: any): Promise<a
 
 	// Obtain the app class declared in the manifest from the global namespace
 	if (manifest.builder) {
-		AppClass = getObjectByName(manifest.builder);
+		AppClass = Objects.getObjectByName(manifest.builder);
 	// Obtain the app class as the default export of the first module
 	} else {
 		// If the app publishes an umd module in the global namespace, try to use it

@@ -1,30 +1,6 @@
-// Query object in dot name format from window object
-export function getObjectByName(name: string): any {
-    let nameParts = name.split('.');
-    let nameLength = nameParts.length;
-    let scope: any = window;
-
-    for (let i = 0; i < nameLength; ++i) {
-        scope = scope[nameParts[i]];
-    }
-
-    return scope;
-}
-
 export function cloneTemplate(id: string): Node {
 	let el = document.getElementById('t_' + id) as HTMLTemplateElement;
 	return el.content.cloneNode(true);
-}
-
-export function endsWithAny(str: string, arr: string[]): boolean {
-	for (let end of arr) {
-		if (str.endsWith(end)) return true;
-	}
-	return false;
-}
-
-export function sleep(ms: number): Promise<void> {
-	return new Promise(res => setTimeout(res, ms));
 }
 
 export function getURLParams(): ProxyConstructor {
@@ -116,6 +92,5 @@ export function downloadUrl(path: string) {
 
 export default {
 	cloneTemplate, getURLParams, 
-	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript, downloadUrl,
-	sleep, getObjectByName, endsWithAny, 
+	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript, downloadUrl
 };

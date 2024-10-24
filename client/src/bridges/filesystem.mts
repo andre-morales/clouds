@@ -1,6 +1,7 @@
-import Util from '../util.mjs';
+import Util from '../utils/browser.mjs';
 import { BadParameterFault, FetchException, Exception } from '../faults.mjs';
 import { Timeout } from '../utils/timeout.mjs';
+import Strings from '../utils/strings.mjs';
 
 const UPLOAD_TIMEOUT = 30000;
 
@@ -259,19 +260,19 @@ export class FileTypes {
 	}
 
 	static isVideo(path: string) {
-		return Util.endsWithAny(path, ['.mp4', '.mkv', '.webm', '.m4v']);
+		return Strings.endsWithAny(path, ['.mp4', '.mkv', '.webm', '.m4v']);
 	}
 
 	static isPicture(path: string) {
-		return Util.endsWithAny(path, ['.png', '.jpg', '.jpeg', '.webp']);
+		return Strings.endsWithAny(path, ['.png', '.jpg', '.jpeg', '.webp']);
 	}
 
 	static isAudio(path: string) {
-		return Util.endsWithAny(path, ['.mp3', '.ogg', 'm4a', '.opus', '.weba']);
+		return Strings.endsWithAny(path, ['.mp3', '.ogg', 'm4a', '.opus', '.weba']);
 	}
 	
 	static isText(path: string) {
-		return Util.endsWithAny(path, ['.txt', '.json']);
+		return Strings.endsWithAny(path, ['.txt', '.json']);
 	}
 	
 	static isMedia(path: string) {

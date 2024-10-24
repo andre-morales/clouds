@@ -3,7 +3,8 @@ import { TaskbarButton } from './taskbar.mjs';
 import { Reactor, ReactorEvent } from '../events.mjs';
 import { InternalFault, IllegalStateFault } from '../faults.mjs';
 import { App } from '../app.mjs';
-import Util from '../util.mjs';
+import Browser from '../utils/browser.mjs';
+import Utils from '../utils/utils.mjs';
 import Arrays from '../utils/arrays.mjs';
 
 enum LiveState {
@@ -124,7 +125,7 @@ export default class Window {
 		this.liveState = LiveState.INIT;
 
 		// Instantiation
-		let $win = $(Util.cloneTemplate('window')).find('.window');
+		let $win = $(Browser.cloneTemplate('window')).find('.window');
 		Client.desktop.$windows.append($win);
 		this.optionsCtxMenu = this.makeOptionsCtxMenu();
 
@@ -273,7 +274,7 @@ export default class Window {
 		}
 
 		// Wait an engine cycle to update the layout
-		await Util.sleep(0);
+		await Utils.sleep(0);
 
 		// Get computed dimensions and compensate 2px for borders		
 		let pw = this.$windowRoot.width() + 2;

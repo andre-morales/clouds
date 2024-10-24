@@ -3,7 +3,6 @@ import Dialogs from '/@sys/ui/dialogs.mjs';
 import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
 import { Deferred } from '/@sys/events.mjs';
-import Util from '/@sys/util.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
@@ -13,6 +12,7 @@ import ExplorerDefaultHandler from './open_handler.mjs';
 import ExplorerProperties from './properties_dialog.mjs';
 import { FileOperation, FileOperationKind } from './file_operation.mjs';
 import Arrays from '/@sys/utils/arrays.mjs';
+import Utils from '/@sys/utils/utils.mjs';
 
 /** If an operation finished this fast, automatically refresh explorer */
 const OPERATION_REFRESH_TIMEOUT = 200;
@@ -522,9 +522,9 @@ export default class ExplorerApp extends App {
 		// Hide and remove the item once the operation is finished
 		operation.wholePromise.then(async () => {
 			$description.text(description + ". Done!");
-			await Util.sleep(OPERATION_HIDE_DELAY);
+			await Utils.sleep(OPERATION_HIDE_DELAY);
 			$operation.addClass('hide');
-			await Util.sleep(500);
+			await Utils.sleep(500);
 			$operation.remove();
 		});		
 	}
