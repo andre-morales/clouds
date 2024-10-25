@@ -1,4 +1,4 @@
-export const KAPI_VERSION = '0.8.03';
+export const KAPI_VERSION = '0.8.04';
 
 // Local imports
 import { BadAuthException } from './errors.mjs';
@@ -21,10 +21,6 @@ import Path from 'node:path';
 import FS from 'node:fs';
 import HTTP from 'node:http';
 import HTTPS from 'node:https';
-
-export interface AsyncRequestHandler {
-	(req: Express.Request, res: Express.Response, next: Express.NextFunction): Promise<any>;
-}
 
 var app: Express.Application;
 
@@ -151,10 +147,11 @@ function apiSetupPages() {
 
 /** Setup /app route */
 function apiSetupApps() {
-	app.get('/app/:app/*', Auth.guard, (req, res) => {
+	app.get('/app/:app/*path', Auth.guard, (req, res) => {
 		let app = req.params.app;
-		let path = req.params[0];	
+		let path = (req.params as any).path.join('/');
 		let fPath = './apps/' + app + '/' + path;
+
 		res.sendFile(Path.resolve(fPath));
 	});
 }
@@ -220,19 +217,4 @@ function setupLoggingRouter() {
 function denyRequest(res: Express.Response) {
 	res.status(403);
 	res.send('BAD_AUTH: Authentication required.');
-}
-
-/**
- * Wraps a route handler in an async route capable of handling exceptions.
- * @param fn The route handler in natural Express format.
- * @returns An async function meant to be used as an Express route handler.
- */
-export function asyncRoute(fn: AsyncRequestHandler): AsyncRequestHandler {
-	return async (req, res, next) => {
-		try {
-			await fn(req, res, next);
-		} catch (err) {
-			next(err);
-		}
-	};
 }

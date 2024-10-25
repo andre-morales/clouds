@@ -1,7 +1,6 @@
 /**
  * Network facing virtual file system routes.
  */
-import { asyncRoute } from './core.mjs';
 import { FileOperationError } from './files.mjs';
 import config from './config.mjs';
 import * as Pathx from './pathx.mjs';
@@ -60,8 +59,14 @@ export function getRouter(): Router {
 	let patchOperations: FunctionMap = {};
 	let putOperations: FunctionMap = {};
 
+	// GET: Query mounting points
+	router.get('/', (req, res) => {
+		let results = VFS.listMountingPoints(req.userId);
+		res.json(results);
+	});
+
 	// GET: Query route
-	router.get('/*', asyncRoute(async (req, res) => {
+	router.get('/*path', async (req, res) => {
 		// Handle special operations
 		let handled = await dispatchQueryOperation(req, res, getOperations);
 		if (handled) return;
@@ -75,15 +80,15 @@ export function getRouter(): Router {
 		// Otherwise, perform a directory listing
 		let results = await VFS.list(req.userId, req.virtualPath);
 		res.json(results);
-	}));
+	});
 
 	// POST: Upload files trough upload form
-	router.post('/*', asyncRoute(async (req, res) => {	
+	router.post('/*path', async (req, res) => {	
 		resFetchFiles(res, req);
-	}));	
+	});	
 
 	// PUT: Upload data to new or existing file
-	router.put('/*', asyncRoute(async (req, res) => {
+	router.put('/*path', async (req, res) => {
 		// Handle special operations specified though query parameters
 		let handled = await dispatchQueryOperation(req, res, putOperations);
 		if (handled) return;
@@ -102,23 +107,23 @@ export function getRouter(): Router {
 			res.status(500);
 		}
 		res.end();
-	}));
+	});
 
 	// DELETE: Delete file completely (no trash)
-	router.delete('/*', asyncRoute(async (req, res) => {
+	router.delete('/*path', async (req, res) => {
 		await VFS.erase(req.userId, req.virtualPath);
 		res.status(200).end();
-	}));
+	});
 
 	// PATCH: General file operations without response and non-cacheable
-	router.patch('/*', asyncRoute(async (req, res) => {
+	router.patch('/*path', async (req, res) => {
 		// Handle special operations specified though query parameters
 		let handled = await dispatchQueryOperation(req, res, patchOperations);
 		if (handled) return;
 
 		// Patch requests without an operation are malformed
 		res.status(400).end();
-	}));
+	});
 
 	// PATCH?=RENAME: Renames (moves) a path from one place to another
 	patchOperations['rename'] = async (req, res) => {
@@ -210,7 +215,7 @@ function resSendFile(res: Response, req: Request): void {
 	
 	// Resolve the path and send the file.
 	let absPath = Path.resolve(fPath);
-	res.sendFile(absPath, (err: any) => {
+	res.sendFile(absPath, { dotfiles: 'allow' }, (err: any) => {
 		if (!err) return;
 		
 		switch (err.code) {
@@ -219,6 +224,7 @@ function resSendFile(res: Response, req: Request): void {
 			res.status(200).end();
 			break;
 		// File doesn't exit
+		//case 'NotFoundError':
 		case 'ENOENT':
 			res.status(404).end();
 			break;
@@ -228,7 +234,7 @@ function resSendFile(res: Response, req: Request): void {
 			break;
 		// Unknown error, log it.
 		default:
-			console.error("Send file failed with error: ", err);
+			console.error(`Send file failed with error:`, err);
 			res.status(500).end();
 		}
 	});
@@ -290,7 +296,7 @@ async function resThumbnail(res: Response, req: Request): Promise<void> {
 
 	// If the thumbnail exists, send it.
 	if(FS.existsSync(thumbnail)){
-		res.sendFile(thumbnail);
+		res.sendFile(thumbnail, {dotfiles: 'allow'});
 		return;
 	}
 
@@ -312,7 +318,7 @@ async function resThumbnail(res: Response, req: Request): Promise<void> {
 		f.close();
 	}	
 
-	res.sendFile(thumbnail);
+	res.sendFile(thumbnail, {dotfiles: 'allow'});
 }
 
 /**
