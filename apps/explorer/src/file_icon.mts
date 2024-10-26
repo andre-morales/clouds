@@ -231,7 +231,7 @@ export class FileIcon {
 	}
 }
 
-function getFileClassByExt(file: string) {
+function getFileClassByExt(file: string): string {
 	if (FileTypes.isAudio(file)) return 'audio';
 	if (FileTypes.isVideo(file)) return 'video';
 	if (FileTypes.isText(file)) return 'text';

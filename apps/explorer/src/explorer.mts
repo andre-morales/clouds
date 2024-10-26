@@ -6,10 +6,9 @@ import { Deferred } from '/@sys/events.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
-import { FilePanel } from './file_panel.mjs';
+import { FilePanel, SortingMode } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
 import ExplorerDefaultHandler from './open_handler.mjs';
-import ExplorerProperties from './properties_dialog.mjs';
 import { FileOperation, FileOperationKind } from './file_operation.mjs';
 import Arrays from '/@sys/utils/arrays.mjs';
 import Utils from '/@sys/utils/utils.mjs';
@@ -87,7 +86,7 @@ export default class ExplorerApp extends App {
 
 		// Setup file panel
 		this.panel.init();
-		this.window.on('resize', () => this.panel.recalculateIcons());
+		this.window.on('resize', () => this.panel.readjustIcons());
 
 		// Upper options bar
 		this.$addressField.on('change', () => {
@@ -95,7 +94,7 @@ export default class ExplorerApp extends App {
 		});
 		$app.find('.menu-btn').click(() => {
 			$app.find('aside').toggleClass('hidden');
-			this.panel.recalculateIcons();
+			this.panel.readjustIcons();
 		});
 		$app.find('.back-btn').click(() => this.goBack());
 		$app.find('.up-btn').click(() => this.goUp());
@@ -138,8 +137,8 @@ export default class ExplorerApp extends App {
 	getFolderContextMenu() {
 		return ContextMenu.fromDefinition([
 			['>Sort by', [
-				['-Name', () => this.panel.sortBy('name')],
-				['-Date', () => this.panel.sortBy('date')]
+				['-Name', () => this.panel.sortBy(SortingMode.NAME)],
+				['-Date', () => this.panel.sortBy(SortingMode.DATE)]
 			]],
 			['|'],
 			['-Paste', () => this.paste(), { disabled: !this.canPaste() }],

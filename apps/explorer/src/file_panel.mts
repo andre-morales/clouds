@@ -42,20 +42,24 @@ enum PointerBehavior {
 	CTX_MENU
 }
 
+export enum SortingMode {
+	DEFAULT, NAME, DATE
+}
+
 export class FilePanel {
-	app: ExplorerApp;
-	zoom: number;
-	pointerBehaviors: Map<PointerAction, PointerBehavior>;
-	fileEntries: any;
+	private app: ExplorerApp;
+	private zoom: number;
+	private pointerBehaviors: Map<PointerAction, PointerBehavior>;
+	private fileEntries: any;
 	fileIcons: FileIconMap;
-	sorting: string;
 	selectionMode: string;
 	selectedFiles: string[];
 	selectedIcons: FileIcon[];
 	$files: $Element;
-	$filesContainer: $Element;
-	$selectionOptions: $Element;
-	$selectionStatus: $Element;
+	private $filesContainer: $Element;
+	private $selectionOptions: $Element;
+	private $selectionStatus: $Element;
+	private sorting: SortingMode;
 
 	constructor(explorer: ExplorerApp) {
 		this.app = explorer;
@@ -63,7 +67,7 @@ export class FilePanel {
 		this.fileEntries = null;
 		this.fileIcons = {};
 		this.$files = null;
-		this.sorting = '';
+		this.sorting = SortingMode.NAME;
 		this.selectionMode = 'default';
 		this.selectedFiles = [];
 		this.selectedIcons = [];
@@ -85,7 +89,7 @@ export class FilePanel {
 		this.pointerBehaviors.set(PointerAction.DBL_CLICK, PointerBehavior.OPEN);
 	}
 
-	init() {
+	public init() {
 		this.$filesContainer = this.app.$app.find('.files-container');
 		this.$files = this.app.$app.find('.files');
 		this.$selectionOptions = this.app.$app.find('.selection-options');
@@ -138,7 +142,7 @@ export class FilePanel {
 		});
 	}
 
-	setContent(files: FileEntry[]) {
+	public setContent(files: FileEntry[]) {
 		this.fileEntries = files;
 		this.fileIcons = {};
 		this.$files.addClass('d-none');
@@ -151,7 +155,7 @@ export class FilePanel {
 
 		// Sort files 
 		switch (this.sorting) {
-		case 'date':
+		case SortingMode.DATE:
 			files.sort((a, b) => {
 				let dirA = isDir(a);
 				let dirB = isDir(b);
@@ -183,10 +187,74 @@ export class FilePanel {
 
 		// Make the panel visible
 		this.$files.removeClass('d-none');
-		this.recalculateIcons();
+		this.readjustIcons();
 	}
 
-	makeFileIcon(fEntry: FileEntry) {
+	public performSelection(fileIcon: FileIcon, single: boolean) {
+		// On single selection mode, only keep a single file selected
+		if (single || this.selectionMode == 'one') {
+			this.clearSelection();
+			this.selectIcon(fileIcon);
+		} else {
+			// On multi-selection mode, flip the selection status
+			if (this.selectedIcons.includes(fileIcon)) {
+				this.unselectIcon(fileIcon);
+			} else {
+				this.selectIcon(fileIcon);
+			}			
+		}
+		
+		// The options bar should be visible if at least one item is selected
+		this.$selectionOptions.toggleClass('visible', (this.selectedIcons.length > 0));
+	}
+
+	public readjustIcons() {
+		let iw = 128 * this.zoom;
+
+		let w = this.$files.width();
+		let icons = Math.floor(w / iw); // How many icons fit vertically
+		let tm = w - icons * iw - 2;    // Remaining space
+		let m = tm / icons / 2;         // Divide remaining space as margin
+		this.$files.css('--icon-border', m + 'px');
+	}
+
+	public setZoom(v: number) {
+		if (v < 0.2) v = 0.2;
+		if (v > 5) v = 5;
+		this.zoom = v;
+		this.$files.css('--icon-width', 128 * v + 'px');
+		this.$files.css('--icon-height', 96 * v + 'px');
+		this.readjustIcons();
+	}
+
+	public filter(query: string) {
+		// On empty search queries, unhide all file icons
+		if (!query) {
+			this.$files.children().removeClass('hidden');
+			return;
+		}
+
+		// Iterate over all file icons, deciding whether they should be hidden or not
+		for (let fi of Object.values(this.fileIcons)) {
+			let hide = !fi.fileName.includes(query);
+			fi.$icon.toggleClass('hidden', hide);
+		}
+	}
+
+	public sortBy(what: SortingMode) {
+		this.sorting = what;
+		this.setContent(this.fileEntries);
+	}
+
+	private updateSelectionStatus() {
+		let text = "";
+		if (this.selectedIcons.length > 0) {
+			text = `${this.selectedIcons.length} items selected`;
+		}
+		this.$selectionStatus.text(text);
+	}
+
+	private makeFileIcon(fEntry: FileEntry) {
 		let fileIcon = new FileIcon(this.app, fEntry);
 		
 		// Behaviors
@@ -204,7 +272,7 @@ export class FilePanel {
 		return fileIcon;
 	}
 
-	executeBehavior(behavior: PointerBehavior, fileIcon: FileIcon, ev?: MouseEvent) {
+	private executeBehavior(behavior: PointerBehavior, fileIcon: FileIcon, ev?: MouseEvent) {
 		let noSelectedItem = this.selectedIcons.length == 0;
 		let onlySelectedItem = Arrays.equals(this.selectedIcons, [fileIcon]);
 
@@ -240,7 +308,7 @@ export class FilePanel {
 		}
 	}
 
-	selectAll() {
+	private selectAll() {
 		this.selectedIcons = [];
 		this.selectedFiles = [];
 		for (let icon of Object.values(this.fileIcons)) {
@@ -248,99 +316,32 @@ export class FilePanel {
 			this.selectedFiles.push(icon.absolutePath);
 			icon.$icon.addClass('selected');
 		}
-		this.#updateSelectionStatus();
+		this.updateSelectionStatus();
 	}
 
-	performSelection(fileIcon: FileIcon, single: boolean) {
-		// On single selection mode, only keep a single file selected
-		if (single || this.selectionMode == 'one') {
-			this.clearSelection();
-			this.selectIcon(fileIcon);
-		} else {
-			// On multi-selection mode, flip the selection status
-			if (this.selectedIcons.includes(fileIcon)) {
-				this.unselectIcon(fileIcon);
-			} else {
-				this.selectIcon(fileIcon);
-			}			
-		}
-		
-		// The options bar should be visible if at least one item is selected
-		this.$selectionOptions.toggleClass('visible', (this.selectedIcons.length > 0));
-	}
-
-	selectIcon(icon: FileIcon) {
+	private selectIcon(icon: FileIcon) {
 		this.selectedIcons.push(icon);
 		this.selectedFiles.push(icon.absolutePath);
 		icon.$icon.addClass('selected');
-		this.#updateSelectionStatus();
+		this.updateSelectionStatus();
 	}
 
-	unselectIcon(icon: FileIcon) {
+	private unselectIcon(icon: FileIcon) {
 		let i = this.selectedIcons.indexOf(icon);
 		if (i != -1) { 
 			this.selectedFiles.splice(i, 1);
 			this.selectedIcons.splice(i, 1);
 			icon.$icon.removeClass('selected');
 		}
-		this.#updateSelectionStatus();
+		this.updateSelectionStatus();
 	}
 
-	clearSelection() {
+	private clearSelection() {
 		this.$selectionOptions.removeClass('visible');
 		for (let icon of this.selectedIcons) {
 			icon.$icon.removeClass('selected');
 		}		
 		this.selectedFiles = [];
 		this.selectedIcons = [];
-	}
-
-	#updateSelectionStatus() {
-		let text = "";
-		if (this.selectedIcons.length > 0) {
-			text = `${this.selectedIcons.length} items selected`;
-		}
-		this.$selectionStatus.text(text);
-	}
-
-	recalculateIcons() {
-		let iw = 128 * this.zoom;
-
-		let w = this.$files.width();
-		let icons = Math.floor(w / iw); // How many icons fit vertically
-		let tm = w - icons * iw - 2;    // Remaining space
-		let m = tm / icons / 2;         // Divide remaining space as margin
-		this.$files.css('--icon-border', m + 'px');
-	}
-
-	setZoom(v: number) {
-		if (v < 0.2) v = 0.2;
-		if (v > 5) v = 5;
-		this.zoom = v;
-		this.$files.css('--icon-width', 128 * v + 'px');
-		this.$files.css('--icon-height', 96 * v + 'px');
-		this.recalculateIcons();
-	}
-
-	filter(query: string) {
-		if (!query) {
-			this.$files.children().removeClass('hidden');
-			return;
-		}
-		this.$files.children().each((i, el) => {
-			let $el = $(el);
-			let fname = $el.find('span').text().toLowerCase();
-			if (fname.includes(query)) {
-				$el.removeClass('hidden')
-			} else {
-				$el.addClass('hidden');
-			}
-			return true;
-		});
-	}
-
-	sortBy(what: string) {
-		this.sorting = what;
-		this.setContent(this.fileEntries);
 	}
 }
