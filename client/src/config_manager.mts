@@ -1,3 +1,4 @@
+import { FetchException } from "./faults.mjs";
 import { RootKey } from "./root_key.mjs";
 
 export class ConfigManager {
@@ -10,6 +11,14 @@ export class ConfigManager {
 	}
 
 	async init() {
-		await this.preferencesMgr.fetch().then((c) => c.load());
+		// Fail silently if the file does not exist, a default empty object will be left in the
+		// preferences object.
+		try {
+			await this.preferencesMgr.fetch();
+			this.preferencesMgr.load();
+		} catch(err: unknown) {
+			if (!(err instanceof FetchException))
+				throw err;
+		}
 	}
 }

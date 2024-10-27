@@ -2,7 +2,7 @@ import TaskbarM, { Taskbar } from './taskbar.mjs'
 import Window from './window.mjs';
 import Fullscreen from './fullscreen.mjs';
 import { ContextMenu } from './context_menu.mjs';
-import App from '../app.mjs';
+import App, { ExitMode } from '../app.mjs';
 import { Reactor } from '../events.mjs';
 import { ClientClass } from '../client_core.mjs';
 import Arrays from '../utils/arrays.mjs';
@@ -11,20 +11,19 @@ import { WindowManager } from './window_manager.mjs';
 export class Desktop {
 	dwm: App;
 	events: Reactor;
-	iconifiedGroups: any;
 	taskbar: Taskbar;
 	focusedWindow: Window;
-	contextMenuOpen: boolean;
+	private contextMenuOpen: boolean;
 	private dragRectState: any;
 	private windowManager: WindowManager;
 	private windowsWidth: number;
 	private windowsHeight: number;
 	private screenWidth: number;
 	private screenHeight: number;
-	#currentContextMenu: ContextMenu;
+	private currentContextMenu: ContextMenu;
 	$desktop: $Element;
 	$windows: $Element;
-	$contextMenu: $Element;
+	private $contextMenu: $Element;
 
 	constructor() {
 		this.dwm = new App({
@@ -33,7 +32,6 @@ export class Desktop {
 		});
 		this.events = new Reactor();
 		this.events.register("window-created", "window-destroyed");
-		this.iconifiedGroups = {};
 		this.$desktop = $('#desktop');
 		this.$windows = $('.windows');
 		this.windowManager = new WindowManager(this);
@@ -69,7 +67,7 @@ export class Desktop {
 			// the clicked element.
 			if ($cMenu[0] != el && $cMenu.has(el).length === 0) {
 				this.contextMenuOpen = false;
-				this.#currentContextMenu = null;
+				this.currentContextMenu = null;
 				$cMenu.removeClass('visible');
 				$cMenu.find('.context-menu').removeClass('visible');
 			}
@@ -79,7 +77,7 @@ export class Desktop {
 			this._queryBounds();
 			for (let w of this.windowManager.getWindows()) {
 				if (w.maximized) {
-					w.setStyledSize(this.windowsWidth, this.windowsHeight);
+					w.getPresentation().setSize(this.windowsWidth, this.windowsHeight);
 					w.dispatch('resize');
 				}
 			}
@@ -138,7 +136,7 @@ export class Desktop {
 		Arrays.erase(win.app.windows, win);
 
 		// If this was the main window, exit the owner app
-		if (win.app.exitMode == 'last-win-closed') {
+		if (win.app.exitMode == ExitMode.LAST_WINDOW_CLOSED) {
 			setTimeout(() => win.app.exit());
 		}
 
@@ -201,10 +199,10 @@ export class Desktop {
 	}
 	
 	openCtxMenuAt(menu: ContextMenu, x: number, y: number) {
-		if (this.#currentContextMenu) {
-			this.#currentContextMenu.close();
+		if (this.currentContextMenu) {
+			this.currentContextMenu.close();
 		}
-		this.#currentContextMenu = menu;
+		this.currentContextMenu = menu;
 		
 		this.contextMenuOpen = true;
 		let $menu = this.$contextMenu;

@@ -4,8 +4,9 @@
 	box-sizing: border-box;
 }
 
-body {
-	background: rgba(12, 12, 18);
+html {
+	background-color: rgba(24, 24, 28);
+	background-size: 64px 64px;
 }
 
 #loading-screen {

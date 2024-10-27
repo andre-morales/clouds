@@ -91,7 +91,6 @@ export class ClientClass {
 	constructor() {}
 
 	async init() {
-		console.log(ClientClass.BUILD_MODE);
 		let promises: Promise<any>[] = [];
 
 		// Export global names

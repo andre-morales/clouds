@@ -55,13 +55,7 @@ export class WindowManager {
 		let index = 1;
 		for (let win of this.windows) {
 			let newZ = index++;
-			if (win.zIndex != newZ) {
-				win.zIndex = newZ;
-
-				if (win.$window) {
-					win.$window.css('z-index', newZ);
-				}
-			}
+			win.getPresentation().setZ(newZ);
 		}
 	}
 
@@ -81,7 +75,7 @@ export class WindowManager {
 		const dragMove = (mx: number, my: number) => {
 			if (!dragging) return;
 
-			const [, , winWidth, winHeight, ] = win.getBounds();
+			const [, , winWidth, winHeight] = win.getBounds();
 
 			let dx = mx - startMX;
 			let dy = my - startMY;

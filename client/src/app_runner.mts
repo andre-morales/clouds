@@ -1,4 +1,4 @@
-import App, { AppManifest } from "./app.mjs";
+import App, { AppManifest, AppState } from "./app.mjs";
 import Resource from "./resource.mjs";
 import Objects from "./utils/objects.mjs";
 
@@ -45,7 +45,7 @@ export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
 		// Save the app in the running array and fire any events
 		Client.runningApps.push(app);
 		Client.events.dispatch('apps-add');
-		app.state = 'alive';
+		app.state = AppState.ALIVE;
 
 		// Fire the app initialization and return its instance
 		await appObj.init();

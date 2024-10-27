@@ -7,9 +7,6 @@
 html {
 	width: 100%;
 	height: 100%;
-	background-image: url('/res/favicon.png');
-	background-color: #39F;
-	background-size: 64px 64px;
 }
 
 body {

@@ -1,4 +1,3 @@
-import Util from '../utils/browser.mjs';
 import { BadParameterFault, FetchException, Exception } from '../faults.mjs';
 import { Timeout } from '../utils/timeout.mjs';
 import Strings from '../utils/strings.mjs';
@@ -30,7 +29,7 @@ export class FileSystem {
 		}
 	}	
 
-	static async writeText(path: string, text: string) {
+	static async writeText(path: string, text: string): Promise<void> {
 		let url = Paths.toURL(Paths.toFSV(path));
 		await fetch(url, {
 			method: 'PUT',
@@ -41,11 +40,11 @@ export class FileSystem {
 		});
 	}
 
-	static async writeJson(path: string, obj: object) {
+	static async writeJson(path: string, obj: object): Promise<void> {
 		await FileSystem.writeText(path, JSON.stringify(obj));
 	}
 
-	static writeUploadForm(path: string, form: HTMLFormElement, prepareFn: (req: XMLHttpRequest) => void) {
+	static writeUploadForm(path: string, form: HTMLFormElement, prepareFn: (req: XMLHttpRequest) => void): XMLHttpRequest {
 		const url = Paths.toURL(Paths.toFSV(path));
 
 		// Create request objects
@@ -69,7 +68,7 @@ export class FileSystem {
 		return req;
 	}
 
-	static async list(path: string) {
+	static async list(path: string): Promise<any> {
 		// Convert the path to a list cmd
 		if (!path.endsWith('/')) path += '/';
 		let url = Paths.toURL(Paths.toFSV(path));
@@ -83,7 +82,7 @@ export class FileSystem {
 		return result;
 	}
 
-	static async rename(from: string, to: string) {
+	static async rename(from: string, to: string): Promise<void> {
 		let fromPath = Paths.toURL(Paths.toFSV(from));
 		let toPath = Paths.removeFSPrefix(to);
 
@@ -96,7 +95,7 @@ export class FileSystem {
 		}
 	}
 
-	static async copy(from: string, to: string) {
+	static async copy(from: string, to: string): Promise<void> {
 		let fromPath = Paths.toURL(Paths.toFSV(from));
 		let toPath = Paths.removeFSPrefix(to);
 
@@ -109,7 +108,7 @@ export class FileSystem {
 		}
 	}
 
-	static async erase(path: string) {
+	static async erase(path: string): Promise<void> {
 		// Convert the path
 		let cmd = Paths.toURL(Paths.toFSV(path));
 
@@ -122,7 +121,7 @@ export class FileSystem {
 		}
 	} 
 
-	static async stats(path: string) {
+	static async stats(path: string): Promise<any> {
 		// Convert the path
 		let cmd = Paths.toURL(Paths.toFSV(path)) + '?stats';
 
@@ -135,7 +134,7 @@ export class FileSystem {
 		return result;
 	}
 
-	static async makeDirectory(path: string) {
+	static async makeDirectory(path: string): Promise<void> {
 		// Convert the path
 		let cmd = Paths.toURL(Paths.toFSV(path)) + '?make';
 

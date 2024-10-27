@@ -1,14 +1,14 @@
 type FullscreenCallback = () => void;
 
 export class Fullscreen {
-	static stack: HTMLElement[] = [];
-	static element: HTMLElement = null;
-	static fullscreenCallbacks: FullscreenCallback[] = [];
-	static $style = null;
+	private static stack: HTMLElement[] = [];
+	private static currentElement: HTMLElement = null;
+	private static fullscreenCallbacks: FullscreenCallback[] = [];
+	private static $style = null;
 
 	// Call before utilizing any of the fullscreen utilities. Sets up a callback for fullscreen state changes and
 	// prepares custom styling for any fullscreen elements.
-	static init() {
+	public static init() {
 		let fullscreenHandler = () => {
 			// If the browser went fullscreen
 			if(document.fullscreenElement) {
@@ -21,69 +21,69 @@ export class Fullscreen {
 			
 			// Whenever the user exits browser fullscreen,
 			// update our custom fullscreen state as well
-			this._clearClasses();
-			this._clearStyle();
+			this.clearClasses();
+			this.clearStyle();
 			this.stack = [];
-			this.element = null;			
+			this.currentElement = null;			
 		}
 		
 		// Locates the empty <style> in the head of the page. This tag will be used for applying --reversible--
-		// style changes to the fullscreened element itself and all of its ancestors.
+		// style changes to the fullscreen element itself and all of its ancestors.
 		this.$style = $("#fullscreen-style");
 		
 		// Install the listener
 		document.addEventListener('fullscreenchange', fullscreenHandler);
 	}
 
-	// Applies fullscreen on any html element. Fullscreen calls can be stacked, and will be unwound upon calling
-	// rewind().
-	static on(el: HTMLElement) {
-		this.element = el;
+	// Applies fullscreen on any html element. Fullscreen calls can be stacked, and will be unwound
+	// upon calling rewind().
+	public static on(el: HTMLElement) {
+		this.currentElement = el;
 		this.stack.push(el);			
 		
 		// Wait for the browser to go fullscreen if it wasn't already
 		// and then apply the styles and classes.
-		this._domEnterFscr(() => {
-			this._clearClasses();
-			this._clearStyle();
+		this.domEnterFullscreen(() => {
+			this.clearClasses();
+			this.clearStyle();
 
-			this._applyStyle(el);
-			this._applyClasses(el);
+			this.applyStyle(el);
+			this.applyClasses(el);
 		});
 	}
 
-	// Leave fullscreen from any elements entirely.
-	static leave() {
+	// Leave fullscreen mode entirely. The fullscreen stack is cleared.
+	public static leave() {
 		this.stack = [];
-		this.element = null;
+		this.currentElement = null;
 
-		this._clearClasses();
-		this._clearStyle();
-		this._domExitFscr();
+		this.clearClasses();
+		this.clearStyle();
+		this.domExitFullscreen();
 	}
 
-	// Fullscreen the element that was previously fullscreened. If none were, leaves fullscreen state.
-	static rewind() {
+	// Fullscreen the element that was previously fullscreen. If none were, leaves fullscreen state.
+	public static rewind() {
 		let pop = this.stack.pop();
 		let len = this.stack.length;
 		if (len == 0) {
-			this._domExitFscr();
-			this.element = null;
+			this.domExitFullscreen();
+			this.currentElement = null;
 		}
 
 		let last = this.stack[len - 1];
-		this.element = last;
+		this.currentElement = last;
 		if(last) {
-			this._clearClasses();
-			this._clearStyle();
-			this._applyStyle(last);
-			this._applyClasses(last);
+			this.clearClasses();
+			this.clearStyle();
+			this.applyStyle(last);
+			this.applyClasses(last);
 		}
 	}
 	
 	// Apply custom fullscreen classes to the element and its ancestors.
-	static _applyClasses(elem: HTMLElement) {
-		this._clearClasses();
+	private static applyClasses(elem: HTMLElement) {
+		this.clearClasses();
 
 		let $el = $(elem);
 		$el.addClass('fullscreened');
@@ -93,9 +93,11 @@ export class Fullscreen {
 		});
 	}
 
-	// Removes all custom classes from fullscreen elements and its ancestors.
-	static _clearClasses() {
-		// Get fullscreened element
+	/**
+	 * Removes all custom classes from fullscreen elements and its ancestors.
+	 **/ 
+	private static clearClasses() {
+		// Get current fullscreen element
 		let $el = $('.fullscreened');
 		if ($el.length == 0) return;
 
@@ -104,10 +106,12 @@ export class Fullscreen {
 		$('.fscr-parent').removeClass('fscr-parent')
 	}
 
-	// Applies custom styling to the fullscreened element and its parents by inserting a rule in the fullscreen
-	// <style> tag.
-	static _applyStyle(elem: HTMLElement) {
-		this._clearStyle();
+	/**
+	 * Applies custom styling to the fullscreen element and its parents by inserting a rule in the
+	 * fullscreen <style> tag.
+	 */
+	private static applyStyle(elem: HTMLElement) {
+		this.clearStyle();
 		
 		let sheet = this.$style[0].sheet;
 		setTimeout(() => {
@@ -117,7 +121,7 @@ export class Fullscreen {
 	}
 
 	// Removes all custom styling from the elements by clearing the fullscreen <style> tag.
-	static _clearStyle() {
+	private static clearStyle() {
 		let sheet = this.$style[0].sheet;
 		while (sheet.cssRules.length > 0) {
 			sheet.deleteRule(0);
@@ -126,7 +130,7 @@ export class Fullscreen {
 
 	// Requests fullscreen state on the body element of the page, calling the given callback once the transition
 	// is finished. If the browser was already on fullscreen state, calls callback immediately.
-	static _domEnterFscr(callback: () => void) {
+	private static domEnterFullscreen(callback: () => void) {
 		// If the browser already is in fullscreen, just run the callback immediately
 		if (document.fullscreenElement) {
 			if (callback) callback();
@@ -135,14 +139,16 @@ export class Fullscreen {
 		
 		// Otherwise, schedule the callback and request DOM fullscreen on the whole document
 		if (callback) this.fullscreenCallbacks.push(callback);
-		document.body.requestFullscreen().then(() => {
-			
-		});
+		document.body.requestFullscreen();
 	}
 	
 	// Leaves browser fullscreen state
-	static _domExitFscr() {
+	private static domExitFullscreen() {
 		if (document.fullscreenElement) document.exitFullscreen();
+	}
+
+	public static get element(): HTMLElement {
+		return Fullscreen.currentElement;
 	}
 }
 

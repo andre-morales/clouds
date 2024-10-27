@@ -6,6 +6,7 @@ import { App } from '../app.mjs';
 import Browser from '../utils/browser.mjs';
 import Utils from '../utils/utils.mjs';
 import Arrays from '../utils/arrays.mjs';
+import { WindowPresentation } from './window_presentation.mjs';
 
 enum LiveState {
 	NIL, INIT, READY, DYING, DEAD
@@ -27,14 +28,13 @@ export enum DisplayState {
 }
 
 export default class Window {
-	app: App;
+	public readonly app: App;
 	children: Window[];
 	maximized: boolean;
 	minimized: boolean;
 	optionsCtxMenu: ContextMenu;
-	zIndex: number;
 	private liveState: LiveState;
-	private $windowRoot: $Element;
+	private presentation: WindowPresentation;
 	private events: Reactor;
 	private owner: Window;
 	private closeBehavior: CloseBehavior;
@@ -52,6 +52,7 @@ export default class Window {
 	private firstShow: boolean;
 	private taskButton: TaskbarButton;
 	private icon: string;
+	private $windowRoot: $Element;
 	private $windowHeader: $Element;
 	private $windowTitle: $Element;
 	
@@ -59,7 +60,7 @@ export default class Window {
 		if (!app) throw new InternalFault("Windows must have valid owner apps.");
 
 		this.app = app;
-
+	
 		this.owner = null;
 		this.children = [];
 		this.icon = '';
@@ -127,14 +128,17 @@ export default class Window {
 		// Instantiation
 		let $win = $(Browser.cloneTemplate('window')).find('.window');
 		Client.desktop.$windows.append($win);
-		this.optionsCtxMenu = this.makeOptionsCtxMenu();
 
 		// Queries
 		this.$windowRoot = $win;
 		this.$windowHeader = $win.find('.window-head');
 		this.$windowTitle = $win.find('.window-title');
 
+		// Initialize presentation
+		this.presentation = new WindowPresentation(this);
+
 		// Behavior
+		this.optionsCtxMenu = this.makeOptionsCtxMenu();
 		let hammer = new Hammer.Manager(this.$windowRoot.find('.window-body')[0], {
 			recognizers: [
 				[Hammer.Swipe, {
@@ -203,7 +207,7 @@ export default class Window {
 		Client.desktop.realignWindow(this);
 
 		// Apply position and size on CSS
-		this.setStyledSize(this.width, this.height);
+		this.presentation.setSize(this.width, this.height);
 		
 		this.bringToFront();
 	}
@@ -242,6 +246,10 @@ export default class Window {
 
 	get $window() {
 		return this.$windowRoot;
+	}
+
+	public getPresentation() {
+		return this.presentation;
 	}
 
 	public setOwner(window: Window) {
@@ -393,19 +401,12 @@ export default class Window {
 		this.width = w;
 		this.height = h;
 
-		this.setStyledSize(w, h);
+		this.presentation.setSize(w, h);
 		this.dispatch('resize');
 	}
 
 	public getMinSize(): [number, number] {
 		return [this.minWidth, this.minHeight]
-	}
-
-	setStyledSize(w: number, h: number) {
-		if (!this.$windowRoot) return;
-
-		this.$windowRoot[0].style.width = w + "px";
-		this.$windowRoot[0].style.height = h + "px";
 	}
 
 	public setBounds(x: number[] | number, y?: number, w?: number, h?: number) {
@@ -427,17 +428,11 @@ export default class Window {
 	}
 
 	public async setVisible(visible: boolean) {
-		if (visible) {
-			if (this.firstShow) {
-				await this.doFirstShowSetup();
-			}
-
-			this.$windowRoot.addClass('visible');			
-		} else {
-			this.$windowRoot.removeClass('visible');
+		if (visible && this.firstShow) {
+			await this.doFirstShowSetup();
 		}
-
 		this.visible = visible;
+		this.$windowRoot.toggleClass('visible', visible)
 	}
 
 	public setIcon(icon: string) {
@@ -454,11 +449,7 @@ export default class Window {
 
 	public setDecorated(decorated: boolean) {
 		this.decorated = decorated;
-		if (decorated) {
-			this.$windowRoot.addClass('decorated');
-		} else {
-			this.$windowRoot.removeClass('decorated');
-		}
+		this.$windowRoot.toggleClass('decorated', decorated);
 	}
 
 	public isDecorated() {
@@ -530,14 +521,11 @@ export default class Window {
 			this.setPosition(0, 0);
 			this.setSize(rect[0], rect[1]);
 			this.maximized = true;
-
-			this.$windowRoot.addClass('maximized');
 		} else {
 			this.maximized = false;
 			this.setBounds(this.restoreBounds);
-
-			this.$windowRoot.removeClass('maximized');
 		}
+		this.$windowRoot.toggleClass('maximized', max);
 	}
 
 	public restore() {

@@ -6,21 +6,20 @@ import ExplorerApp from '../main.mjs';
 var Client: ClientClass;
 
 export default class ExplorerProperties {
-	explorer: any;
-	window: Window;
-	$win: $Element;
+	private explorer: any;
+	private window: Window;
 
-	constructor(explorer: ExplorerApp) {
+	private constructor(explorer: ExplorerApp) {
 		Client = ClientClass.get();
 		this.explorer = explorer;
 	}
 
-	static openPath(app: ExplorerApp, path: string) {
+	public static openPath(app: ExplorerApp, path: string) {
 		let helper = new ExplorerProperties(app);
 		helper.open(path);
 	}
 
-	async open(path: string) {
+	private async open(path: string) {
 		let statsProm = FileSystem.stats(path);
 		
 		this.window = Client.desktop.createWindow(this.explorer);
@@ -33,7 +32,6 @@ export default class ExplorerProperties {
 		this.window.bringToFront();
 
 		let $win = this.window.$window.find(".window-body");
-		this.$win = $win;
 		$win.addClass("properties-win");
 		
 		this.window.setVisible(true);
@@ -46,7 +44,7 @@ export default class ExplorerProperties {
 		$size.text(this.toDataSize(stats.size));
 	}
 
-	toDataSize(bytes) {
+	private toDataSize(bytes: number) {
 		if (bytes < 1024) return bytes.toFixed(0) + " B";
 
 		let kib = bytes / 1024;
