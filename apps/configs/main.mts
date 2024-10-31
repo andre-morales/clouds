@@ -23,7 +23,7 @@ export default class ConfigsApp extends App {
 		this.window.setTitle('Configs');
 		this.window.on('closing', (ev) => {
 			if (this.unsavedChanges) {
-				ev.cancel();
+				ev.preventDefault();
 
 				let [choice] = Dialogs.showOptions(this, "Configuration", "Do you want to save your changes?", ['Yes', 'No', 'Cancel']);
 

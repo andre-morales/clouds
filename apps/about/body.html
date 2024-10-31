@@ -14,15 +14,45 @@
 	</div>
 	<div class='ui-tab platform-tab' data-tab='platform'>
 		<div class='properties'>
-			<h3>Device</h3>
-			<p>Secure Context: <span class='secure-ctx'></span></p>
-			<p class='dev-memory'></p>
-			<p class='js-memory'></p>
-			<p>Native PDF Viewer: <span class='pdfs'></span></p>
-			<p class='user-agent'></p>
-			<h3>System</h3>
-			<p>Applications Build Mode: <span class="apps-build-mode"></span></p>
-			<p>Core Build Mode: <span class="core-build-mode"></span></p>
+			<h3>:: Device</h3>
+			<table cellspacing="0">
+				<tbody>
+					<tr>
+						<td>Secure Context</td>
+						<td class='secure-ctx'></td>
+					</tr>
+					<tr>
+						<td>Device Memory</td>
+						<td class='dev-memory'>?</td>
+					</tr>
+					<tr>
+						<td>Max JS Memory</td>
+						<td class='js-memory'>?</td>
+					</tr>
+					<tr>
+						<td>Native PDF Viewer</td>
+						<td class='pdf-viewer'></td>
+					</tr>
+					<tr>
+						<td>User Agent</td>
+						<td class='user-agent'></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<h3>:: System</h3>
+			<table cellspacing="0">
+				<tbody>
+					<tr>
+						<td>Applications Build Mode</td>
+						<td class='apps-build-mode'></td>
+					</tr>
+					<tr>
+						<td>Core Build Mode</td>
+						<td class='core-build-mode'>?</td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
 	</div>
 </ui-tabs>

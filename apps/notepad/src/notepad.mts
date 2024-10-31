@@ -63,7 +63,7 @@ export default class NotepadApp extends App {
 				if (r == 1) this.exit();
 			})
 
-			ev.cancel();
+			ev.preventDefault();
 		});
 
 		let $app = this.window.$window.find('.window-body').addClass('app-notepad');

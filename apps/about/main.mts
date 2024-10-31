@@ -34,17 +34,18 @@ export default class AboutApp extends App {
 		let devMem = (navigator as any).deviceMemory;
 		if (devMem) {
 			let str = (devMem < 1) ? devMem * 1000 + ' MB' : devMem + ' GB';
-			$app.find('.dev-memory').text('Device Memory: ' + str);
+			$app.find('.dev-memory').text(str);
 		}
 
 		let memory = this.getRam();
-		let memoryStr = `Max JS Memory: ${memory} MiB`;
-		$app.find('.js-memory').text(memoryStr);
+		if (memory) {
+			$app.find('.js-memory').text(`${memory} MiB`);
+		}
 
-		$app.find('.pdfs').text(this.isPDFViewingSupported());
+		$app.find('.pdf-viewer').text(this.isPDFViewingSupported());
 
 		let userAgentStr = navigator.userAgent;
-		$app.find('.user-agent').text("User Agent: " + userAgentStr);
+		$app.find('.user-agent').text(userAgentStr);
 
 		// Build modes
 		$app.find('.core-build-mode').text(ClientClass.BUILD_MODE);
@@ -53,9 +54,9 @@ export default class AboutApp extends App {
 		this.window.setVisible(true);
 	}
 
-	getRam() {
-		let perf : any = performance;
-		if (!perf || !perf.memory) return '?';
+	getRam(): string {
+		let perf: any = performance;
+		if (!perf?.memory) return null;
 
 		let ram = perf.memory.jsHeapSizeLimit / 1024 / 1024;
 		return ram.toFixed(0);

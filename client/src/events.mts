@@ -1,8 +1,14 @@
 import Arrays from './utils/arrays.mjs';
 
+type ReactorTypeMap = {
+	[key: string]: ReactorEvent
+}
+
+export type EventCallback = (ev: ReactorEvent) => void;
+
 export class ReactorClass {
-	listeners: any[];
-	defaultHandler: any;
+	listeners: EventCallback[];
+	defaultHandler: EventCallback;
 
 	constructor() {
 		this.listeners = [];
@@ -10,43 +16,42 @@ export class ReactorClass {
 	}
 }
 
-export class Reactor {
-	classes: any;
+export class Reactor <TM extends ReactorTypeMap = {}> {
+	classes: {[key: string]: ReactorClass};
 
 	constructor() {
 		this.classes = {};
 	}
 
-	register(...names: string[]) {
+	public register(...names: string[]) {
 		for (let name of names) {
 			this.classes[name] = new ReactorClass();
 		}
 	}
 
-	unregister(name: string) {
+	public unregister(name: string) {
 		delete this.classes[name];
 	}
 
-	getClass(name: string) {
-		return this.classes[name];
-	}
-
-	on(name: string, callback: Function) {
-		let list = this.classes[name];
-		if (!list) throw Error(`No class ${name} registered.`);
+	public on<E extends string>(
+		evClass: E,
+		callback: (evType: E extends keyof TM ? TM[E] : ReactorEvent) => void
+	) {
+		let list = this.classes[evClass];
+		if (!list) throw Error(`No class ${evClass} registered.`);
 
 		list.listeners.push(callback);
 		return callback;
 	}
 
-	off(name: string, callback: Function) {
+	public off(name: string, callback: Function) {
 		let list = this.classes[name];
 		if (!list) throw Error(`No class ${name} registered.`);
 
 		Arrays.erase(list.listeners, callback);
 	}
 
-	default(name, callback) {
+	public default(name: string, callback: EventCallback) {
 		let evClass = this.classes[name];
 		if (!evClass) throw Error(`No class ${name} registered.`);
 
@@ -54,9 +59,12 @@ export class Reactor {
 	}
 
 	// Invoke event handlers immediately
-	fire(name, event, handler) {
+	public fire(name: string, event?: ReactorEvent, handler?: Function) {
 		let evClass = this.classes[name];
 		if (!evClass) throw Error(`No class ${name} registered.`);
+
+		// If no event object was specified during dispatch, create a default empty one.
+		if (!event) event = new ReactorEvent();
 
 		// If a handler was provided, call it with each listener and the same event
 		// Otherwise, invoke all listeners directly
@@ -71,14 +79,14 @@ export class Reactor {
 		}
 		
 		// If an event object was provided and it wasn't canceled, call default behavior
-		if (event && event.canceled) return;
+		if (event?.isDefaultPrevented()) return;
 		if (evClass.defaultHandler) {
 			evClass.defaultHandler(event);
 		}
 	}
 
 	// Invoke event handlers in the next cycle of the engine
-	dispatch(name: string, event?: any, handler?: any) {
+	public dispatch(name: string, event?: ReactorEvent, handler?: any) {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				this.fire(name, event, handler);
@@ -102,13 +110,13 @@ export class Deferred {
 }
 
 export class ReactorEvent {
-	canceled: boolean;
-
-	constructor() {
-		this.canceled = false;
+	private defaultPrevented: boolean;
+	
+	public preventDefault() {
+		this.defaultPrevented = true;
 	}
 
-	cancel() {
-		this.canceled = true;
+	public isDefaultPrevented() {
+		return this.defaultPrevented;
 	}
 }

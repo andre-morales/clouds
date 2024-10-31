@@ -39,8 +39,8 @@ export class TrackMarker {
 		this.$selection = $cont.find('.selection');
 		this.$segmentsList = $cont.find('.segment-list ul');
 
-		this.app.player.on('media-change', ({ contentType }) => {
-			this.mediaChanged(contentType);
+		this.app.player.events.on('media-change', (ev) => {
+			this.mediaChanged(ev.contentType);
 		});
 
 		$track.on('mouseenter', () => {

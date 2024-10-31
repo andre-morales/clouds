@@ -1,4 +1,5 @@
 import { FileSystem } from './bridges/filesystem.mjs';
+import Objects from './utils/objects.mjs';
 
 type ObserverCallback = (value: unknown, chain: string[]) => void;
 
@@ -76,7 +77,7 @@ export class RootKey {
 	 * configuration.
 	 */
 	observeObject(key: unknown, callback: ObserverCallback) {
-		let chain = findChain(this.#root, key);
+		let chain = Objects.findChain(this.#root, key);
 		if (chain === null) {
 			console.error('Object: ', key, "Root: ", this.#root);
 			throw new Error("The key object passed is not contained in the root");
@@ -151,33 +152,6 @@ class ChainObserver {
 	destroy() {
 		this.rootKey.removeObserver(this);
 	}
-}
-
-/**
- * Find the property name chain leading to a key object contained in a parent.
- */
-function findChain(parent: any, keyObject: unknown): string[] | null {
-	if (parent === keyObject) return [];
-
-	for (let [property, value] of Object.entries(parent)) {
-		// If this object has a property whose value is the key we're looking for.
-		if (value === keyObject) {
-			return [property];
-		}
-
-		// Do not look into strings or arrays
-		if (typeof value == 'string') continue;
-		if (Array.isArray(value)) continue;
-
-		// Try to find the key in this sub property
-		let result = findChain(value, keyObject);
-		if (result !== null) {
-			// Concatenate the chain found with our property name
-			return [property].concat(result);
-		}			
-	}
-
-	return null;
 }
 
 type ObjectChangeCallback = (base: string[], value: unknown) => void;

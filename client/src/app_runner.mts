@@ -1,6 +1,8 @@
 import App, { AppManifest, AppState } from "./app.mjs";
+import { Paths } from "./bridges/filesystem.mjs";
+import { InternalFault } from "./faults.mjs";
 import Resource from "./resource.mjs";
-import Objects from "./utils/objects.mjs";
+import Objects, { Pointer } from "./utils/objects.mjs";
 
 interface AppResources {
 	scripts: Promise<Resource[]>;
@@ -13,6 +15,11 @@ export async function runUrl(manifestURL: string, buildArgs = []): Promise<App> 
 		// Fetch manifest
 		let manifest = await getManifest(manifestURL);
 
+		// If no app base is declared, use the manifest url folder.
+		if (!manifest.base) {
+			manifest.base = Paths.parent(manifestURL);
+		}
+
 		return run(manifest, buildArgs);
 	} catch(err: any) {
 		if (err instanceof AppInitializationError) throw err;
@@ -23,6 +30,8 @@ export async function runUrl(manifestURL: string, buildArgs = []): Promise<App> 
 
 export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
 	try {
+		transformManifestPaths(manifest);
+
 		// Start fetching of scripts, styles and modules required by this app under a temporary
 		// resource user id.
 		const tmpResourceUserId = 'APP-CREATOR';
@@ -73,6 +82,30 @@ async function getManifest(url: string): Promise<AppManifest> {
 	return manifestObj as AppManifest;
 }
 
+function transformManifestPaths(manifest: AppManifest) {
+	const base = manifest.base;
+
+	// With a pointer to a property, check is the path is relative and transform it.
+	const map = (p: Pointer<string>) => {
+		let path = p.v;
+		if (path.startsWith('~/')) {
+			if (!base) throw new InternalFault("App has no base path specified, and it can't be inferred either.");
+
+			p.v = Paths.join(base, path.substring(2));
+		}
+	}
+	
+	// Transform all the properties with relative paths ~/
+	map(Pointer.of(manifest, ['icon']));
+	for (let arr of [manifest.modules, manifest.scripts, manifest.styles]) {
+		if (!arr) continue;
+
+		for (let i = 0; i < arr.length; i++) {
+			map(Pointer.of(arr, [i]));
+		}
+	}
+}
+
 /**
  * Invoke the fetching of all required resources declared in the manifest. All resources will
  * be instantiated with the userId passed as the resources owner.
@@ -106,12 +139,9 @@ function fetchAppResources(manifest: AppManifest, userId: string): AppResources 
 async function getAppConstructor(manifest: AppManifest, modules: any): Promise<any> {
 	let AppClass: any;
 
-	//let builder = window["AppModule_" + manifest.id].default;
-	//return builder;
-
 	// Obtain the app class declared in the manifest from the global namespace
 	if (manifest.builder) {
-		AppClass = Objects.getObjectByName(manifest.builder);
+		AppClass = Objects.getObjectByName(window, manifest.builder);
 	// Obtain the app class as the default export of the first module
 	} else {
 		// If the app publishes an umd module in the global namespace, try to use it

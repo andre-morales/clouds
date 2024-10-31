@@ -2,24 +2,28 @@ import SinestesiaApp from "./app.mjs";
 import { Container } from "./container.mjs";
 import { ImageContainer } from "./image_container.mjs";
 import { VideoContainer } from "./video_container.mjs";
-import { Reactor } from "/@sys/events.mjs";
+import { EventCallback, Reactor, ReactorEvent } from "/@sys/events.mjs";
 
 export enum ContentType {
 	NONE, IMAGE, VIDEO
 }
 
+type ReactorTypeMap = {
+	'media-change': MediaChangedEvent;
+}
+
 export default class MediaPlayer {
 	public readonly app: SinestesiaApp;
+	public readonly events: Reactor<ReactorTypeMap>;
 	private contentType: ContentType;
 	private activeContainer: Container;
 	private containers: Map<ContentType, Container>;
-	private reactor: Reactor;
-
+	
 	constructor(app: SinestesiaApp) {
 		this.app = app;
 		this.contentType = ContentType.NONE;
-		this.reactor = new Reactor();
-		this.reactor.register('media-change');
+		this.events = new Reactor();
+		this.events.register('media-change');
 	}
 
 	init() {
@@ -42,9 +46,7 @@ export default class MediaPlayer {
 		cont.setContentUrl(url);
 		cont.setEnabled(true);
 		
-		this.reactor.dispatch('media-change', {
-			contentType: type
-		});
+		this.events.dispatch('media-change', new MediaChangedEvent(type));
 	}
 
 	async play() {
@@ -94,10 +96,6 @@ export default class MediaPlayer {
 	public getContainer(type: ContentType) {
 		return this.containers.get(type);
 	}
-
-	public on(evClass: string, callback: Function) {
-		this.reactor.on(evClass, callback);
-	}
 }
 
 function padNumber (n: number) {
@@ -120,3 +118,12 @@ export function timeToString (time: number) {
 		return `${minutes}:${strSec}`;
 	}
 };
+
+export class MediaChangedEvent extends ReactorEvent {
+	public readonly contentType: ContentType;
+
+	constructor(type: ContentType) {
+		super();
+		this.contentType = type;
+	}
+}

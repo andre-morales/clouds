@@ -1,7 +1,7 @@
 {
 	"explorer": {
 		"name": "File Explorer",
-		"icon": "/res/img/ftypes/folder128.png",
+		"icon": "/app/explorer/icon64.png",
 		"flags": ["desk"]
 	},
 	"sinestesia": {

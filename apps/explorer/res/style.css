@@ -146,7 +146,7 @@
 .app-explorer .link {
 	margin: 4px;
 	padding-left: 1.75rem;
-	background-image: url('/res/img/ftypes/folder128.png');
+	background-image: url('/app/explorer/file_icons/folder128.png');
 	background-size: contain;
 	background-repeat: no-repeat;
 }
@@ -226,7 +226,7 @@
 	flex-grow: 1;
 	display: block;
 	height: var(--icon-height);
-	background-image: url('/res/img/ftypes/file128.png');
+	background-image: url('/app/explorer/file_icons/file128.png');
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: bottom;
@@ -255,19 +255,19 @@
 }
 
 .app-explorer .file.dir i {
-	background-image: url('/res/img/ftypes/folder128.png');
+	background-image: url('/app/explorer/file_icons/folder128.png');
 }
 
 .app-explorer .file.audio i {
-	background-image: url('/res/img/ftypes/audio128.png');
+	background-image: url('/app/explorer/file_icons/audio128.png');
 }
 
 .app-explorer .file.text i {
-	background-image: url('/res/img/ftypes/text128.png');
+	background-image: url('/app/explorer/file_icons/text128.png');
 }
 
 .app-explorer .file.video:not(.thumbbed) i {
-	background-image: url('/res/img/ftypes/video128.png');
+	background-image: url('/app/explorer/file_icons/video128.png');
 }
 
 .app-explorer .file.hidden {

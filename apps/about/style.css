@@ -42,7 +42,7 @@
 }
 
 .app-about .properties {
-	margin: 1rem;
+	margin: .5rem;
 }
 
 .app-about p {
@@ -50,5 +50,23 @@
 }
 
 .app-about h3 {
-	margin: 1rem 0 .5rem 0;
+	margin: .5rem 0;
+}
+
+.app-about table {
+	margin-bottom: .5rem;
+}
+
+.app-about td {
+	padding: 2px;
+}
+
+.app-about td:first-child {
+	border-right: solid 1px #555;
+	padding-right: 1rem;
+	white-space: nowrap;
+}
+
+.app-about tr:not(:last-child) td {
+	border-bottom: solid 1px #555;
 }

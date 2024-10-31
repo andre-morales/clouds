@@ -44,8 +44,8 @@ export default class ConsoleApp extends App {
 		this.$cmdField = $app.find('.cmd-field');
 		this.$suggestions = $app.find('.suggestions');
 
-		this.logListener = Client.events.on('log', (msg) => {
-			this.updateLog(msg);
+		this.logListener = Client.events.on('log', (ev: any) => {
+			this.updateLog(ev.message);
 		});
 		this.on('exit', () => {	
 			Client.events.off('log', this.logListener);
@@ -101,7 +101,7 @@ export default class ConsoleApp extends App {
 		}
 
 		// Get the object itself and list the properties that start with the same name
-		let object = Objects.getObjectByName(objectName);
+		let object = Objects.getObjectByName(window, objectName);
 		let suggestionAmount = 0;
 		for (let key in object) {
 			if (suggestionAmount > 5) break;

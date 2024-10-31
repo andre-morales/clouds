@@ -1,11 +1,11 @@
 {
 	"id": "explorer",
 	"displayName": "Files",
-	"icon": "/app/explorer/icon64.png",
+	"icon": "~/icon64.png",
 	"modules" : [
-		"/app/explorer/app.bundle.mjs"
+		"~/app.bundle.mjs"
 	],
 	"styles": [
-		"/app/explorer/res/style.css"
+		"~/res/style.css"
 	]
 }

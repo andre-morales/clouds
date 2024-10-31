@@ -248,7 +248,7 @@ export class ClientClass {
 				if (fn.disabled) return;
 
 				try {
-					fn(msg);
+					fn({message: msg});
 				} catch (err) {
 					fn.disabled = true;
 					this.showErrorDialog("Log failure", `A log event handler threw an exception and was disabled.\n\n${err}`);

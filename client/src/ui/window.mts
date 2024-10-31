@@ -1,6 +1,6 @@
 import { ContextMenu } from './context_menu.mjs';
 import { TaskbarButton } from './taskbar.mjs';
-import { Reactor, ReactorEvent } from '../events.mjs';
+import { EventCallback, Reactor, ReactorEvent } from '../events.mjs';
 import { InternalFault, IllegalStateFault } from '../faults.mjs';
 import { App } from '../app.mjs';
 import Browser from '../utils/browser.mjs';
@@ -162,7 +162,7 @@ export default class Window {
 		});
 
 		this.events.default('closing', (ev) => {
-			if (ev && ev.canceled) return;
+			if (ev?.isDefaultPrevented()) return;
 	
 			switch (this.closeBehavior) {
 			case CloseBehavior.EXIT_APP:
@@ -590,15 +590,15 @@ export default class Window {
 		this.$windowRoot.find('.window-body').html(await fRes.text());
 	}
 
-	public on(evClass: string, callback: Function) {
+	public on(evClass: string, callback: EventCallback) {
 		this.events.on(evClass, callback);
 	}
 
-	public off(evClass: string, callback: Function) {
+	public off(evClass: string, callback: EventCallback) {
 		this.events.off(evClass, callback);
 	}
 
-	public dispatch(evClass: string, args?: any) {
-		this.events.dispatch(evClass, args);
+	public dispatch(evClass: string, ev?: ReactorEvent) {
+		this.events.dispatch(evClass, ev);
 	}
 }

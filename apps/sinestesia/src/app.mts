@@ -37,7 +37,7 @@ export default class SinestesiaApp extends App {
 	}
 
 	protected async init() {
-		this.on('exit', () => {
+		this.events.on('exit', () => {
 			this.playlist = null;
 			this.lockedPlayback = false;
 		});
