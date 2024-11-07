@@ -55,7 +55,7 @@ export default class RemoteShellApp extends App {
 
 		$app.find('.view-menu').click((ev: MouseEvent) => {
 			let menu = ContextMenu.fromDefinition([
-				['*Wrap text', (v) => { this.setTextWrapping(v); }, { checked: this.textWrapping} ],
+				['*Wrap text', (v: boolean) => { this.setTextWrapping(v); }, { checked: this.textWrapping} ],
 				['-Clear', () => { this.clear(); }]
 			]);
 			Client.desktop.openCtxMenuAt(menu, ev.clientX, ev.clientY);
@@ -103,7 +103,7 @@ export default class RemoteShellApp extends App {
 		$field[0].focus({ preventScroll: true });
 	}
 
-	updateLog(content) {
+	updateLog(content: string) {
 		let cont = this.$content[0];
 
 		let onBottom;
@@ -121,7 +121,7 @@ export default class RemoteShellApp extends App {
 		}
 	}
 
-	setTextWrapping(w) {
+	setTextWrapping(w: boolean) {
 		this.textWrapping = w;
 		if (w) {
 			this.$content.css('white-space', 'pre-wrap');

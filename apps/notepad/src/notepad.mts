@@ -8,7 +8,7 @@ import { Editor } from './editor.mjs';
 import { FindHelper } from './find.mjs';
 import { Deferred } from '/@sys/events.mjs';
 
-const EXTENSION_SYNTAX_TABLE = {
+const EXTENSION_SYNTAX_TABLE: {[key: string]: string} = {
 	'txt': 'plain',
 	'json': 'json'
 };
@@ -152,8 +152,8 @@ export default class NotepadApp extends App {
 
 		// Create view menu options
 		let viewMenu = ContextMenu.fromDefinition([
-			['*Line numbers', (v) => this.setLineNumbersVisible(v), { checked: true }],
-			['*Wrap lines', (v) => this.editor.setLineWrapping(v)],
+			['*Line numbers', (v: boolean) => this.setLineNumbersVisible(v), { checked: true }],
+			['*Wrap lines', (v: boolean) => this.editor.setLineWrapping(v)],
 		]);
 		this.syntaxViewMenu = new ContextMenu([], "Syntax");
 		viewMenu.addItem(this.syntaxViewMenu);

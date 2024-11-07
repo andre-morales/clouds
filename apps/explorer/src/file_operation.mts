@@ -28,7 +28,7 @@ export class FileOperation {
 	/** A percentage of sub-operations completed. */
 	progress: number;
 
-	onProgress: (value) => void;
+	onProgress: (value: number) => void;
 
 	constructor(absolutePaths: string[]) {
 		this.sources = absolutePaths;

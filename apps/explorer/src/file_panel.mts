@@ -1,8 +1,9 @@
 import { ClientClass } from '/@sys/client_core.mjs';
 import { FileIcon } from './file_icon.mjs';
-import ExplorerApp, { FileEntry } from './explorer.mjs';
+import ExplorerApp from './explorer.mjs';
 import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import Arrays from '/@sys/utils/arrays.mjs';
+import { FileEntry } from './file_entry.mjs';
 
 interface FileIconMap {
 	[path: string]: FileIcon;
@@ -43,14 +44,14 @@ enum PointerBehavior {
 }
 
 export enum SortingMode {
-	DEFAULT, NAME, DATE
+	DEFAULT, NAME, DATE, SIZE
 }
 
 export class FilePanel {
 	private app: ExplorerApp;
 	private zoom: number;
 	private pointerBehaviors: Map<PointerAction, PointerBehavior>;
-	private fileEntries: any;
+	private fileEntries: FileEntry[];
 	fileIcons: FileIconMap;
 	selectionMode: string;
 	selectedFiles: string[];
@@ -149,38 +150,25 @@ export class FilePanel {
 		this.$files.empty();
 		this.clearSelection();
 
-		let isDir = (en) => {
-			return (en[0].endsWith('/'))? 1 : 0;
-		}
+		// Select the appropriate comparator function based on the criterion
+		let comparator = this.getSortingComparator();
 
-		// Sort files 
-		switch (this.sorting) {
-		case SortingMode.DATE:
-			files.sort((a, b) => {
-				let dirA = isDir(a);
-				let dirB = isDir(b);
-				if (dirA == dirB) {
-					return b[2] - a[2];
-				} else {
-					return dirA ? -1 : 1;
-				}
-			});
-			break;
+		// Invoke the sorting on the files array 
+		files.sort((a, b) => {
+			let dirA = a.isFolder();
+			let dirB = b.isFolder();
 
-		// By default, sort alphabetically
-		default:
-			files.sort((a, b) => {
-				let A = isDir(a);
-				let B = isDir(b);
-				if (A == B) return a[0].localeCompare(b[0]);
-				return B - A;
-			});
-		}
+			// If one is a file and the other is a folder, have the folder come first
+			if (dirA != dirB) return dirA ? -1 : 1;
+
+			// Use the comparator according to the criteria
+			return comparator(a, b);
+		});
 
 		// Make icons
 		for (let file of files) {
 			let icon = this.makeFileIcon(file);
-			this.fileIcons[file[0]] = icon;
+			this.fileIcons[file.path] = icon;
 
 			this.$files.append(icon.$icon);
 		}	
@@ -238,12 +226,24 @@ export class FilePanel {
 		for (let fi of Object.values(this.fileIcons)) {
 			let hide = !fi.fileName.includes(query);
 			fi.$icon.toggleClass('hidden', hide);
+			console.log(hide);
 		}
 	}
 
 	public sortBy(what: SortingMode) {
 		this.sorting = what;
 		this.setContent(this.fileEntries);
+	}
+
+	private getSortingComparator(): (a: FileEntry, b: FileEntry) => number {
+		switch (this.sorting) {
+		case SortingMode.NAME:
+			return (a, b) => a.path.localeCompare(b.path);
+		case SortingMode.DATE:
+			return (a, b) => b.creation - a.creation;
+		case SortingMode.SIZE:
+			return (a, b) => b.size - a.size;
+		}
 	}
 
 	private updateSelectionStatus() {
@@ -296,7 +296,7 @@ export class FilePanel {
 			}
 			break;
 		case PointerBehavior.CTX_MENU:
-			let menu = fileIcon.createContextMenu();
+			let menu = fileIcon.makeContextMenu();
 			ClientClass.get().desktop.openCtxMenuAt(menu, ev.clientX, ev.clientY);
 			break;
 		case PointerBehavior.SELECT_ONE:

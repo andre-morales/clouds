@@ -3,6 +3,7 @@ import { ClientClass } from '/@sys/client_core.mjs';
 import Util from '/@sys/utils/browser.mjs';
 import Window, { InitialPosition } from '/@sys/ui/window.mjs';
 import { type AppDefinition } from '/@sys/app_manager.mjs';
+import ExplorerApp from './explorer.mjs';
 
 var Client: ClientClass;
 
@@ -10,13 +11,13 @@ export default class ExplorerDefaultHandler {
 	explorer: any;
 	window: Window;
 
-	constructor(explorer) {
+	constructor(explorer: ExplorerApp) {
 		Client = ClientClass.get();
 		this.explorer = explorer;
 		this.window = null;
 	}
 
-	async open(path) {
+	async open(path: string) {
 		this.window = Client.desktop.createWindow(this.explorer);
 		
 		await this.window.setContentToUrl('/app/explorer/res/open-handler-win.html');
@@ -61,7 +62,7 @@ export default class ExplorerDefaultHandler {
 		this.window.setVisible(true);
 	}
 
-	async openFileWith(path) {
+	async openFileWith(path: string) {
 		const win = Client.desktop.createWindow(this.explorer);
 		const $win = win.$window;
 

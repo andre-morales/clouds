@@ -36,7 +36,7 @@ export class FindHelper {
 			}
 		});
 
-		$win.find('.wrap-around').change(function () {
+		$win.find('.wrap-around').change(function(this: HTMLInputElement) {
 			self.wrapAround = this.checked;
 		});
 		$win.find('.prev-btn').click(() => this.find(true));

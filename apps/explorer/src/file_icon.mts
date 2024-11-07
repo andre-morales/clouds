@@ -1,31 +1,30 @@
-import ExplorerApp, { type FileEntry } from "./explorer.mjs";
+import ExplorerApp from "./explorer.mjs";
 import ExplorerProperties from "./properties_dialog.mjs";
 import { FileTypes, Paths } from "/@sys/bridges/filesystem.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import { CtxEntry, ContextMenu } from "/@sys/ui/context_menu.mjs";
 import { FileSystem } from "/@sys/bridges/filesystem.mjs";
 import Util from "/@sys/utils/browser.mjs";
+import { FileEntry } from "./file_entry.mjs";
 
 export class FileIcon {
-	$icon: $Element;
-	fileName: string;
-	path: string;
-	absolutePath: string;
-	#app: ExplorerApp;
+	public readonly path: string;
+	public readonly absolutePath: string;
+	public readonly fileName: string;
+	public readonly $icon: $Element;
+	private readonly app: ExplorerApp;
 
-	constructor(app: ExplorerApp, fEntry: FileEntry) {
-		this.#app = app;
-
-		let [fPath, fTags="", fCreation=0] = fEntry;
-		this.path = fPath;
-		this.absolutePath = Paths.join(this.#app.cwd, fPath);
-		this.fileName = this.#getFileName();
+	constructor(app: ExplorerApp, entry: FileEntry) {
+		this.app = app;
+		this.path = entry.path;
+		this.absolutePath = Paths.join(this.app.cwd, entry.path);
+		this.fileName = this.getFileName();
 
 		// Obtain file classes
-		let classes = this.#getIconClasses(fTags);
+		let classes = this.getIconClasses(entry.tags);
 
 		// Limit text under icon if too large
-		let iconText = this.#getDisplayName();
+		let iconText = this.getDisplayName();
 
 		// Create thumbnail image if needed
 		let $img = null;
@@ -58,7 +57,7 @@ export class FileIcon {
 		this.$icon.prepend($ic);		
 	}
 
-	createContextMenu() {
+	public makeContextMenu() {
 		let absPath = this.absolutePath;
 
 		let isDir = absPath.endsWith('/');
@@ -67,7 +66,7 @@ export class FileIcon {
 		let menu: CtxEntry[] = [
 			['-Select', () => this.select()],
 			['|'],
-			['-Open', () => this.#app.openHandler(absPath)],
+			['-Open', () => this.app.openHandler(absPath)],
 		];
 
 		if (isDir) {
@@ -77,14 +76,14 @@ export class FileIcon {
 					app.go(absPath);
 				}],
 				['-Add to favorites', () => {
-					this.#app.addFavorite(absPath)
+					this.app.addFavorite(absPath)
 				}]
 			);
 		} else {
 			menu.push(
 				['>Open...', [
-					['-With',  () => this.#app.openFileWith(absPath)],
-					['-Outside', () => this.#app.openFileExt(absPath)]
+					['-With',  () => this.app.openFileWith(absPath)],
+					['-Outside', () => this.app.openFileExt(absPath)]
 				]],
 				['-Download', () => Util.downloadUrl(fsPath)]
 			);
@@ -98,24 +97,19 @@ export class FileIcon {
 
 		menu.push(
 			['|'],
-			['-Copy', () => { this.#app.copy([absPath]) }],
-			['-Cut', () => { this.#app.cut([absPath]) }],
+			['-Copy', () => { this.app.copy([absPath]) }],
+			['-Cut', () => { this.app.cut([absPath]) }],
 			['|'],
 			['-Rename', () => { this.enableRename() }],
-			['-Erase', () => { this.#app.erase([absPath]) }],
+			['-Erase', () => { this.app.erase([absPath]) }],
 			['|'],
-			['-Properties', () => { ExplorerProperties.openPath(this.#app, absPath)}]
+			['-Properties', () => { ExplorerProperties.openPath(this.app, absPath)}]
 		);
 		return ContextMenu.fromDefinition(menu);
 	}
 
-	openContextMenuAt(x: number, y: number) {
-		let menu = this.createContextMenu();
-		ClientClass.get().desktop.openCtxMenuAt(menu, x, y);
-	}
-
-	/** Enable renaming the file in the Ui */
-	enableRename() {
+	/** Enable renaming the file in the UI */
+	public enableRename() {
 		let file = Paths.file(this.path);
 
 		let removed = false;
@@ -155,7 +149,7 @@ export class FileIcon {
 			// Set the new name on the span
 			$name.text(newName);
 
-			this.#app.refresh();
+			this.app.refresh();
 		};
 
 		// When leaving the input, perform the rename op
@@ -191,12 +185,12 @@ export class FileIcon {
 		}, 0);
 	}
 
-	select() {
-		this.#app.panel.performSelection(this, false);
+	public select() {
+		this.app.panel.performSelection(this, false);
 	}
 
 	/** Get file name between slashes in the entry */
-	#getFileName() {
+	private getFileName() {
 		let fName = this.path;
 		let ls = this.path.lastIndexOf('/', this.path.length - 2);
 		if (ls != -1) fName = this.path.substring(ls + 1);
@@ -204,7 +198,7 @@ export class FileIcon {
 		return fName;
 	}
 
-	#getDisplayName() {
+	private getDisplayName() {
 		let iconText = this.fileName;
 		if (this.fileName.length > 20) {
 			iconText = this.fileName.substring(0, 20) + "…";
@@ -212,7 +206,7 @@ export class FileIcon {
 		return iconText;
 	}
 
-	#getIconClasses(tags: string): string[] {
+	private getIconClasses(tags: string): string[] {
 		let classes = ['file'];
 		if (this.absolutePath.endsWith('/')) {
 			classes.push('dir');

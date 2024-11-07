@@ -92,15 +92,15 @@ export async function list(path: string): Promise<DirEntryArray[]> {
 	let promises = files.map(async (entry) => {
 		let file = entry.name;
 		let tags = '';
-		let creationTime = 0;
+		let modificationTime = 0;
+		let size = 0;
 
 		// If this try-catch fails, we probably have no rights to gather
 		// information about the file
 		try {
-			let stat = await FS.promises.stat(path + file);
-
-			//creationTime = stat.birthtimeMs;
-			creationTime = stat.mtimeMs;
+			let stat = await FS.promises.stat(path + file);	
+			modificationTime = Math.round(stat.mtimeMs);
+			size = stat.size;
 
 			if (stat.isDirectory()) {
 				file += '/';
@@ -114,7 +114,7 @@ export async function list(path: string): Promise<DirEntryArray[]> {
 			tags += 'i';
 		}
 
-		let result: DirEntryArray = [file, tags, creationTime];
+		let result: DirEntryArray = [file, tags, modificationTime, size];
 		return result;
 	});
 

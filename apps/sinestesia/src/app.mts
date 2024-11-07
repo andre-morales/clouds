@@ -82,10 +82,10 @@ export default class SinestesiaApp extends App {
 			['-Open...', () => this.showOpenDialog()],
 			['-Open folder...', () => this.showOpenFolderDialog()],
 			['|'],
-			['*Autoplay', (v) => {
+			['*Autoplay', (v: boolean) => {
 				this.autoPlay = v;
 			}],
-			['*Lock playback', (v) => {
+			['*Lock playback', (v: boolean) => {
 				this.lockedPlayback = v;
 			}],
 			['|'],
@@ -110,7 +110,7 @@ export default class SinestesiaApp extends App {
 			}, {checked: false}],
 			['-Reset transform', () => {this.gestures.cleanTransform(); this.updateTransform()}],
 			['|'],
-			['*Track marker', (v) => {
+			['*Track marker', (v: boolean) => {
 				let videoContainer = this.player.getContainer(ContentType.VIDEO) as VideoContainer;
 				videoContainer.setTrackMarkerEnabled(v);
 			}]

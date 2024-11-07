@@ -192,7 +192,7 @@ export default class ConsoleApp extends App {
 		}
 	}
 
-	stringifyObject(obj, depth = 1) {	
+	stringifyObject(obj: any, depth = 1) {	
 		// Specials
 		if (obj === undefined) return "undefined";
 		if (obj === null) return "null";

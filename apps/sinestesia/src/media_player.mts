@@ -2,7 +2,7 @@ import SinestesiaApp from "./app.mjs";
 import { Container } from "./container.mjs";
 import { ImageContainer } from "./image_container.mjs";
 import { VideoContainer } from "./video_container.mjs";
-import { EventCallback, Reactor, ReactorEvent } from "/@sys/events.mjs";
+import { Reactor, ReactorEvent } from "/@sys/events.mjs";
 
 export enum ContentType {
 	NONE, IMAGE, VIDEO

@@ -1,7 +1,7 @@
 import LocalClipboard from '/@sys/bridges/clipboard.mjs';
 import Dialogs from '/@sys/ui/dialogs.mjs';
 import { ContextMenu } from '/@sys/ui/context_menu.mjs';
-import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
+import { FileSystem, Paths, RawFileEntry } from '/@sys/bridges/filesystem.mjs';
 import { Deferred } from '/@sys/events.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
@@ -12,6 +12,7 @@ import ExplorerDefaultHandler from './open_handler.mjs';
 import { FileOperation, FileOperationKind } from './file_operation.mjs';
 import Arrays from '/@sys/utils/arrays.mjs';
 import Utils from '/@sys/utils/utils.mjs';
+import { FileEntry } from './file_entry.mjs';
 
 /** If an operation finished this fast, automatically refresh explorer */
 const OPERATION_REFRESH_TIMEOUT = 200;
@@ -23,8 +24,6 @@ const OPERATION_HIDE_DELAY = 4000;
 const LIST_FILES_LIMIT = 32;
 
 var Client: ClientClass;
-
-export type FileEntry = any[];
 
 export default class ExplorerApp extends App {
 	window: Window;
@@ -138,7 +137,8 @@ export default class ExplorerApp extends App {
 		return ContextMenu.fromDefinition([
 			['>Sort by', [
 				['-Name', () => this.panel.sortBy(SortingMode.NAME)],
-				['-Date', () => this.panel.sortBy(SortingMode.DATE)]
+				['-Date', () => this.panel.sortBy(SortingMode.DATE)],
+				['-Size', () => this.panel.sortBy(SortingMode.SIZE)]
 			]],
 			['|'],
 			['-Paste', () => this.paste(), { disabled: !this.canPaste() }],
@@ -181,7 +181,8 @@ export default class ExplorerApp extends App {
 		this.panel.filter(query.toLowerCase());
 	}
 
-	asFileSelector(mode, selectionMode) {
+	asFileSelector(mode: string, selectionMode: string) {
+		// TO-DO: Replace these modes by enums.
 		this.panel.selectionMode = selectionMode;
 		let $win = this.window.$window;
 
@@ -213,7 +214,7 @@ export default class ExplorerApp extends App {
 		return null;
 	}
 
-	getNavPath(path) {
+	getNavPath(path: string) {
 		if (path == '.') return this.cwd;
 
 		let p = Paths.join(this.cwd, path);
@@ -221,7 +222,7 @@ export default class ExplorerApp extends App {
 		return p;
 	}
 
-	async navigate(path) {
+	async navigate(path: string) {
 		await this.go(this.getNavPath(path));
 	}
 
@@ -237,6 +238,7 @@ export default class ExplorerApp extends App {
 			});
 		}
 
+		// Change the path displayed in the address bar
 		this.$addressField.val(path);
 
 		// Fetching and fetch error handling
@@ -270,6 +272,7 @@ export default class ExplorerApp extends App {
 			return code;
 		}
 
+		// Change officially the current path
 		this.cwd = path;
 		
 		// UI changes		
@@ -283,8 +286,9 @@ export default class ExplorerApp extends App {
 			this.window.setTitle(fname);
 		}
 
-		let files: FileEntry[] = await fRes.json();
-		this.panel.setContent(files);
+		// Await the directory entries, and set the entries content in the panel
+		let files: RawFileEntry[] = await fRes.json();
+		this.panel.setContent(FileEntry.fromRawEntries(files));
 	}
 
 	async goHome() {
@@ -292,7 +296,7 @@ export default class ExplorerApp extends App {
 		await this.go('/');
 	}
 
-	async openHandler(path) {
+	async openHandler(path: string) {
 		// If it's a folder
 		if (path.endsWith('/')) {
 			this.go(path);
@@ -328,14 +332,14 @@ export default class ExplorerApp extends App {
 	}
 
 	// Favorites 
-	addFavorite(path) {
+	addFavorite(path: string) {
 		this.favorites.push(path);
 
 		this.saveFavorites();
 		this.refreshFavorites();
 	}
 
-	removeFavorite(path) {
+	removeFavorite(path: string) {
 		Arrays.erase(this.favorites, path);
 
 		this.saveFavorites();
@@ -528,17 +532,17 @@ export default class ExplorerApp extends App {
 		});		
 	}
 
-	openDefaultHandler(path) {
+	openDefaultHandler(path: string) {
 		let dialog = new ExplorerDefaultHandler(this);
 		dialog.open(path);
 	}
 
-	openFileWith(path) {
+	openFileWith(path: string) {
 		let dialog = new ExplorerDefaultHandler(this);
 		dialog.openFileWith(path);
 	}
 
-	openFileExt(path) {
+	openFileExt(path: string) {
 		window.open(Paths.toFSV(path), '_blank').focus();
 	}
 
@@ -556,7 +560,7 @@ class History {
 		this.logIndex = -1;		
 	}
 
-	save(entry) {
+	save(entry: string) {
 		this.logIndex++;
 
 		if (this.logIndex == this.log.length) {

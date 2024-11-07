@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"strict": false,
+		"strict": true,
 		"module": "ESNext",
 		"target": "ES2022",
 		"moduleResolution": "Bundler",
@@ -9,7 +9,10 @@
 		"sourceMap": true,
 		"paths": {
 			"/@sys/*": ["./../client/src/*"]
-		}
+		},
+		"strictFunctionTypes": false,
+		"strictNullChecks": false,
+		"strictPropertyInitialization": false
 	},
 	"include": ["./**/*.mts"],
 	"exclude": [

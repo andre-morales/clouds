@@ -136,7 +136,7 @@ export class Editor {
 		// We must replace all tabs in the sentence. Canvas does not take into account tab sizes
 		// properly.
 		sentence = sentence.replaceAll('\t', this.tabReplacement);
-		const parseValue = (v) => v.endsWith('px') ? parseInt(v.slice(0, -2), 10) : 0;
+		const parseValue = (v: string) => v.endsWith('px') ? parseInt(v.slice(0, -2), 10) : 0;
 
 		// Get all CSS properties in the textarea and set the context font
 		const fieldStyles = window.getComputedStyle(this.$textArea[0]);

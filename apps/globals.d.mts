@@ -1,4 +1,7 @@
 declare global {
+	interface ZeptoCollection {
+		[0]: any;
+	}
 	type $Element = ZeptoCollection;
 
 	var Hammer: HammerStatic;

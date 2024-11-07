@@ -8,7 +8,7 @@ interface CtxEntryOptions {
 
 export interface CtxEntry {
 	0: string;
-	1?: Function | CtxEntry[];
+	1?: Function | ((v: boolean) => void) | CtxEntry[];
 	2?: CtxEntryOptions;
 }
 

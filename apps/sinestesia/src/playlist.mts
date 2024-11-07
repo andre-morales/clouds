@@ -1,10 +1,10 @@
 import SinestesiaApp from "./app.mjs";
-import { FileSystem, Paths } from "/@sys/bridges/filesystem.mjs";
+import { FileSystem, Paths, RawFileEntry } from "/@sys/bridges/filesystem.mjs";
 import Utils from "/@sys/utils/utils.mjs";
 
 class Playlist {
 	app: SinestesiaApp;
-	list: string[];
+	list: RawFileEntry[];
 	dir: string;
 	index: number;
 

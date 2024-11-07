@@ -47,7 +47,7 @@ export default class WebViewApp extends App {
 
 		// If launched with a path (opening a file)
 		if (this.buildArgs.length > 0) {
-			this.setPath(this.buildArgs[0]);
+			this.setPath(this.buildArgs[0] as string);
 		}
 	}
 
@@ -61,7 +61,7 @@ export default class WebViewApp extends App {
 		this.setPath(Paths.toFSV(file));
 	}
 	
-	setPath(path) {
+	setPath(path: string) {
 		this.path = path;
 		if (!path) {
 			this.window.setTitle('WebView');

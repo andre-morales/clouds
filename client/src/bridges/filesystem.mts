@@ -4,6 +4,8 @@ import Strings from '../utils/strings.mjs';
 
 const UPLOAD_TIMEOUT = 30000;
 
+export type RawFileEntry = [string, string, number, number];
+
 export class FileSystem {
 	static async readText(path: string): Promise<string> {
 		let url = Paths.toURL(Paths.toFSV(path));
@@ -68,7 +70,7 @@ export class FileSystem {
 		return req;
 	}
 
-	static async list(path: string): Promise<any> {
+	static async list(path: string): Promise<RawFileEntry[]> {
 		// Convert the path to a list cmd
 		if (!path.endsWith('/')) path += '/';
 		let url = Paths.toURL(Paths.toFSV(path));

@@ -107,9 +107,9 @@ export class TrackMarker {
 
 	private initTrackSegments() {
 		let mvSegment: TrackSegment;
-		let mvDirection;
-		let stFactor;
-		let stLength;
+		let mvDirection: number;
+		let stFactor: number;
+		let stLength: number;
 		
 		this.$track.on('mousedown', (ev: MouseEvent) => {
 			if (!ev.ctrlKey) return;

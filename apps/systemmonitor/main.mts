@@ -40,7 +40,7 @@ export default class SystemMonitorApp extends App {
 		// Fetch app body
 		await this.window.setContentToUrl('/app/systemmonitor/res/main.html');
 		let $tabPane = $app.find('ui-tabs');
-		$tabPane[0].onTabChanged = (tab) => {
+		$tabPane[0].onTabChanged = (tab: string) => {
 			if (tab == 'resources') {
 				this.setupNetworkMonitor();
 			} else {
@@ -110,7 +110,7 @@ export default class SystemMonitorApp extends App {
 		let writtenBytesDelta = 0;
 		let readBytesDelta = 0;
 
-		let asMbits = (bytes) => {
+		let asMbits = (bytes: number) => {
 			let kbits = bytes / 125;
 			let mbits = kbits / 1000;
 
@@ -121,7 +121,7 @@ export default class SystemMonitorApp extends App {
 			}		
 		};
 
-		let asMiB = (bytes) => {
+		let asMiB = (bytes: number) => {
 			let kib = bytes / 1024;
 			let mib = kib / 1024;
 			

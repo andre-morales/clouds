@@ -9,7 +9,7 @@ const AUTOPLAY_DELAY = 500;
 const BUFFERED_RANGES_INTERVAL = 200;
 
 interface $VideoElement extends $Element {
-	[0]?: HTMLVideoElement;
+	[0]: HTMLVideoElement;
 }
 
 export class VideoContainer extends Container {
