@@ -1,6 +1,7 @@
 import MediaPlayer, { ContentType } from './media_player.mjs'
 import { Playlist } from './playlist.mjs';
 import { Gestures } from './gestures.mjs';
+import { VideoContainer } from './video_container.mjs';
 import type ExplorerApp from '../../explorer/main.mjs';
 import { ContextCheckbox, ContextMenu } from '/@sys/ui/context_menu.mjs';
 import { FileSystem, Paths, FileTypes } from '/@sys/bridges/filesystem.mjs';
@@ -8,7 +9,6 @@ import Fullscreen from '/@sys/ui/fullscreen.mjs';
 import App from '/@sys/app.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
-import { VideoContainer } from './video_container.mjs';
 
 export default class SinestesiaApp extends App {
 	public readonly player: MediaPlayer;

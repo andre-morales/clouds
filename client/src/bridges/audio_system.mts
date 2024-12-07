@@ -1,21 +1,39 @@
+import App from "../app.mjs";
+import { Reactor, ReactorEvent } from "../events.mjs";
+import Resource from "../resource.mjs";
+import Arrays from "../utils/arrays.mjs";
+
 export class AudioSystem {
-	enabled: boolean;
-	initialized: boolean;
-	context: any;
-	destination: any;
-	reverbWetGain: any;
-	reverbDryGain: any;
+	public readonly events: Reactor<{
+		'source-connected': AudioSourceEvent
+		'source-disconnected': AudioSourceEvent
+	}>;
+	private appSources: AppAudioSource[];
+
+	private context: AudioContext;
+	private destination: AudioNode;
+	private enabled: boolean;
+	private initialized: boolean;
+
+	/*reverbWetGain: any;
+	reverbDryGain: any;*/
 
 	constructor() {
-		this.enabled = false;
+		this.enabled = true;
 		this.initialized = false;
+		this.events = new Reactor();
+		this.appSources = [];
+		this.events.register('source-connected', 'source-disconnected');
 	}
 
-	init() {
+	private init(): boolean {
+		if (!this.enabled) return false;
+		if (this.initialized) return true;
+
 		this.initialized = true;
 		this.context = new AudioContext();
 		this.destination = this.context.createGain();
-		
+
 		// -- Eq Creator
 		/*this.eqPoints = [];
 		let pointsc = 6;
@@ -108,24 +126,63 @@ export class AudioSystem {
 			this.reverbWetGain,
 			this.final,
 		]);*/
-	}
-
-	isEnabled() {
-		return this.enabled;
-	}
-
-	begin() {
-		if (!this.enabled) return false;
-		if (!this.initialized) this.init();
 		return true;
 	}
 
-	resume() {
+	public resume() {
 		if (!this.enabled) return;
 		this.context.resume();
 	}
 
-	setReverbBalance(b: number) {
+	public isEnabled() {
+		return this.enabled;
+	}
+
+	public getAppSources(): readonly AppAudioSource[] {
+		return this.appSources;
+	}
+
+	public createMediaNode(mediaElement: HTMLMediaElement): MediaElementAudioSourceNode {
+		if (!this.initialized) this.init();
+
+		return this.context.createMediaElementSource(mediaElement);
+	}
+
+	public connect(node: AudioNode, app: App) {
+		// Make sure the audio system is initialized
+		if (!this.initialized) this.init();
+
+		// Create audio context connection
+		let gain = this.context.createGain();
+		node.connect(gain);
+		gain.connect(this.destination);
+
+		let audioSource = new AppAudioSource(app, gain);
+		this.appSources.push(audioSource);
+
+		// Store resource on app to represent this audio connection. This resource will be freed
+		// when the app is closed.
+		let res = new Resource();
+		res.setUnloadCallback(() => {
+			gain.disconnect();
+			Arrays.erase(this.appSources, audioSource);
+
+			this.events.fire('source-disconnected', new AudioSourceEvent(audioSource));
+		});
+		res.addUser(app);
+		app.resources.add(res);
+
+		// Make listeners aware of this connection
+		this.events.fire('source-connected', new AudioSourceEvent(audioSource));
+	}
+
+	private connectArr(arr: AudioNode[]) {
+		for (let i = 0; i < arr.length - 1;) {
+			arr[i].connect(arr[++i]);
+		}
+	}
+
+	/*setReverbBalance(b: number) {
 		this.reverbWetGain.gain.value = b;
 		this.reverbDryGain.gain.value = 1 - b;
 	}
@@ -144,12 +201,25 @@ export class AudioSystem {
 		  impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
 		}
 		return impulse;
-	}
+	}*/
+}
 
-	connectArr(arr: AudioNode[]) {
-		for (let i = 0; i < arr.length - 1;) {
-			arr[i].connect(arr[++i]);
-		}
+export class AppAudioSource {
+	public readonly app: App;
+	public readonly volume: GainNode;
+
+	constructor(app: App, volume: GainNode) {
+		this.app = app;
+		this.volume = volume;
+	}
+}
+
+class AudioSourceEvent extends ReactorEvent {
+	public readonly audioSource: AppAudioSource;
+
+	constructor(audioSource: AppAudioSource) {
+		super();
+		this.audioSource = audioSource;
 	}
 }
 

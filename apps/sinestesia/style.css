@@ -72,6 +72,36 @@
 	pointer-events: none;
 }
 
+.app-sinestesia .controls .top {
+	display: flex;
+	padding: 0 .2rem;
+	align-items: center;
+	background: rgba(20, 20, 20, 0.3);
+	pointer-events: all;
+}
+
+.app-sinestesia .volume {
+	margin: 0 1rem;
+	flex-grow: 1;
+}
+
+.app-sinestesia .controls .mute-btn {
+	border: none;
+	width: 32px;
+	height: 32px;
+	background-size: 32px;
+	background-color: rgba(0, 0, 0, 0.2);
+	background-image: url('/app/sinestesia/res/volume.png');
+	border-radius: 50%;
+	pointer-events: all;
+	vertical-align: middle;
+}
+
+.app-sinestesia .controls .volume {
+	vertical-align: middle;
+	pointer-events: all;
+}
+
 .app-sinestesia .controls .bottom {
 	display: flex;
 	height: 1.5rem;

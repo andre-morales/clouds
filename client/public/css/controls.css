@@ -103,6 +103,12 @@ ui-slider {
 	height: 12px;
 }
 
+ui-slider[vertical] {
+	display: inline-block;
+	width: 12px;
+	height: 256px;
+}
+
 ui-tabs {
 	display: flex;
 	flex-direction: column;

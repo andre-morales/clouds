@@ -43,5 +43,10 @@
 		"name": "About",
 		"icon": "/app/about/icon64.png",
 		"flags": []
+	},
+	"sounds": {
+		"name": "Sounds",
+		"icon": "/app/sounds/icon64.png",
+		"flags": []
 	}
 }

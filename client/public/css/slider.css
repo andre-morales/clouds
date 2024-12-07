@@ -12,32 +12,7 @@
 	background-clip: content-box;
 }
 
-.track {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	left: 0;
-	top: 0;
-	padding: 3px;
-	line-height: 0;
-	user-select: none;
-	box-sizing: border-box;
-	--track-color: #EC0;
-}
-
-.track-range {
-	box-sizing: border-box;
-	position: absolute;
-	height: 100%;
-	top: 0;
-	padding: 3px;
-	background-color: transparent;
-	background-clip: content-box;
-	background-color: var(--track-color);
-}
-
 .lower {
-	width: 0%;	
 	background: #00B6FF;
 	background-clip: content-box;
 }
@@ -45,7 +20,7 @@
 .thumb {
 	position: absolute;
 	display: block;
-	top: calc(50% - var(--thumb-size)/2);
+	
 	width: var(--thumb-size);
 	height: var(--thumb-size);
 	box-sizing: border-box;
@@ -59,6 +34,54 @@
 	background: white;
 }
 
+.horizontal .thumb {
+	top: calc(50% - var(--thumb-size)/2);
+}
+
+.vertical .thumb {
+	left: calc(50% - var(--thumb-size)/2);
+}
+
 .thumb:hover {
 	background: #00B6FF;
+}
+
+.track {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	padding: 3px;
+	line-height: 0;
+	user-select: none;
+	box-sizing: border-box;
+	--track-color: #EC0;
+}
+
+.horizontal .track {
+	top: 0;
+	bottom: 0;
+}
+
+.vertical .track {
+	left: 0;
+	right: 0;
+}
+
+.track-range {
+	box-sizing: border-box;
+	position: absolute;
+	padding: 3px;
+	background-color: transparent;
+	background-clip: content-box;
+	background-color: var(--track-color);
+}
+
+.horizontal .track-range {
+	top: 0;
+	bottom: 0;
+}
+
+.vertical .track-range {
+	left: 0;
+	right: 0;
 }

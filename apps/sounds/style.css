@@ -1,0 +1,27 @@
+.app-sounds {
+	padding: .5rem 0;
+	white-space: nowrap;
+	overflow-x: auto;
+}
+
+.app-sounds .app {
+	display: inline-flex;
+	flex-direction: column;
+	padding: 0 4px;
+	height: 100%;
+	align-items: center;
+	font-size: 11pt;
+}
+
+.app-sounds .app:not(:last-child) {
+	border-right: solid 1px gray;
+}
+
+.app-sounds .app-icon {
+	width: 36px;
+}
+
+.app-sounds ui-slider {
+	flex-grow: 1;
+	margin: .5rem 0 1rem 0;
+}

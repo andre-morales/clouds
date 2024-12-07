@@ -1,13 +1,14 @@
+import { Pointer } from "/@sys/utils/objects.mjs";
+
 var staticInit = false;
 var stylesheet: CSSStyleSheet;
 
+enum SliderAxis {
+	HORIZONTAL, VERTICAL
+}
+
 export class UISlider extends HTMLElement {
-	#value: number;
-	#min: number;
-	#max: number;
-	#container: HTMLElement;
-	#lower: HTMLElement;
-	#thumb: HTMLElement;
+	#impl: UISliderController;
 
 	constructor() {
 		super();
@@ -16,55 +17,147 @@ export class UISlider extends HTMLElement {
 			doStaticInitialization();
 		}
 
-		this.#value = Number(this.getAttribute('value'));
-		this.#min = Number(this.getAttribute('min'));
-		this.#max = Number(this.getAttribute('max'));
-		if (!this.#value) this.#value = 0;
-		if (!this.#min) this.#min = 0;
-		if (!this.#max) this.#max = 100;
-
-		// Create shadow DOM
-		let shadow = this.attachShadow({ mode: 'open' });
-		shadow.adoptedStyleSheets = [stylesheet];
-
-		let container = document.createElement('div');
-		container.classList.add('root');
-		shadow.append(container);
-		this.#container = container;
-
-		let lower = document.createElement('span');
-		lower.classList.add('track');
-		lower.classList.add('lower');
-		container.append(lower);
-		this.#lower = lower;
-
-		let thumb = document.createElement('span');
-		thumb.classList.add('thumb');
-		container.append(thumb);
-		this.#thumb = thumb;
+		this.#impl = new UISliderController(this);
 	}
 
-	connectedCallback() {
-		let valueChange = (coff: number) => {
+	private connectedCallback() {
+		this.#impl.onConnect();
+	}
+
+	addUnderTrack() {
+		let track = this.#impl.createTrack();
+		track.root.prependTo(this.#impl.$container);
+		return track;
+	}
+
+	addOverTrack() {
+		let track = this.#impl.createTrack();
+		track.root.insertBefore(this.#impl.$thumb);
+		return track;
+	}
+
+	get trackContainer() {
+		return this.#impl.$container;
+	}
+
+	get value() {
+		return this.#impl.value;
+	}
+
+	set value(val) {
+		if (isNaN(val)) val = 0;
+
+		this.#impl.value = val;
+		this.#impl.update();
+	}
+}
+
+class UISliderController {
+	slider: UISlider;
+	axis: SliderAxis;
+	reverse: boolean;
+	min: number;
+	max: number;
+	value: number;
+
+	anchorProp: string;
+	sizeProp: string;
+
+	$thumb: HTMLElement;
+	$lower: HTMLElement;
+	$container: HTMLElement;
+
+	private getDimension: (e: any) => number;
+	private getFrac: (v: number, rect: DOMRect) => number;
+
+	constructor(slider: UISlider) {
+		this.slider = slider;
+
+		// Configure initial values
+		this.value = Number(slider.getAttribute('value'));
+		this.min = Number(slider.getAttribute('min'));
+		this.max = Number(slider.getAttribute('max'));
+
+		if (!this.min) this.min = 0;
+		if (!this.max) this.max = 100;
+		if (!this.value) this.value = 0;
+
+		// Create shadow DOM
+		let shadow = slider.attachShadow({ mode: 'open' });
+		shadow.adoptedStyleSheets = [stylesheet];
+
+		this.$container = document.createElement('div');
+		this.$container.classList.add('root');
+		shadow.append(this.$container);
+
+		this.$lower = document.createElement('span');
+		this.$lower.classList.add('track');
+		this.$lower.classList.add('lower');
+		this.$container.append(this.$lower);
+
+		this.$thumb = document.createElement('span');
+		this.$thumb.classList.add('thumb');
+		this.$container.append(this.$thumb);
+
+		// Configure slider direction
+		let reverse = slider.hasAttribute('reverse');
+		let axis = slider.hasAttribute('vertical') ? SliderAxis.VERTICAL : SliderAxis.HORIZONTAL;
+		this.setDirection(axis, reverse);
+
+		// Update thumb position when the thumb size changes as well
+		new ResizeObserver(() => this.update()).observe(this.$thumb);
+	}
+
+	private setDirection(axis: SliderAxis, reverse: boolean) {
+		this.axis = axis;
+		this.reverse = reverse;
+
+		const getDimensionX = (e) => e.pageX;
+		const getDimensionY = (e) => e.pageY;
+
+		const fracRectX  = (v, r) =>       (v - r.left) / r.width;
+		const fracRectRX = (v, r) => 1.0 - (v - r.left) / r.width;
+		const fracRectY  = (v, r) => 1.0 - (v - r.top) / r.height;
+		const fracRectRY = (v, r) =>       (v - r.top) / r.height;
+
+		if (axis == SliderAxis.VERTICAL) {
+			this.sizeProp = 'height';
+			this.anchorProp = reverse ? "top" : "bottom";
+
+			this.getDimension = getDimensionY;
+			this.getFrac = reverse ? fracRectRY : fracRectY;
+			
+			this.$container.classList.add('vertical');
+		} else {
+			this.sizeProp = 'width';
+			this.anchorProp = reverse ? "right" : "left";
+
+			this.getDimension = getDimensionX;
+			this.getFrac = reverse ? fracRectRX : fracRectX;
+			
+			this.$container.classList.add('horizontal');
+		}
+
+		this.$lower.style[this.anchorProp] = 0;		
+	}
+
+	onConnect() {
+		const valueChange = (coff: number) => {
 			if (coff < 0) coff = 0;
 			if (coff > 1) coff = 1;
-			let val = this.#min + (this.#max - this.#min) * coff;
+			let val = this.min + (this.max - this.min) * coff;
 
-			this.value = val;
-
-			$(this).trigger('change');
+			this.slider.value = val;
+			$(this.slider).trigger('change');
 		};
 
-		let dragX = (ev: any) => {
-			let mx = ev.pageX;
+		const drag = (ev) => {
+			let evObj = ev.changedTouches?.[0] ?? ev;
+			let v = this.getDimension(evObj)
 
-			let touches = ev.changedTouches;
-			if (touches && touches[0]) {
-				mx = touches[0].pageX;
-			}
-
-			let rect = this.#container.getBoundingClientRect();
-			return (mx - rect.left) / rect.width;
+			let rect = this.$container.getBoundingClientRect();
+			let f = this.getFrac(v, rect)
+			return f;
 		};
 
 		// Event handling
@@ -73,72 +166,54 @@ export class UISlider extends HTMLElement {
 		$(document).on('mousemove touchmove', (ev) => {
 			if(!held) return
 
-			valueChange(dragX(ev));	
+			valueChange(drag(ev));	
 		});
 		
-		this.#container.addEventListener('mousedown', (ev) => {
+		this.$container.addEventListener('mousedown', (ev) => {
 			held = true;
-			valueChange(dragX(ev));
+			valueChange(drag(ev));
 		});
-		this.#container.addEventListener('touchstart', (ev) => {
+		this.$container.addEventListener('touchstart', (ev) => {
 			held = true;
-			valueChange(dragX(ev));
+			valueChange(drag(ev));
 		});
 
-		this.#thumb.addEventListener('mousedown', () => held = true);
-		this.#thumb.addEventListener('touchstart', () => held = true);
+		this.$thumb.addEventListener('mousedown', () => held = true);
+		this.$thumb.addEventListener('touchstart', () => held = true);
 
 		$(document).on('mouseup touchend', (ev) => {
 			if(!held) return;
 			held = false;
 
-			valueChange(dragX(ev));
+			valueChange(drag(ev));
 		});
 	}
 
-	private createTrack() {
+	createTrack() {
 		let $track = $("<div class='track'>");
-		let track = new SliderTrack($track);
+		let track = new SliderTrack(this, $track);
 		return track;
 	}
 
-	addUnderTrack() {
-		let track = this.createTrack();
-		track.root.prependTo(this.#container);
-		return track;
-	}
+	update() {
+		let thumbWidth = this.$thumb.getBoundingClientRect().width;
 
-	addOverTrack() {
-		let track = this.createTrack();
-		track.root.insertBefore(this.#thumb);
-		return track;
-	}
+		let x = (this.value - this.min) / (this.max - this.min);
 
-	get trackContainer() {
-		return this.#container;
-	}
+		let progress = `${x * 100}%`;
+		let displacement = `calc(${x * 100}% - ${thumbWidth/2}px)`;
 
-	get value() {
-		return this.#value;
-	}
-
-	set value(val) {
-		if (isNaN(val)) val = 0;
-		this.#value = val;
-
-		let sliderWidth = this.#container.getBoundingClientRect().width;
-		let thumbWidth = this.#thumb.getBoundingClientRect().width;
-
-		let x = (val - this.#min) / (this.#max - this.#min);
-		this.#lower.style.width = `${x * 100}%`;
-		this.#thumb.style.left = `${x * sliderWidth - thumbWidth/2}px`;
+		this.$lower.style[this.sizeProp] = progress;
+		this.$thumb.style[this.anchorProp] = displacement;
 	}
 }
 
 export class SliderTrack {
+	public readonly controller: UISliderController;
 	private $root: $Element;
 
-	constructor($root: $Element) {
+	constructor(controller: UISliderController, $root: $Element) {
+		this.controller = controller;
 		this.$root = $root;
 	}
 
@@ -148,7 +223,7 @@ export class SliderTrack {
 
 	addRange(begin: number, width: number) {
 		let $segment = $('<div class="track-range">');
-		let range = new SliderTrackRange($segment);
+		let range = new SliderTrackRange(this, $segment);
 		range.begin = begin;
 		range.width = width;
 		this.$root.append($segment);
@@ -165,18 +240,22 @@ export class SliderTrack {
 }
 
 export class SliderTrackRange {
+	private track: SliderTrack;
 	private $range: $Element;
 
-	constructor($range: $Element) {
+	constructor(track: SliderTrack, $range: $Element) {
+		this.track = track;
 		this.$range = $range;
 	}
 
 	set begin(val: number) {
-		this.$range.css("left", `${val * 100}%`)
+		let anchor = this.track.controller.anchorProp;
+		this.$range.css(anchor, `${val * 100}%`)
 	}
 
 	set width(val: number) {
-		this.$range.css("width", `${val * 100}%`)
+		let size = this.track.controller.sizeProp;
+		this.$range.css(size, `${val * 100}%`)
 	}
 }
 

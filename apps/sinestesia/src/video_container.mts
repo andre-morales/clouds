@@ -57,6 +57,11 @@ export class VideoContainer extends Container {
 			this.player.goNextFile();
 		});
 
+		let $volume = $controls.find('.volume');
+		$volume.change(() => {
+			this.video.volume = $volume[0].value;
+		});
+
 		$video.dblclick((ev: MouseEvent) => {
 			let cPos = $ui.offset();
 			let x = 1.0 * (ev.pageX - cPos.left) / cPos.width;
@@ -158,10 +163,10 @@ export class VideoContainer extends Container {
 		// Enable transform gestures on this element
 		this.player.app.gestures.on(video);
 
-		// Create audio track and integrate it with the audio subsystem
-		if (client.audio.begin()) {
-			let track = client.audio.context.createMediaElementSource(video);
-			track.connect(client.audio.destination);
+		// Create audio track and integrate it with the audio subsystem	
+		if (client.audio.isEnabled()) {
+			let track = client.audio.createMediaNode(video);
+			client.audio.connect(track, this.getPlayer().app);
 		}
 
 		// Register active media element for integration with browser controls
