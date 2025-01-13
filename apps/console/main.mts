@@ -51,7 +51,7 @@ export default class ConsoleApp extends App {
 			Client.events.off('log', this.logListener);
 		});
 
-		this.updateLog(Client.logHistory, true);
+		this.updateLog(Client.watson.logHistory, true);
 
 		$app.find('.send-btn').click(() => {
 			this.sendCmd();

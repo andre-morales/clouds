@@ -7,3 +7,33 @@
 	padding: 4px;
 	border: inset 1px #25A;
 }
+
+.app-sysmonitor .performance-table {
+	border-collapse: collapse;
+	width: 100%;
+	font-family: 'Tahoma', sans-serif;
+	font-size: 11pt;
+}
+
+.app-sysmonitor .performance-table td {
+	padding: 4px 2px;
+	border: solid 1px gray;
+	white-space: nowrap;
+}
+
+.app-sysmonitor .performance-table th {
+	padding: 4px 2px;
+	position: sticky;
+	top: 0;
+	border-right: solid 1px gray;
+	background: var(--base-color-dark);
+}
+
+/* Keep the time column aligned to the right */
+.app-sysmonitor .fetches-tab td:nth-child(4) {
+	text-align: right;
+}
+
+.app-sysmonitor .performance-table td:nth-child(2) {
+	white-space: normal;
+}

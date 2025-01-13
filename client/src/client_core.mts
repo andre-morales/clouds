@@ -12,6 +12,7 @@ import AppRunner from './app_runner.mjs';
 import { AppManager } from './app_manager.mjs';
 import { ConfigManager } from './config_manager.mjs';
 import Arrays from './utils/arrays.mjs';
+import { WatsonTools } from './watson_tools.mjs';
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
@@ -72,19 +73,19 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.230';
+	static readonly CLIENT_VERSION = '1.0.232';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
 	static readonly API_VERSION: string;
 
+	watson: WatsonTools;
 	resources: ResourceManager;
 	desktop: Desktop;
 	audio: AudioSystem;
 	appManager: AppManager;
 	config: ConfigManager;
 	mediaSessionBridge: any;
-	logHistory: string;
 	runningApps: App[];
 	events: Reactor;
 
@@ -98,9 +99,8 @@ export class ClientClass {
 		(window as any).App = App;
 
 		// Start logging record
-		this.logHistory = '[Begin]\n';
-		this.initLogging();
-	
+		this.initWatsonTools();
+
 		// Display API version
 		fetch('/stat/version').then(async (fRes) => {
 			if (fRes.status != 200) return;
@@ -199,20 +199,8 @@ export class ClientClass {
 		return this.mediaSessionBridge.registerMediaElement(elem);
 	}
 
-	initLogging() {
-		window.addEventListener('error', (ev) => {
-			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
-			if (ev.error && ev.error.stack) {
-				msg += ev.error.stack;
-			} else {
-				msg += 'unavailable';
-			}
-			this.log(msg);
-		});
-
-		window.addEventListener('unhandledrejection', (ev) => {
-			this.log(`[Error] Unhandled rejection: ${ev.reason.stack}`);
-		});
+	initWatsonTools() {
+		this.watson = new WatsonTools();
 	}
 
 	initGraphicalErrors() {
@@ -243,7 +231,7 @@ export class ClientClass {
 		console.log(msg);
 
 		try {
-			this.logHistory += msg + '\n';
+			this.watson.logHistory += msg + '\n';
 			this.events.dispatch('log', undefined, (fn) => {
 				if (fn.disabled) return;
 

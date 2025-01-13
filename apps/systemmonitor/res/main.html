@@ -3,6 +3,8 @@
 		<button class='ui-tabs-switch selected' data-tab='apps'>Apps</button>
 		<button class='ui-tabs-switch' data-tab='windows'>Windows</button>
 		<button class='ui-tabs-switch' data-tab='resources'>Resources</button>
+		<button class="ui-tabs-switch" data-tab="fetches">Fetches</button>
+		<button class="ui-tabs-switch" data-tab="network">Network</button>
 	</div>
 	<div class='ui-tab apps-tab visible' data-tab='apps'></div>
 	<div class='ui-tab windows-tab' data-tab='windows'></div>
@@ -12,5 +14,35 @@
 		<br/>
 		<div>Total bytes received: <span class='total-bytes-received'></span></div>
 		<div>Total bytes sent: <span class='total-bytes-sent'></span></div>
+	</div>
+	<div class='ui-tab fetches-tab' data-tab='fetches'>
+		<table class="performance-table">
+			<thead>
+				<tr>
+					<th>Status</th>
+					<th>Method</th>
+					<th>Resource</th>
+					<th>Time</th>
+					<th>Size</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+	<div class='ui-tab network-tab' data-tab='network'>
+		<table class="performance-table">
+			<thead>
+				<tr>
+					<th>Status</th>
+					<th>Resource</th>
+					<th>Time</th>
+					<th>Size</th>
+					<th>Transfer</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
 	</div>
 </ui-tabs>

@@ -13,3 +13,4 @@ export * as UIDialogsM from './ui/dialogs.mjs';
 export * as UICtxMenuM from './ui/context_menu.mjs';
 export * as UtilsArraysM from './utils/arrays.mjs';
 export * as UtilsObjectsM from './utils/objects.mjs';
+export * as UtilsStringsM from './utils/strings.mjs';
