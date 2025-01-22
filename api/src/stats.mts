@@ -1,6 +1,7 @@
 import * as Core from './core.mjs';
 import Express from 'express';
 import { Socket } from 'node:net';
+import WebSockets from './websockets.mjs';
 
 interface ISocketData {
 	written: number;
@@ -29,13 +30,22 @@ export function getTracker() {
 }
 
 export function getRouter() {
-	let router = Express.Router();
+	let router = WebSockets.createRouter();
 
-	router.get('/net', (req, res) => {
-		res.json({
-			'bytesWritten': totalDataWritten,
-			'bytesRead': totalDataRead,
-		});
+	router.ws('/ws', (ws: any) => {
+		let send = () => {
+			ws.send(JSON.stringify({
+				'bytesWritten': totalDataWritten,
+				'bytesRead': totalDataRead,
+			}));
+		};
+
+		send();
+
+		let interval = setInterval(send, 500);
+		ws.onclose = () => {
+			clearInterval(interval);
+		};
 	});
 
 	router.get('/version', (req, res) => {

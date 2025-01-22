@@ -1,4 +1,4 @@
-export const KAPI_VERSION = '0.8.04';
+export const KAPI_VERSION = '0.8.05';
 
 // Local imports
 import { BadAuthException } from './errors.mjs';
@@ -21,8 +21,14 @@ import Path from 'node:path';
 import FS from 'node:fs';
 import HTTP from 'node:http';
 import HTTPS from 'node:https';
+import expressWs from 'express-ws';
+import WebSockets from './websockets.mjs';
 
 var app: Express.Application;
+var httpServer: HTTP.Server;
+var httpsServer: HTTPS.Server;
+export var wsI: expressWs.Instance;
+export var swsI: expressWs.Instance;
 
 /**
  * Main entry point of the server system.
@@ -37,16 +43,18 @@ export async function main(args: string[]) {
 	Stats.init();
 	FFmpeg.init();
 	RShell.init();
-	initExpress();
 	initServer();
+	initRouters();
+	runServers();
 }
 
 /**
  * Initialize Express App. Setups middlewares, routes, and starts up the HTTP(s) servers.
  */
-function initExpress() {
-	app = Express();
-
+function initRouters() {
+	// Add support for web socket routes
+	WebSockets.init(app, httpServer, httpsServer);
+	
 	// Core request handlers.
 	setupLoggingRouter();
 
@@ -90,12 +98,11 @@ function initExpress() {
 }
 
 function initServer() {
+	app = Express();
+
 	// Enable HTTP listening server
 	if (config.http_port) {
-		let http = HTTP.createServer(app);
-		http.listen(config.http_port, () => {
-			console.log('Listening on port ' + config.http_port);
-		});
+		httpServer = HTTP.createServer(app);
 	}
 	
 	// Enable HTTPS listening server
@@ -103,15 +110,20 @@ function initServer() {
 		let httpsKey = FS.readFileSync('config/ssl/key.key');
 		let httpsCert = FS.readFileSync('config/ssl/cert.crt');
 		
-		let https = HTTPS.createServer({
+		httpsServer = HTTPS.createServer({
 			key: httpsKey,
 			cert: httpsCert
 		}, app);
-
-		https.listen(config.https_port, () => {
-			console.log('Listening on port ' + config.https_port);
-		});
 	}
+}
+
+function runServers() {
+	httpServer?.listen(config.http_port, () => {
+		console.log('HTTP on port ' + config.http_port);
+	});
+	httpsServer?.listen(config.https_port, () => {
+		console.log('HTTPS on port ' + config.https_port);
+	});
 }
 
 /**

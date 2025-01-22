@@ -1,5 +1,6 @@
 import FetchesTab from "./fetches_tab.mjs";
 import NetworkPerformanceTab from "./network_performance_tab.mjs";
+import ResourcesTab from "./resources_tab.mjs";
 import App from "/@sys/app.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import Window from "/@sys/ui/window.mjs";
@@ -10,13 +11,10 @@ var Client: ClientClass;
 
 export default class SystemMonitorApp extends App {
 	private window: Window;
-	private currentTab: string;
-	private netPolling: boolean;
-	private netPollTimeout: any;
-	private networkPollInterval: any;
-	private dead: boolean;
+	private currentTab: string;	
 	private fetchesTab: FetchesTab;
 	private networkPerformanceTab: NetworkPerformanceTab;
+	private resourcesTab: ResourcesTab;
 	public $app: $Element;
 
 	constructor(...args: ConstructorParameters<typeof App>) {
@@ -24,16 +22,13 @@ export default class SystemMonitorApp extends App {
 		Client = ClientClass.get();
 		this.window = null;
 		this.currentTab = '';
-		this.netPolling = false;
-		this.netPollTimeout = null;
 	}
 
 	async init() {
 		// Create window and fetch app body
 		this.window = Client.desktop.createWindow(this);
 		this.window.on('closing', () => {
-			clearInterval(this.networkPollInterval);
-			this.dead = true;
+			this.resourcesTab.exit();
 			this.exit();
 		});
 		this.window.setTitle('System Monitor');
@@ -47,14 +42,15 @@ export default class SystemMonitorApp extends App {
 
 		this.fetchesTab = new FetchesTab(this);
 		this.networkPerformanceTab = new NetworkPerformanceTab(this);
+		this.resourcesTab = new ResourcesTab(this);
 
 		// Configure tab pane behavior
 		let $tabPane = $app.find('ui-tabs');
 		$tabPane[0].onTabChanged = (tab: string) => {
 			if (tab == 'resources') {
-				this.setupNetworkMonitor();
+				this.resourcesTab.focus();
 			} else {
-				this.stopNetPolling();
+				this.resourcesTab.unfocus();
 			}
 		};
 
@@ -105,81 +101,8 @@ export default class SystemMonitorApp extends App {
 
 		makeAppEntries();
 		makeWindowsEntries();
-		//this.setupNetworkMonitor();
 
 		// Make the window visible
 		this.window.setVisible(true);
-	}
-
-	setupNetworkMonitor() {
-		if (this.netPolling) return;
-		this.netPolling = true;
-
-		let lastWrittenBytes = 0;
-		let lastReadBytes = 0;
-		let writtenBytesDelta = 0;
-		let readBytesDelta = 0;
-
-		let asMbits = (bytes: number) => {
-			let kbits = bytes / 125;
-			let mbits = kbits / 1000;
-
-			if (mbits > 1) {
-				return mbits.toFixed(1) + ' Mb';
-			} else {
-				return kbits.toFixed(1) + ' Kb';
-			}		
-		};
-
-		let asMiB = (bytes: number) => {
-			let kib = bytes / 1024;
-			let mib = kib / 1024;
-			
-			if (mib > 1) {
-				return mib.toFixed(1) + " MiB";
-			} else {
-				return kib.toFixed(1) + " KiB";
-			}
-		};
-
-		let networkPollCallback = async () => {
-			if (this.dead) return;
-			if (!this.netPolling) return;
-
-			const dataMul = 2;
-			const pollInterval = 500;
-
-			let fres;
-			try {
-				let freq = await fetch('/stat/net');
-				fres = await freq.json();
-			} catch(err) {
-				this.netPollTimeout = setTimeout(networkPollCallback, 3000);
-				return;
-			}
-
-			if (lastWrittenBytes != 0) {
-				writtenBytesDelta = fres.bytesWritten - lastWrittenBytes;
-				readBytesDelta = fres.bytesRead - lastReadBytes;
-
-				this.$app.find('.bytes-received').text(asMbits(writtenBytesDelta * dataMul) + 'ps');
-				this.$app.find('.bytes-sent').text(asMbits(readBytesDelta * dataMul) + 'ps');
-			}
-
-			lastWrittenBytes = fres.bytesWritten;
-			lastReadBytes = fres.bytesRead;
-
-			this.$app.find('.total-bytes-received').text(asMiB(fres.bytesWritten * dataMul));
-			this.$app.find('.total-bytes-sent').text(asMiB(fres.bytesRead * dataMul));
-
-			this.netPollTimeout = setTimeout(networkPollCallback, pollInterval);
-		}
-
-		this.netPollTimeout = setTimeout(networkPollCallback, 0)
-	}
-
-	stopNetPolling() {
-		clearTimeout(this.netPollTimeout);
-		this.netPolling = false;
 	}
 }
