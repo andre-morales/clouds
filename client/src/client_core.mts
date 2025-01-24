@@ -1,7 +1,7 @@
 import App from '/@sys/app.mjs';
 import { AudioSystem } from './bridges/audio_system.mjs';
 import { Reactor } from './events.mjs';
-import Util from './utils/browser.mjs';
+import Browser from './utils/browser.mjs';
 import { IllegalStateFault } from './faults.mjs';
 import * as MediaSessionBridge from './bridges/media_session_bridge.mjs';
 import * as Dialogs from './ui/dialogs.mjs';
@@ -17,7 +17,13 @@ import { WatsonTools } from './watson_tools.mjs';
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
 
+declare global {
+	var EntrySpace: any;
+}
+
 export async function main() {
+	EntrySpace.log('Reached core module entry point.');
+
 	loadingText = document.getElementById('loading-text');
 	loadingText.innerHTML = "Initializing core...";
 
@@ -29,7 +35,7 @@ export async function main() {
 
 		return fRes.text();
 	}).then(text => {
-		document.body.innerHTML = text;
+		document.body.innerHTML += text;
 
 		// Display client version
 		$('#client-ver').text(ClientClass.BUILD_TEXT);
@@ -37,43 +43,46 @@ export async function main() {
 
 	// Load basic desktop page and style, this will bring the taskbar and system version
 	// on display
-	let desktopStyleProm = Util.addStylesheet('/res/css/desktop.css');
+	let desktopStyleProm = Browser.addStylesheet('/res/css/desktop.css');
 	await desktopPageProm;
 	await desktopStyleProm;
 
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
-		Util.addScript('/res/pack/public.chk.js'),
-		Util.addScript('/res/pack/platform.chk.js'),
-		Util.addScript('/res/lib/hammer.min.js')
+		Browser.addScript('/res/pack/public.chk.js'),
+		Browser.addScript('/res/pack/platform.chk.js'),
+		Browser.addScript('/res/lib/hammer.min.js')
 	]);
 
 	// Schedule loading of main styles
 	let stylesPromises = Promise.all([
-		Util.addStylesheet('/res/css/ui.css'),
-		Util.addStylesheet('/res/css/controls.css')
+		Browser.addStylesheet('/res/css/ui.css'),
+		Browser.addStylesheet('/res/css/controls.css')
 	]);
 
 	// Wait for scripts and styles
-	console.log("Scheduled all main resources.");
+	EntrySpace.log("Scheduled all main resources.");
 	
 	await scriptsPromises;
-	console.log("Scripts finished loading.");
+	EntrySpace.log("Scripts finished loading.");
 	
 	await stylesPromises;
-	console.log("Styles finished loading.");
+	EntrySpace.log("Styles finished loading.");
 
 	// Instantiate system
 	clientInstance = new ClientClass();
 	await clientInstance.init();
 
-	Util.destroyElementById('loading-screen');
+	// Once the system has finished starting up, remove the load screen and the boot error handlers.
+	Browser.destroyElementById('loading-screen');
+	EntrySpace.disableHandlers();
+	EntrySpace.disablePanicHandlers();
 
-	clientInstance.start(Util.getURLParams());
+	clientInstance.start(Browser.getURLParams());
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.233';
+	static readonly CLIENT_VERSION = '1.0.236';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
@@ -153,7 +162,7 @@ export class ClientClass {
 		// Initialize audio subsystem
 		this.audio = new AudioSystem();
 
-		await Promise.all(promises);
+		await Promise.all(promises);		
 	}
 
 	async start(args: any) {
@@ -164,7 +173,7 @@ export class ClientClass {
 	}
 
 	logout(refresh = true) {
-		Util.setCookie('auth_key', '');
+		Browser.setCookie('auth_key', '');
 		fetch("/auth/logout", {
 			method: "POST"
 		});
@@ -187,7 +196,7 @@ export class ClientClass {
 		if (!this.runningApps.includes(instance)) return;
 
 		// If it is on a valid state, dispose of it
-		if (!instance.canEnd()) return;
+		if (!instance.isAlive()) return;
 		instance._dispose(exitCode);
 
 		// Remove app from app list

@@ -103,16 +103,31 @@
 }
 
 .app-sinestesia .controls .bottom {
-	display: flex;
-	height: 1.5rem;
-	padding: 0 .4rem;
-	align-items: center;
-	background: rgba(20, 20, 20, 0.3);
-	pointer-events: all;
+	position: relative;
+}
+
+.app-sinestesia .controls .bottom .canvas-container {
+	position: absolute;
+	height: 50px;
 } 
 
+.app-sinestesia .controls .bottom .canvas-container canvas {
+	width: 100%;
+	height: 100%;
+} 
+
+.app-sinestesia .controls .bottom .timebar {
+	display: flex;
+	padding: 0 4px;
+	align-items: center;
+	pointer-events: all;
+	font-size: 10pt;
+	background: rgba(20, 20, 20, 0.3);
+}
+
 .app-sinestesia .controls .bottom .progressbar {
-	height: 14px;
+	--progress-thumb-size: 14px;
+	height: 8px;
 	margin: 0 4px;
 	flex-grow: 1;
 	border: none;

@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableDelayedExpansion
+SETLOCAL EnableDelayedExpansion
 
 IF NOT EXIST "api\runtime\core.mjs" (
 	echo :: Building API
@@ -19,4 +19,12 @@ IF NOT EXIST "client\public\pack\platform.chk.js" (
 	call yarn build-apps-prod
 )
 
+:run
 node --enable-source-maps . %*
+if %errorlevel% EQU 777 goto exit
+if %errorlevel% EQU 778 goto exit
+echo Server TERMINATED. Will restart. - %date% %time%
+goto run
+
+:exit
+

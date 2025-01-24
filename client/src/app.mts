@@ -96,7 +96,7 @@ export default class App {
 		this.resources.add(resource);
 	}
 
-	canEnd() {
+	isAlive() {
 		return this.state == AppState.ALIVE;
 	}
 

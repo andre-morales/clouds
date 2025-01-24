@@ -4,8 +4,59 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<title>Clouds</title>
-	<script src='/res/boot/base.js'></script>
-	<script src='/res/boot/entry.mjs' type='module'></script>
+	<script>
+		var EntrySpace = {};
+
+		(function () {
+			var ES = EntrySpace;
+
+			ES.log = function (msg) {
+				document.getElementById('boot-log').innerHTML += "<p>" + msg + "</p>";
+			};
+			ES.scriptFailed = function (elem) {
+				document.addEventListener('DOMContentLoaded', function () {
+					EntrySpace.log("[!] Core boot script <b>" + elem.src + "</b> failed.")
+				});
+			};
+			ES.enableHandlers = function () {
+				window.onunhandledrejection = function (ev) {
+					var detail;
+					if (ev.reason) {
+						var trace = (ev.reason.stack) ? ev.reason.stack : 'unavailable';
+						detail = ev.reason + '\n trace: ' + trace;
+					}
+					EntrySpace.log('[!] Unhandled rejection\n ' + detail);
+				};
+				window.onerror = function (ev) {
+					EntrySpace.log(ev + '');
+				};
+			};
+			ES.disableHandlers = function () {
+				EntrySpace.log('Handlers disabled.');
+				window.onerror = undefined;
+				window.onunhandledrejection = undefined;
+			};
+
+			ES.enableHandlers();
+		})();
+	</script>
+	<style>
+		#boot-log {
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			top: 0;
+			font: 12pt monospace;
+			pointer-events: none;
+			z-index: -1;
+			color: white;
+			background-color: black;
+			white-space: pre;
+		}
+	</style>
+	<script src='/res/boot/base.js' onerror="EntrySpace.scriptFailed(this)"></script>
+	<script src='/res/boot/entry.mjs' type='module' onerror="EntrySpace.scriptFailed(this)"></script>
 	<link rel="stylesheet" type="text/css" href="/res/css/base.css">
 	<link rel="icon" type="image/x-icon" href="/res/favicon.png">
 	<% if (use_pwa_features) { %>
@@ -13,5 +64,7 @@
 	<% } %>
 	<style id="fullscreen-style"></style>
 </head>
-<body></body>
+<body>
+	<div id="boot-log"></div>
+</body>
 </html>

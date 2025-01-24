@@ -6,8 +6,7 @@ import config from './config.mjs';
 import * as Pathx from './pathx.mjs';
 import * as VFS from './vfs.mjs';
 import * as Auth from './auth.mjs'
-import * as FFmpeg from './ext/ffmpeg.mjs'
-import { NextFunction, Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import Path from 'node:path';
 import FS from 'node:fs';
 
@@ -34,27 +33,12 @@ declare global {
 }
 
 /**
- * Initializes virtual file system router.
- */
-export function init() {
-	VFS.init();
-}
-
-/**
  * Obtains the client-side virtual file system router. Already performs authentication.
  * @returns An express router mountable anywhere.
  */
 export function getRouter(): Router {
 	var router = Router();
-
-	// Middleware handler for every VFS request
-	router.use((req, res, next) => {
-		// If the user isn't logged in, the request will be denied through an exception.
-		Auth.getUserGuard(req);
-		decorateRequest(req);
-		next();
-	});
-
+	router.use(getDecoratorRouter());
 	let getOperations: FunctionMap = {};
 	let patchOperations: FunctionMap = {};
 	let putOperations: FunctionMap = {};
@@ -156,7 +140,7 @@ export function getRouter(): Router {
 	}
 
 	// GET?=THUMB Thumbnail GET request
-	getOperations['thumb'] = async (req, res) => {
+/*	getOperations['thumb'] = async (req, res) => {
 		let path = req.getPhysicalPath();
 		if (!path) {
 			res.status(404).end();
@@ -166,9 +150,9 @@ export function getRouter(): Router {
 		if (Pathx.isFileExtVideo(path) || Pathx.isFileExtPicture(path)) {
 			await resThumbnail(res, req);
 		} else {
-			res.sendFile(path);
+			res.sendFile(path, {dotfiles: 'allow'});
 		}
-	};
+	};*/
 
 	// PUT?=MAKE
 	putOperations['make'] = async (req, res) => {
@@ -282,46 +266,6 @@ function resFetchFiles(res: Response, req: Request): void {
 }
 
 /**
- * Sends a thumbnail to the user based on the original file requested.
- * @param res Express response.
- * @param req Express request.
- */
-async function resThumbnail(res: Response, req: Request): Promise<void> {
-	let _abs = req.getPhysicalPath() as string;
-	let absFilePath = Pathx.toFullSystemPath(_abs);
-	var thumbsDirectory = Pathx.toFullSystemPath(`./.thumbnails/`);
-
-	let thumbnailName = encodePath(_abs);
-	var thumbnail = `${thumbsDirectory}/${thumbnailName}.thb`;
-
-	// If the thumbnail exists, send it.
-	if(FS.existsSync(thumbnail)){
-		res.sendFile(thumbnail, {dotfiles: 'allow'});
-		return;
-	}
-
-	// If FFMpeg isn't enabled to create a thumb, stop.
-	if(!FFmpeg.enabled) {
-		res.status(404).end();
-		return;
-	}
-
-	// Create thumbnail directory
-	if(!FS.existsSync(thumbsDirectory)) FS.mkdirSync(thumbsDirectory);
-
-	let result = await FFmpeg.createThumbOf(absFilePath, thumbnail);
-
-	// If the thumbnail creation fails, create an empty file in the directory to skip it
-	// the next time
-	if(!result){
-		let f = await FS.promises.open(thumbnail, 'w');
-		f.close();
-	}	
-
-	res.sendFile(thumbnail, {dotfiles: 'allow'});
-}
-
-/**
  * Invokes a function on the callback table with the same name as the query parameter.
  * @param req Express request.
  * @param res Express response.
@@ -353,6 +297,16 @@ async function dispatchQueryOperation(req: Request, res: Response, table: Functi
 	return true;
 }
 
+export function getDecoratorRouter() {
+	let router = Router();
+	// Middleware handler for every VFS request
+	router.use((req, res, next) => {
+		decorateRequest(req);
+		next();
+	});
+	return router;
+}
+
 /**
  * Appends VFS related properties to every request object.
  * @param req Express request.
@@ -374,18 +328,4 @@ function decorateRequest(req: Request) {
 		
 		return self.cachedTranslation;
 	};
-}
-
-function encodePath(path: string): string {
-	// Remove special characters from path
-	let stripped = path.replaceAll(/[\\/.:']/g, '_');
-	
-	// Encode path string into UTF-8 bytes
-	let bytes = new TextEncoder().encode(stripped);
-
-	// Convert the bytes into a full string
-	let chars = Array.from(bytes, (byte) => String.fromCodePoint(byte));
-	let str = chars.join("");
-
-	return btoa(str);
 }

@@ -265,7 +265,7 @@ export class FileTypes {
 	}
 
 	static isPicture(path: string) {
-		return Strings.endsWithAny(path, ['.png', '.jpg', '.jpeg', '.webp']);
+		return Strings.endsWithAny(path, ['.png', '.jpg', '.jpeg', '.webp', '.gif']);
 	}
 
 	static isAudio(path: string) {

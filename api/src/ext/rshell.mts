@@ -7,12 +7,17 @@ var enabled = false;
 var defs: any = null; 
 export var shells : any = {};
 var counter = 1;
+var cleanupTask: NodeJS.Timeout;
 
 export function init() {
 	if (!Config.isExtensionEnabled('rshell')) return;
 	enabled = true;
 
 	defs = Config.config.extensions.rshell;
+}
+
+export function shutdown() {
+	clearInterval(cleanupTask);
 }
 
 export function create() {
@@ -153,8 +158,7 @@ export function installRouter(router: Express.Router) {
 		res.end();
 	});
 
-
-	setInterval(() => {
+	cleanupTask = setInterval(() => {
 		destroyOldShells(20);
 	}, 20000)
 

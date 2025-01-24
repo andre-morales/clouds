@@ -1,15 +1,17 @@
-export const KAPI_VERSION = '0.8.05';
+export const KAPI_VERSION = '0.8.07';
 
 // Local imports
 import { BadAuthException } from './errors.mjs';
 import config, * as Config from './config.mjs';
 import * as Auth from './auth.mjs';
 import * as VFSRouter from './vfs_router.mjs';
+import * as VFSMXRouter from './vfsmx_router.mjs';
 import * as Stats from './stats.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
 import * as VFS from './vfs.mjs';
 import * as Files from './files.mjs';
+import * as SystemManagement from './system_management.mjs';
 import Express, { Request, Response, NextFunction } from 'express';
 import FileUpload from 'express-fileupload';
 import Compression from 'compression';
@@ -21,14 +23,11 @@ import Path from 'node:path';
 import FS from 'node:fs';
 import HTTP from 'node:http';
 import HTTPS from 'node:https';
-import expressWs from 'express-ws';
 import WebSockets from './websockets.mjs';
 
 var app: Express.Application;
 var httpServer: HTTP.Server;
 var httpsServer: HTTPS.Server;
-export var wsI: expressWs.Instance;
-export var swsI: expressWs.Instance;
 
 /**
  * Main entry point of the server system.
@@ -39,23 +38,21 @@ export async function main(args: string[]) {
 
 	Config.init(args);
 	Auth.init();
-	VFSRouter.init();
+	VFS.init();
 	Stats.init();
 	FFmpeg.init();
 	RShell.init();
 	initServer();
+	initMiddleware();
 	initRouters();
+	initErrorHandlers();
 	runServers();
 }
 
-/**
- * Initialize Express App. Setups middlewares, routes, and starts up the HTTP(s) servers.
- */
-function initRouters() {
+function initMiddleware() {
 	// Add support for web socket routes
 	WebSockets.init(app, httpServer, httpsServer);
 	
-	// Core request handlers.
 	setupLoggingRouter();
 
 	app.use(Cors());
@@ -67,6 +64,15 @@ function initRouters() {
 	app.use(FileUpload({ createParentPath: true }));
 	app.use(CookieParser());
 
+	app.set('view engine', 'ejs');
+	app.set('views', 'api/pages');
+	app.disable('x-powered-by');
+}
+
+/**
+ * Initialize Express App. Setups middlewares, routes, and starts up the HTTP(s) servers.
+ */
+function initRouters() {
 	// Socket data stats tracker
 	app.use(Stats.getTracker());
 	
@@ -75,13 +81,18 @@ function initRouters() {
 	app.use('/@sys', [Auth.guard, Express.static('client/public/js')]);
 
 	// API routes
-	app.use('/auth', Auth.getRouter());            // Auth system 
-	app.use('/fsv', VFSRouter.getRouter());		   // Extended file system with HTTP verbs
-	app.use('/stat', [Auth.guard, Stats.getRouter()]);
-	apiSetupPages();     			    		   // Entry, Auth and Desktop
-	RShell.installRouter(app);
-	apiSetupApps();								   // Apps service
+	app.use('/auth', Auth.getRouter());           	      		 // Auth system 
+	app.use('/sys', [Auth.guard, SystemManagement.getRouter()]); // Management tasks
+	app.use('/fsv', [Auth.guard, VFSRouter.getRouter()]); 		 // Extended file system service
+	app.use('/fsmx', [Auth.guard, VFSMXRouter.getRouter()]); 	 // Media extensions for the VFS
+	app.use('/stat', [Auth.guard, Stats.getRouter()]);   		 // Statistics and info router
+	apiSetupPages();     			    		  	     		 // Entry, Auth and Desktop
+	RShell.installRouter(app);						   			 // Remote shell service
+	apiSetupApps();								   	     		 // Apps service
 
+}
+
+function initErrorHandlers() {
 	// General error handler
 	app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 		if (err instanceof BadAuthException) {
@@ -91,10 +102,6 @@ function initRouters() {
 
 		next(err);
 	});
-
-	app.set('view engine', 'ejs');
-	app.set('views', 'api/pages');
-	app.disable('x-powered-by');
 }
 
 function initServer() {
@@ -124,6 +131,24 @@ function runServers() {
 	httpsServer?.listen(config.https_port, () => {
 		console.log('HTTPS on port ' + config.https_port);
 	});
+}
+
+async function stopServers() {
+	if (httpServer) {
+		let def = new Deferred();
+		httpServer.close(() => {
+			def.resolve();
+		});
+		await def.promise;
+	}
+	
+	if (httpsServer) {
+		let def = new Deferred();
+		httpsServer.close(() => {
+			def.resolve();
+		});
+		await def.promise;
+	}
 }
 
 /**
@@ -229,4 +254,27 @@ function setupLoggingRouter() {
 function denyRequest(res: Express.Response) {
 	res.status(403);
 	res.send('BAD_AUTH: Authentication required.');
+}
+
+export async function shutdown() {
+	console.log("Received shutdown request...");
+	RShell.shutdown();
+	await stopServers();
+	console.log("Servers stopped.");
+}
+
+class Deferred {
+	promise: Promise<any>;
+	private _resolve?: (value?: any) => void;
+	private _reject?: (value?: any) => void;
+
+	get resolve() { return this._resolve as (value?: any) => void; }
+	get reject() { return this._reject as (value?: any) => void; }
+
+	constructor() {
+		this.promise = new Promise((resolve, reject) => {
+			this._resolve = resolve;
+			this._reject = reject;
+		})
+	}
 }

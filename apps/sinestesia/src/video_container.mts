@@ -1,6 +1,7 @@
 import { Container } from "./container.mjs";
 import MediaPlayer, { timeToString } from "./media_player.mjs";
 import { TrackMarker } from "./track_marker.mjs";
+import { VolumeHistogram } from "./volume_hist.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import { type SliderTrack } from "/@sys/ui/controls/slider.mjs";
 import Fullscreen from "/@sys/ui/fullscreen.mjs";
@@ -19,12 +20,14 @@ export class VideoContainer extends Container {
 	private bufferedRanges: TimeRanges;
 	private bufferedRangesTrack: SliderTrack;
 	private trackMarker: TrackMarker;
+	private histogram: VolumeHistogram;
 
 	constructor(player: MediaPlayer, $root: $Element) {
 		super(player, $root);
 		this.$video = $root.find('video');
 		this.video = this.$video[0];
 		this.initControls();
+		this.histogram = new VolumeHistogram(this);
 	}
 
 	initControls() {

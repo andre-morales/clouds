@@ -100,12 +100,13 @@ progress::-webkit-progress-value {
 ui-slider {
 	display: inline-block;
 	width: 256px;
-	height: 12px;
+	height: 10px;
+	--slider-thumb-size: 16px;
 }
 
 ui-slider[vertical] {
 	display: inline-block;
-	width: 12px;
+	width: 10px;
 	height: 256px;
 }
 

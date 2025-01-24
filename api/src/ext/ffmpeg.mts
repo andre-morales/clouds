@@ -12,6 +12,46 @@ export function init() {
 	config = Config.config.extensions.ffmpeg;
 }
 
+export async function getHistogram(path: string, intervals: number): Promise<number[]> {
+	let fileInfo = await getFileInfo(path);
+	let duration = fileInfo.duration;
+	let sampleRate = fileInfo.sampleRate;
+	
+	let sampling = duration / intervals * sampleRate;
+	let ffmpegExec = config.ffmpeg_exec;
+	let args = [
+		"-loglevel", "error",
+		"-i", path,
+		"-af", `asetnsamples=${sampling},astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-`,
+		"-f", "null",
+		"-"
+	]
+
+	let result = await execute(ffmpegExec, args, {});
+	let hist = rawToHistogram(result.stdout);
+	return hist;
+}
+
+function rawToHistogram(raw: string) {
+	let lines = raw.split('\n')
+
+	let volumes = [];
+	for (let i = 0; i < lines.length - 1; i += 2) {
+		let volume = Number(lines[i + 1].split('=')[1]);
+		volumes.push(volume);  
+	}
+
+	let minVol = Math.min(...volumes);
+	let maxVol = Math.max(...volumes);
+		
+	for (let i = 0; i < volumes.length; i++) {
+		volumes[i] -= minVol;
+		volumes[i] /= (maxVol - minVol);
+	}
+
+	return volumes;
+}
+
 export async function createThumbOf(path: string, dest: string) {
 	// Get path of ffmpeg executable
 	let ffmpegExec = config.ffmpeg_exec;
@@ -43,6 +83,40 @@ export async function createThumbOf(path: string, dest: string) {
 	return false;
 }
 
+async function getFileInfo(path: string) {
+	const ffprobeExec = config.ffprobe_exec;
+
+	let args = [
+		'-i', `${path}`,
+		'-show_entries', 'format=duration',
+		'-show_entries', 'stream=duration,sample_rate',
+		'-v', 'error',
+		'-of', 'json'
+	];
+	let ffprobe = await execute(ffprobeExec, args, {});
+	let output = JSON.parse(ffprobe.stdout);
+
+	// Parse output streams for biggest length and extracting sample rate
+	let videoLength = Number(output.format.duration);
+	let sampleRate = 0;
+	for (let stream of output.streams) {
+		//let streamLength = Number(stream.duration);
+		//if (streamLength > videoLength) videoLength = streamLength;
+
+		if (stream.sample_rate) sampleRate = stream.sample_rate;
+	}
+
+	return {
+		duration: videoLength,
+		sampleRate: sampleRate
+	};
+}
+
+/**
+ * Invokes ffmpeg to figure out how long a video or clip is.
+ * @param path The physical path to the file.
+ * @returns The clip duration in seconds.
+ */
 export async function getVideoLength(path: string): Promise<number> {
 	const ffprobeExec = config.ffprobe_exec;
 
@@ -54,10 +128,10 @@ export async function getVideoLength(path: string): Promise<number> {
 	return videoLength;
 }
 
-function execute(file: string, args: string[], options: object){
+function execute(file: string, args: string[], options: object): Promise<{stdout: string, stderr: string}>{
 	return new Promise((resolve, reject) => {
 		let proc;
-		let callback = (err: any, stdout: any, stderr: any) => {
+		let callback = (err: any, stdout: any, stderr: any) => { 
 			if (err){
 				reject(err);
 			} else {

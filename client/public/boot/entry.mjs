@@ -4,7 +4,7 @@ export async function entry() {
 	} else {
 		// Fetch login page
 		let res = await fetch('/page/login');
-		document.body.innerHTML = await res.text();
+		document.body.innerHTML += await res.text();
 
 		(await import('/res/boot/login.mjs')).initLogin();
 	}
@@ -20,35 +20,23 @@ function initTransition() {
 	icon.setAttribute('id', 'loading-icon');
 	screen.appendChild(icon);
 
-	loadingText= document.createElement('p');
+	loadingText = document.createElement('p');
 	loadingText.setAttribute('id', 'loading-text');
 	screen.appendChild(loadingText);
 
 	document.body.appendChild(screen);
 }
 
-export async function initDesktop() {
-	initTransition();
-
-	// Set title
-	document.title = 'Clouds';
-
-	// Destroy login script if any
-	destroyElementById('login-script');
-
+function enablePanics() {
 	window._systemPanic = _systemPanic;
-
-	// Load jquery compatible lib
-	loadingText.innerHTML = "Loading base...";
-	await addScript('/res/lib/zepto.min.js');
 
 	// Early unhandled errors and rejections should bring immediate user attention in the form
 	// of a system panic
-	window.onerror = (err) => {
-		_systemPanic("Unhandled Error", err, true);
+	let hPanicError = (err) => {
+		_systemPanic("Unhandled Error", err.error, true);
 	};
-
-	window.onunhandledrejection = (ev) => {
+	
+	let hPanicUnhandledRejection = (ev) => {
 		let detail;
 		if (ev.reason) {
 			let trace = (ev.reason.stack) ? ev.reason.stack : 'unavailable';
@@ -57,11 +45,39 @@ export async function initDesktop() {
 		_systemPanic("Unhandled Promise Error", detail, true);
 	};
 
+	window.addEventListener('error', hPanicError);
+	window.addEventListener('unhandledrejection', hPanicUnhandledRejection);
+
+	EntrySpace.disablePanicHandlers = () => {
+		window.removeEventListener('error', hPanicError);
+		window.removeEventListener('unhandledrejection', hPanicUnhandledRejection);
+	}
+}
+
+export async function initDesktop() {
+	EntrySpace.log('Initializing desktop...')
+	initTransition();
+
+	// Set title
+	document.title = 'Clouds';
+
+	// Destroy login script if any
+	destroyElementById('login-script');
+
+	// Load jquery compatible lib
+	loadingText.innerHTML = "Loading base...";
+	await addScript('/res/lib/zepto.min.js');
+
+	// Enable system panics after zepto is ready
+	enablePanics();
+
 	// Add system script and let it do the setup
+	
 	loadingText.innerHTML = "Loading core...";
 	await addScript('/res/pack/runtime.chk.js');
 	await addScript('/res/pack/shared.chk.js');
 	
+	EntrySpace.log('Invoking core module entry point...');
 	CoreModule.main();
 }
 
@@ -88,7 +104,10 @@ function addScript(src) {
 	document.head.appendChild(elem);
 
 	return new Promise((resolve, reject) => {
-		elem.addEventListener('load', resolve);
+		elem.addEventListener('load', () => {
+			EntrySpace.log('Library <b>' + src + '</b> ready.');
+			resolve();
+		});
 		elem.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
 	});
 }
