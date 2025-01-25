@@ -2,7 +2,7 @@ import { ClientClass } from '/@sys/client_core.mjs';
 import { FileIcon } from './file_icon.mjs';
 import ExplorerApp from './explorer.mjs';
 import { ContextMenu } from '/@sys/ui/context_menu.mjs';
-import Arrays from '/@sys/utils/arrays.mjs';
+import Arrays from '/@comm/arrays.mjs';
 import { FileEntry } from './file_entry.mjs';
 
 interface FileIconMap {

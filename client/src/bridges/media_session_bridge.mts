@@ -1,5 +1,5 @@
 import { Paths } from './filesystem.mjs';
-import Arrays from '../utils/arrays.mjs';
+import Arrays from '../../../common/arrays.mjs';
 import { Exception } from '../faults.mjs';
 
 var activeMediaElements: ActiveMedia[];

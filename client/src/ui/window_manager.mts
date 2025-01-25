@@ -1,5 +1,5 @@
 import { IllegalStateFault } from "../faults.mjs";
-import Arrays from "../utils/arrays.mjs";
+import Arrays from "../../../common/arrays.mjs";
 import Desktop from "./desktop.mjs";
 import Window, { DisplayState } from "./window.mjs";
 

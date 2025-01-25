@@ -1,4 +1,4 @@
-export const KAPI_VERSION = '0.8.07';
+export const KAPI_VERSION = '0.8.08';
 
 // Local imports
 import { BadAuthException } from './errors.mjs';
@@ -24,6 +24,7 @@ import FS from 'node:fs';
 import HTTP from 'node:http';
 import HTTPS from 'node:https';
 import WebSockets from './websockets.mjs';
+import Deferred from '/@comm/deferred.mjs';
 
 var app: Express.Application;
 var httpServer: HTTP.Server;
@@ -261,20 +262,4 @@ export async function shutdown() {
 	RShell.shutdown();
 	await stopServers();
 	console.log("Servers stopped.");
-}
-
-class Deferred {
-	promise: Promise<any>;
-	private _resolve?: (value?: any) => void;
-	private _reject?: (value?: any) => void;
-
-	get resolve() { return this._resolve as (value?: any) => void; }
-	get reject() { return this._reject as (value?: any) => void; }
-
-	constructor() {
-		this.promise = new Promise((resolve, reject) => {
-			this._resolve = resolve;
-			this._reject = reject;
-		})
-	}
 }

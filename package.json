@@ -6,7 +6,8 @@
   "main": "api/runtime/main.mjs",
   "type": "module",
   "scripts": {
-    "build-api-dist": "tsc -p api",
+    "build-api-dist": "concurrently \"tsc -p api\" \"tsc-alias -p api/tsconfig.json\"",
+    "watch-api-dist": "concurrently --raw --hide 1 \"tsc -p api -w\" \"tsc-alias -p api/tsconfig.json -w\"",
     "clean-api": "del \"api\\runtime\\*.*\" /Q /S",
     "build-client-dev": "webpack --config client/webpack.config.cjs --env development",
     "build-client-prod": "webpack --config client/webpack.config.cjs --env production",
@@ -27,13 +28,15 @@
     "@types/ws": "^8.5.13",
     "chalk": "^5.3.0",
     "compression": "^1.7.4",
+    "concurrently": "^9.1.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "ejs": "^3.1.9",
     "express": "^5.0.1",
     "express-fileupload": "^1.4.0",
     "express-ws": "^5.0.2",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "tsc-alias": "^1.8.10"
   },
   "devDependencies": {
     "@babel/core": "^7.24.3",

@@ -3,15 +3,15 @@
 		// Point /@sys/ references to dummy imports in public js includes
 		["module-resolver", {
 			"alias": {
-				"/@sys": "./client/public/js/"
+				"/@sys": "./client/public/mcore/",
+				"/@comm": "./client/public/mcomm/"
 			}
 		}]
 	],
 	"presets": [
-		["@babel/preset-typescript", {}],
 		["@babel/preset-env", {		
 			"targets": {
-				"chrome": 79
+				"chrome": 63
 			},
 			"useBuiltIns": "usage",
 			"corejs": "^3.36.1"

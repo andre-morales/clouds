@@ -3,17 +3,16 @@
 		// Point /@sys/ references to other TypeScript modules
 		["module-resolver", {
 			"alias": {
-				"/@sys": "./client/src/"
+				"/@sys": "./client/src/",
+				"/@comm": "./common/"
 			}
 		}]
 	],
 	"presets": [
-		// Compile TypeScript with no typechecking
-		["@babel/preset-typescript", {}],
 		// Babel compiler
 		["@babel/preset-env", {		
 			"targets": {
-				"chrome": 79
+				"chrome": 63
 			},
 			"useBuiltIns": "usage",
 			"corejs": "^3.36.1"

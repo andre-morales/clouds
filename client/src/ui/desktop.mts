@@ -5,7 +5,7 @@ import { ContextMenu } from './context_menu.mjs';
 import App, { ExitMode } from '../app.mjs';
 import { Reactor } from '../events.mjs';
 import { ClientClass } from '../client_core.mjs';
-import Arrays from '../utils/arrays.mjs';
+import Arrays from '../../../common/arrays.mjs';
 import { WindowManager } from './window_manager.mjs';
 
 export class Desktop {

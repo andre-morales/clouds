@@ -1,5 +1,5 @@
 import App from '../app.mjs';
-import { Deferred } from '../events.mjs';
+import Deferred from '/@comm/deferred.mjs';
 import Window, { InitialPosition } from './window.mjs';
 
 type DialogTuple = [Promise<number>, Window];

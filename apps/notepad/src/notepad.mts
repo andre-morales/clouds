@@ -6,7 +6,7 @@ import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import { Editor } from './editor.mjs';
 import { FindHelper } from './find.mjs';
-import { Deferred } from '/@sys/events.mjs';
+import Deferred from '/@comm/deferred.mjs';
 
 const EXTENSION_SYNTAX_TABLE: {[key: string]: string} = {
 	'txt': 'plain',

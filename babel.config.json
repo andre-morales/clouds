@@ -1,0 +1,7 @@
+{
+
+	"presets": [
+		// Compile TypeScript with no typechecking
+		["@babel/preset-typescript", {}]
+	]
+}

@@ -5,7 +5,7 @@ import { InternalFault, IllegalStateFault } from '../faults.mjs';
 import { App } from '../app.mjs';
 import Browser from '../utils/browser.mjs';
 import Utils from '../utils/utils.mjs';
-import Arrays from '../utils/arrays.mjs';
+import Arrays from '../../../common/arrays.mjs';
 import { WindowPresentation } from './window_presentation.mjs';
 
 enum LiveState {

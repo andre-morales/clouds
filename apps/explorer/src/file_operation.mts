@@ -1,6 +1,6 @@
 import { Paths } from "/@sys/bridges/filesystem.mjs";
 import { FileSystem } from "/@sys/bridges/filesystem.mjs";
-import { Deferred } from "/@sys/events.mjs";
+import Deferred from '/@comm/deferred.mjs';
 
 export enum FileOperationKind {
 	COPY, CUT, ERASE

@@ -11,6 +11,11 @@ export * as WindowM from './ui/window.mjs';
 export * as UIFullscreenM from './ui/fullscreen.mjs';
 export * as UIDialogsM from './ui/dialogs.mjs';
 export * as UICtxMenuM from './ui/context_menu.mjs';
-export * as UtilsArraysM from './utils/arrays.mjs';
 export * as UtilsObjectsM from './utils/objects.mjs';
 export * as UtilsStringsM from './utils/strings.mjs';
+
+import * as DeferredM from '/@comm/deferred.mjs';
+export { DeferredM as '::/@comm/deferred.mjs' }
+
+import * as ArraysM from '/@comm/arrays.mjs';
+export { ArraysM as '::/@comm/arrays.mjs' }

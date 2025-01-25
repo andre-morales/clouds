@@ -2,23 +2,22 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "typescript",
-			"tsconfig": "api/tsconfig.json",
-			"option": "watch",
+			"type": "npm",
+			"script": "watch-api-dist",
 			"problemMatcher": [
 				"$tsc-watch"
 			],
 			"group": "build",
-			"label": "👀 API: Watch Build",
-			"detail": "tsc: watch - api/tsconfig.json"
+			"label": "👀     💠 API: Watch Build",
+			"detail": " "
 		},
 		{
 			"type": "npm",
 			"script": "build-api-dist",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "📦 API: Build",
-			"detail": "npm run build-api-dist: tsc -p api"
+			"label": "📍     💠 API: Build",
+			"detail": " "
 		},
 		{
 			"type": "typescript",
@@ -28,24 +27,24 @@
 				"$tsc-watch"
 			],
 			"group": "build",
-			"label": "👀 CLIENT: Watch Typechecking",
-			"detail": "tsc: watch - client/tsconfig.json"
+			"label": "👀     💠 CLIENT: Watch Typechecking",
+			"detail": " "
 		},
 		{
 			"type": "npm",
 			"script": "build-client-dev",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "👀🐛 CLIENT: Watch Build Development",
-			"detail": "npm run build-client-dev"
+			"label": "👀🐛      CLIENT: Watch Build Development",
+			"detail": " "
 		},
 		{
 			"type": "npm",
 			"script": "build-client-prod",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "📦 CLIENT: Build Production",
-			"detail": "npm run build-client-prod"
+			"label": "📍📦      CLIENT: Build Production",
+			"detail": " "
 		},
 		{
 			"type": "typescript",
@@ -55,24 +54,24 @@
 				"$tsc-watch"
 			],
 			"group": "build",
-			"label": "👀 APPS: Watch Typechecking",
-			"detail": "tsc: watch - apps/tsconfig.json"
+			"label": "👀     💠 APPS: Watch Typechecking",
+			"detail": " "
 		},
 		{
 			"type": "npm",
 			"script": "build-apps-dev",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "👀🐛 APPS: Watch Build Development",
-			"detail": "npm run build-apps-dev"
+			"label": "👀🐛      APPS: Watch Build Development",
+			"detail": " "
 		},
 		{
 			"type": "npm",
 			"script": "build-apps-prod",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "📦 APPS: Build Production",
-			"detail": "npm run build-apps-prod"
+			"label": "📍📦      APPS: Build Production",
+			"detail": " "
 		},
 	]
 }

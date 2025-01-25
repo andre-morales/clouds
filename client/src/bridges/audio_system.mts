@@ -1,7 +1,7 @@
 import App from "../app.mjs";
 import { Reactor, ReactorEvent } from "../events.mjs";
 import Resource from "../resource.mjs";
-import Arrays from "../utils/arrays.mjs";
+import Arrays from "../../../common/arrays.mjs";
 
 export class AudioSystem {
 	public readonly events: Reactor<{

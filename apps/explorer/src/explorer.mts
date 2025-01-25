@@ -2,7 +2,7 @@ import LocalClipboard from '/@sys/bridges/clipboard.mjs';
 import Dialogs from '/@sys/ui/dialogs.mjs';
 import { ContextMenu } from '/@sys/ui/context_menu.mjs';
 import { FileSystem, Paths, RawFileEntry } from '/@sys/bridges/filesystem.mjs';
-import { Deferred } from '/@sys/events.mjs';
+import Deferred from '/@comm/deferred.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
@@ -10,7 +10,7 @@ import { FilePanel, SortingMode } from './file_panel.mjs';
 import ExplorerUploader from './uploader.mjs';
 import ExplorerDefaultHandler from './open_handler.mjs';
 import { FileOperation, FileOperationKind } from './file_operation.mjs';
-import Arrays from '/@sys/utils/arrays.mjs';
+import Arrays from '/@comm/arrays.mjs';
 import Utils from '/@sys/utils/utils.mjs';
 import { FileEntry } from './file_entry.mjs';
 

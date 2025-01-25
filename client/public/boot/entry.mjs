@@ -72,7 +72,6 @@ export async function initDesktop() {
 	enablePanics();
 
 	// Add system script and let it do the setup
-	
 	loadingText.innerHTML = "Loading core...";
 	await addScript('/res/pack/runtime.chk.js');
 	await addScript('/res/pack/shared.chk.js');

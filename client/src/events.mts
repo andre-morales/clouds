@@ -1,4 +1,4 @@
-import Arrays from './utils/arrays.mjs';
+import Arrays from '../../common/arrays.mjs';
 
 type ReactorTypeMap = {
 	[key: string]: ReactorEvent
@@ -93,19 +93,6 @@ export class Reactor <TM extends ReactorTypeMap = {}> {
 				resolve(undefined);
 			}, 0);
 		});
-	}
-}
-
-export class Deferred {
-	promise: Promise<any>;
-	resolve: (value?: any) => void;
-	reject: (value?: any) => void;
-
-	constructor() {
-		this.promise = new Promise((resolve, reject) => {
-			this.resolve = resolve;
-			this.reject = reject;
-		})
 	}
 }
 

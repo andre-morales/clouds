@@ -9,10 +9,16 @@
 		"composite": true,
 		"incremental": true,
 		"paths": {
-			"/@sys/*": ["./src/*"]
+			"/@sys/*": ["./src/*"],
+			"/@comm/*": ["../common/*"]
 		}
 	},
-	"include": ["src"],
+	"references": [
+		{
+			"path": "../common"
+		}
+	],
+	"include": ["src", "../common/arrays.mts"],
 	"exclude": [
 		"node_modules",
 		"**/node_modules/*"

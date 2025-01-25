@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"noEmit": false,
+		"composite": true,
+		"outDir": "rt",
+		"declaration": true,
+		"declarationDir": "rt"
+	}
+}	

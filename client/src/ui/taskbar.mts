@@ -1,7 +1,7 @@
 import { ContextMenu } from './context_menu.mjs';
 import Window from './window.mjs';
 import App from '../app.mjs';
-import Arrays from '../utils/arrays.mjs';
+import Arrays from '../../../common/arrays.mjs';
 
 export class Taskbar {
 	DEFAULT_TASKBAR_ICON: string;

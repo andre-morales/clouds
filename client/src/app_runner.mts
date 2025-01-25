@@ -60,6 +60,7 @@ export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
 		await appObj.init();
 		return app;
 	} catch(err: any) {
+		console.log(err);
 		throw new AppInitializationError(`Failed to instantiate "${manifest.id} (${manifest.displayName ?? ""})"` + ' - ' + err, err);
 	}
 }

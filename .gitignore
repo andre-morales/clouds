@@ -15,12 +15,16 @@ client/public/lib/prism
 # SSL configuration should be kept private
 config/ssl
 
+# Common types
+common/rt
+
 # Runtime API JS should be compiled from TS
 api/runtime
 
 # Ignore generated client bundled content
 client/public/pack
 client/types
+
 
 *.bundle.js
 *.bundle.mjs

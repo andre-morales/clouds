@@ -3,7 +3,6 @@
  */
 import { FileOperationError } from './files.mjs';
 import config from './config.mjs';
-import * as Pathx from './pathx.mjs';
 import * as VFS from './vfs.mjs';
 import * as Auth from './auth.mjs'
 import { Request, Response, Router } from 'express';
