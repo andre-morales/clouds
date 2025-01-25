@@ -172,10 +172,13 @@ export class VideoContainer extends Container {
 			client.audio.connect(track, this.getPlayer().app);
 		}
 
-		// Register active media element for integration with browser controls
-		let media = client.registerMediaElement(video);
-		media.nextTrackCallback = () => { this.player.goNextFile() };
-		media.previousTrackCallback = () => { this.player.goPreviousFile() };
+		// Register active media element for integration with browser controls, if the browser
+		// supports it.
+		try {
+			let media = client.registerMediaElement(video);
+			media.nextTrackCallback = () => { this.player.goNextFile() };
+			media.previousTrackCallback = () => { this.player.goPreviousFile() };
+		} catch(err) {}
 	}
 
 	updateBufferedRanges() {

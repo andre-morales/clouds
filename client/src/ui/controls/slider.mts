@@ -63,6 +63,7 @@ class UISliderController {
 	anchorProp: string;
 	sizeProp: string;
 
+	shadow: ShadowRoot;
 	$thumb: HTMLElement;
 	$lower: HTMLElement;
 	$container: HTMLElement;
@@ -83,12 +84,12 @@ class UISliderController {
 		if (!this.value) this.value = 0;
 
 		// Create shadow DOM
-		let shadow = slider.attachShadow({ mode: 'open' });
-		shadow.adoptedStyleSheets = [stylesheet];
+		this.shadow = slider.attachShadow({ mode: 'open' });
+		this.initStyles();
 
 		this.$container = document.createElement('div');
 		this.$container.classList.add('root');
-		shadow.append(this.$container);
+		this.shadow.append(this.$container);
 
 		this.$lower = document.createElement('span');
 		this.$lower.classList.add('track');
@@ -106,6 +107,10 @@ class UISliderController {
 
 		// Update thumb position when the thumb size changes as well
 		new ResizeObserver(() => this.update()).observe(this.$thumb);
+	}
+
+	private initStyles() {
+		attachStyles(this.shadow);
 	}
 
 	private setDirection(axis: SliderAxis, reverse: boolean) {
@@ -259,11 +264,22 @@ export class SliderTrackRange {
 	}
 }
 
-async function doStaticInitialization() {
-	staticInit = true;
-	stylesheet = new CSSStyleSheet();
+function attachStyles(shadow: ShadowRoot) {
+	if (shadow.adoptedStyleSheets) {
+		if (!stylesheet) {
+			stylesheet = new CSSStyleSheet();
+			fetch('/res/css/slider.css')
+				.then(res => res.text())
+				.then(css => stylesheet.replace(css));
+		}
+		shadow.adoptedStyleSheets = [stylesheet];
+	} else {
+		const style = document.createElement('style');
+		style.textContent = `@import url('/res/css/slider.css');`
+		shadow.appendChild(style);
+	}
+}
 
-	fetch('/res/css/slider.css')
-		.then(res => res.text())
-		.then(css => stylesheet.replace(css));
+async function doStaticInitialization() {
+
 }

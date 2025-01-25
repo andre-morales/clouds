@@ -226,7 +226,6 @@ export class FilePanel {
 		for (let fi of Object.values(this.fileIcons)) {
 			let hide = !fi.fileName.includes(query);
 			fi.$icon.toggleClass('hidden', hide);
-			console.log(hide);
 		}
 	}
 

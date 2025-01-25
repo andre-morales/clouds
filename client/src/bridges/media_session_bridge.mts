@@ -1,12 +1,18 @@
 import { Paths } from './filesystem.mjs';
 import Arrays from '../utils/arrays.mjs';
+import { Exception } from '../faults.mjs';
 
 var activeMediaElements: ActiveMedia[];
 var currentMedia: ActiveMedia | null;
-var enabled: boolean = false;
+var enabled = false;
+var supported = false;
 
 export function init() {
-	if (!navigator.mediaSession) return;
+	supported = Boolean(navigator.mediaSession);
+	if (!supported) {
+		console.warn("This browser does not support media sessions.");
+		return;
+	}
 
 	enabled = true;
 	activeMediaElements = [];
@@ -62,6 +68,7 @@ export function init() {
 }
 
 export function registerMediaElement(elem: HTMLMediaElement) {
+	if (!supported) throw new Exception("Media session is not supported!");
 	if (!enabled) return;
 
 	let activeMedia = new ActiveMedia(elem);
