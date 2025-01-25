@@ -175,7 +175,7 @@ export class VideoContainer extends Container {
 		// Register active media element for integration with browser controls, if the browser
 		// supports it.
 		try {
-			let media = client.registerMediaElement(video);
+			let media = client.mediaSessionBridge.registerMediaElement(video);
 			media.nextTrackCallback = () => { this.player.goNextFile() };
 			media.previousTrackCallback = () => { this.player.goPreviousFile() };
 		} catch(err) {}

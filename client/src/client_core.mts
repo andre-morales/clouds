@@ -94,7 +94,7 @@ export class ClientClass {
 	audio: AudioSystem;
 	appManager: AppManager;
 	config: ConfigManager;
-	mediaSessionBridge: any;
+	mediaSessionBridge: typeof MediaSessionBridge;
 	runningApps: App[];
 	events: Reactor;
 
@@ -202,10 +202,6 @@ export class ClientClass {
 		// Remove app from app list
 		Arrays.erase(this.runningApps, instance);
 		this.events.dispatch('apps-rem');
-	}
-
-	registerMediaElement(elem: HTMLElement): MediaSessionBridge.ActiveMedia {
-		return this.mediaSessionBridge.registerMediaElement(elem);
 	}
 
 	initWatsonTools() {
