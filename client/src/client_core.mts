@@ -1,7 +1,7 @@
 import App from '/@sys/app.mjs';
 import { AudioSystem } from './bridges/audio_system.mjs';
 import { Reactor } from './events.mjs';
-import Browser from './utils/browser.mjs';
+import Browser, { addScript } from './utils/browser.mjs';
 import { IllegalStateFault } from './faults.mjs';
 import * as MediaSessionBridge from './bridges/media_session_bridge.mjs';
 import * as Dialogs from './ui/dialogs.mjs';
@@ -19,9 +19,16 @@ var loadingText: HTMLElement;
 
 declare global {
 	var EntrySpace: any;
+	var sourceMap;
 }
 
 export async function main() {
+	// Enable source maps
+	await addScript('/res/lib/source-map/source-map.js');
+	window.sourceMap.SourceMapConsumer.initialize({
+        "lib/mappings.wasm": "https://unpkg.com/source-map@0.7.3/lib/mappings.wasm"
+    });
+
 	EntrySpace.log('Reached core module entry point.');
 
 	loadingText = document.getElementById('loading-text');
@@ -182,13 +189,7 @@ export class ClientClass {
 	}
 
 	async runApp(name: string, buildArgs = []): Promise<App> {
-		try {
-			return await AppRunner.runUrl('/app/' + name + '/manifest.json', buildArgs);
-		} catch(err) {
-			this.logError(err);	
-			this.showErrorDialog('App Initialization', err, err);
-		}
-		return null;
+		return await AppRunner.runUrl('/app/' + name + '/manifest.json', buildArgs);
 	}
 
 	async endApp(instance: App, exitCode?: number) {
@@ -209,23 +210,7 @@ export class ClientClass {
 	}
 
 	initGraphicalErrors() {
-		window.addEventListener('error', (ev) => {
-			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
-			if (ev.error && ev.error.stack) {
-				msg += ev.error.stack;
-			} else {
-				msg += 'unavailable';
-			}
-			let stack = '';
-			if (ev.error && ev.error.stack) {
-				stack = `\n${ev.error.stack}`;
-			}
-			this.showErrorDialog("Error", `Unhandled error:\n${ev.message}${stack}`);
-		});
-		
-		window.addEventListener('unhandledrejection', (ev) => {
-			this.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}\n${ev.reason.stack}`, ev.reason);
-		});
+		this.watson.initGraphicalErrorHandlers();
 
 		// Disable entry-level error handlers
 		window.onerror = undefined;
@@ -245,7 +230,6 @@ export class ClientClass {
 				} catch (err) {
 					fn.disabled = true;
 					this.showErrorDialog("Log failure", `A log event handler threw an exception and was disabled.\n\n${err}`);
-					this.logError(err);
 					console.error('Error thrown in log listener:', err);
 				}
 			});
@@ -254,25 +238,10 @@ export class ClientClass {
 		}
 	}
 
-	logError(err: Error) {
-		let msg = `${err}\n stack: `;
-		if (err.stack) {
-			msg += err.stack;
-		} else {
-			msg += 'unavailable';
-		};
-		this.log("[Error] " + msg);
-	}
-
-	stringifyError(err) {
-		if (err.stack)
-		return err.stack;
-	}
-
 	showErrorDialog(title, msg, error?: Error) {
 		try {
-			let [_, win] = Dialogs.showError(this.desktop.dwm, title, msg);
-			win.$window.find('.options button').focus();
+			let dialog = Dialogs.showError(this.desktop.dwm, title, msg);
+			dialog.window.$window.find('.options button').focus();
 		} catch (err) {
 			console.log("---- Couldn't display the error ----");
 			console.error(error);

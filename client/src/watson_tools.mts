@@ -1,4 +1,5 @@
 import { Reactor, ReactorEvent } from "./events.mjs";
+import ErrorStack from "./utils/error_stack.mjs";
 
 export class WatsonTools {
 	logHistory: string;
@@ -20,7 +21,7 @@ export class WatsonTools {
 		// Save original fetch function
 		const FETCH = window.fetch;
 		
-		const proxyFetch = async (input: RequestInfo | URL, init: RequestInit): Promise<Response> => {
+		const proxyFetch = (input: RequestInfo | URL, init: RequestInit): Promise<Response> => {
 			let request = new Request(input, init);
 
 			// Invoke original fetch call and save its promise
@@ -32,14 +33,13 @@ export class WatsonTools {
 			this.fetchHistory.push(ev);
 
 			// Return the result as regular fetch would
-			let res = await promise;
-			return res;
+			return promise;
 		};
 
 		window.fetch = proxyFetch;
 	}
 
-	private initLogging() {
+	public initGraphicalErrorHandlers() {
 		window.addEventListener('error', (ev) => {
 			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
 			if (ev.error && ev.error.stack) {
@@ -47,13 +47,29 @@ export class WatsonTools {
 			} else {
 				msg += 'unavailable';
 			}
-			Client.log(msg);
+			let stack = '';
+			if (ev.error && ev.error.stack) {
+				stack = `\n${ev.error.stack}`;
+			}
+
+			Client.showErrorDialog("Error", `Unhandled error:\n${ev.message}${stack}`);
 		});
 
-		window.addEventListener('unhandledrejection', (ev) => {
-			Client.log(`[Error] Unhandled rejection: ${ev.reason.stack}`);
+		window.addEventListener('unhandledrejection', async (ev) => {
+			let stack: string = ev.reason.stack;
+			try {
+				let es = new ErrorStack(ev.reason);
+				await es.mapAll();
+				stack = es.toHTML();
+			} catch(err) {
+				console.log(err);				
+			}
+			
+			Client.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}\n${stack}`, ev.reason);
 		});
 	}
+
+	private initLogging() {}
 }
 
 export class FetchEvent extends ReactorEvent {
@@ -68,8 +84,14 @@ export class FetchEvent extends ReactorEvent {
 		this.timeStamp = Date.now();
 		this.request = request;
 		this.promise = promise;
-		this.promise.then((res) => {
+		promise
+		.then((res) => {
 			this.responseSize = Number.parseInt(res.headers.get('Content-Length'));
+		})
+		.catch((err) => {
+			// If the fetch() failed. Don't do anything.
+		})
+		.then(() => {
 			this.timeEnd = Date.now();
 		});
 	}

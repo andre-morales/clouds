@@ -5,7 +5,7 @@ const ROOT = Path.resolve(__dirname, '../');
 module.exports = function(env, args) {
 	return {
 		mode:    (env.production) ? 'production' : 'development',
-		devtool: (env.production) ? 'source-map' : 'eval-source-map',
+		devtool: (env.production) ? 'source-map' : 'inline-source-map',
 		watch: !env.production,
 		cache: {
 			type: (env.production) ? 'filesystem' : 'memory'

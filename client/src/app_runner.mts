@@ -11,7 +11,7 @@ interface AppResources {
 }
 
 export async function runUrl(manifestURL: string, buildArgs = []): Promise<App> {
-	try {
+	//try {
 		// Fetch manifest
 		let manifest = await getManifest(manifestURL);
 
@@ -21,15 +21,15 @@ export async function runUrl(manifestURL: string, buildArgs = []): Promise<App> 
 		}
 
 		return run(manifest, buildArgs);
-	} catch(err: any) {
+	/*} catch(err: any) {
 		if (err instanceof AppInitializationError) throw err;
 
 		throw new AppInitializationError('Failed to instantiate "' + manifestURL + '" - ' + err, err);
-	}
+	}*/
 }
 
 export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
-	try {
+	//try {
 		transformManifestPaths(manifest);
 
 		// Start fetching of scripts, styles and modules required by this app under a temporary
@@ -59,10 +59,11 @@ export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
 		// Fire the app initialization and return its instance
 		await appObj.init();
 		return app;
-	} catch(err: any) {
-		console.log(err);
-		throw new AppInitializationError(`Failed to instantiate "${manifest.id} (${manifest.displayName ?? ""})"` + ' - ' + err, err);
-	}
+	//} catch(err: any) {
+	//	throw err;
+		//console.log(err);
+		//throw new AppInitializationError(`Failed to instantiate "${manifest.id} (${manifest.displayName ?? ""})"` + ' - ' + err, err);
+	//}
 }
 
 /**

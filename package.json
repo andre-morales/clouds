@@ -36,6 +36,7 @@
     "express-fileupload": "^1.4.0",
     "express-ws": "^5.0.2",
     "morgan": "^1.10.0",
+    "source-map": "^0.7.4",
     "tsc-alias": "^1.8.10"
   },
   "devDependencies": {
