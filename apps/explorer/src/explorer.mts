@@ -100,7 +100,7 @@ export default class ExplorerApp extends App {
 		$app.find('.refresh-btn').click(() => this.refresh());
 		$app.find('.search-field').on('change', () => this.searchFiles());
 		$app.find('.search-btn').click(() => {
-			$app.find('.search-field').focus();
+			$app.find('.search-field').focus();			
 		});
 
 		// Aside links

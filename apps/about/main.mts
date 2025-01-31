@@ -1,3 +1,4 @@
+import './style.scss';
 import { ClientClass } from "/@sys/client_core.mjs";
 import { App } from '/@sys/app.mjs';
 import Window, { CloseBehavior } from '/@sys/ui/window.mjs';

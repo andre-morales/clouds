@@ -1,6 +1,8 @@
 const Path = require('path');
 const Glob = require('glob');
 const Webpack = require('webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
 const ROOT = Path.resolve(__dirname, '../');
 
@@ -10,6 +12,7 @@ let globs = Glob.sync('./apps/*/');
 // For each folder, associate the bundle id with the given entry point configuration.
 let entries = globs.map((path) => {
 	let id = Path.basename(path);
+
 	let entryConfig = {
 		import: `./${path}/main.mjs`,
 		library: {
@@ -39,7 +42,7 @@ module.exports = function(env) {
 					return '../client/public/pack/platform.chk.js'
 				if (ctx.chunk.name == 'runtime')
 					return '../client/public/pack/runtime.chk.js'
-				return '[name]/app.bundle.mjs'
+				return '[name]/dist/app.bundle.mjs'
 			},
 			path: Path.resolve(ROOT, 'apps'),
 		},
@@ -54,6 +57,14 @@ module.exports = function(env) {
 							cacheDirectory: true
 						}
 					}
+				},
+				{
+					test: /\.scss$/i,
+					use: [
+						MiniCssExtractPlugin.loader,
+						"css-loader",
+						"sass-loader"
+					]
 				}
 			]
 		},
@@ -66,6 +77,11 @@ module.exports = function(env) {
 			runtime: 'runtime',
 		},
 		optimization: {
+			minimize: env.production,
+			minimizer: [
+				'...',
+				new CssMinimizerPlugin()
+			],
 			runtimeChunk: 'single',
 			splitChunks: {
 				chunks: 'all',
@@ -82,6 +98,9 @@ module.exports = function(env) {
 		plugins: [
 			new Webpack.DefinePlugin({
 				'__BUILD_MODE__': JSON.stringify((env.production) ? 'Production' : 'Development')
+			}),
+			new MiniCssExtractPlugin({
+				filename: '[name]/dist/styles.bundle.css'
 			})
 		]
 	}

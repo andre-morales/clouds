@@ -9,4 +9,4 @@ declare global {
 	let __BUILD_MODE__: string;
 }
 
-export default global;
+export default global;	

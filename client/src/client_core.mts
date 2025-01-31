@@ -4,7 +4,6 @@ import { Reactor } from './events.mjs';
 import Browser, { addScript } from './utils/browser.mjs';
 import { IllegalStateFault } from './faults.mjs';
 import * as MediaSessionBridge from './bridges/media_session_bridge.mjs';
-import * as Dialogs from './ui/dialogs.mjs';
 import Desktop from './ui/desktop.mjs';
 import UIControls from './ui/controls/controls.mjs';
 import ResourceManager from './resource_manager.mjs';
@@ -12,14 +11,14 @@ import AppRunner from './app_runner.mjs';
 import { AppManager } from './app_manager.mjs';
 import { ConfigManager } from './config_manager.mjs';
 import Arrays from '../../common/arrays.mjs';
-import { WatsonTools } from './watson_tools.mjs';
+import { WatsonTools } from './watson/watson_tools.mjs';
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
 
 declare global {
 	var EntrySpace: any;
-	var sourceMap;
+	var sourceMap: any;
 }
 
 export async function main() {
@@ -89,7 +88,7 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.237';
+	static readonly CLIENT_VERSION = '1.0.240';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
@@ -229,37 +228,17 @@ export class ClientClass {
 					fn({message: msg});
 				} catch (err) {
 					fn.disabled = true;
-					this.showErrorDialog("Log failure", `A log event handler threw an exception and was disabled.\n\n${err}`);
+					this.watson.showErrorDialog("Log failure", `A log event handler threw an exception and was disabled.\n\n${err}`);
 					console.error('Error thrown in log listener:', err);
 				}
 			});
 		} catch (err) {
-			this.showErrorDialog("Log failure", `Log system failure.`);
+			this.watson.showErrorDialog("Log failure", `Log system failure.`);
 		}
 	}
 
 	showErrorDialog(title, msg, error?: Error) {
-		try {
-			let dialog = Dialogs.showError(this.desktop.dwm, title, msg);
-			dialog.window.$window.find('.options button').focus();
-		} catch (err) {
-			console.log("---- Couldn't display the error ----");
-			console.error(error);
-			console.log("------------- Due to ---------------")
-			console.error(err);
-			console.log("------------------------------------")
-
-			// If the dialog has an optional error object, show it
-			let causeString = (err.stack) ? err.stack : err;
-			let errorDetail = '';
-			if (error && error.stack) {
-				errorDetail = `<b>Error: </b>${error.stack}\n`;
-			}
-
-			let originalErrStr = `[${title}]: "${msg}".\n${errorDetail}`;
-			let panicMsg = `Couldn't show ${originalErrStr}\n<b>Display Failure Cause: </b>${causeString}`;
-			_systemPanic("No Error Display", panicMsg);
-		}
+		this.watson.showErrorDialog(title, msg, error);
 	}
 
 	static get(): ClientClass {

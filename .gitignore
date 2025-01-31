@@ -25,9 +25,7 @@ api/runtime
 client/public/pack
 client/types
 
-
-*.bundle.js
-*.bundle.mjs
+*.bundle.*
 *.map
 *.tsbuildinfo
 

@@ -29,7 +29,7 @@ export async function runUrl(manifestURL: string, buildArgs = []): Promise<App> 
 }
 
 export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
-	//try {
+	try {
 		transformManifestPaths(manifest);
 
 		// Start fetching of scripts, styles and modules required by this app under a temporary
@@ -59,11 +59,9 @@ export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
 		// Fire the app initialization and return its instance
 		await appObj.init();
 		return app;
-	//} catch(err: any) {
-	//	throw err;
-		//console.log(err);
-		//throw new AppInitializationError(`Failed to instantiate "${manifest.id} (${manifest.displayName ?? ""})"` + ' - ' + err, err);
-	//}
+	} catch(err: any) {
+		throw new AppInitializationError(`Failed to instantiate "${manifest.id} (${manifest.displayName ?? ""})"` + ' - ' + err, err);
+	}
 }
 
 /**

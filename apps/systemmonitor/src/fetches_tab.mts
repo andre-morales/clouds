@@ -1,7 +1,7 @@
 import SystemMonitorApp from "./core.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import Strings from "/@sys/utils/strings.mjs";
-import { FetchEvent } from "/@sys/watson_tools.mjs";
+import { FetchEvent } from "/@sys/watson/watson_tools.mjs";
 
 export default class FetchesTab {
 	private app: SystemMonitorApp;

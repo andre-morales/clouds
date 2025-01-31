@@ -2,7 +2,7 @@
 	"id": "sounds",
 	"icon": "~/icon64.png",
 	"modules": [
-		"~/app.bundle.mjs"	
+		"~/dist/app.bundle.mjs"	
 	],
 	"styles": [
 		"~/style.css"

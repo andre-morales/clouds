@@ -26,4 +26,11 @@ export function withUnits(units: string[], threshold: number, divider: number, d
 	}
 }
 
-export default { endsWithAny, fromDataSize: byteSize };
+export function escapeHTML(text: string): string {
+	return text.replace(/[<>]/g, match => ({
+		'<': '&lt;',
+		'>': '&gt;'
+	}[match]));
+}
+
+export default { endsWithAny, fromDataSize: byteSize, escapeHTML };

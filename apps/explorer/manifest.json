@@ -3,7 +3,7 @@
 	"displayName": "Files",
 	"icon": "~/icon64.png",
 	"modules" : [
-		"~/app.bundle.mjs"
+		"~/dist/app.bundle.mjs"
 	],
 	"styles": [
 		"~/res/style.css"

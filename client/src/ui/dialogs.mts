@@ -80,7 +80,7 @@ export class Dialog {
 	}
 
 	setMessageHTML(msg: string) {
-		this.$message.html('<br/>' + msg.replaceAll('\n', '<br/>'));
+		this.$message[0].innerHTML = msg;
 	}
 
 	setOptions(options: string[]) {

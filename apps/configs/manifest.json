@@ -2,9 +2,9 @@
 	"id": "configs",
 	"icon": "/app/configs/icon128.png",
 	"modules": [
-		"/app/configs/app.bundle.mjs"	
+		"~/dist/app.bundle.mjs"	
 	],
 	"styles": [
-		"/app/configs/style.css"
+		"~/style.css"
 	]
 }

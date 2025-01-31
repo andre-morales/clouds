@@ -5,7 +5,7 @@ import App from "/@sys/app.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import Window from "/@sys/ui/window.mjs";
 import Strings from "/@sys/utils/strings.mjs";
-import { FetchEvent, WatsonTools } from "/@sys/watson_tools.mjs";
+import { FetchEvent, WatsonTools } from "/@sys/watson/watson_tools.mjs";
 
 var Client: ClientClass;
 

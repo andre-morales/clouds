@@ -1,5 +1,6 @@
-import { Reactor, ReactorEvent } from "./events.mjs";
-import ErrorStack from "./utils/error_stack.mjs";
+import { Reactor, ReactorEvent } from "../events.mjs";
+import Dialogs from "../ui/dialogs.mjs";
+import error_handler from "./error_handler.mjs";
 
 export class WatsonTools {
 	logHistory: string;
@@ -56,7 +57,8 @@ export class WatsonTools {
 		});
 
 		window.addEventListener('unhandledrejection', async (ev) => {
-			let stack: string = ev.reason.stack;
+			error_handler.showError("Error", "Unhandled rejection", ev.reason);
+			/*let stack: string = ev.reason.stack;
 			try {
 				let es = new ErrorStack(ev.reason);
 				await es.mapAll();
@@ -65,8 +67,32 @@ export class WatsonTools {
 				console.log(err);				
 			}
 			
-			Client.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}\n${stack}`, ev.reason);
+			Client.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}\n${stack}`, ev.reason);*/
 		});
+	}
+
+	showErrorDialog(title, msg, error?: Error) {
+		try {
+			let dialog = Dialogs.showError(Client.desktop.dwm, title, msg);
+			dialog.window.$window.find('.options button').focus();
+		} catch (err) {
+			console.log("---- Couldn't display the error ----");
+			console.error(error);
+			console.log("------------- Due to ---------------")
+			console.error(err);
+			console.log("------------------------------------")
+
+			// If the dialog has an optional error object, show it
+			let causeString = (err.stack) ? err.stack : err;
+			let errorDetail = '';
+			if (error && error.stack) {
+				errorDetail = `<b>Error: </b>${error.stack}\n`;
+			}
+
+			let originalErrStr = `[${title}]: "${msg}".\n${errorDetail}`;
+			let panicMsg = `Couldn't show ${originalErrStr}\n<b>Display Failure Cause: </b>${causeString}`;
+			_systemPanic("No Error Display", panicMsg);
+		}
 	}
 
 	private initLogging() {}

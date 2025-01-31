@@ -2,7 +2,7 @@
 	"id": "systemmonitor",
 	"icon": "/app/systemmonitor/icon128.png",
 	"modules": [
-		"/app/systemmonitor/app.bundle.mjs"	
+		"~/dist/app.bundle.mjs"	
 	],
 	"styles": [
 		"/app/systemmonitor/res/style.css"

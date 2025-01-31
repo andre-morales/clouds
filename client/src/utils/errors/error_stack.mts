@@ -1,5 +1,5 @@
 import { SourceMapConsumer } from "source-map";
-import { FetchCache } from "./fetch_cache.mjs";
+import { FetchCache } from "../fetch_cache.mjs";
 
 var cachedSourceMaps: Map<string, Promise<string | null>> = new Map();
 var fetchCache = new FetchCache();
@@ -42,79 +42,12 @@ export default class ErrorStack {
 		}));
 	}
 
-	toFormattedHTML() {
-		let html = this.toHTML();
-		return `<p style='font-family: monospace; white-space: pre;'>${html}</p>`
-	}
-
-	toHTML() {
-		let maxSymbolSize = 0;
-		for (let entry of this.stackEntries) {
-			let fnName = '' + entry.getLocation().fnName;
-			let len = fnName.length;
-			if (len > maxSymbolSize) maxSymbolSize = len;
-		}
-		
-		let result = '';
-		for (let entry of this.stackEntries) {
-			let loc = entry.getLocation();
-
-			let fnName = '' + loc.fnName;
-			let symbol = fnName.padEnd(maxSymbolSize);
-
-			// If the path ends with a slash or is composed solely of a slash, append it again to the
-			// string
-			let fileStr = new URL(loc.file).pathname.split('/');
-			let lastElement = fileStr.pop();
-			if (lastElement.length == 0) {
-				lastElement = (fileStr.pop() ?? '') + '/';
-			}
-
-			result += `${symbol} ${lastElement}:${loc.lineNo}\n`;
-		}
-
-		// Escape symbols for HTML output
-		return result.replaceAll('>', '&gt;').replaceAll('<', '&lt;');
-	}
-
 	toString() {
-		/*let result = '';
+		let result = '';
 		for (let entry of this.stackEntries) {
 			result += entry.toString() + '\n';
-		}
-		return result;*/
-
-		let maxSymbolSize = 0;
-		for (let entry of this.stackEntries) {
-			let fnName = '' + entry.getLocation().fnName;
-			let len = fnName.length;
-			if (len > maxSymbolSize) maxSymbolSize = len;
-		}
-		
-		let result = '';
-		for (let entry of this.stackEntries) {
-			let loc = entry.getLocation();
-
-			let fnName = '' + loc.fnName;
-			let symbol = fnName.padEnd(maxSymbolSize);
-
-			// If the path ends with a slash or is composed solely of a slash, append it again to the
-			// string
-			let fileStr = new URL(loc.file).pathname.split('/');
-			let lastElement = fileStr.pop();
-			if (lastElement.length == 0) {
-				lastElement = (fileStr.pop() ?? '') + '/';
-			}
-
-			result += `${symbol} ${lastElement}:${loc.lineNo}\n`;
 		}
 		return result;
-
-		/*let result = '';
-		for (let entry of this.stackEntries) {
-			result += entry.toString() + '\n';
-		}
-		return result;*/
 	}
 }
 
