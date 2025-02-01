@@ -266,6 +266,19 @@
 	outline: none;
 }
 
+.error-log {
+	border: inset 1px black;
+	font-family: monospace;
+}
+
+.error-log table {
+	border-collapse: collapse;
+}
+
+.error-log table td {
+	padding: 0px 8px;
+}
+
 .fullscreened {
 	position: absolute;
 	left: 0;

@@ -1,13 +1,22 @@
 import CProc from 'child_process';
-import Express from 'express';
-import * as Auth from '../auth.mjs';
 import * as Config from '../config.mjs';
+import WebSockets from '../websockets.mjs';
+import Arrays from '#common/arrays.mjs';
 
 var enabled = false;
 var defs: any = null; 
-export var shells : any = {};
+export var shells : { [id: string]: RShell } = {};
 var counter = 1;
 var cleanupTask: NodeJS.Timeout;
+
+// Add some properties to the Express request object
+declare global {
+	namespace Express {
+		interface Request {
+			shell: RShell;
+		}
+	}
+}
 
 export function init() {
 	if (!Config.isExtensionEnabled('rshell')) return;
@@ -17,24 +26,28 @@ export function init() {
 }
 
 export function shutdown() {
+	for (let key of Object.keys(shells)) {
+		destroy(Number(key));
+	}
+
 	clearInterval(cleanupTask);
 }
 
 export function create() {
 	let id = counter;
-	let shell = new RShell(id);
+	let shell;
 
 	try {
-		if (!shell.spawn()) return null;
+		shell = new RShell(id);
 	} catch(err) {
-		console.log("Shell creation exception.");
+		console.error("Shell creation exception.");
+		console.error(err);
 		return null;
 	}
 
 	counter++;
 	shells[id] = shell;
 	shell.setupOutput();
-	shell.ping();
 	return shell;
 }
 
@@ -61,10 +74,32 @@ export function destroyOldShells(limit: number) {
 	destroyedShells.forEach((id) => destroy(id));
 }
 
-export function installRouter(router: Express.Router) {
-	router.get('/shell/0/init', (req, res) => {
-		Auth.getUserGuard(req);
+export function getRouter() {
+	let router = WebSockets.createRouter();
+	
+	// General handler decorator
+	router.use('/:id/*cmd', (req, res, next) => {
+		if (req.params.id == '0') {
+			next();
+			return;
+		}
 
+		let shell = shells[req.params.id]
+		if (!shell) {
+			res.status(404).end();	
+			return;
+		}
+
+		req.shell = shell;
+		next();
+	});
+
+	router.ws('/:id/socket', (ws, req) => {
+		let wsx = ws as unknown as WebSocket;
+		req.shell.addSocket(wsx);
+	});
+
+	router.get('/0/init', (req, res) => {
 		let shell = create();
 		if (!shell) {
 			res.status(500).end();
@@ -74,9 +109,7 @@ export function installRouter(router: Express.Router) {
 		res.json(shell.id);
 	});
 
-	router.get('/shell/0/list', (req, res) => {
-		Auth.getUserGuard(req);
-
+	router.get('/0/list', (req, res) => {
 		let obj = Object.values(shells).map((shell: any) => {
 			return {
 				'id': shell.id,
@@ -87,56 +120,14 @@ export function installRouter(router: Express.Router) {
 		res.json(obj);
 	});
 
-	router.post('/shell/:id/send', (req, res) => {
-		Auth.getUserGuard(req);
-
-		let shell = shells[req.params.id]
-		if (!shell) {
-			res.status(404).end();
-			return;
-		}
+	router.post('/:id/send', (req, res) => {
 		let cmd = req.body.cmd;
-		shell.send(cmd);
+		req.shell.send(cmd);
 		res.end();
 	});
 
-	router.get('/shell/:id/stdout', (req, res) => {
-		Auth.getUserGuard(req);
-		let shell = shells[req.params.id]
-		if (!shell) {
-			res.status(404).end();
-			return;
-		}
-
-		res.send(shell.stdout);
-	});
-
-	router.get('/shell/:id/stdout_new', async (req, res) => {
-		Auth.getUserGuard(req);
-		res.set('Cache-Control', 'no-store');
-
-		let shell = shells[req.params.id]
-		if (!shell) {
-			res.status(404).end();
-			return;
-		}
-
-		try {
-			let result = await shell.newStdoutData();
-			res.send(result);
-		} catch(err) {
-			console.log(err);
-			res.status(500).end();
-			return;
-		}
-		
-	});
-
-	router.get('/shell/:id/kill', (req, res) => {
-		Auth.getUserGuard(req);
-		
+	router.get('/:id/kill', (req, res) => {
 		let id = Number(req.params.id);
-
 		if(!destroy(id)) {
 			res.status(404).end();
 			return;
@@ -146,15 +137,8 @@ export function installRouter(router: Express.Router) {
 		res.end();
 	});
 
-	router.get('/shell/:id/ping', (req, res) => {
-		Auth.getUserGuard(req);
-		let shell = shells[req.params.id]
-		if (!shell) {
-			res.status(404).end();
-			return;
-		}
-
-		shell.ping();
+	router.get('/:id/ping', (req, res) => {
+		req.shell.ping();
 		res.end();
 	});
 
@@ -167,33 +151,26 @@ export function installRouter(router: Express.Router) {
 
 export class RShell {
 	id: number;
-	stdout: any;
-	newOut: any;
-	proc: any;
-	waiterObj: any;
-	_config: any;
-	lastPing: any;
+	stdout: string;
+	proc: CProc.ChildProcessWithoutNullStreams;
+	lastPing: number;
+	sockets: WebSocket[];
 
 	constructor(id: number) {
 		this.id = id;
 		this.stdout = '';
-		this.newOut = '';
-		this.proc = null;
-		this.waiterObj = null;
-		this._config = null;
-	}
+		this.sockets = [];
+		this.lastPing = new Date().getTime();
 
-	spawn() {
 		let proc = CProc.spawn(defs.exec);
 		proc.on('error', (err) => {
 			console.log(err);
 		});
 
-		if (!proc.pid) return false;
-		this.proc = proc;
+		if (!proc.pid) throw new Error("Shell creation failed.");
 
+		this.proc = proc;
 		console.log('+ shell ' + this.id);
-		return true;
 	}
 
 	kill() {
@@ -201,31 +178,24 @@ export class RShell {
 		console.log('- shell ' + this.id);
 	}
 
-	newStdoutData() {
-		if (this.newOut) {
-			let promise = Promise.resolve(this.newOut);
-			this.newOut = '';
-			return promise;
-		}
-
-		if (this.waiterObj) return Promise.reject();
-
-		return new Promise((res) => {
-			this.waiterObj = res;
-		});
+	addSocket(ws: WebSocket) {
+		this.sockets.push(ws);
+		ws.send(this.stdout);
+		ws.onclose = (ev) => {
+			Arrays.erase(this.sockets, ws);
+		};
 	}
 
 	setupOutput() {
 		let outFn = (ch: any) => {
 			let content = ch.toString();
+
+			// Save content on stdout whole log
 			this.stdout += content;
 
-			if (this.waiterObj) {
-				let prom = this.waiterObj;
-				this.waiterObj = null;
-				prom(content);
-			} else {
-				this.newOut += content;
+			// Send new data to sockets
+			for (let sock of this.sockets) {
+				sock.send(content);
 			}
 		}
 

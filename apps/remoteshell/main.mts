@@ -10,7 +10,6 @@ export default class RemoteShellApp extends App {
 	shellId: number;
 	textWrapping: boolean;
 	$content: $Element;
-	#fetchTimeout__: any;
 	#pingInterval__: any;
 
 	constructor(...args: ConstructorParameters<typeof App>) {
@@ -41,7 +40,7 @@ export default class RemoteShellApp extends App {
 		let $app = this.window.$window.find('.window-body');
 		$app.addClass('app-remoteshell');
 
-		// Fetch explorer body
+		// Fetch app body
 		await this.window.setContentToUrl('/app/remoteshell/res/main.html');
 		this.$content = $app.find('.content');
 
@@ -76,23 +75,7 @@ export default class RemoteShellApp extends App {
 			$field.val('');
 		})
 
-		let call = async () => {
-			let fres = await fetch('/shell/' + this.shellId + '/stdout_new', {
-				cache: "no-cache"
-			});
-			if (fres.status != 200) {
-				console.error('Fetch n returned: ' + fres.status);
-				return;
-			}
-
-			let content = await fres.text();
-			this.updateLog(content);
-
-			if (!this.#fetchTimeout__) return;
-			this.#fetchTimeout__ = setTimeout(call);
-		};	
-
-		this.#fetchTimeout__ = setTimeout(call, 1);
+		this.trackOutput();
 
 		this.#pingInterval__ = setInterval(async () => {
 			fetch('/shell/' + this.shellId + '/ping');
@@ -136,11 +119,16 @@ export default class RemoteShellApp extends App {
 
 	doCleanup() {
 		clearInterval(this.#pingInterval__);
-		clearTimeout(this.#fetchTimeout__);
-		this.#fetchTimeout__ = null;
 
 		if (this.shellId) fetch('/shell/' + this.shellId + '/kill');
 
 		this.exit();
+	}
+
+	private trackOutput() {
+		let ws = new WebSocket('/shell/' + this.shellId + '/socket');
+		ws.onmessage = (msg) => {
+			this.updateLog(msg.data);
+		};
 	}
 }

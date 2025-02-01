@@ -88,7 +88,7 @@ function initRouters() {
 	app.use('/fsmx', [Auth.guard, VFSMXRouter.getRouter()]); 	 // Media extensions for the VFS
 	app.use('/stat', [Auth.guard, Stats.getRouter()]);   		 // Statistics and info router
 	apiSetupPages();     			    		  	     		 // Entry, Auth and Desktop
-	RShell.installRouter(app);						   			 // Remote shell service
+	app.use('/shell', [Auth.guard, RShell.getRouter()]);		 // Remote shell service
 	apiSetupApps();								   	     		 // Apps service
 
 }
@@ -99,6 +99,11 @@ function initErrorHandlers() {
 		if (err instanceof BadAuthException) {
 			denyRequest(res);
 			return;
+		}
+
+		if ((req as any).ws) {
+			console.error("Error on websocket handler!");
+			console.error(err);
 		}
 
 		next(err);

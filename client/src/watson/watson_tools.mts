@@ -1,6 +1,6 @@
 import { Reactor, ReactorEvent } from "../events.mjs";
 import Dialogs from "../ui/dialogs.mjs";
-import error_handler from "./error_handler.mjs";
+import ErrorHandler from "./error_handler.mjs";
 
 export class WatsonTools {
 	logHistory: string;
@@ -41,34 +41,7 @@ export class WatsonTools {
 	}
 
 	public initGraphicalErrorHandlers() {
-		window.addEventListener('error', (ev) => {
-			let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
-			if (ev.error && ev.error.stack) {
-				msg += ev.error.stack;
-			} else {
-				msg += 'unavailable';
-			}
-			let stack = '';
-			if (ev.error && ev.error.stack) {
-				stack = `\n${ev.error.stack}`;
-			}
-
-			Client.showErrorDialog("Error", `Unhandled error:\n${ev.message}${stack}`);
-		});
-
-		window.addEventListener('unhandledrejection', async (ev) => {
-			error_handler.showError("Error", "Unhandled rejection", ev.reason);
-			/*let stack: string = ev.reason.stack;
-			try {
-				let es = new ErrorStack(ev.reason);
-				await es.mapAll();
-				stack = es.toHTML();
-			} catch(err) {
-				console.log(err);				
-			}
-			
-			Client.showErrorDialog("Error", `Unhandled rejection: ${ev.reason}\n${stack}`, ev.reason);*/
-		});
+		ErrorHandler.initGraphicErrorHandlers();
 	}
 
 	showErrorDialog(title, msg, error?: Error) {
