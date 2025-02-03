@@ -2,8 +2,9 @@
 	"compilerOptions": {
 		"noEmit": false,
 		"composite": true,
-		"outDir": "rt",
+		"outDir": "dist",
 		"declaration": true,
-		"declarationDir": "rt"
+		"declarationDir": "dist",
+		"baseUrl": "."
 	}
 }	

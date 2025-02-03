@@ -24,7 +24,7 @@ import FS from 'node:fs';
 import HTTP from 'node:http';
 import HTTPS from 'node:https';
 import WebSockets from './websockets.mjs';
-import Deferred from '/@comm/deferred.mjs';
+import Deferred from '#common/deferred.mjs';
 
 var app: Express.Application;
 var httpServer: HTTP.Server;

@@ -3,17 +3,16 @@
 		"strict": true,
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
-		"outDir": "runtime",
+		"outDir": "dist",
 		"inlineSourceMap": true,
 		"incremental": true,
-		"paths": {
-			"/@comm/*": ["../common/*"]
-		}
+		"rootDir": "./src/",
+		"baseUrl": ".",
+		"paths": {}
 	},
 	"references": [
 		{
 			"path": "../common/"
 		}
-	],
-	"include": ["src"]
+	]
 }

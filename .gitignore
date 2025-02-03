@@ -16,10 +16,10 @@ client/public/lib/prism
 config/ssl
 
 # Common types
-common/rt
+common/dist
 
 # Runtime API JS should be compiled from TS
-api/runtime
+api/dist
 
 # Ignore generated client bundled content
 client/public/pack
