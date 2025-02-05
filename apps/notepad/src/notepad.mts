@@ -1,5 +1,5 @@
 import Dialogs from '/@sys/ui/dialogs.mjs';
-import { ContextCheckbox, ContextMenu } from '/@sys/ui/context_menu.mjs';
+import { ContextMenu } from '/@sys/ui/controls/context_menu/ctx_menu.mjs';
 import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
@@ -7,6 +7,7 @@ import { ClientClass } from '/@sys/client_core.mjs';
 import { Editor } from './editor.mjs';
 import { FindHelper } from './find.mjs';
 import Deferred from '/@comm/deferred.mjs';
+import ContextCheckbox from '/@sys/ui/controls/context_menu/ctx_checkbox.mjs';
 
 const EXTENSION_SYNTAX_TABLE: {[key: string]: string} = {
 	'txt': 'plain',

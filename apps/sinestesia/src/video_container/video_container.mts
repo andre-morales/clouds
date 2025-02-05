@@ -1,5 +1,5 @@
-import { Container } from "./container.mjs";
-import MediaPlayer, { timeToString } from "./media_player.mjs";
+import { Container } from "../container.mjs";
+import MediaPlayer, { timeToString } from "../media_player.mjs";
 import { TrackMarker } from "./track_marker.mjs";
 import { VolumeHistogram } from "./volume_hist.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";

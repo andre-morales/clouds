@@ -1,4 +1,4 @@
-import { ContentType } from "./media_player.mjs";
+import { ContentType } from "../media_player.mjs";
 import { VideoContainer } from "./video_container.mjs";
 import { Paths } from "/@sys/bridges/filesystem.mjs";
 

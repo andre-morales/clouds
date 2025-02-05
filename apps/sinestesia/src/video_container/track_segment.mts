@@ -1,7 +1,7 @@
-import { timeToString } from "./media_player.mjs";
+import { timeToString } from "../media_player.mjs";
 import { TrackMarker } from "./track_marker.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
-import { ContextMenu } from "/@sys/ui/context_menu.mjs";
+import { ContextMenu } from "/@sys/ui/controls/context_menu/ctx_menu.mjs";
 
 export class TrackSegment {
 	public valid: boolean;

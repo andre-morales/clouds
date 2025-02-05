@@ -10,9 +10,14 @@ export * as UtilsM from './utils/utils.mjs';
 export * as WindowM from './ui/window.mjs';
 export * as UIFullscreenM from './ui/fullscreen.mjs';
 export * as UIDialogsM from './ui/dialogs.mjs';
-export * as UICtxMenuM from './ui/context_menu.mjs';
 export * as UtilsObjectsM from './utils/objects.mjs';
 export * as UtilsStringsM from './utils/strings.mjs';
+
+import * as UICtxMenuM from './ui/controls/context_menu/ctx_menu.mjs';
+export { UICtxMenuM as '::/@sys/ui/controls/context_menu/ctx_menu.mjs'};
+
+import * as UICtxMenuCheckboxM from './ui/controls/context_menu/ctx_checkbox.mjs';
+export { UICtxMenuCheckboxM as '::/@sys/ui/controls/context_menu/ctx_checkbox.mjs'};
 
 import * as DeferredM from '/@comm/deferred.mjs';
 export { DeferredM as '::/@comm/deferred.mjs' }

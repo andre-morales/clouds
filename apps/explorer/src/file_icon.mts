@@ -2,10 +2,11 @@ import ExplorerApp from "./explorer.mjs";
 import ExplorerProperties from "./properties_dialog.mjs";
 import { FileTypes, Paths } from "/@sys/bridges/filesystem.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
-import { CtxEntry, ContextMenu } from "/@sys/ui/context_menu.mjs";
+import { ContextMenu } from "/@sys/ui/controls/context_menu/ctx_menu.mjs";
 import { FileSystem } from "/@sys/bridges/filesystem.mjs";
 import Util from "/@sys/utils/browser.mjs";
 import { FileEntry } from "./file_entry.mjs";
+import { CtxEntry } from "/@sys/ui/controls/context_menu/shorthand.mjs";
 
 export class FileIcon {
 	public readonly path: string;

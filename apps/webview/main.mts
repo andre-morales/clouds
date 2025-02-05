@@ -1,4 +1,4 @@
-import { ContextMenu } from '/@sys/ui/context_menu.mjs';
+import { ContextMenu } from '/@sys/ui/controls/context_menu/ctx_menu.mjs';
 import { Paths } from '/@sys/bridges/filesystem.mjs';
 import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';

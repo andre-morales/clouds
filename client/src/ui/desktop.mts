@@ -1,29 +1,28 @@
 import TaskbarM, { Taskbar } from './taskbar.mjs'
 import Window from './window.mjs';
 import Fullscreen from './fullscreen.mjs';
-import { ContextMenu } from './context_menu.mjs';
+import { ContextMenu } from './controls/context_menu/ctx_menu.mjs';
 import App, { ExitMode } from '../app.mjs';
 import { Reactor } from '../events.mjs';
 import { ClientClass } from '../client_core.mjs';
 import Arrays from '../../../common/arrays.mjs';
 import { WindowManager } from './window_manager.mjs';
+import ContextMenuDesktopController from './controls/context_menu/desktop_controller.mjs';
 
 export class Desktop {
 	dwm: App;
 	events: Reactor;
 	taskbar: Taskbar;
 	focusedWindow: Window;
-	private contextMenuOpen: boolean;
+	private ctxMenuController: ContextMenuDesktopController;
 	private dragRectState: any;
 	private windowManager: WindowManager;
 	private windowsWidth: number;
 	private windowsHeight: number;
 	private screenWidth: number;
 	private screenHeight: number;
-	private currentContextMenu: ContextMenu;
 	$desktop: $Element;
 	$windows: $Element;
-	private $contextMenu: $Element;
 
 	constructor() {
 		this.dwm = new App({
@@ -36,11 +35,11 @@ export class Desktop {
 		this.$windows = $('.windows');
 		this.windowManager = new WindowManager(this);
 		this.taskbar = new TaskbarM.Taskbar();
-		this.$contextMenu = $('.context-menu');
+		
 		this.focusedWindow = null;
-		this.contextMenuOpen = false;
 		this.dragRectState = {};
 
+		this.ctxMenuController = new ContextMenuDesktopController(this);
 		let menu = ContextMenu.fromDefinition([
 			["-System Settings", () => {
 				Client.runApp('configs');
@@ -58,21 +57,7 @@ export class Desktop {
 		]);
 
 		this.addCtxMenuOn(this.$desktop.find('.back-plane'), () => menu);
-
-		$(document).on('mousedown', (ev) => {
-			let $cMenu = this.$contextMenu;
-			let el = ev.target as HTMLElement;
-
-			// If the context menu *is not* and *does not contain*
-			// the clicked element.
-			if ($cMenu[0] != el && $cMenu.has(el).length === 0) {
-				this.contextMenuOpen = false;
-				this.currentContextMenu = null;
-				$cMenu.removeClass('visible');
-				$cMenu.find('.context-menu').removeClass('visible');
-			}
-		});
-
+		
 		$(window).on('resize', () => {
 			this._queryBounds();
 			for (let w of this.windowManager.getWindows()) {
@@ -199,43 +184,11 @@ export class Desktop {
 	}
 	
 	openCtxMenuAt(menu: ContextMenu, x: number, y: number) {
-		if (this.currentContextMenu) {
-			this.currentContextMenu.close();
-		}
-		this.currentContextMenu = menu;
-		
-		this.contextMenuOpen = true;
-		let $menu = this.$contextMenu;
-		$menu.removeClass('.visible');
-		$menu.empty();
-		menu.setBase($menu)
-		menu.build();
-
-		$menu.addClass('visible');
-		let mWidth = $menu[0].offsetWidth;
-		let mHeight = $menu[0].offsetHeight;
-
-		if (x + mWidth > this.screenWidth) x -= mWidth;
-		if (x < 0) x = 0;
-
-		if (y + mHeight > this.screenHeight) y -= mHeight;
-		if (y < 0) y = 0;
-
-		$menu.css('left', x);
-		$menu.css('top', y);
+		this.ctxMenuController.openCtxMenuAt(menu, x, y);
 	}
 
 	addCtxMenuOn(element: HTMLElement | $Element, menuFn: (ev: MouseEvent) => ContextMenu) {
-		$(element).on('contextmenu', (ev: MouseEvent) => {
-			let mx = ev.clientX, my = ev.clientY;
-	
-			let menu = menuFn(ev);
-			if (menu) {
-				this.openCtxMenuAt(menu, mx, my);
-				ev.preventDefault();
-				return false;
-			}
-		});
+		this.ctxMenuController.addCtxMenuOn(element, menuFn);
 	}
 
 	setCursor(cursor: string) {

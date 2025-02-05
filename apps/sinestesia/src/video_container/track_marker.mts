@@ -1,5 +1,5 @@
-import SinestesiaApp from "./app.mjs";
-import { ContentType, timeToString } from "./media_player.mjs";
+import SinestesiaApp from "../app.mjs";
+import { ContentType, timeToString } from "../media_player.mjs";
 import { TrackSegment } from "./track_segment.mjs";
 import { VideoContainer } from "./video_container.mjs";
 import { FileSystem } from "/@sys/bridges/filesystem.mjs";

@@ -8,6 +8,7 @@
 		"outDir": "types",
 		"composite": true,
 		"incremental": true,
+		"stripInternal": true,
 		"paths": {
 			"/@sys/*": ["./src/*"],
 			"/@comm/*": ["../common/*"]

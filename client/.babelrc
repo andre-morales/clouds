@@ -6,6 +6,9 @@
 				"/@sys": "./client/src/",
 				"/@comm": "./common/"
 			}
+		}],
+		["@babel/plugin-proposal-decorators", {
+			"version": "2023-11"
 		}]
 	],
 	"presets": [

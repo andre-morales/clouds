@@ -1,6 +1,6 @@
 import App from '/@sys/app.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
-import { ContextMenu } from '/@sys/ui/context_menu.mjs';
+import { ContextMenu } from '/@sys/ui/controls/context_menu/ctx_menu.mjs';
 import Window from '/@sys/ui/window.mjs';
 
 var Client: ClientClass;

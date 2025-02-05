@@ -1,4 +1,4 @@
-import { ContextMenu } from './context_menu.mjs';
+import { ContextMenu } from './controls/context_menu/ctx_menu.mjs';
 import Window from './window.mjs';
 import App from '../app.mjs';
 import Arrays from '../../../common/arrays.mjs';

@@ -1,4 +1,4 @@
-import { ContextMenu } from './context_menu.mjs';
+import { ContextMenu } from './controls/context_menu/ctx_menu.mjs';
 import { TaskbarButton } from './taskbar.mjs';
 import { EventCallback, Reactor, ReactorEvent } from '../events.mjs';
 import { InternalFault, IllegalStateFault } from '../faults.mjs';
