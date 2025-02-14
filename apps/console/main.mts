@@ -134,7 +134,7 @@ export default class ConsoleApp extends App {
 		this.commandHistoryIndex = 0;
 		this.currentInput = '';
 		this.$cmdField.val("");
-		let result = eval(cmd);
+		let result = (0, eval)(cmd);
 
 		let msg = "< " + this.stringifyObject(result);
 		this.updateLog(msg);

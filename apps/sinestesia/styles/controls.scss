@@ -1,0 +1,146 @@
+.app-sinestesia {
+	.controls {
+		display: flex;
+		flex-direction: column;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		opacity: 0;
+		transition: opacity 200ms;
+		pointer-events: none;
+
+		&.visible {
+			opacity: 1;
+		}
+
+		.top {
+			display: flex;
+			padding: 0 .2rem;
+			align-items: center;
+			background: rgba(20, 20, 20, 0.3);
+			pointer-events: all;
+		}
+
+		.volume {
+			margin: 0 1rem;
+			flex-grow: 1;
+		}
+
+		.mute-btn {
+			border: none;
+			width: 32px;
+			height: 32px;
+			background-size: 32px;
+			background-color: rgba(0, 0, 0, 0.2);
+			background-image: url('/app/sinestesia/res/volume.png');
+			border-radius: 50%;
+			pointer-events: all;
+			vertical-align: middle;
+		}
+
+		.volume {
+			vertical-align: middle;
+			pointer-events: all;
+		}
+
+		.bottom {
+			position: relative;
+		}
+
+		.bottom .canvas-container {
+			position: absolute;
+			height: 50px;
+		} 
+
+		.bottom .canvas-container canvas {
+			width: 100%;
+			height: 100%;
+		} 
+
+		.bottom .timebar {
+			display: flex;
+			padding: 0 4px;
+			align-items: center;
+			pointer-events: all;
+			font-size: 10pt;
+			background: rgba(20, 20, 20, 0.3);
+		}
+
+		.bottom .progressbar {
+			--progress-thumb-size: 14px;
+			height: 8px;
+			margin: 0 4px;
+			flex-grow: 1;
+			border: none;
+		}
+
+		.center {
+			display: flex;
+			flex-grow: 1;
+			align-items: center;
+			justify-content: space-around;
+		}
+
+		.video-time {
+			font-size: 10pt;
+			color: lightgray;
+			white-space: nowrap;
+		}
+
+		.time {
+			color: white;
+		}
+
+		.prev-btn {
+			border: none;
+			width: 60px;
+			height: 60px;
+			background-size: 42px;
+			background-color: rgba(0, 0, 0, 0.2);
+			background-image: url('/app/sinestesia/res/previous.png');
+			border-radius: 50%;
+			pointer-events: all;
+		}
+
+		.next-btn {
+			border: none;
+			width: 60px;
+			height: 60px;
+			background-size: 42px;
+			background-color: rgba(0, 0, 0, 0.2);
+			background-image: url('/app/sinestesia/res/next.png');
+			border-radius: 50%;
+			pointer-events: all;
+		}
+
+		.play-btn {
+			border: none;
+			width: 60px;
+			height: 60px;
+			background-size: 42px;
+			background-color: rgba(0, 0, 0, 0.2);
+			background-image: url('/app/sinestesia/res/play.png');
+			border-radius: 50%;
+			pointer-events: all;
+		}
+
+		.progressbar .thumb::before {
+			content: var(--time);
+			position: absolute;
+			bottom: 115%;
+			left: calc(50% - 2rem);
+			width: 4rem;
+			padding: 3px;
+			border: solid 1px #4AF;
+			font-size: 12pt;
+			text-align: center;
+			background: rgba(10, 10, 10, 0.4);
+		}
+	}
+
+	.video-container.playing .controls .play-btn {
+		background-image: url('/app/sinestesia/res/pause.png');
+	}
+}

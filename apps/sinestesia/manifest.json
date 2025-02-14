@@ -6,6 +6,6 @@
 		"~/dist/app.bundle.mjs"	
 	],
 	"styles": [
-		"/app/sinestesia/style.css"
+		"~/dist/styles.bundle.css"
 	]
 }

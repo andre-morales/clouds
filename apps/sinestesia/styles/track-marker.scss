@@ -1,0 +1,79 @@
+.app-sinestesia {
+	.segment-marker {
+		display: flex;
+		background: rgb(255, 255, 255, 0.2)
+	}
+
+	.segment-list {
+		width: 80px;
+		position: relative;
+	}
+
+	.segment-list ul {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		overflow-y: auto;
+	}
+
+	.segment-list li {
+		border-bottom: solid 1px gray;
+		font-size: 11pt;
+		white-space: nowrap;
+	}
+
+	.track {
+		position: relative;
+		margin:  0 4px 4px 4px;
+		height: 50px;
+		background-color: #888;
+		background-image:
+			linear-gradient(to right,  #999 1px, transparent 1px),
+			linear-gradient(to bottom, #999 1px, transparent 1px);
+		background-size: 10px 10px;
+	}
+
+	.tooltip {
+		display: none;
+		position: absolute;
+		top: 0;
+		left: 0;
+		padding: 2px;
+		border: solid 1px blue;
+		background-color: #223;
+		font-size: 10pt;
+		pointer-events: none;
+	}
+
+	.segment {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0px;
+		width: 0px;
+		border: solid 1px yellow;
+		overflow: hidden;
+		font: 12pt 'Tahoma';
+		color: black;
+		background: hsla(60, 100%, 40%, 0.7);
+	}
+
+	.segment:focus {
+		border: solid 1px hsl(30, 100%, 65%);
+		background: hsla(30, 100%, 50%, 0.8);
+	}
+
+	.selection {
+		background: hsla(210, 100%, 50%, 0.5);
+		pointer-events: none;
+	}
+
+	.play-line {
+		width: 1px;
+		border: none;
+		border-left: solid 1px red;
+		pointer-events: none;
+	}
+}
