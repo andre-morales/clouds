@@ -1,62 +1,17 @@
 import { SourceMapConsumer } from "source-map";
 import { FetchCache } from "../fetch_cache.mjs";
+import SourceLocation from "./source_location.mjs";
+import Browser from "../browser.mjs";
 
 var cachedSourceMaps: Map<string, Promise<string | null>> = new Map();
 var fetchCache = new FetchCache();
 
-export default class ErrorStack {
-	public readonly error: Error;
-	public stackEntries: StackEntry[];
-
-	constructor(err: Error) {
-		this.error = err;
-		this.stackEntries = [];
-	
-		if (!err.stack) {
-			return;
-		}
-
-		let lines = err.stack.split('\n');
-		for (let entry of lines) {
-			if (entry.length == 0) break;
-
-			let [fn, ref] = entry.split('@');
-
-			let ind = ref.lastIndexOf(':');
-			let column = ref.substring(ind + 1);
-
-			let indx2 = ref.lastIndexOf(':', ind - 1)
-			let line = ref.substring(indx2 + 1, ind);
-
-			let file = ref.substring(0, indx2);
-
-			let loc = new SourceLocation(fn, file, Number(line), Number(column));
-			let stackEntry = new StackEntry(loc);
-			this.stackEntries.push(stackEntry);
-		}
-	}
-
-	async mapAll() {
-		await Promise.all(this.stackEntries.map(async (entry) => {
-			await entry.map();
-		}));
-	}
-
-	toString() {
-		let result = '';
-		for (let entry of this.stackEntries) {
-			result += entry.toString() + '\n';
-		}
-		return result;
-	}
-}
-
-class StackEntry {
+export class StackFrame {
 	private readonly originalLocation: SourceLocation;
 	private mappedLocation: SourceLocation;
-	private noSource: boolean;
+	private noMapping: boolean;
 
-	constructor(location: SourceLocation) {
+	public constructor(location: SourceLocation) {
 		this.originalLocation = location;
 	}
 
@@ -65,8 +20,17 @@ class StackEntry {
 	 * place if not.
 	 */
 	public getLocation() {
-		if (this.mappedLocation) return this.mappedLocation;
-		return this.originalLocation;
+		const og = this.originalLocation;
+		const mp = this.mappedLocation;
+
+		// If no mapping is available whatsoever, use the original location
+		if (!mp) return og;
+		
+		// If the mapping is complete, use it
+		if (mp.functionName) return mp;
+
+		// Mix the two mappings to get most information out
+		return new SourceLocation(og.description, og.functionName, mp.file, mp.lineNo, mp.columnNo);
 	}
 
 	/**
@@ -84,11 +48,19 @@ class StackEntry {
 	}
 
 	public async map(): Promise<void> {
-		if (this.noSource) return null;
+		if (this.noMapping) return null;
+
+		// Can't map locations without a valid line number
+		if (!(this.originalLocation.lineNo >= 1)) {
+			this.noMapping = true;
+			return;
+		}
+
+		await enableSourceMaps();
 
 		let source = await getSourceMapOf(this.originalLocation.file);
 		if (!source) {
-			this.noSource = true;
+			this.noMapping = true;
 			return;
 		}
 
@@ -98,31 +70,32 @@ class StackEntry {
 			column: this.originalLocation.columnNo
 		});
 
-		this.mappedLocation = new SourceLocation(mapping.name, mapping.source, mapping.line, mapping.column);
+		this.mappedLocation = new SourceLocation(
+			this.originalLocation.description,
+			mapping.name,
+			mapping.source,
+			mapping.line,
+			mapping.column
+		);
 	}
 
 	toString() {
 		return this.getLocation();
-		//return this.getOriginalLocation().toString() + " -- " + this.getMappedLocation();
 	}
 }
 
-class SourceLocation {
-	public readonly fnName: string;
-	public readonly file: string;
-	public readonly lineNo: number;
-	public readonly columnNo: number;
-
-	constructor(fnName: string, file: string, lineNo: number, columnNo: number) {
-		this.fnName = fnName;
-		this.file = file;
-		this.lineNo = lineNo;
-		this.columnNo = columnNo;
+var whenSourceMapsAvailable: Promise<void>;
+async function enableSourceMaps() {
+	if (!whenSourceMapsAvailable) {
+		whenSourceMapsAvailable = (async () =>{
+			await Browser.addScript('/res/lib/source-map/source-map.js');
+			window.sourceMap.SourceMapConsumer.initialize({
+				"lib/mappings.wasm": "https://unpkg.com/source-map@0.7.3/lib/mappings.wasm"
+			});
+		})();
 	}
-
-	toString() {
-		return `${this.fnName}@${this.file}:${this.lineNo}:${this.columnNo}`
-	}
+	
+	return whenSourceMapsAvailable;
 }
 
 /**

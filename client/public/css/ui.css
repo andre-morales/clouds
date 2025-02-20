@@ -279,6 +279,25 @@
 	padding: 0px 8px;
 }
 
+ui-error-display {
+	display: block;
+	border: inset 1px black;
+	font-family: monospace;
+}
+
+ui-error-display header {
+	color: var(--accent-color);
+	margin-bottom: 1rem;
+}
+
+ui-error-display table {
+	border-collapse: collapse;
+}
+
+ui-error-display table td {
+	padding: 0px 8px;
+}
+
 .fullscreened {
 	position: absolute;
 	left: 0;

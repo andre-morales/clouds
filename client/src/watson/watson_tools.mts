@@ -1,5 +1,6 @@
 import { Reactor, ReactorEvent } from "../events.mjs";
 import Dialogs from "../ui/dialogs.mjs";
+import Browser from "../utils/browser.mjs";
 import ErrorHandler from "./error_handler.mjs";
 
 export class WatsonTools {
@@ -8,14 +9,20 @@ export class WatsonTools {
 	events: Reactor<{
 		fetch: FetchEvent
 	}>;
+	private static instance: WatsonTools;
 
 	constructor() {
 		this.logHistory = '[Begin]\n';
-		this.initLogging();	
 		this.fetchHistory = [];
-		this.trackFetch();
 		this.events = new Reactor();
 		this.events.register('fetch');
+	}
+
+	async init() {
+		EntrySpace.log("Initializing Watson...");
+		this.initLogging();	
+		this.trackFetch();
+		EntrySpace.log("Watson tools online.");
 	}
 
 	private trackFetch() {
@@ -69,6 +76,15 @@ export class WatsonTools {
 	}
 
 	private initLogging() {}
+
+	public static async init() {
+		this.instance = new WatsonTools();
+		await this.instance.init();
+	}
+
+	public static get() {
+		return this.instance;
+	}
 }
 
 export class FetchEvent extends ReactorEvent {

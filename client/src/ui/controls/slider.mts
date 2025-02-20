@@ -1,5 +1,3 @@
-import { Pointer } from "/@sys/utils/objects.mjs";
-
 var staticInit = false;
 var stylesheet: CSSStyleSheet;
 

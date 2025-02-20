@@ -1,7 +1,7 @@
 import App from '/@sys/app.mjs';
 import { AudioSystem } from './bridges/audio_system.mjs';
 import { Reactor } from './events.mjs';
-import Browser, { addScript } from './utils/browser.mjs';
+import Browser from './utils/browser.mjs';
 import { IllegalStateFault } from './faults.mjs';
 import * as MediaSessionBridge from './bridges/media_session_bridge.mjs';
 import Desktop from './ui/desktop.mjs';
@@ -22,13 +22,9 @@ declare global {
 }
 
 export async function main() {
-	// Enable source maps
-	await addScript('/res/lib/source-map/source-map.js');
-	window.sourceMap.SourceMapConsumer.initialize({
-        "lib/mappings.wasm": "https://unpkg.com/source-map@0.7.3/lib/mappings.wasm"
-    });
-
 	EntrySpace.log('Reached core module entry point.');
+
+	await WatsonTools.init();
 
 	loadingText = document.getElementById('loading-text');
 	loadingText.innerHTML = "Initializing core...";
@@ -88,7 +84,7 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.240';
+	static readonly CLIENT_VERSION = '1.0.243';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
@@ -113,8 +109,8 @@ export class ClientClass {
 		window.Client = clientInstance;
 		(window as any).App = App;
 
-		// Start logging record
-		this.initWatsonTools();
+		// Init watson logging and error handling
+		this.watson = WatsonTools.get();
 
 		// Display API version
 		fetch('/stat/version').then(async (fRes) => {
@@ -202,10 +198,6 @@ export class ClientClass {
 		// Remove app from app list
 		Arrays.erase(this.runningApps, instance);
 		this.events.dispatch('apps-rem');
-	}
-
-	initWatsonTools() {
-		this.watson = new WatsonTools();
 	}
 
 	initGraphicalErrors() {

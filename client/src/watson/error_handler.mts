@@ -1,29 +1,26 @@
 import { ClientClass } from "../client_core.mjs";
+import { UIErrorDisplay } from "../ui/controls/error_display.mjs";
 import { Dialog } from "../ui/dialogs.mjs";
-import * as ErrorFormatter from "../utils/errors/error_formatter.mjs";
-import Strings from "../utils/strings.mjs";
 
 export async function showError(title: string, desc: string, err: Error) {
-	let stack;
-	
-	try {
-		let output = await ErrorFormatter.formatAsHTML(err);
-		stack = `<div class='error-log'>${output}</div>`;
-	} catch(err) {
-		stack = Strings.escapeHTML(err.stack);
-		console.log(err);				
-	}
-
 	let dialog = new Dialog(ClientClass.get().desktop.dwm);
 	dialog.setIcon('error');
 	dialog.setTitle(title);
-	dialog.setMessageHTML(desc + stack);
+	dialog.setMessageHTML(desc);
+	let $errorDisplay = $('<ui-error-display>');
+	let errorDisplay = $errorDisplay[0] as UIErrorDisplay;
+	dialog.$message.css('width', '100%');
+	dialog.$message.append($errorDisplay);
+
+	errorDisplay.setError(err);
+
 	dialog.show();
 }
 
 export function initGraphicErrorHandlers() {
 	window.addEventListener('error', (ev) => {
-		let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
+		showError("Error", "Unhandled error", ev.error);
+	/*	let msg = `[Error] Unhandled error "${ev.message}"\n    at: ${ev.filename}:${ev.lineno}\n  says: ${ev.error}\n stack: `;
 		if (ev.error && ev.error.stack) {
 			msg += ev.error.stack;
 		} else {
@@ -34,7 +31,7 @@ export function initGraphicErrorHandlers() {
 			stack = `\n${ev.error.stack}`;
 		}
 
-		Client.showErrorDialog("Error", `Unhandled error:\n${ev.message}${stack}`);
+		Client.showErrorDialog("Error", `Unhandled error:\n${ev.message}${stack}`);*/
 	});
 
 	window.addEventListener('unhandledrejection', async (ev) => {
