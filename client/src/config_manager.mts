@@ -1,5 +1,5 @@
 import { FetchException } from "./faults.mjs";
-import { RootKey } from "./root_key.mjs";
+import { RootKey } from "./utils/root_key.mjs";
 
 export class ConfigManager {
 	preferencesMgr: RootKey;

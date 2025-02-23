@@ -12,6 +12,7 @@ import { AppManager } from './app_manager.mjs';
 import { ConfigManager } from './config_manager.mjs';
 import Arrays from '../../common/arrays.mjs';
 import { WatsonTools } from './watson/watson_tools.mjs';
+import WebResourceManager from './web_resource_manager.mjs';
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
@@ -91,7 +92,7 @@ export class ClientClass {
 	static readonly API_VERSION: string;
 
 	watson: WatsonTools;
-	resources: ResourceManager;
+	resources: WebResourceManager;
 	desktop: Desktop;
 	audio: AudioSystem;
 	appManager: AppManager;
@@ -124,7 +125,7 @@ export class ClientClass {
 
 		// Create main structures
 		this.runningApps = [];
-		this.resources = new ResourceManager();
+		this.resources = new WebResourceManager();
 		this.events = new Reactor();
 		this.events.register('log', 'apps-add', 'apps-rem');
 		this.config = new ConfigManager();

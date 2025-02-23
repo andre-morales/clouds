@@ -1,5 +1,5 @@
-import { FileSystem } from './bridges/filesystem.mjs';
-import Objects from './utils/objects.mjs';
+import { FileSystem } from '../bridges/filesystem.mjs';
+import Objects from './objects.mjs';
 
 type ObserverCallback = (value: unknown, chain: string[]) => void;
 

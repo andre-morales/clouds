@@ -5,7 +5,7 @@ export default class Resource {
 	public name: string;
 
 	// All the users of this resource.
-	private users: unknown[];
+	private users: Set<unknown>;
 
 	// If this resource is unloaded. Once a resource is unloaded, it will never be active anymore.
 	private unloaded: boolean;
@@ -21,7 +21,7 @@ export default class Resource {
 
 	constructor() {
 		this.name = null;
-		this.users = [];
+		this.users = new Set();
 		this.unloadFn = null;
 		this.unloaded = false;
 		this.permanent = false;
@@ -33,43 +33,55 @@ export default class Resource {
 	 * At a given time, a user can only own a resource once.
 	 */
 	public addUser(user: unknown): void {
-		if(this.unloaded) throw new IllegalStateFault("The resource was already unloaded.");
+		if(this.unloaded) throw new IllegalStateFault("The resource is unloaded.");
 
-		if (this.users.includes(user)) {
+		if (this.users.has(user)) {
 			throw new IllegalStateFault("The resource is already owned by the user specified.");
 		}
 
-		if (this.unique && this.users.length >= 1)
+		if (this.unique && this.users.size >= 1)
 			throw new IllegalStateFault("The resource is unique and can only be owned by a single object.")
 
-		this.users.push(user);
+		this.users.add(user);
 	}
 
 	public removeUser(user: unknown): void {
 		if(this.unloaded) throw new IllegalStateFault("The resource was already unloaded.");
 
-		// Get user index
-		var i = this.users.indexOf(user);
-		if (i == -1) throw new IllegalStateFault("The resource is not owned by the user specified.");
+		if(!this.users.delete(user)) {
+			throw new IllegalStateFault("The resource is not owned by the user specified.");
+		}
 		
-		// Remove it from array
-		this.users.splice(i, 1);
-
 		// If there are no users for this resource and it's not a permanent resource. Unload it.
-		if (this.users.length == 0 && !this.permanent) {
+		if (this.users.size == 0 && !this.permanent) {
 			this.unload();
 		}	
 	}
 
 	/**
-	 * Find the user 'oldUser' of this resource and replace it with 'newUser'.
+	 * Removes a user from this resource and replaces it with another one. This function does not
+	 * trigger the resource unloading.
+	 * @param oldUser The user to be removed from the owner set. The resource MUST be owned by this
+	 * user.
+	 * @param newUser The user to be added to the owner set. The resource must NOT be owned already 
+	 * by this user.
 	 */
 	public replaceUser(oldUser: unknown, newUser: unknown) {
-		this.users[this.users.indexOf(oldUser)] = newUser;
+		if(this.unloaded)
+			throw new IllegalStateFault("The resource is unloaded.");
+
+		if (!this.users.has(oldUser))
+			throw new IllegalStateFault("The resource is not owned by the old user specified.");
+		
+		if (this.users.has(newUser))
+			throw new IllegalStateFault("The resource is already owned by the new user specified.");
+
+		this.users.delete(oldUser);
+		this.users.add(newUser);
 	}
 
 	/**
-	 * Invokes this resource unload function and flags it as unloaded.
+	 * Invoke this resource unload function and flag it as unloaded.
 	 */
 	public unload() {
 		this.unloaded = true;
