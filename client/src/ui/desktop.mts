@@ -29,6 +29,10 @@ export class Desktop {
 			id: 'dwm',
 			noWindowGrouping: true
 		});
+		
+		// Prevent any created windows from thinking they are the main window of DWM
+		this.dwm.mainWindow = null;
+
 		this.events = new Reactor();
 		this.events.register("window-created", "window-destroyed");
 		this.$desktop = $('#desktop');
