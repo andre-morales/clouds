@@ -67,7 +67,7 @@ export class Desktop {
 			for (let w of this.windowManager.getWindows()) {
 				if (w.maximized) {
 					w.getPresentation().setSize(this.windowsWidth, this.windowsHeight);
-					w.dispatch('resize');
+					w.events.dispatch('resize');
 				}
 			}
 		});	
@@ -111,7 +111,7 @@ export class Desktop {
 		if(!this.windowManager.removeWindow(win)) return;
 
 		// Dispatch closed event
-		win.dispatch('closed');
+		win.events.dispatch('closed');
 
 		// Destroy all children windows
 		for (let c of win.children) {
@@ -142,7 +142,7 @@ export class Desktop {
 
 	backButton() {
 		if (this.focusedWindow) {
-			this.focusedWindow.dispatch('backnav');
+			this.focusedWindow.events.dispatch('backnav');
 		}
 	}
 	

@@ -29,13 +29,13 @@ export enum DisplayState {
 
 export default class Window {
 	public readonly app: App;
+	public events: Reactor;
 	children: Window[];
 	maximized: boolean;
 	minimized: boolean;
 	optionsCtxMenu: ContextMenu;
 	private liveState: LiveState;
 	private presentation: WindowPresentation;
-	private events: Reactor;
 	private owner: Window;
 	private closeBehavior: CloseBehavior;
 	private initialPosition: InitialPosition;
@@ -54,7 +54,6 @@ export default class Window {
 	private icon: string;
 	private $windowRoot: $Element;
 	private $windowHeader: $Element;
-	private $windowTitle: $Element;
 	
 	constructor(app: App) {
 		if (!app) throw new InternalFault("Windows must have valid owner apps.");
@@ -132,7 +131,6 @@ export default class Window {
 		// Queries
 		this.$windowRoot = $win;
 		this.$windowHeader = $win.find('.window-head');
-		this.$windowTitle = $win.find('.window-title');
 
 		// Initialize presentation
 		this.presentation = new WindowPresentation(this);
@@ -149,7 +147,7 @@ export default class Window {
 			]
 		});
 		hammer.on('swipeleft', () => {
-			this.dispatch('backnav');
+			this.events.dispatch('backnav');
 		});
 
 		this.$windowRoot.on("mousedown", () => this.focus());
@@ -158,7 +156,7 @@ export default class Window {
 
 		$win.find('.close-btn').click(() => {
 			let closingEv = new ReactorEvent();
-			this.dispatch('closing', closingEv);
+			this.events.dispatch('closing', closingEv);
 		});
 
 		this.events.default('closing', (ev) => {
@@ -186,7 +184,7 @@ export default class Window {
 			Client.desktop.openCtxMenuAt(this.optionsCtxMenu, ev.clientX, ev.clientY);
 		});
 		Client.desktop.addCtxMenuOn(this.$windowHeader, () => this.optionsCtxMenu)
-		this.$windowTitle.dblclick(() => this.setMaximized(!this.maximized));
+		this.presentation.$windowTitle.dblclick(() => this.setMaximized(!this.maximized));
 
 		// Styling
 		if (this.icon) this.setIcon(this.icon);
@@ -240,7 +238,7 @@ export default class Window {
 			['-Restore', () => this.restore()],
 			['-Refit', () => this.refit()],
 			['|'],
-			['-Close', () => this.dispatch('closing', new ReactorEvent())]
+			['-Close', () => this.events.dispatch('closing', new ReactorEvent())]
 		]);
 	}
 
@@ -344,7 +342,7 @@ export default class Window {
 
 	public setTitle(title: string) {
 		this.title = title;
-		this.$windowTitle.text(title);
+		this.presentation.setTitle(title);
 		if (this.taskButton && this.taskButton.single) this.taskButton.setText(title);
 	}
 
@@ -402,7 +400,7 @@ export default class Window {
 		this.height = h;
 
 		this.presentation.setSize(w, h);
-		this.dispatch('resize');
+		this.events.dispatch('resize');
 	}
 
 	public getMinSize(): [number, number] {
@@ -592,13 +590,5 @@ export default class Window {
 
 	public on(evClass: string, callback: EventCallback) {
 		this.events.on(evClass, callback);
-	}
-
-	public off(evClass: string, callback: EventCallback) {
-		this.events.off(evClass, callback);
-	}
-
-	public dispatch(evClass: string, ev?: ReactorEvent) {
-		this.events.dispatch(evClass, ev);
 	}
 }

@@ -4,10 +4,18 @@ export class WindowPresentation {
 	public readonly window: Window;
 	private zIndex: number;
 	private $window: $Element;
+	$windowTitle: $Element;
 
 	constructor(window: Window) {
 		this.window = window;
-		this.$window = window.$window;
+
+		let $win = window.$window;
+		this.$window = $win;
+		this.$windowTitle = $win.find('.window-title');
+	}
+
+	setTitle(title: string) {
+		this.$windowTitle.text(title);
 	}
 
 	setSize(width: number, height: number) {
