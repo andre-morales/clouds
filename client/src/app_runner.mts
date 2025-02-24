@@ -1,5 +1,5 @@
 import App, { AppManifest, AppState } from "./app.mjs";
-import { Paths } from "./bridges/filesystem.mjs";
+import { Paths } from "./drivers/filesystem.mjs";
 import { InternalFault } from "./faults.mjs";
 import Resource from "./resource.mjs";
 import Objects, { Pointer } from "./utils/objects.mjs";

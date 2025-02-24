@@ -1,4 +1,4 @@
-import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
+import { FileSystem, Paths } from '/@sys/drivers/filesystem.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Window from '/@sys/ui/window.mjs';
 import ExplorerApp from '../main.mjs';

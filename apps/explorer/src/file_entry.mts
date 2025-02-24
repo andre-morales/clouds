@@ -1,4 +1,4 @@
-import { RawFileEntry } from "/@sys/bridges/filesystem.mjs";
+import { RawFileEntry } from "/@sys/drivers/filesystem.mjs";
 
 export class FileEntry {
 	public readonly path: string;

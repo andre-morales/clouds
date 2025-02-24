@@ -1,5 +1,5 @@
-import { Paths } from "/@sys/bridges/filesystem.mjs";
-import { FileSystem } from "/@sys/bridges/filesystem.mjs";
+import { Paths } from "/@sys/drivers/filesystem.mjs";
+import { FileSystem } from "/@sys/drivers/filesystem.mjs";
 import Deferred from '/@comm/deferred.mjs';
 
 export enum FileOperationKind {

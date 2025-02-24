@@ -2,7 +2,7 @@ import SinestesiaApp from "../app.mjs";
 import { ContentType, timeToString } from "../media_player.mjs";
 import { TrackSegment } from "./track_segment.mjs";
 import { VideoContainer } from "./video_container.mjs";
-import { FileSystem } from "/@sys/bridges/filesystem.mjs";
+import { FileSystem } from "/@sys/drivers/filesystem.mjs";
 import Dialogs from "/@sys/ui/dialogs.mjs";
 import Arrays from "/@comm/arrays.mjs";
 

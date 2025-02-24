@@ -1,4 +1,4 @@
-import { FileSystem } from '../bridges/filesystem.mjs';
+import { FileSystem } from '../drivers/filesystem.mjs';
 import Objects from './objects.mjs';
 
 type ObserverCallback = (value: unknown, chain: string[]) => void;

@@ -4,9 +4,9 @@ import { EventCallback, Reactor, ReactorEvent } from '../events.mjs';
 import { InternalFault, IllegalStateFault } from '../faults.mjs';
 import { App } from '../app.mjs';
 import Browser from '../utils/browser.mjs';
-import Utils from '../utils/utils.mjs';
 import Arrays from '../../../common/arrays.mjs';
 import { WindowPresentation } from './window_presentation.mjs';
+import Utils from '../utils/utils.mjs';
 
 enum LiveState {
 	NIL, INIT, READY, DYING, DEAD
@@ -80,7 +80,7 @@ export default class Window {
 		this.restoreBounds = [8, 8, 600, 400];
 
 		this.events = new Reactor();
-		this.events.register('init', 'closing', 'closed', 'backnav', 'resize');
+		this.events.register('init', 'closing', 'first-display', 'closed', 'backnav', 'resize');
 
 		this.closeBehavior = CloseBehavior.DISPOSE_WINDOW;
 		this.initialPosition = InitialPosition.DEFAULT;
@@ -271,7 +271,7 @@ export default class Window {
 	* @returns A tuple of width/height dimensions.
 	 */
 	public async getPackedDimensions(): Promise<[number, number]> {
-		// Remove any hard with/height properties
+		// Remove any hard with/height properties. This will flow the content inside.
 		this.$windowRoot.css('width', '');
 		this.$windowRoot.css('height', '');
 

@@ -1,9 +1,9 @@
 import App from '/@sys/app.mjs';
-import { AudioSystem } from './bridges/audio_system.mjs';
+import { AudioSystem } from './drivers/audio_system.mjs';
 import { Reactor } from './events.mjs';
 import Browser from './utils/browser.mjs';
 import { IllegalStateFault } from './faults.mjs';
-import * as MediaSessionBridge from './bridges/media_session_bridge.mjs';
+import * as MediaSessionBridge from './drivers/media_session_bridge.mjs';
 import Desktop from './ui/desktop.mjs';
 import UIControls from './ui/controls/controls.mjs';
 import ResourceManager from './resource_manager.mjs';

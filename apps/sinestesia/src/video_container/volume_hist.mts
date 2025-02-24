@@ -1,6 +1,6 @@
 import { ContentType } from "../media_player.mjs";
 import { VideoContainer } from "./video_container.mjs";
-import { Paths } from "/@sys/bridges/filesystem.mjs";
+import { Paths } from "/@sys/drivers/filesystem.mjs";
 
 export class VolumeHistogram {
 	private container: VideoContainer;

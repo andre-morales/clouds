@@ -5,7 +5,7 @@ import { VideoContainer } from './video_container/video_container.mjs';
 import type ExplorerApp from '../../explorer/main.mjs';
 import { ContextMenu } from '/@sys/ui/controls/context_menu/ctx_menu.mjs';
 import ContextCheckbox from '/@sys/ui/controls/context_menu/ctx_checkbox.mjs';
-import { FileSystem, Paths, FileTypes } from '/@sys/bridges/filesystem.mjs';
+import { FileSystem, Paths, FileTypes } from '/@sys/drivers/filesystem.mjs';
 import Fullscreen from '/@sys/ui/fullscreen.mjs';
 import App from '/@sys/app.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';

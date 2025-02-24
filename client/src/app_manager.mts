@@ -1,4 +1,4 @@
-import { FileSystem } from "./bridges/filesystem.mjs";
+import { FileSystem } from "./drivers/filesystem.mjs";
 
 export interface AppDefinition {
 	id: string;

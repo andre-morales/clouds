@@ -1,4 +1,4 @@
-import { Paths } from '/@sys/bridges/filesystem.mjs';
+import { Paths } from '/@sys/drivers/filesystem.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Util from '/@sys/utils/browser.mjs';
 import Window, { InitialPosition } from '/@sys/ui/window.mjs';

@@ -1,9 +1,9 @@
 import ExplorerApp from "./explorer.mjs";
 import ExplorerProperties from "./properties_dialog.mjs";
-import { FileTypes, Paths } from "/@sys/bridges/filesystem.mjs";
+import { FileTypes, Paths } from "/@sys/drivers/filesystem.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
 import { ContextMenu } from "/@sys/ui/controls/context_menu/ctx_menu.mjs";
-import { FileSystem } from "/@sys/bridges/filesystem.mjs";
+import { FileSystem } from "/@sys/drivers/filesystem.mjs";
 import Util from "/@sys/utils/browser.mjs";
 import { FileEntry } from "./file_entry.mjs";
 import { CtxEntry } from "/@sys/ui/controls/context_menu/shorthand.mjs";

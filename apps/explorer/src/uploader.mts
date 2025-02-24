@@ -1,5 +1,5 @@
 import type ExplorerApp from './explorer.mjs';
-import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
+import { FileSystem, Paths } from '/@sys/drivers/filesystem.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 
 var Client: ClientClass;

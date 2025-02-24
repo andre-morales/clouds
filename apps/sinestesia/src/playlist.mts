@@ -1,5 +1,5 @@
 import SinestesiaApp from "./app.mjs";
-import { FileSystem, Paths, RawFileEntry } from "/@sys/bridges/filesystem.mjs";
+import { FileSystem, Paths, RawFileEntry } from "/@sys/drivers/filesystem.mjs";
 import Utils from "/@sys/utils/utils.mjs";
 
 class Playlist {

@@ -1,6 +1,6 @@
 import Dialogs from '/@sys/ui/dialogs.mjs';
 import { ContextMenu } from '/@sys/ui/controls/context_menu/ctx_menu.mjs';
-import { FileSystem, Paths } from '/@sys/bridges/filesystem.mjs';
+import { FileSystem, Paths } from '/@sys/drivers/filesystem.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';

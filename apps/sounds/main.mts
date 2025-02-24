@@ -2,7 +2,7 @@ import { ClientClass } from "/@sys/client_core.mjs";
 import { App } from '/@sys/app.mjs';
 import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 import { UISlider } from "/@sys/ui/controls/slider.mjs";
-import { AppAudioSource } from "/@sys/bridges/audio_system.mjs";
+import { AppAudioSource } from "/@sys/drivers/audio_system.mjs";
 
 export default class SoundsApp extends App {
 	private window: Window;

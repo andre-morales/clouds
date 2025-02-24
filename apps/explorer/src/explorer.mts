@@ -1,7 +1,7 @@
-import LocalClipboard from '/@sys/bridges/clipboard.mjs';
+import LocalClipboard from '/@sys/drivers/clipboard.mjs';
 import Dialogs from '/@sys/ui/dialogs.mjs';
 import { ContextMenu } from '/@sys/ui/controls/context_menu/ctx_menu.mjs';
-import { FileSystem, Paths, RawFileEntry } from '/@sys/bridges/filesystem.mjs';
+import { FileSystem, Paths, RawFileEntry } from '/@sys/drivers/filesystem.mjs';
 import Deferred from '/@comm/deferred.mjs';
 import App from '/@sys/app.mjs';
 import Window from '/@sys/ui/window.mjs';

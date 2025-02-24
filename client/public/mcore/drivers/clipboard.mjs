@@ -1,0 +1,1 @@
+export default PublicModules["::/@sys/drivers/clipboard.mjs"].default;
