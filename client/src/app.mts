@@ -28,7 +28,7 @@ export interface AppManifest {
 }
 
 export default class App {	
-	public readonly events: Reactor<EventsTypeMap>;
+	public readonly events: Reactor<EventsTypeMap, true>;
 	public readonly classId: string;
 	readonly resources: ResourceManager;
 	readonly buildArgs: unknown[];

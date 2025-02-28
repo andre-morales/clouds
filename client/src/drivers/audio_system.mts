@@ -167,13 +167,13 @@ export class AudioSystem {
 			gain.disconnect();
 			Arrays.erase(this.appSources, audioSource);
 
-			this.events.fire('source-disconnected', new AudioSourceEvent(audioSource));
+			this.events.dispatch('source-disconnected', new AudioSourceEvent(audioSource));
 		});
 		res.addUser(app);
 		app.resources.add(res);
 
 		// Make listeners aware of this connection
-		this.events.fire('source-connected', new AudioSourceEvent(audioSource));
+		this.events.dispatch('source-connected', new AudioSourceEvent(audioSource));
 	}
 
 	private connectArr(arr: AudioNode[]) {

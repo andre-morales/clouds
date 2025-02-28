@@ -1,6 +1,6 @@
 import App from '/@sys/app.mjs';
 import { AudioSystem } from './drivers/audio_system.mjs';
-import { Reactor } from './events.mjs';
+import { Reactor, ReactorEvent } from './events.mjs';
 import Browser from './utils/browser.mjs';
 import { IllegalStateFault } from './faults.mjs';
 import * as MediaSessionBridge from './drivers/media_session_bridge.mjs';
@@ -85,7 +85,7 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.243';
+	static readonly CLIENT_VERSION = '1.0.244';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
@@ -99,7 +99,7 @@ export class ClientClass {
 	config: ConfigManager;
 	mediaSessionBridge: typeof MediaSessionBridge;
 	runningApps: App[];
-	events: Reactor;
+	events: Reactor<{ log: ReactorEvent }>;
 
 	constructor() {}
 

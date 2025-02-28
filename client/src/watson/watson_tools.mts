@@ -37,7 +37,7 @@ export class WatsonTools {
 
 			// Fire an event to save fetch() state
 			let ev = new FetchEvent(request, promise);
-			this.events.fire('fetch', ev);
+			this.events.dispatch('fetch', ev);
 			this.fetchHistory.push(ev);
 
 			// Return the result as regular fetch would

@@ -4,6 +4,7 @@ import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import Objects from '/@sys/utils/objects.mjs';
 import Utils from '/@sys/utils/utils.mjs';
+import { ReactorEvent } from '/@sys/events.mjs';
 
 var Client: ClientClass;
 
@@ -12,7 +13,7 @@ export default class ConsoleApp extends App {
 	commandHistory: string[];
 	commandHistoryIndex: number;
 	currentInput: string;
-	logListener: Function;
+	logListener: (ev: ReactorEvent) => void;
 	$app: $Element;
 	$content: $Element;
 	$cmdField: $Element;
