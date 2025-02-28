@@ -17,6 +17,8 @@ body {
 	width: 100%;
 	height: 100%;
 	touch-action: none;
+	/* Prevent vertical scroll motion from reloading the system */
+	overscroll-behavior-y: none;
 }
 
 #desktop {
