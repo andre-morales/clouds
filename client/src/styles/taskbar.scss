@@ -1,0 +1,140 @@
+/* Taskbar */ 
+.desktop .taskbar {
+	display: flex;
+	flex: 0 0 auto;
+	width: 100%;
+	height: var(--taskbar-height);
+	background: linear-gradient(0deg, #111, 20%, #222, 60%, #444);
+
+	.tasks {
+		display: flex;
+		justify-content: flex-start;
+		flex-grow: 1;
+		overflow: hidden;
+		border-left: groove 2px #101018;
+	}
+
+	.task-button {
+		display: flex;
+		position: relative;
+		align-items: center;
+		height: 100%;
+		max-width: 8em;
+		margin: 0;
+		padding: 0 4px 0 0;
+		border-right: groove 2px #111;
+		overflow: hidden;
+		background: linear-gradient(to top, #222, #555);
+
+		.count {
+			position: absolute;
+			left: 2px;
+			bottom: 0px;
+			font-size: 8pt;
+			font-weight: bold;
+			color: hsl(230, 100%, 70%);
+		}
+	
+		img {
+			width: 40px;
+			height: 28px;
+			min-width: 32px;
+			margin-right: 2px;
+			vertical-align: middle;
+			object-fit: contain;
+		}
+	
+		.text {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			font: 10pt 'Tahoma';
+			white-space: nowrap;
+		}
+	}
+
+	.fullscreen-btn {
+		width: 36px;
+		background-color: transparent;
+		background-image: url('/res/img/icons/fullscreen.png');
+		background-size: 26px;
+		flex-shrink: 0;
+	}
+
+	.apps-btn {
+		width: 36px;
+		background-color: transparent;
+		background-image: url('/res/img/icons/apps.png');
+		background-size: 26px;
+		flex-shrink: 0;
+	}
+
+	#taskbar-apps-menu {
+		display: none;
+		position: absolute;
+		left: 0;
+		bottom: var(--taskbar-height);
+		border: solid 1px var(--base-color);
+		padding: 2px 2px;
+		font-size: 13pt;
+		background: #202020;
+		box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+
+		li {
+			display: block;
+			padding: 4px 1.5em 4px 1em;
+
+			&:hover {
+				background-color: var(--base-color-dark);
+			}
+		}
+
+		img {
+			width: 24px;
+			height: 24px;
+			margin: 0 .5em 0 0;
+			vertical-align: middle;
+		}
+
+		button {
+			float: right;
+			margin: .3em .15em .15em;
+			padding: .35em .5em;
+			font: 12pt 'Tahoma';
+			color: white;
+		}
+	}
+
+	#taskbar-window-list {
+		display: none;
+		position: absolute;
+		border: solid 1px var(--base-color);
+		padding: 2px 2px;
+		font-size: 13pt;
+		background: #202020;
+		box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+
+		li {
+			display: block;
+			padding: 4px 1em 4px .5em;
+
+			&:hover {
+				background-color: var(--base-color-dark);
+			}
+		}
+
+		img {
+			width: 20px;
+			height: 20px;
+			margin: 0 .5em 0 0;
+			vertical-align: middle;
+		}
+	}
+
+	#taskbar-apps-menu hr {
+		margin: 2px 4px 2px 4px;
+		border: none;
+		border-left: solid 2em transparent;
+		border-right: solid 2em transparent;
+		border-bottom: solid 1px darkgray;
+	}
+}

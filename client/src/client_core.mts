@@ -6,7 +6,6 @@ import { IllegalStateFault } from './faults.mjs';
 import * as MediaSessionBridge from './drivers/media_session_bridge.mjs';
 import Desktop from './ui/desktop.mjs';
 import UIControls from './ui/controls/controls.mjs';
-import ResourceManager from './resource_manager.mjs';
 import AppRunner from './app_runner.mjs';
 import { AppManager } from './app_manager.mjs';
 import { ConfigManager } from './config_manager.mjs';
@@ -46,7 +45,7 @@ export async function main() {
 
 	// Load basic desktop page and style, this will bring the taskbar and system version
 	// on display
-	let desktopStyleProm = Browser.addStylesheet('/res/css/desktop.css');
+	let desktopStyleProm = Browser.addStylesheet('/res/pack/desktop.chk.css');
 	await desktopPageProm;
 	await desktopStyleProm;
 
@@ -59,8 +58,7 @@ export async function main() {
 
 	// Schedule loading of main styles
 	let stylesPromises = Promise.all([
-		Browser.addStylesheet('/res/css/ui.css'),
-		Browser.addStylesheet('/res/css/controls.css')
+		Browser.addStylesheet('/res/pack/ui.chk.css')
 	]);
 
 	// Wait for scripts and styles
@@ -85,7 +83,7 @@ export async function main() {
 }
 	
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.244';
+	static readonly CLIENT_VERSION = '1.0.245';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;

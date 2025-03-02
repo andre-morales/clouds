@@ -1,0 +1,149 @@
+.window {
+	--titlebar-height: 28px;
+	--icon-size: 20px;
+	pointer-events: auto;
+	display: none; /* Windows start invisible */
+	flex-direction: column;
+	position: absolute;
+	overflow: hidden;
+	box-shadow: 0px 0px 4px black;
+	
+	&.maximized {
+		--titlebar-height: 22px;
+		box-shadow: none;
+	}
+
+	&.decorated:not(.maximized) {
+		border: solid 1px darkgray;
+	}
+
+	&.decorated.focused {
+		border-color: #25E;
+		box-shadow: 0px 0px 8px black;
+	}
+
+	&.visible {
+		display: flex;
+	}
+
+	& > .window-head {
+		display: none;	
+	}
+
+	&.decorated > .window-head {
+		display: flex;
+		flex-shrink: 0;
+		height: var(--titlebar-height);
+		background: var(--window-unfocused-bar-pattern);
+		white-space: nowrap;
+	}
+
+	&.decorated.focused > .window-head {	
+		background: var(--window-focused-bar-pattern);
+	}
+
+	&.decorated > .window-head button {
+		width: 32px;
+		height: 100%;
+		flex-shrink: 0;
+		background-color: transparent;
+		background-size: var(--icon-size);
+		border: none;
+		color: white;
+	}
+
+	&.decorated > .window-head button:hover {
+		background-color: rgba(0, 0, 0, 0.2);
+	}
+
+	&.decorated > .window-head .window-title {
+		flex-grow: 1;
+		flex-shrink: 1;
+		overflow: hidden;
+		line-height: var(--titlebar-height);
+		font-size: 11pt;
+		text-overflow: ellipsis;
+		pointer-events: all;
+	}
+
+	.window-body {
+		overflow: hidden;
+		flex-grow: 1;
+		background: var(--dark-window-bg);
+	}
+
+	.options-btn {
+		background-image: url("/res/img/icons/menu.png");
+	}
+
+	.minimize-btn {
+		background-image: url("/res/img/icons/minimize.png");
+	}
+
+	.maxrestore-btn {
+		background-image: url("/res/img/icons/maximize.png");
+	}
+
+	.window.maximized .maxrestore-btn {
+		background-image: url("/res/img/icons/restore.png");
+	}
+
+	.close-btn {
+		background-image: url("/res/img/icons/close.png");
+	}
+}
+
+/* ---- Dialogs ---- */
+.window.dialog {
+	.window-body {
+		display: flex;
+		flex-direction: column;
+		padding-top: 1rem;
+	}
+
+	.dialog-icon {
+		float: left;
+		width: 64px;
+		min-width: 64px;
+		height: 64px;
+		margin: 0 .5rem;
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-clip: padding-box;
+	}
+
+	.info-icon {
+		background-image: url('/res/img/icons/info.png');
+	}
+
+	.error-icon {
+		background-image: url('/res/img/icons/error.png');
+	}
+
+	.warning-icon {
+		background-image: url('/res/img/icons/warning.png');
+	}
+
+	.choice-icon {
+		background-image: url('/res/img/icons/choice.png');
+	}
+
+	.message {
+		display: flex;
+		flex-grow: 1;
+		overflow: auto;
+		white-space: nowrap;
+		margin: 0 .5rem .5rem 0;
+	}
+
+	.options {
+		width: 100%;
+		align-self: flex-end;
+		text-align: right;
+		background: rgba(20, 20, 20, 0.4);
+	}
+
+	.dialog-text {
+		white-space: pre-wrap;
+	}
+}

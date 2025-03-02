@@ -1,0 +1,121 @@
+@use './taskbar.scss';
+
+:root {
+	--fullscreen-filter-on: blur(2px);
+	--fullscreen-filter-off: none;
+	--fullscreen-filter: var(--fullscreen-filter-on);
+}
+
+html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	display: block;
+	width: 100%;
+	height: 100%;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	touch-action: none;
+	/* Prevent vertical scroll motion from reloading the system */
+	overscroll-behavior-y: none;
+}
+
+#desktop {
+	--dark-window-bg: hsla(220, 5%, 10%, 0.8);
+	--taskbar-height: 32px;
+
+	--base-color: hsl(220, 100%, 60%);
+	--base-color-dark: hsl(220, 70%, 45%);
+	--accent-color: hsl(320, 70%, 60%);
+	--accent-color-dark: hsl(320, 55%, 45%);
+
+	--window-unfocused-bar-pattern: hsla(220, 55%, 40%);
+	--window-focused-bar-pattern: linear-gradient(to right, hsla(220, 100%, 38%, 0.9), hsla(204, 100%, 45%, 0.8), hsla(320, 90%, 60%, 0.9));
+
+	--base-font: 'Arial', 'Helvetica', sans-serif;
+	--base-text-color: white;
+
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	max-width: 100%;
+	width: 100%;
+	height: 100%;
+	overflow: hidden !important;
+	font: 14pt var(--base-font);
+	background-image: none;
+	background-size: cover;
+	background-position: center;
+	scrollbar-color: var(--base-color-dark) #0001;
+	color: var(--base-text-color);
+
+	/* Desktop and back-plane */
+	.dt-area {
+		position: relative;
+		overflow: hidden;
+		flex-grow: 1;
+		min-height: 0;
+		z-index: 0;
+
+		/* When an app is fullscreen, make sure the desktop area appears over the taskbar */
+		&.fscr-parent {
+			z-index: 1;
+		}
+	}
+
+	.back-plane {
+		display: flex;
+		overflow: hidden;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		flex-direction: column;
+		flex-wrap: wrap;
+		align-content: flex-start;
+		padding: .5rem;
+
+		.text {
+			position: absolute;
+			bottom: 0;
+			right: 0;
+			padding: 0 0.5em 0.5em 0;
+			text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+			text-align: right;
+			font: 11pt 'Tahoma';
+		}
+	}
+
+	.app-icon {
+		border: solid 1px transparent;
+		width: 7rem;
+		margin:  .2rem .2rem;
+		padding: .4rem .1rem;
+		text-align: center;
+
+		&:hover {
+			border: solid 1px #68F;
+			background-color: rgba(40, 40, 255, 0.1);
+		}
+	
+		label {
+			display: block;
+			font-size: 12pt;
+			text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+		}
+		
+		img {
+			width: 4rem;
+		}
+	}
+}
+
+.no-select {
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;	
+	user-select: none;
+}

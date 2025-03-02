@@ -47,6 +47,7 @@
 
 		.bottom {
 			position: relative;
+			padding-bottom: 2px;
 		}
 
 		.bottom .canvas-container {
@@ -70,7 +71,7 @@
 
 		.bottom .progressbar {
 			--progress-thumb-size: 14px;
-			height: 8px;
+			height: 9px;
 			margin: 0 4px;
 			flex-grow: 1;
 			border: none;
