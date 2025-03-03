@@ -41,7 +41,9 @@ export default class FetchesTab {
 			$status.text(res.status.toString());
 			$time.text((ev.getEndTime() - ev.timeStamp) + ' ms');
 			$size.text(this.sizeToText(ev.getResponseSize()));
-		})	
+		}).catch(err => {
+			$status.text("ERR");
+		});
 		
 		// If the content in the table is scrolled to the bottom, we will auto-scroll it again with
 		// the new content

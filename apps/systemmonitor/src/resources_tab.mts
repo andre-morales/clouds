@@ -12,7 +12,10 @@ export default class FetchesTab {
 
 	focus() {
 		if (this.socket) return;
-		this.socket = new WebSocket('/stat/ws');
+		
+		let wsURL = new URL('/stat/ws', window.location.href);
+		wsURL.protocol = 'ws';
+		this.socket = new WebSocket(wsURL);
 
 		let lastWrittenBytes = 0;
 		let lastReadBytes = 0;

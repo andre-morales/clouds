@@ -29,11 +29,22 @@ module.exports = function(env, args) {
 					type: 'umd'
 				}
 			},
-			desktop: {
-				import: './client/src/styles/main_desktop.scss'
+			boot_entry: {
+				import: './client/src/boot/entry.mjs',
+				library: {
+					name: 'EntryModule',
+					type: 'umd'
+				}
 			},
-			ui: {
-				import: './client/src/styles/main_ui.scss'
+			boot_login: {
+				import: './client/src/boot/login.mjs',
+				library: {
+					name: 'LoginModule',
+					type: 'umd'
+				}
+			},
+			main: {
+				import: './client/src/styles/main.scss'
 			}
 		},
 		output: {

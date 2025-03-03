@@ -12,7 +12,7 @@
 		// Babel compiler
 		["@babel/preset-env", {		
 			"targets": {
-				"chrome": 63
+				"chrome": 54
 			},
 			"useBuiltIns": "usage",
 			"corejs": "^3.36.1"

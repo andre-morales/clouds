@@ -56,7 +56,10 @@ export class StackFrame {
 			return;
 		}
 
-		await enableSourceMaps();
+		if (!await enableSourceMaps()) {
+			this.noMapping = true;
+			return;
+		}
 
 		let source = await getSourceMapOf(this.originalLocation.file);
 		if (!source) {
@@ -84,14 +87,17 @@ export class StackFrame {
 	}
 }
 
-var whenSourceMapsAvailable: Promise<void>;
+var whenSourceMapsAvailable: Promise<boolean>;
 async function enableSourceMaps() {
 	if (!whenSourceMapsAvailable) {
-		whenSourceMapsAvailable = (async () =>{
+		whenSourceMapsAvailable = (async () => {
+			if (!window.sourceMap) return false;
+
 			await Browser.addScript('/res/lib/source-map/source-map.js');
 			window.sourceMap.SourceMapConsumer.initialize({
 				"lib/mappings.wasm": "https://unpkg.com/source-map@0.7.3/lib/mappings.wasm"
 			});
+			return true;
 		})();
 	}
 	
@@ -116,7 +122,7 @@ async function fetchSourceMap(file: string): Promise<string | null> {
 		// Get the source code
 		let sourceCodeUrl = new URL(file);
 		let sourceCode = await fetchCache.fetch(sourceCodeUrl).then(res => res.text());
-		
+
 		// Try to find source map URL
 		let matches = sourceCode.match(/\/\/# sourceMappingURL=(.*)/);
 		if (!matches[1]) return null;

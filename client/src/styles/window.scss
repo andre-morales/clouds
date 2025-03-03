@@ -70,6 +70,7 @@
 		overflow: hidden;
 		flex-grow: 1;
 		background: var(--dark-window-bg);
+		height: min-content; /* Fixes uncontrollable flex height in older browsers. */
 	}
 
 	.options-btn {

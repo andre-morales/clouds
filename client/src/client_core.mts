@@ -12,6 +12,7 @@ import { ConfigManager } from './config_manager.mjs';
 import Arrays from '../../common/arrays.mjs';
 import { WatsonTools } from './watson/watson_tools.mjs';
 import WebResourceManager from './web_resource_manager.mjs';
+import Polyfills from './polyfills/polyfills.mjs';
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
@@ -22,53 +23,22 @@ declare global {
 }
 
 export async function main() {
+	EntrySpace.log('<> Welcome to Clouds ' + ClientClass.BUILD_STRING);
 	EntrySpace.log('Reached core module entry point.');
 
+	Polyfills.install();
 	await WatsonTools.init();
 
 	loadingText = document.getElementById('loading-text');
 	loadingText.innerHTML = "Initializing core...";
-
-	// Fetch desktop page and display the system version on the page
-	let desktopPageProm = fetch('/page/desktop').then(fRes => {
-		if (fRes.status != 200) {
-			throw new IllegalStateFault('Desktop page could not be accessed.');
-		}
-
-		return fRes.text();
-	}).then(text => {
-		document.body.innerHTML += text;
-
-		// Display client version
-		$('#client-ver').text(ClientClass.BUILD_TEXT);
-	});
-
-	// Load basic desktop page and style, this will bring the taskbar and system version
-	// on display
-	let desktopStyleProm = Browser.addStylesheet('/res/pack/desktop.chk.css');
-	await desktopPageProm;
-	await desktopStyleProm;
-
-	// Schedule loading of main system scripts
-	let scriptsPromises = Promise.all([
-		Browser.addScript('/res/pack/public.chk.js'),
-		Browser.addScript('/res/pack/platform.chk.js'),
-		Browser.addScript('/res/lib/hammer.min.js')
-	]);
-
-	// Schedule loading of main styles
-	let stylesPromises = Promise.all([
-		Browser.addStylesheet('/res/pack/ui.chk.css')
-	]);
-
-	// Wait for scripts and styles
+	
+	let uiPromise = initUI();
+	let platformPromise = initPlatform();	
 	EntrySpace.log("Scheduled all main resources.");
 	
-	await scriptsPromises;
-	EntrySpace.log("Scripts finished loading.");
-	
-	await stylesPromises;
-	EntrySpace.log("Styles finished loading.");
+	// Wait for scripts and styles
+	await platformPromise;
+	await uiPromise;
 
 	// Instantiate system
 	clientInstance = new ClientClass();
@@ -79,11 +49,48 @@ export async function main() {
 	EntrySpace.disableHandlers();
 	EntrySpace.disablePanicHandlers();
 
+	// If a program startup has been passed in the url, run it
 	clientInstance.start(Browser.getURLParams());
 }
-	
+
+async function initUI() {
+	// Fetch desktop page and display the system version on the page
+	let desktopPageProm = fetch('/page/desktop', { credentials: 'same-origin' }).then(fRes => {
+		if (fRes.status != 200) {
+			throw new IllegalStateFault('Desktop page could not be accessed.');
+		}
+
+		return fRes.text();
+	}).then(text => {
+		document.body.innerHTML += text;
+	});
+
+	// Schedule loading of main styles
+	let stylesPromise = Browser.addStylesheet('/res/pack/main.chk.css');
+
+	await desktopPageProm;
+	await stylesPromise;
+	EntrySpace.log("Styles finished loading.");
+
+	// Display client version
+	$('#client-ver').text(ClientClass.BUILD_TEXT);
+	$('#desktop').css('display', '');
+}
+
+async function initPlatform() {
+	// Schedule loading of main system scripts
+	let scriptsPromises = Promise.all([
+		Browser.addScript('/res/pack/public.chk.js'),
+		Browser.addScript('/res/pack/platform.chk.js'),
+		Browser.addScript('/res/lib/hammer.min.js')
+	]);
+
+	await scriptsPromises;
+	EntrySpace.log("Scripts finished loading.");
+}
+
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.245';
+	static readonly CLIENT_VERSION = '1.0.250';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;

@@ -66,6 +66,7 @@ export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
 		await appObj.init();
 		return app;
 	} catch(err: any) {
+		console.error("App initialization error cause: ", err);
 		throw new AppInitializationError(`Failed to instantiate "${manifest.id} (${manifest.displayName ?? ""})"` + ' - ' + err, err);
 	}
 }
@@ -121,11 +122,11 @@ function fetchAppResources(manifest: AppManifest, userId: string): AppResources 
 	let scripts = manifest.scripts ?? [];
 	let styles = manifest.styles ?? [];
 
+	scripts.push(...modules);
+
 	let resources: any = {};
 
-	resources.modules = Promise.all(modules.map((url) => {
-		return Client.resources.fetchModule(url, userId);
-	}));
+	resources.modules = [];
 
 	resources.scripts = Promise.all(scripts.map((url) => {
 		return Client.resources.fetchScript(url, userId);
@@ -156,16 +157,6 @@ async function getAppConstructor(manifest: AppManifest, modules: any): Promise<a
 		if (umdModule && umdModule.default) {
 			return umdModule.default;
 		}
-
-		// If the app has ES modules, use the default export of the first one
-		if (modules.length < 1) {
-			throw Error('Undisclosed builder and no modules declared.');
-		}
-
-		// Import first module and use its default export.
-		let moduleName = modules[0];
-		let namespace = await IMPORT(moduleName);
-		AppClass = namespace.default;
 	}
 	
 	if (!AppClass) {

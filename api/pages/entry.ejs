@@ -14,9 +14,7 @@
 				document.getElementById('boot-log').innerHTML += "<p>" + msg + "</p>";
 			};
 			ES.scriptFailed = function (elem) {
-				document.addEventListener('DOMContentLoaded', function () {
-					EntrySpace.log("[!] Core boot script <b>" + elem.src + "</b> failed.")
-				});
+				EntrySpace.log("[!] Core boot script <b>" + elem.src + "</b> failed.")
 			};
 			ES.enableHandlers = function () {
 				window.onunhandledrejection = function (ev) {
@@ -28,7 +26,7 @@
 					EntrySpace.log('[!] Unhandled rejection\n ' + detail);
 				};
 				window.onerror = function (ev) {
-					EntrySpace.log(ev + '');
+					EntrySpace.log('[!] Unhandled error\n ' + ev + '');
 				};
 			};
 			ES.disableHandlers = function () {
@@ -36,7 +34,18 @@
 				window.onerror = undefined;
 				window.onunhandledrejection = undefined;
 			};
-
+			ES.addScript = function (src) {
+				var elem = document.createElement('script');
+				elem.onerror = (err) => {
+					ES.scriptFailed(elem);
+				}
+				elem.setAttribute('src', src);
+				document.head.appendChild(elem);
+			}
+			ES.onLoad = function() {
+				ES.addScript('/res/pack/runtime.chk.js');
+				ES.addScript('/res/pack/boot_entry.chk.js');
+			}
 			ES.enableHandlers();
 		})();
 	</script>
@@ -55,8 +64,6 @@
 			white-space: pre;
 		}
 	</style>
-	<script src='/res/boot/base.js' onerror="EntrySpace.scriptFailed(this)"></script>
-	<script src='/res/boot/entry.mjs' type='module' onerror="EntrySpace.scriptFailed(this)"></script>
 	<link rel="stylesheet" type="text/css" href="/res/css/base.css">
 	<link rel="icon" type="image/x-icon" href="/res/favicon.png">
 	<% if (use_pwa_features) { %>
@@ -64,7 +71,7 @@
 	<% } %>
 	<style id="fullscreen-style"></style>
 </head>
-<body>
+<body onload="EntrySpace.onLoad();">
 	<div id="boot-log"></div>
 </body>
 </html>

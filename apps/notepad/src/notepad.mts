@@ -10,6 +10,7 @@ import Deferred from '/@comm/deferred.mjs';
 import ContextCheckbox from '/@sys/ui/controls/context_menu/ctx_checkbox.mjs';
 
 const EXTENSION_SYNTAX_TABLE: {[key: string]: string} = {
+	'': 'plain',
 	'txt': 'plain',
 	'json': 'json'
 };
@@ -76,7 +77,7 @@ export default class NotepadApp extends App {
 		if (this.buildArgs.length > 0) {
 			const pathArg = this.buildArgs[0] as string;
 
-			let ext = Paths.getExtension(pathArg).toLowerCase();
+			let ext = (Paths.getExtension(pathArg) ?? '').toLowerCase();
 			let syntax = EXTENSION_SYNTAX_TABLE[ext];
 			if (syntax) defaultSyntax = syntax;
 

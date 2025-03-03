@@ -48,13 +48,18 @@ export class WatsonTools {
 	}
 
 	public initGraphicalErrorHandlers() {
-		ErrorHandler.initGraphicErrorHandlers();
+		window.addEventListener('error', (ev) => {
+			this.showErrorDialog("Error", "Unhandled error", ev.error);
+		});
+	
+		window.addEventListener('unhandledrejection', async (ev) => {
+			this.showErrorDialog("Error", "Unhandled rejection", ev.reason);
+		});
 	}
 
 	showErrorDialog(title, msg, error?: Error) {
 		try {
-			let dialog = Dialogs.showError(Client.desktop.dwm, title, msg);
-			dialog.window.$window.find('.options button').focus();
+			ErrorHandler.showError(title, msg, error);
 		} catch (err) {
 			console.log("---- Couldn't display the error ----");
 			console.error(error);

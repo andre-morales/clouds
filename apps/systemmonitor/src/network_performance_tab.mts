@@ -13,12 +13,36 @@ export default class NetworkPerformanceTab {
 	}
 
 	private setup() {
-		// For every past and new activity, add new entries
-		new PerformanceObserver((entries) => {
-			for (let entry of entries.getEntries()) {
+		const callback = (entries: PerformanceEntryList) => {
+			// For every past and new activity, add new entries
+			for (let entry of entries) {
 				this.trackFetchCall(entry as PerformanceResourceTiming);
 			}
-		}).observe({type: "resource", buffered: true});
+		}
+
+		// Method 1 of instantiating.
+		try {
+			new PerformanceObserver(e => callback(e.getEntries()))
+				.observe({type: "resource", buffered: true});
+			return;
+		} catch(err) {
+			console.error("PerformanceObserver() failed.", err);
+		}
+
+		// Method 2 of instantiating in case 1 isn't supported.
+		try {
+			new PerformanceObserver(e => callback(e.getEntries()))
+				.observe({ entryTypes: ['resource'] });
+
+			// Emit past resource entries
+			let entries = performance.getEntriesByType('resource');
+			callback({ getEntries: () => entries} as any );
+			return;
+		} catch(err) {
+			console.error("PerformanceObserver() failed.", err);
+		}
+
+		this.$networkTab.text("Not available.");
 	}
 
 	private trackFetchCall(rt: PerformanceResourceTiming) {

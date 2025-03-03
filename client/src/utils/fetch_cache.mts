@@ -14,7 +14,7 @@ export class FetchCache {
 
 			// No fetch has been done for this URL. Execute a fetch and save
 			// the promise for this fetch.
-			let promise = fetch(url)
+			let promise = fetch(url, { credentials: 'same-origin' })
 			.then(res => {
 				return res.blob();
 			}).then(blob => {
@@ -37,7 +37,7 @@ class CachedResponse {
 		this.data = data;
 	}
 
-	public async text() {
+	public async text(): Promise<string> {
 		return this.data.text();
 	}
 

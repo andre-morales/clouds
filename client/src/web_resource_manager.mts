@@ -6,25 +6,14 @@ export default class WebResourceManager {
 	public manager = new ResourceManager();
 
 	/**
-	 * Loads the module with the given url and registers a user.
-	 * If the module is already loaded, just register another user for it. Otherwise, load it and
-	 * register its first user.
-	 * @returns The resource object that represents this module.
-	 */
-	async fetchModule(url: string, user: unknown): Promise<Resource> {
-		return this.#fetchWebResource(url, user, async (id) => {
-			await Browser.addModule(url, id);
-		});
-	}
-	/**
 	 * Loads the script with the given url and registers a user.
 	 * If the script is already loaded, just register another user for it. Otherwise, load it and register its first user.
 	 * Returns the resource object that represents this script.
 	 */
 	async fetchScript(url: string, user: unknown): Promise<Resource> {
-		return this.#fetchWebResource(url, user, async (id) => {
+		return this.fetchWebResource(url, user, async (id) => {
 			await Browser.addScript(url, id);
-		});
+		}, true);
 	}
 
 	/**
@@ -34,7 +23,7 @@ export default class WebResourceManager {
 	 * Returns the resource object representing this style resource.
 	 */
 	async fetchStyle(url: string, user: unknown): Promise<Resource> {
-		return this.#fetchWebResource(url, user, async (id) => {
+		return this.fetchWebResource(url, user, async (id) => {
 			await Browser.addStylesheet(url, id);
 		});
 	}
@@ -43,7 +32,7 @@ export default class WebResourceManager {
 	 * General helper function for fetching and instantiating web resources like styles, modules
 	 * and scripts. Sets the resource id to the url of the resource requested.
 	 */
-	async #fetchWebResource(url: string, user: unknown, creator: (id: string) => Promise<void>): Promise<Resource> {
+	private async fetchWebResource(url: string, user: unknown, creator: (id: string) => Promise<void>, permanent?: boolean): Promise<Resource> {
 		let resource: Resource | null = this.manager.get(url);
 
 		// If an unloaded resource with this URL exists, delete it to load it again.
@@ -60,6 +49,7 @@ export default class WebResourceManager {
 			let resId = btoa(url);
 			resource = new Resource();
 			resource.name = resId;
+			resource.setPermanent(permanent);
 			resource.setUnloadCallback(() => {
 				Browser.destroyElementById(resId);
 			});

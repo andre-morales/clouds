@@ -1,4 +1,4 @@
-export async function entry() {
+async function entry() {
 	if (await authIsKeyValid()) {
 		initDesktop();
 	} else {
@@ -6,7 +6,8 @@ export async function entry() {
 		let res = await fetch('/page/login');
 		document.body.innerHTML += await res.text();
 
-		(await import('/res/boot/login.mjs')).initLogin();
+		await addScript('/res/pack/boot_login.chk.js');
+		EntrySpace.initLogin();
 	}
 }
 
@@ -54,15 +55,15 @@ function enablePanics() {
 	}
 }
 
-export async function initDesktop() {
+async function initDesktop() {
 	EntrySpace.log('Initializing desktop...')
 	initTransition();
 
 	// Set title
 	document.title = 'Clouds';
 
-	// Destroy login script if any
-	destroyElementById('login-script');
+	// Destroy login screen if any
+	destroyElementById('login-screen');
 
 	// Load jquery compatible lib
 	loadingText.innerHTML = "Loading base...";
@@ -73,12 +74,12 @@ export async function initDesktop() {
 
 	// Add system script and let it do the setup
 	loadingText.innerHTML = "Loading core...";
-	await addScript('/res/pack/runtime.chk.js');
 	await addScript('/res/pack/shared.chk.js');
 	
 	EntrySpace.log('Invoking core module entry point...');
-	CoreModule.main();
+	(window as any).CoreModule.main();
 }
+EntrySpace.initDesktop = initDesktop;
 
 async function authIsKeyValid() {
 	let fRes = await fetch('/auth/test');
@@ -86,7 +87,7 @@ async function authIsKeyValid() {
 	return res.ok;
 }
 
-export function setCookie(name, value, time) {
+function setCookie(name, value, time) {
 	if (!time) time = 365;
 
 	let d = new Date();
@@ -94,6 +95,7 @@ export function setCookie(name, value, time) {
 	let expires = "expires="+ d.toUTCString();
 	document.cookie = name + "=" + value + ";" + expires + ";path=/";
 }
+EntrySpace.setCookie = setCookie;
 
 function addScript(src) {
 	var elem = document.createElement('script');
@@ -105,7 +107,7 @@ function addScript(src) {
 	return new Promise((resolve, reject) => {
 		elem.addEventListener('load', () => {
 			EntrySpace.log('Library <b>' + src + '</b> ready.');
-			resolve();
+			resolve(undefined);
 		});
 		elem.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
 	});
@@ -120,7 +122,7 @@ function destroyElementById(id) {
 function _systemPanic(reason, detail, mode) {
 	console.error('--- SYSTEM PANIC ---');
 	// Initialize a counter to keep incrementing the z-index
-	let self = _systemPanic;
+	let self = _systemPanic as any;
 	self.counter = self.counter || 1024;
 	let index = self.counter++;
 
@@ -164,4 +166,4 @@ function _systemPanic(reason, detail, mode) {
 	$('body').append($box);
 }
 
-window.onload = entry;
+entry();

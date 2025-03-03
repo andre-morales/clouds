@@ -38,20 +38,6 @@ export function destroyElementById(id: string) {
 	return el;
 }
 
-export function addModule(src: string, id?: string) {
-	var elem = document.createElement('script');
-	if (id) elem.setAttribute('id', id);
-	elem.setAttribute('type', 'module');
-	elem.setAttribute('src', src);
-	
-	document.head.appendChild(elem);
-
-	return new Promise((resolve, reject) => {
-		elem.addEventListener('load', resolve);
-		elem.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
-	});
-}
-
 export function addStylesheet(src: string, id?: string) {
 	var style = document.createElement('link');
 	if(id) style.setAttribute('id', id);
@@ -92,5 +78,5 @@ export function downloadUrl(path: string) {
 
 export default {
 	cloneTemplate, getURLParams, 
-	getCookie, setCookie, destroyElementById, addModule, addStylesheet, addScript, downloadUrl
+	getCookie, setCookie, destroyElementById, addStylesheet, addScript, downloadUrl
 };
