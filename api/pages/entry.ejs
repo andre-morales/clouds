@@ -43,7 +43,8 @@
 				document.head.appendChild(elem);
 			}
 			ES.onLoad = function() {
-				ES.addScript('/res/pack/runtime.chk.js');
+				ES.addScript('/res/pack/core_runtime.chk.js');
+				ES.addScript('/res/pack/core_common.chk.js');
 				ES.addScript('/res/pack/boot_entry.chk.js');
 			}
 			ES.enableHandlers();

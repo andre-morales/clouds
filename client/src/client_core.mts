@@ -81,7 +81,7 @@ async function initPlatform() {
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
 		Browser.addScript('/res/pack/public.chk.js'),
-		Browser.addScript('/res/pack/platform.chk.js'),
+		Browser.addScript('/res/pack/apps_common.chk.js'),
 		Browser.addScript('/res/lib/hammer.min.js')
 	]);
 

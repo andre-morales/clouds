@@ -84,11 +84,24 @@ module.exports = function(env, args) {
 			},
 		},
 		optimization: {
-			runtimeChunk: 'single',
+			runtimeChunk: {
+				name: 'core_runtime'
+			},
 			minimizer: [
 				'...',
 				new CssMinimizerPlugin()
-			]
+			],
+			splitChunks: {
+				chunks: 'all',
+				cacheGroups: {
+				  vendors: {
+					test: /[\\/]node_modules[\\/](core-js)[\\/]/,
+					name: 'core_common',
+					chunks: 'all',
+					enforce: true,
+				  },
+				},
+			}
 		},
 		plugins: [
 			new Webpack.DefinePlugin({

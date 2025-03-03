@@ -38,10 +38,10 @@ module.exports = function(env) {
 		entry: entryPoints,
 		output: {
 			filename: (ctx) => {
-				if (ctx.chunk.name == 'platform')
-					return '../client/public/pack/platform.chk.js'
-				if (ctx.chunk.name == 'runtime')
-					return '../client/public/pack/runtime.chk.js'
+				if (ctx.chunk.name == 'apps_runtime')
+					return '../client/public/pack/apps_runtime.chk.js'
+				if (ctx.chunk.name == 'apps_common')
+					return '../client/public/pack/apps_common.chk.js'
 				return '[name]/dist/app.bundle.mjs'
 			},
 			path: Path.resolve(ROOT, 'apps'),
@@ -87,13 +87,15 @@ module.exports = function(env) {
 				'...',
 				new CssMinimizerPlugin()
 			],
-			runtimeChunk: 'single',
+			runtimeChunk: {
+				name: 'apps_runtime'
+			},
 			splitChunks: {
 				chunks: 'all',
 				cacheGroups: {
 				  vendors: {
 					test: /[\\/]node_modules[\\/](core-js)[\\/]/,
-					name: 'platform',
+					name: 'apps_common',
 					chunks: 'all',
 					enforce: true,
 				  },
