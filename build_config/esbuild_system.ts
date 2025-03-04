@@ -45,7 +45,7 @@ async function rebuildAll(contexts: Promise<[ESBuild.BuildOptions, ESBuild.Build
 }
 
 async function emitMeta(fileName: string, results: ESBuild.BuildResult[]) {
-	let outputText = JSON.stringify(joinResults(...results));
+	let outputText = JSON.stringify(joinBuildResults(...results));
 	await FS.promises.writeFile(fileName, outputText);
 	console.log("Emitted meta file.");
 }
@@ -55,7 +55,24 @@ async function disposeAll(contexts: Promise<[ESBuild.BuildOptions, ESBuild.Build
 	console.log("Finalized all contexts.");
 }
 
-function joinResults(...results: ESBuild.BuildResult[]) {
+export async function joinMetafiles(resultFile: string, ...files: string[]) {
+	let result = {
+		inputs: {},
+		outputs: {}
+	};
+
+	for (let file of files) {
+		let fileText = await FS.promises.readFile(file);
+		let obj = JSON.parse(fileText.toString());
+
+		result = joinMeta(result, obj);
+	}
+
+	await FS.promises.writeFile(resultFile, JSON.stringify(result));
+	return result;
+}
+
+function joinBuildResults(...results: ESBuild.BuildResult[]) {
 	let result = {
 		inputs: {},
 		outputs: {}
@@ -63,9 +80,21 @@ function joinResults(...results: ESBuild.BuildResult[]) {
 	for (let res of results) {
 		if (!res.metafile) continue;
 
-		Object.assign(result.inputs, res.metafile.inputs);
-		Object.assign(result.outputs, res.metafile.outputs);
+		result = joinMeta(result, res.metafile);
 	}
 
+	return result;
+}
+
+function joinMeta(...metaFiles: ESBuild.Metafile[]): ESBuild.Metafile {
+	let result = {
+		inputs: {},
+		outputs: {}
+	};
+
+	for (let res of metaFiles) {
+		Object.assign(result.inputs, res.inputs);
+		Object.assign(result.outputs, res.outputs);
+	}
 	return result;
 }

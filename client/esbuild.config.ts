@@ -5,7 +5,7 @@ import { context, runBuild, setBaseConfig } from '../build_config/esbuild_system
 
 const developmentMode = Boolean(process.env.DEV_MODE);
 const watchMode = Boolean(process.env.DEV_MODE);
-const emitMetafile = false;
+const emitMetafile = true;
 
 const baseConfig: ESBuild.BuildOptions = {
 	bundle: true,
