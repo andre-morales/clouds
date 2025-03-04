@@ -54,7 +54,7 @@
 }
 
 .checkbox {
-	display: inline-grid;
+	display: inline-flex;
 	-webkit-appearance: none;
 	appearance: none;
 	width: 22px;
@@ -62,7 +62,8 @@
 	margin: .15em;
 	border: solid 1px var(--base-color);
 	vertical-align: middle;
-	place-content: center;
+	justify-content: center;
+	align-items: center;
 	font-family: var(--base-font);
 
 	&:checked::before {

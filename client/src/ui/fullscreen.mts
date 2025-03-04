@@ -1,6 +1,9 @@
+import Driver from "../drivers/fullscreen_driver.mjs";
+
 type FullscreenCallback = () => void;
 
 export class Fullscreen {
+	private static enabled: boolean;
 	private static stack: HTMLElement[] = [];
 	private static currentElement: HTMLElement = null;
 	private static fullscreenCallbacks: FullscreenCallback[] = [];
@@ -9,9 +12,15 @@ export class Fullscreen {
 	// Call before utilizing any of the fullscreen utilities. Sets up a callback for fullscreen state changes and
 	// prepares custom styling for any fullscreen elements.
 	public static init() {
+		this.enabled = Driver.isSupported();
+		if (!this.enabled) {
+			console.warn("Fullscreen is not supported in this browser.");
+			return;
+		}
+
 		let fullscreenHandler = () => {
 			// If the browser went fullscreen
-			if(document.fullscreenElement) {
+			if(Driver.fullscreenElement) {
 				// Notify those who are waiting for
 				// the browser to finish going fullscreen
 				this.fullscreenCallbacks.forEach(fn => fn());
@@ -32,7 +41,7 @@ export class Fullscreen {
 		this.$style = $("#fullscreen-style");
 		
 		// Install the listener
-		document.addEventListener('fullscreenchange', fullscreenHandler);
+		Driver.onFullscreenChange(fullscreenHandler);
 	}
 
 	// Applies fullscreen on any html element. Fullscreen calls can be stacked, and will be unwound
@@ -132,19 +141,19 @@ export class Fullscreen {
 	// is finished. If the browser was already on fullscreen state, calls callback immediately.
 	private static domEnterFullscreen(callback: () => void) {
 		// If the browser already is in fullscreen, just run the callback immediately
-		if (document.fullscreenElement) {
+		if (Driver.fullscreenElement) {
 			if (callback) callback();
 			return;
 		}
 		
 		// Otherwise, schedule the callback and request DOM fullscreen on the whole document
 		if (callback) this.fullscreenCallbacks.push(callback);
-		document.body.requestFullscreen();
+		Driver.requestFullscreen();
 	}
 	
 	// Leaves browser fullscreen state
 	private static domExitFullscreen() {
-		if (document.fullscreenElement) document.exitFullscreen();
+		if (Driver.fullscreenElement) Driver.exitFullscreen();
 	}
 
 	public static get element(): HTMLElement {

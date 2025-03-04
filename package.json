@@ -8,14 +8,12 @@
   "scripts": {
     "build-api-dist": "tsc -b api",
     "watch-api-dist": "tsc -b api -w",
-    "build-client-dev": "webpack --config client/webpack.config.cjs --env development",
-    "build-client-prod": "webpack --config client/webpack.config.cjs --env production",
+    "build-client-dev": "node --experimental-strip-types --env-file envs/develop.env client/esbuild.config.ts",
+    "build-client-prod": "node --experimental-strip-types --env-file envs/prod.env client/esbuild.config.ts",
     "build-client-types": "tsc -b client",
-    "build-apps-dev": "webpack --config apps/webpack.config.cjs --env development",
-    "build-apps-prod": "webpack --config apps/webpack.config.cjs --env production",
-    "check-apps-types": "tsc -b apps",
-    "view-apps-stats": "webpack --config apps/webpack.config.cjs --env production --json > apps/.stats.json && npx webpack-bundle-analyzer apps/.stats.json",
-    "view-client-stats": "webpack --config client/webpack.config.cjs --env production --json > client/.stats.json && npx webpack-bundle-analyzer client/.stats.json"
+    "build-apps-dev": "node --experimental-strip-types --env-file envs/develop.env apps/esbuild.config.ts",
+    "build-apps-prod": "node --experimental-strip-types --env-file envs/prod.env apps/esbuild.config.ts",
+    "check-apps-types": "tsc -b apps"
   },
   "author": "André Morales",
   "license": "ISC",
