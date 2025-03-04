@@ -3,10 +3,14 @@ async function entry() {
 		initDesktop();
 	} else {
 		// Fetch login page
-		let res = await fetch('/page/login');
-		document.body.innerHTML += await res.text();
+		let pagePromise = fetch('/page/login')
+			.then(res => res.text())
+			.then(text => document.body.innerHTML += text);
 
-		await addScript('/res/pack/boot_login.chk.js');
+		let scriptPromise = addScript('/res/pack/boot_login.chk.js');
+
+		await pagePromise;
+		await scriptPromise;
 		EntrySpace.initLogin();
 	}
 }
@@ -82,22 +86,14 @@ async function initDesktop() {
 EntrySpace.initDesktop = initDesktop;
 
 async function authIsKeyValid() {
-	let fRes = await fetch('/auth/test');
+	let fRes = await fetch('/auth/test', { credentials: 'same-origin' });
 	let res = await fRes.json();
 	return res.ok;
 }
 
-function setCookie(name, value, time) {
-	if (!time) time = 365;
+function addScript(src): Promise<void> {
+	let log = EntrySpace.log('Loading <b>' + src + '</b>... ');
 
-	let d = new Date();
-	d.setTime(d.getTime() + (time*24*60*60*1000));
-	let expires = "expires="+ d.toUTCString();
-	document.cookie = name + "=" + value + ";" + expires + ";path=/";
-}
-EntrySpace.setCookie = setCookie;
-
-function addScript(src) {
 	var elem = document.createElement('script');
 	elem.setAttribute('defer', '');
 	elem.setAttribute('src', src);
@@ -106,7 +102,7 @@ function addScript(src) {
 
 	return new Promise((resolve, reject) => {
 		elem.addEventListener('load', () => {
-			EntrySpace.log('Library <b>' + src + '</b> ready.');
+			log.innerHTML += 'Done.';
 			resolve(undefined);
 		});
 		elem.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));

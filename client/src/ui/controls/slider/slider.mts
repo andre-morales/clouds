@@ -266,14 +266,14 @@ function attachStyles(shadow: ShadowRoot) {
 	if (shadow.adoptedStyleSheets) {
 		if (!stylesheet) {
 			stylesheet = new CSSStyleSheet();
-			fetch('/res/css/slider.css')
+			fetch('/res/pack/slider.chk.css')
 				.then(res => res.text())
 				.then(css => stylesheet.replace(css));
 		}
 		shadow.adoptedStyleSheets = [stylesheet];
 	} else {
 		const style = document.createElement('style');
-		style.textContent = `@import url('/res/css/slider.css');`
+		style.textContent = `@import url('/res/pack/slider.chk.css');`
 		shadow.appendChild(style);
 	}
 }

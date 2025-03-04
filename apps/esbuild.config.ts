@@ -19,6 +19,10 @@ const baseConfig: ESBuild.BuildOptions = {
 	define: {
 		'__BUILD_MODE__': `'${developmentMode ? 'Development' : 'Production'}'`
 	},
+	plugins: [
+		Sass({ embedded: true }),
+		Babel(),
+	],
 	metafile: emitMetafile
 };
 
@@ -35,11 +39,7 @@ function main() {
 		let ctx = context({
 			entryPoints: ['./apps/' + id + '/main.mts'],
 			outfile: './apps/' + id + '/dist/app.pack.js',
-			globalName: 'AppModule_' + id,
-			plugins: [
-				Sass({ embedded: true }),
-				Babel(),
-			]
+			globalName: 'AppModule_' + id
 		});
 
 		return ctx;

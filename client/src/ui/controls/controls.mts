@@ -1,5 +1,5 @@
 import { UIErrorDisplay } from './error_display.mjs';
-import { UISlider } from './slider.mjs';
+import { UISlider } from './slider/slider.mjs';
 import { UITabs } from './tabs.mjs';
 
 export async function init() {

@@ -3,7 +3,7 @@ import MediaPlayer, { timeToString } from "../media_player.mjs";
 import { TrackMarker } from "./track_marker.mjs";
 import { VolumeHistogram } from "./volume_hist.mjs";
 import { ClientClass } from "/@sys/client_core.mjs";
-import { type SliderTrack } from "/@sys/ui/controls/slider.mjs";
+import { type SliderTrack } from "/@sys/ui/controls/slider/slider.mjs";
 import Fullscreen from "/@sys/ui/fullscreen.mjs";
 
 const AUTOPLAY_DELAY = 500;

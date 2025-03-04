@@ -17,6 +17,7 @@ const baseConfig: ESBuild.BuildOptions = {
 	define: {
 		'__BUILD_MODE__': `'${developmentMode ? 'Development' : 'Production'}'`
 	},
+	plugins: [Sass({embedded: true}), Babel()],
 	metafile: emitMetafile
 }
 
@@ -27,28 +28,26 @@ function main() {
 		// Polyfills
 		context({
 			entryPoints: ['./client/src/boot/base.mts'],
-			outfile: './client/public/pack/base.js',
-			plugins: [Babel()],
+			outfile: './client/public/pack/base.chk.js',
 		}),
 		context({
 			entryPoints: ['./client/src/boot/entry.mts'],
 			outfile: './client/public/pack/boot_entry.chk.js',
 			globalName: 'EntryModule',
-			plugins: [Babel()]
 		}),
 		context({
 			entryPoints: ['./client/src/boot/login.mts'],
 			outfile: './client/public/pack/boot_login.chk.js',
 			globalName: 'LoginModule',
-			plugins: [Babel()]
 		}),
 		context({
 			entryPoints: ['./client/src/client_core.mts'],
 			outfile: './client/public/pack/core.chk.js',
 			globalName: 'CoreModule',
-			plugins: [Sass({
-				embedded: true
-			}), Babel()]
+		}),
+		context({
+			entryPoints: ['./client/src/ui/controls/slider/slider.scss'],
+			outfile: './client/public/pack/slider.chk.css',
 		})
 	];
 

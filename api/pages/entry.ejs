@@ -11,7 +11,11 @@
 			var ES = EntrySpace;
 
 			ES.log = function (msg) {
-				document.getElementById('boot-log').innerHTML += "<p>" + msg + "</p>";
+				var bootLog = document.getElementById('boot-log');
+				var p = document.createElement('p');
+				p.innerHTML = msg;
+				bootLog.appendChild(p);
+				return p;
 			};
 			ES.scriptFailed = function (elem) {
 				EntrySpace.log("[!] Core boot script <b>" + elem.src + "</b> failed.")
@@ -35,19 +39,24 @@
 				window.onunhandledrejection = undefined;
 			};
 			ES.addScript = function (src) {
-				ES.log('Loading <b>' + src + '</b>...');
+				var log = ES.log('Loading <b>' + src + '</b>... ');
 				var elem = document.createElement('script');
-				elem.onerror = (err) => {
+				elem.onerror = function (err) {
 					ES.scriptFailed(elem);
+				}
+				elem.onload = function () {
+					log.innerHTML += "Done.";
 				}
 				elem.setAttribute('src', src);
 				document.head.appendChild(elem);
 			}
 			ES.onLoad = function() {
-				ES.addScript('/res/pack/base.js');
+				ES.addScript('/res/pack/base.chk.js');
 				ES.addScript('/res/pack/boot_entry.chk.js');
 			}
+
 			ES.enableHandlers();
+			ES.startTime = Date.now();
 		})();
 	</script>
 	<style>
@@ -65,7 +74,7 @@
 			white-space: pre;
 		}
 	</style>
-	<link rel="stylesheet" type="text/css" href="/res/css/base.css">
+	<link rel="stylesheet" type="text/css" href="/res/pack/base.chk.css">
 	<link rel="icon" type="image/x-icon" href="/res/favicon.png">
 	<% if (use_pwa_features) { %>
 		<link rel="manifest" href="/res/manifest.json">

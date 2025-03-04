@@ -14,7 +14,7 @@ import { WatsonTools } from './watson/watson_tools.mjs';
 import WebResourceManager from './web_resource_manager.mjs';
 import Polyfills from './polyfills/polyfills.mjs';
 import * as Public from './public.mjs';
-import './styles/main.scss'
+import './styles/main.scss';
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
@@ -53,6 +53,9 @@ export async function main() {
 
 	// If a program startup has been passed in the url, run it
 	clientInstance.start(Browser.getURLParams());
+
+	let bootTime = Date.now() - EntrySpace.startTime;
+	EntrySpace.log(`Finished core initialization in ${bootTime}ms.`);
 }
 
 async function initUI() {
@@ -90,7 +93,7 @@ async function initPlatform() {
 }
 
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.253';
+	static readonly CLIENT_VERSION = '1.0.254';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
