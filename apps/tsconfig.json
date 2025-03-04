@@ -4,6 +4,8 @@
 		"module": "ESNext",
 		"target": "ES2022",
 		"moduleResolution": "Bundler",
+		"esModuleInterop": true,
+		"isolatedModules": true,
 		"noEmit": true,
 		"incremental": true,
 		"sourceMap": true,

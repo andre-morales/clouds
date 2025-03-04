@@ -74,7 +74,7 @@ async function initDesktop() {
 
 	// Add system script and let it do the setup
 	loadingText.innerHTML = "Loading core...";
-	await addScript('/res/pack/shared.chk.js');
+	await addScript('/res/pack/core.chk.js');
 	
 	EntrySpace.log('Invoking core module entry point...');
 	(window as any).CoreModule.main();

@@ -2,7 +2,7 @@
 	"id": "console",
 	"icon": "/app/console/icon128.png",
 	"modules": [
-		"~/dist/app.bundle.mjs"	
+		"~/dist/app.pack.js"	
 	],
 	"styles": [
 		"/app/console/style.css"

@@ -1,8 +1,8 @@
 {
 	"id": "sounds",
 	"icon": "~/icon64.png",
-	"modules": [
-		"~/dist/app.bundle.mjs"	
+	"scripts": [
+		"~/dist/app.pack.js"	
 	],
 	"styles": [
 		"~/style.css"

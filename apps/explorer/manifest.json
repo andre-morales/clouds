@@ -2,8 +2,8 @@
 	"id": "explorer",
 	"displayName": "Files",
 	"icon": "~/icon64.png",
-	"modules" : [
-		"~/dist/app.bundle.mjs"
+	"scripts": [
+		"~/dist/app.pack.js"
 	],
 	"styles": [
 		"~/res/style.css"

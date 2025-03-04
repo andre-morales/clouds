@@ -2,9 +2,9 @@
 	"id": "about",
 	"icon": "/app/about/icon64.png",
 	"modules": [
-		"~/dist/app.bundle.mjs"	
+		"~/dist/app.pack.js"	
 	],
 	"styles": [
-		"~/dist/styles.bundle.css"
+		"~/dist/app.pack.css"
 	]
 }

@@ -14,8 +14,8 @@
 			"targets": {
 				"chrome": 54
 			},
-			"useBuiltIns": "usage",
-			"corejs": "^3.36.1"
+			"useBuiltIns": false
 		}]
-	]
+	],
+	"sourceMaps": false
 }

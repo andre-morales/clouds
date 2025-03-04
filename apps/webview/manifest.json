@@ -1,8 +1,8 @@
 {
 	"id": "webview",
 	"icon": "/app/webview/icon128.png",
-	"modules": [
-		"~/dist/app.bundle.mjs"	
+	"scripts": [
+		"~/dist/app.pack.js"	
 	],
 	"styles": [
 		"/app/webview/style.css"

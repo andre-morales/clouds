@@ -13,6 +13,8 @@ import Arrays from '../../common/arrays.mjs';
 import { WatsonTools } from './watson/watson_tools.mjs';
 import WebResourceManager from './web_resource_manager.mjs';
 import Polyfills from './polyfills/polyfills.mjs';
+import * as Public from './public.mjs';
+import './styles/main.scss'
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
@@ -66,7 +68,7 @@ async function initUI() {
 	});
 
 	// Schedule loading of main styles
-	let stylesPromise = Browser.addStylesheet('/res/pack/main.chk.css');
+	let stylesPromise = Browser.addStylesheet('/res/pack/core.chk.css');
 
 	await desktopPageProm;
 	await stylesPromise;
@@ -80,8 +82,6 @@ async function initUI() {
 async function initPlatform() {
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
-		Browser.addScript('/res/pack/public.chk.js'),
-		Browser.addScript('/res/pack/apps_common.chk.js'),
 		Browser.addScript('/res/lib/hammer.min.js')
 	]);
 
@@ -90,7 +90,7 @@ async function initPlatform() {
 }
 
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.250';
+	static readonly CLIENT_VERSION = '1.0.253';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
@@ -112,8 +112,10 @@ export class ClientClass {
 		let promises: Promise<any>[] = [];
 
 		// Export global names
-		window.Client = clientInstance;
-		(window as any).App = App;
+		let world = window as any;
+		world.PublicModules = Public;
+		world.Client = clientInstance;
+		world.App = App;
 
 		// Init watson logging and error handling
 		this.watson = WatsonTools.get();

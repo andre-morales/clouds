@@ -2,8 +2,8 @@
 	"id": "sinestesia",
 	"displayName": "Sinestesia",
 	"icon": "/app/sinestesia/icon128.png",
-	"modules": [
-		"~/dist/app.bundle.mjs"	
+	"scripts": [
+		"~/dist/app.pack.js"	
 	],
 	"styles": [
 		"~/dist/styles.bundle.css"

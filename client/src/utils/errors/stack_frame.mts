@@ -91,9 +91,10 @@ var whenSourceMapsAvailable: Promise<boolean>;
 async function enableSourceMaps() {
 	if (!whenSourceMapsAvailable) {
 		whenSourceMapsAvailable = (async () => {
+			await Browser.addScript('/res/lib/source-map/source-map.js');
+
 			if (!window.sourceMap) return false;
 
-			await Browser.addScript('/res/lib/source-map/source-map.js');
 			window.sourceMap.SourceMapConsumer.initialize({
 				"lib/mappings.wasm": "https://unpkg.com/source-map@0.7.3/lib/mappings.wasm"
 			});
@@ -132,6 +133,7 @@ async function fetchSourceMap(file: string): Promise<string | null> {
 		let sourceMap = await fetchCache.fetch(sourceMapURL).then(res => res.text());
 		return sourceMap;
 	} catch(err) {
+		console.error(err);
 		return null;
 	}
 }
