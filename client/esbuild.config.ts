@@ -46,7 +46,9 @@ function main() {
 			entryPoints: ['./client/src/client_core.mts'],
 			outfile: './client/public/pack/core.chk.js',
 			globalName: 'CoreModule',
-			plugins: [Sass(), Babel()]
+			plugins: [Sass({
+				embedded: true
+			}), Babel()]
 		})
 	];
 

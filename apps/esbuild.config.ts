@@ -37,7 +37,7 @@ function main() {
 			outfile: './apps/' + id + '/dist/app.pack.js',
 			globalName: 'AppModule_' + id,
 			plugins: [
-				Sass(),
+				Sass({ embedded: true }),
 				Babel(),
 			]
 		});
