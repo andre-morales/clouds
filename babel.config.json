@@ -1,7 +1,10 @@
 {
-
 	"presets": [
 		// Compile TypeScript with no typechecking
 		["@babel/preset-typescript", {}]
-	]
+	],
+	"assumptions": {
+		// Assume public fields never shadow other class properties. This saves bundle space.
+		"setPublicClassFields": true
+	}
 }

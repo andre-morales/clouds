@@ -13,9 +13,7 @@
 		["@babel/preset-env", {		
 			"targets": {
 				"chrome": 54
-			},
-			"useBuiltIns": false
+			}
 		}]
-	],
-	"sourceMaps": false
+	]
 }
