@@ -85,7 +85,7 @@
 		background-image: url("/res/img/icons/maximize.png");
 	}
 
-	.window.maximized .maxrestore-btn {
+	&.maximized .maxrestore-btn {
 		background-image: url("/res/img/icons/restore.png");
 	}
 
