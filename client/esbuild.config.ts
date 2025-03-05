@@ -1,16 +1,16 @@
 import * as ESBuild from 'esbuild';
 import Babel from 'esbuild-plugin-babel';
 import { sassPlugin as Sass } from 'esbuild-sass-plugin';
-import { context, runBuild, setBaseConfig } from '../build_config/esbuild_system.ts';
+import { context, runBuild, setBaseConfig, getBaselineTargets } from '../build_config/esbuild_system.ts';
 
 const developmentMode = Boolean(process.env.DEV_MODE);
 const watchMode = Boolean(process.env.DEV_MODE);
 const emitMetafile = true;
+const baseline = getBaselineTargets();
 
 const baseConfig: ESBuild.BuildOptions = {
 	bundle: true,
 	external: ['*.png'],
-	target: ['chrome54'],
 	format: 'iife',
 	minify: !developmentMode,
 	sourcemap: developmentMode ? 'inline' : 'linked',

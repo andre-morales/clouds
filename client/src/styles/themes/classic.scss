@@ -1,0 +1,8 @@
+#desktop {
+	--dark-window-bg: hsl(220, 5%, 10%);
+	--window-focused-bar-pattern: hsl(204, 97%, 40%);
+}
+
+.window {
+	box-shadow: none !important;
+}

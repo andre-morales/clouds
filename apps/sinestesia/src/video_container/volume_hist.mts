@@ -35,8 +35,7 @@ export class VolumeHistogram {
 	private async extractVolumes() {
 		let url = this.container.getContentUrl();
 
-		let fUrl = new URL('/fsmx/hist' + Paths.removeFSPrefix(url), window.location.href);
-		fUrl.searchParams.set('i', '512');
+		let fUrl = new URL('/fsmx/hist' + Paths.removeFSPrefix(url) + '?i=512', window.location.href);
 		let fRes = await fetch(fUrl);
 		let volumes = await fRes.json();
 		this.volumes = volumes;

@@ -272,6 +272,7 @@ export default class Window {
 		// Remove any hard with/height properties. This will flow the content inside.
 		this.$windowRoot.css('width', '');
 		this.$windowRoot.css('height', '');
+		this.$windowRoot.css('contain', 'none');
 
 		// If the window isn't visible, insert it into the layout but don't display its contents.
 		if (!this.visible) {
@@ -291,6 +292,9 @@ export default class Window {
 			this.$windowRoot.css('display', '');
 			this.$windowRoot.css('visibility', '');
 		}
+
+		// Restore original properties
+		this.$windowRoot.css('contain', '');
 
 		return [pw, ph];
 	}

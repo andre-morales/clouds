@@ -1,4 +1,4 @@
-.root {
+.ui-slider-root {
 	position: relative;
 	width: 100%;
 	height: 100%;
@@ -8,76 +8,76 @@
 	background: white;
 	background-clip: content-box;
 	--thumb-size: var(--slider-thumb-size, 10px);
-}
 
-.lower {
-	background: #00B6FF;
-	background-clip: content-box;
-}
+	.lower {
+		background: #00B6FF;
+		background-clip: content-box;
+	}
 
-.thumb {
-	position: absolute;
-	display: block;
-	
-	width: var(--thumb-size);
-	height: var(--thumb-size);
-	box-sizing: border-box;
-	box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.75);
-	border-style: solid;
-	border-width: 1px;
-	border-color: #000;
-	border-color: rgba(0, 0, 0, 0);
-	border-radius: 50%;
-	user-select: none;
-	background: white;
-}
+	.thumb {
+		position: absolute;
+		display: block;
+		
+		width: var(--thumb-size);
+		height: var(--thumb-size);
+		box-sizing: border-box;
+		box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.75);
+		border-style: solid;
+		border-width: 1px;
+		border-color: #000;
+		border-color: rgba(0, 0, 0, 0);
+		border-radius: 50%;
+		user-select: none;
+		background: white;
+	}
 
-.horizontal .thumb {
-	top: calc(50% - var(--thumb-size)/2);
-}
+	&.horizontal .thumb {
+		top: calc(50% - var(--thumb-size)/2);
+	}
 
-.vertical .thumb {
-	left: calc(50% - var(--thumb-size)/2);
-}
+	&.vertical .thumb {
+		left: calc(50% - var(--thumb-size)/2);
+	}
 
-.thumb:hover {
-	background: #00B6FF;
-}
+	.thumb:hover {
+		background: #00B6FF;
+	}
 
-.track {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	line-height: 0;
-	user-select: none;
-	box-sizing: border-box;
-	--track-color: #EC0;
-}
+	.track {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		line-height: 0;
+		user-select: none;
+		box-sizing: border-box;
+		--track-color: #EC0;
+	}
 
-.horizontal .track {
-	top: 0;
-	bottom: 0;
-}
+	&.horizontal .track {
+		top: 0;
+		bottom: 0;
+	}
 
-.vertical .track {
-	left: 0;
-	right: 0;
-}
+	&.vertical .track {
+		left: 0;
+		right: 0;
+	}
 
-.track-range {
-	box-sizing: border-box;
-	position: absolute;
-	background-color: transparent;
-	background-clip: content-box;
-	background-color: var(--track-color);
-}
+	.track-range {
+		box-sizing: border-box;
+		position: absolute;
+		background-color: transparent;
+		background-clip: content-box;
+		background-color: var(--track-color);
+	}
 
-.horizontal .track-range {
-	top: 0;
-	bottom: 0;
-}
+	&.horizontal .track-range {
+		top: 0;
+		bottom: 0;
+	}
 
-.vertical .track-range {
-	left: 0;
-	right: 0;
+	&.vertical .track-range {
+		left: 0;
+		right: 0;
+	}
 }

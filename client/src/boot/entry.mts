@@ -91,7 +91,7 @@ async function authIsKeyValid() {
 	return res.ok;
 }
 
-function addScript(src): Promise<void> {
+function addScript(src: string): Promise<void> {
 	let log = EntrySpace.log('Loading <b>' + src + '</b>... ');
 
 	var elem = document.createElement('script');

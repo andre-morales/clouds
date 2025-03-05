@@ -16,7 +16,6 @@ export class UITabs extends HTMLElement {
 		}
 
 		let $switchers = this.querySelectorAll('.ui-tabs-switch');
-
 		for (let $switch of $switchers) {
 			$switch.addEventListener('click', () => {
 				let tab = $switch.getAttribute('data-tab');

@@ -1,8 +1,6 @@
-.app-sinestesia {
-	.segment-marker {
-		display: flex;
-		background: rgb(255, 255, 255, 0.2)
-	}
+.app-sinestesia .segment-marker {
+	display: flex;
+	background: rgb(255, 255, 255, 0.2);
 
 	.segment-list {
 		width: 80px;

@@ -13,6 +13,7 @@ declare global {
 	var _systemPanic: Function;
 	var IMPORT: Function;
 	let __BUILD_MODE__: string;
+	let __BASELINE_CHROME__: number;
 }
 
 export default global;

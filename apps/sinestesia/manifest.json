@@ -6,6 +6,6 @@
 		"~/dist/app.pack.js"	
 	],
 	"styles": [
-		"~/dist/styles.bundle.css"
+		"~/dist/app.pack.css"
 	]
 }

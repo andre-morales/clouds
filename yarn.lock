@@ -1212,6 +1212,16 @@
   resolved "https://registry.yarnpkg.com/@types/zepto/-/zepto-1.0.36.tgz#dbc9d2868f928feb860ee40d261def7ef47aeef4"
   integrity sha512-CKFmXsmv4fNYh2yWIT/t/X3hBj8zkNNuYp/9WWTZq9dXQ6pAUq5D7r329i+O+kXXYPwBVmCJh/simxepxIJNDw==
 
+"@webcomponents/custom-elements@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@webcomponents/custom-elements/-/custom-elements-1.6.0.tgz#5ecde1c332464ff00612f51874484b78395d504d"
+  integrity sha512-CqTpxOlUCPWRNUPZDxT5v2NnHXA4oox612iUGnmTUGQFhZ1Gkj8kirtl/2wcF6MqX7+PqqicZzOCBKKfIn0dww==
+
+"@webcomponents/shadydom@^1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@webcomponents/shadydom/-/shadydom-1.11.0.tgz#51215946240b3eef78f2bbd45accbeda3ebadf19"
+  integrity sha512-ixhv9+O0zZuWgpC9iQhh8upakwd9lVo6jmbkGMiEonLRElldEmM4Pzwl1eeZzr1Oa5XqUjmdOjmrA4YxSFrtdQ==
+
 accepts@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/accepts/-/accepts-2.0.0.tgz#bbcf4ba5075467f3f2131eab3cffc73c2f5d7895"

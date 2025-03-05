@@ -57,7 +57,7 @@ body {
 		position: relative;
 		overflow: hidden;
 		flex-grow: 1;
-		min-height: 0;
+		flex-basis: 0;
 		z-index: 0;
 
 		/* When an app is fullscreen, make sure the desktop area appears over the taskbar */

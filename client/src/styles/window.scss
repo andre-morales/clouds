@@ -1,8 +1,9 @@
 .window {
 	--titlebar-height: 28px;
 	--icon-size: 20px;
-	pointer-events: auto;
 	display: none; /* Windows start invisible */
+	contain: strict; /* Windows should affect nothing outside them */
+	pointer-events: auto;
 	flex-direction: column;
 	position: absolute;
 	overflow: hidden;

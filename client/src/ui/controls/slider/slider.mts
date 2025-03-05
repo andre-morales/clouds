@@ -82,11 +82,12 @@ class UISliderController {
 		if (!this.value) this.value = 0;
 
 		// Create shadow DOM
-		this.shadow = slider.attachShadow({ mode: 'open' });
+		this.shadow = slider.attachShadow({ mode: 'closed' });
 		this.initStyles();
 
 		this.$container = document.createElement('div');
 		this.$container.classList.add('root');
+		this.$container.classList.add('ui-slider-root');
 		this.shadow.append(this.$container);
 
 		this.$lower = document.createElement('span');
@@ -105,6 +106,7 @@ class UISliderController {
 
 		// Update thumb position when the thumb size changes as well
 		new ResizeObserver(() => this.update()).observe(this.$thumb);
+		setTimeout(() => this.update(), 0);
 	}
 
 	private initStyles() {

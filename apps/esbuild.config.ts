@@ -12,7 +12,6 @@ const emitMetafile = true;
 const baseConfig: ESBuild.BuildOptions = {
 	bundle: true,
 	external: ['*.png'],
-	target: ['chrome54'],
 	format: 'iife',
 	minify: !developmentMode,
 	sourcemap: developmentMode ? 'inline' : 'linked',

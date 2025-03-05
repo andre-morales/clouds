@@ -4,6 +4,8 @@ import { ErrorStackList } from "./stack_analyzer.mjs";
 
 export function formatRawAsHTML(err: Error): string {
 	const errorToString = (err: Error) => {
+		if (!err) return 'nil';
+
 		let result = `<b>${err.name}: "${err.message}"</b>\n`;
 		result += '    ' + Strings.escapeHTML(err.stack).replaceAll('\n', '\n    ');
 		return result;
@@ -15,7 +17,7 @@ export function formatRawAsHTML(err: Error): string {
 	while (true) {
 		result += errorToString(err);
 
-		if (!err.cause) break;
+		if (!err?.cause) break;
 		err = err.cause as any;
 
 		result += `\n&gt; Caused by `;
