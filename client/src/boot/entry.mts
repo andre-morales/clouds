@@ -1,17 +1,10 @@
+import './base.mjs';
+
 async function entry() {
 	if (await authIsKeyValid()) {
 		initDesktop();
 	} else {
-		// Fetch login page
-		let pagePromise = fetch('/page/login')
-			.then(res => res.text())
-			.then(text => document.body.innerHTML += text);
-
-		let scriptPromise = addScript('/res/pack/boot_login.chk.js');
-
-		await pagePromise;
-		await scriptPromise;
-		EntrySpace.initLogin();
+		initLogin();
 	}
 }
 
@@ -83,7 +76,25 @@ async function initDesktop() {
 	EntrySpace.log('Invoking core module entry point...');
 	(window as any).CoreModule.main();
 }
-EntrySpace.initDesktop = initDesktop;
+
+async function initLogin() {
+	// Fetch login page
+	let pagePromise = fetch('/page/login')
+		.then(res => res.text())
+		.then(text => {
+			let win = document.createElement('div');
+			win.id = 'login-screen';
+			win.classList.add('window');
+			win.innerHTML = text;
+			document.body.appendChild(win);
+		});
+
+	let scriptPromise = addScript('/res/pack/login.js');
+
+	await pagePromise;
+	await scriptPromise;
+	EntrySpace.initLogin();
+}
 
 async function authIsKeyValid() {
 	let fRes = await fetch('/auth/test', { credentials: 'same-origin' });
@@ -97,7 +108,6 @@ function addScript(src: string): Promise<void> {
 	var elem = document.createElement('script');
 	elem.setAttribute('defer', '');
 	elem.setAttribute('src', src);
-
 	document.head.appendChild(elem);
 
 	return new Promise((resolve, reject) => {
@@ -161,5 +171,7 @@ function _systemPanic(reason, detail, mode) {
 	$box.append($dismiss);
 	$('body').append($box);
 }
+
+EntrySpace.initDesktop = initDesktop;
 
 entry();

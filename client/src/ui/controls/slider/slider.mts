@@ -265,17 +265,19 @@ export class SliderTrackRange {
 }
 
 function attachStyles(shadow: ShadowRoot) {
+	const cssUrl = '/res/pack/ui/controls/slider/slider.css';
+
 	if (shadow.adoptedStyleSheets) {
 		if (!stylesheet) {
 			stylesheet = new CSSStyleSheet();
-			fetch('/res/pack/slider.chk.css')
+			fetch(cssUrl)
 				.then(res => res.text())
 				.then(css => stylesheet.replace(css));
 		}
 		shadow.adoptedStyleSheets = [stylesheet];
 	} else {
 		const style = document.createElement('style');
-		style.textContent = `@import url('/res/pack/slider.chk.css');`
+		style.textContent = `@import url('${cssUrl}');`
 		shadow.appendChild(style);
 	}
 }

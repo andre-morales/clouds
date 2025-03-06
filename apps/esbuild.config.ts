@@ -6,7 +6,7 @@ import { sassPlugin as Sass } from 'esbuild-sass-plugin';
 import { context, runBuild, setBaseConfig } from '../build_config/esbuild_system.ts';
 
 const developmentMode = Boolean(process.env.DEV_MODE);
-const watchMode = Boolean(process.env.DEV_MODE);
+const watchMode = Boolean(process.env.WATCH_MODE);
 const emitMetafile = true;
 
 const baseConfig: ESBuild.BuildOptions = {

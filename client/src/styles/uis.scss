@@ -132,5 +132,6 @@
 
 .fscr-parent {
 	overflow: initial !important;
+	contain: none !important;
 	/*transform: none !important;*/
 }

@@ -21,6 +21,19 @@
 			<input type="checkbox" class='checkbox drag-contents-toggle'/>
 			<span>Show window contents when dragging</span>
 		</label>
+		<label class='row'>
+			<input type="checkbox" class='checkbox gestures-toggle'/>
+			<span>Enable gestures</span>
+		</label>
+		<label class='row'>
+			<span>Window rendering: </span>
+			<select class="window-rendering-mode">
+				<option value="absolute">Absolute (Slowest)</option>
+				<option value="translate">Translate (Slow) </option>
+				<option value="translate_hinted">Translate Hinted (Fast)</option>
+				<option value="translate_hinted_forced">Translate Hinted (Forced) (Fast)</option>
+			</select>
+		</label>
 		<div class='row'>
 			<button class='button logout'>Logout Session</button>
 		</div>

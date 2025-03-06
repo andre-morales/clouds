@@ -4,9 +4,8 @@ import { sassPlugin as Sass } from 'esbuild-sass-plugin';
 import { context, runBuild, setBaseConfig, getBaselineTargets } from '../build_config/esbuild_system.ts';
 
 const developmentMode = Boolean(process.env.DEV_MODE);
-const watchMode = Boolean(process.env.DEV_MODE);
+const watchMode = Boolean(process.env.WATCH_MODE);
 const emitMetafile = true;
-const baseline = getBaselineTargets();
 
 const baseConfig: ESBuild.BuildOptions = {
 	bundle: true,
@@ -25,20 +24,12 @@ function main() {
 	setBaseConfig(baseConfig);
 
 	let contexts = [
-		// Polyfills
 		context({
-			entryPoints: ['./client/src/boot/base.mts'],
-			outfile: './client/public/pack/base.chk.js',
-		}),
-		context({
-			entryPoints: ['./client/src/boot/entry.mts'],
-			outfile: './client/public/pack/boot_entry.chk.js',
-			globalName: 'EntryModule',
-		}),
-		context({
-			entryPoints: ['./client/src/boot/login.mts'],
-			outfile: './client/public/pack/boot_login.chk.js',
-			globalName: 'LoginModule',
+			entryPoints: [
+				'./client/src/boot/entry.mts',
+				'./client/src/boot/login.mts'
+			],
+			outdir: './client/public/pack/'
 		}),
 		context({
 			entryPoints: ['./client/src/client_core.mts'],
@@ -46,8 +37,12 @@ function main() {
 			globalName: 'CoreModule',
 		}),
 		context({
-			entryPoints: ['./client/src/ui/controls/slider/slider.scss'],
-			outfile: './client/public/pack/slider.chk.css',
+			entryPoints: [
+				'./client/src/ui/controls/slider/slider.scss',
+				'./client/src/styles/themes/retro.scss',
+				'./client/src/styles/themes/classic.scss',
+			],
+			outdir: './client/public/pack/',
 		})
 	];
 

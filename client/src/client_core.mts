@@ -60,7 +60,7 @@ export async function main() {
 
 async function initUI() {
 	// Fetch desktop page and display the system version on the page
-	let desktopPageProm = fetch('/page/desktop', { credentials: 'same-origin' }).then(fRes => {
+	let desktopPageProm = fetch('/page/desktop').then(fRes => {
 		if (fRes.status != 200) {
 			throw new IllegalStateFault('Desktop page could not be accessed.');
 		}
@@ -71,7 +71,10 @@ async function initUI() {
 	});
 
 	// Schedule loading of main styles
-	let stylesPromise = Browser.addStylesheet('/res/pack/core.chk.css');
+	let stylesPromise = Promise.all([
+		Browser.addStylesheet('/res/pack/core.chk.css'),
+		Browser.addStylesheet('/res/pack/styles/themes/classic.css'),
+	]);
 
 	await desktopPageProm;
 	await stylesPromise;
@@ -93,7 +96,7 @@ async function initPlatform() {
 }
 
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.255';
+	static readonly CLIENT_VERSION = '1.0.261';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;

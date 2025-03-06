@@ -51,8 +51,7 @@
 				document.head.appendChild(elem);
 			}
 			ES.onLoad = function() {
-				ES.addScript('/res/pack/base.chk.js');
-				ES.addScript('/res/pack/boot_entry.chk.js');
+				ES.addScript('/res/pack/entry.js');
 			}
 
 			ES.enableHandlers();
@@ -74,7 +73,7 @@
 			white-space: pre;
 		}
 	</style>
-	<link rel="stylesheet" type="text/css" href="/res/pack/base.chk.css">
+	<link rel="stylesheet" type="text/css" href="/res/pack/base.css">
 	<link rel="icon" type="image/x-icon" href="/res/favicon.png">
 	<% if (use_pwa_features) { %>
 		<link rel="manifest" href="/res/manifest.json">

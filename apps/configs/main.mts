@@ -74,6 +74,12 @@ export default class ConfigsApp extends App {
 		let $winContents = $win.find('.drag-contents-toggle');
 		this.bindCheckboxToProp($winContents, 'show_dragged_window_contents');		
 
+		let $enableGestures = $win.find('.gestures-toggle');
+		this.bindCheckboxToProp($enableGestures, 'enable_gestures');
+
+		let $windowRendering = $win.find('.window-rendering-mode');
+		this.bindFieldToProp($windowRendering, 'window_rendering_mode');
+
 		let $usePWAFeatures = $win.find('.use-pwa-features');
 		this.bindCheckboxToProp($usePWAFeatures, 'use_pwa_features');
 

@@ -5,8 +5,11 @@ import { InternalFault, IllegalStateFault } from '../faults.mjs';
 import { App } from '../app.mjs';
 import Browser from '../utils/browser.mjs';
 import Arrays from '../../../common/arrays.mjs';
-import { WindowPresentation } from './window_presentation.mjs';
+import { RenderingMode, WindowPresentation } from './window_presentation.mjs';
 import Utils from '../utils/utils.mjs';
+import { ConfigManager } from '../config_manager.mjs';
+
+var enableGestures = false;
 
 enum LiveState {
 	NIL, INIT, READY, DYING, DEAD
@@ -137,18 +140,21 @@ export default class Window {
 
 		// Behavior
 		this.optionsCtxMenu = this.makeOptionsCtxMenu();
-		let hammer = new Hammer.Manager(this.$windowRoot.find('.window-body')[0], {
-			recognizers: [
-				[Hammer.Swipe, {
-					direction: Hammer.DIRECTION_LEFT,
-					velocity: 0.4,
-					threshold: 20
-				}],
-			]
-		});
-		hammer.on('swipeleft', () => {
-			this.events.dispatch('backnav');
-		});
+		
+		if (Client.config.preferences.enable_gestures) {
+			let hammer = new Hammer.Manager(this.$windowRoot.find('.window-body')[0], {
+				recognizers: [
+					[Hammer.Swipe, {
+						direction: Hammer.DIRECTION_LEFT,
+						velocity: 0.4,
+						threshold: 20
+					}],
+				]
+			});
+			hammer.on('swipeleft', () => {
+				this.events.dispatch('backnav');
+			});
+		}
 
 		this.$windowRoot.on("mousedown", () => this.focus());
 		this.$windowRoot.on("touchstart", () => this.focus());
@@ -375,11 +381,7 @@ export default class Window {
 	private setStyledPosition(x: number, y: number) {
 		if (!this.$windowRoot) return;
 
-		// Don't allow window on fractional pixel (reduces blurring)
-		x = Math.trunc(x);
-		y = Math.trunc(y);
-
-		this.$windowRoot[0].style.transform = `translate(${x}px, ${y}px)`;
+		this.presentation.setPosition(x, y);
 	}
 
 	public getPosition(): [number, number] {

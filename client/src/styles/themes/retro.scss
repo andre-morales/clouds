@@ -1,0 +1,41 @@
+#desktop {
+	--window-focused-bar-pattern: hsl(204, 97%, 40%);
+	color: white;
+}
+
+.window {
+	box-shadow: none;
+
+	&.decorated:not(.maximized) {
+		border: ridge 2px gray;
+	}
+
+	&.decorated.focused {
+		border-color: #25E;
+		box-shadow: none;
+	}
+
+	.window-title {
+		color: white;
+	}
+
+	.window-body {
+		background: hsl(220, 5%, 10%);
+	}
+}
+
+.button {
+	background-color: hsl(220, 5%, 20%);
+
+	&:hover {
+		background-color: hsl(220, 5%, 25%);
+	}
+	
+	&:active {
+		background-color: hsl(220, 5%, 10%);
+	}
+}
+
+.field {
+	background-color: hsl(220, 5%, 20%);
+}

@@ -7,20 +7,10 @@
 	flex-direction: column;
 	position: absolute;
 	overflow: hidden;
-	box-shadow: 0px 0px 4px black;
 	
 	&.maximized {
 		--titlebar-height: 22px;
 		box-shadow: none;
-	}
-
-	&.decorated:not(.maximized) {
-		border: solid 1px darkgray;
-	}
-
-	&.decorated.focused {
-		border-color: #25E;
-		box-shadow: 0px 0px 8px black;
 	}
 
 	&.visible {

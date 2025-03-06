@@ -97,21 +97,7 @@ export class FilePanel {
 		this.$selectionStatus = this.$selectionOptions.find('.selection-status');
 
 		// Configure touch gestures
-		let hammer = new Hammer.Manager(this.app.$app[0], {
-			recognizers: [
-				[Hammer.Pinch, {}]
-			]
-		});
-
-		// Zoom on pinch
-		let beginZoom = 1;
-		hammer.on('pinchstart', (ev) => {
-			beginZoom = this.zoom;
-		});
-
-		hammer.on('pinch', (ev) => {
-			this.setZoom(beginZoom * ev.scale);
-		});
+		this.initGestures();
 
 		// Zoom on mouse wheel
 		this.$filesContainer.on('wheel', (ev: WheelEvent) => {
@@ -140,6 +126,27 @@ export class FilePanel {
 			]);
 
 			ClientClass.get().desktop.openCtxMenuAt(menu, ev.clientX, ev.clientY);
+		});
+	}
+
+	private initGestures() {
+		if (!ClientClass.get().config.preferences.enable_gestures)
+			return;
+
+		let hammer = new Hammer.Manager(this.app.$app[0], {
+			recognizers: [
+				[Hammer.Pinch, {}]
+			]
+		});
+
+		// Zoom on pinch
+		let beginZoom = 1;
+		hammer.on('pinchstart', (ev) => {
+			beginZoom = this.zoom;
+		});
+
+		hammer.on('pinch', (ev) => {
+			this.setZoom(beginZoom * ev.scale);
 		});
 	}
 

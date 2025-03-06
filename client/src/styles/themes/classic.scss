@@ -1,8 +1,16 @@
-#desktop {
-	--dark-window-bg: hsl(220, 5%, 10%);
-	--window-focused-bar-pattern: hsl(204, 97%, 40%);
-}
-
 .window {
-	box-shadow: none !important;
+	box-shadow: 0px 0px 4px black;
+
+	&.decorated:not(.maximized) {
+		border: solid 1px darkgray;
+	}
+
+	&.decorated.focused {
+		border-color: #25E;
+		box-shadow: 0px 0px 8px black;
+	}
+
+	.window-body {
+		background: hsla(220, 5%, 10%, 0.8);
+	}
 }

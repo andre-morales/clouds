@@ -1,0 +1,4 @@
+* Load the configuration manager earlier in order to determine what scripts/styles can be loaded or
+  not based on user preferences.
+  This will be useful for not loading Hammer if gestures are disabled for example. Also loading the
+  correct theme packed css on boot-up.

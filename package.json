@@ -13,7 +13,8 @@
     "build-client-types": "tsc -b client",
     "build-apps-dev": "node --experimental-strip-types --env-file envs/develop.env apps/esbuild.config.ts",
     "build-apps-prod": "node --experimental-strip-types --env-file envs/prod.env apps/esbuild.config.ts",
-    "check-apps-types": "tsc -b apps"
+    "check-apps-types": "tsc -b apps",
+    "analyze": "node --experimental-strip-types build_config/analyze.ts"
   },
   "author": "André Morales",
   "license": "ISC",
