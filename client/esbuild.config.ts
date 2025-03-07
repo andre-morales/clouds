@@ -39,8 +39,8 @@ function main() {
 		context({
 			entryPoints: [
 				'./client/src/ui/controls/slider/slider.scss',
+				'./client/src/styles/themes/default.scss',
 				'./client/src/styles/themes/retro.scss',
-				'./client/src/styles/themes/classic.scss',
 			],
 			outdir: './client/public/pack/',
 		})

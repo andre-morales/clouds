@@ -24,6 +24,8 @@ export function login(id: string, pass: string): number {
 		let key = getRandomInt(1, 32768);
 		logins[id] = key;
 
+		console.log("Logged in: ", logins);
+
 		return key;
 	}
 	return 0;

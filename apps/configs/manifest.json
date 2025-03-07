@@ -5,6 +5,6 @@
 		"~/dist/app.pack.js"	
 	],
 	"styles": [
-		"~/style.css"
+		"~/dist/app.pack.css"
 	]
 }

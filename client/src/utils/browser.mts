@@ -1,3 +1,5 @@
+import Deferred from "/@comm/dist/deferred.mjs";
+
 export function cloneTemplate(id: string): Node {
 	let el = document.getElementById('t_' + id) as HTMLTemplateElement;
 	return el.content.cloneNode(true);
@@ -38,7 +40,7 @@ export function destroyElementById(id: string) {
 	return el;
 }
 
-export function addStylesheet(src: string, id?: string) {
+export function addStylesheet(src: string, id?: string): WebResource<HTMLLinkElement> {
 	var style = document.createElement('link');
 	if(id) style.setAttribute('id', id);
 	style.setAttribute('rel', 'stylesheet');
@@ -46,10 +48,11 @@ export function addStylesheet(src: string, id?: string) {
 
 	document.head.appendChild(style);
 
-	return new Promise((resolve, reject) => {
-		style.addEventListener('load', resolve);
+	/*return new Promise((resolve, reject) => {
+		style.addEventListener('load', (ev) => { resolve(style) });
 		style.addEventListener('error', () => reject(`Resource '${src}' failed to load.`));
-	});
+	});*/
+	return new WebResource(style);
 }
 
 export function addScript(src: string, id?: string) {
@@ -74,6 +77,22 @@ export function downloadUrl(path: string) {
 	document.body.appendChild(link);
 	link.click();
 	link.remove();
+}
+
+class WebResource<T extends HTMLElement> {
+	public readonly element: T;
+	public readonly promise: Promise<void>;
+
+	constructor(elem: T) {
+		this.element = elem;
+
+		let deferred = new Deferred();
+		this.promise = deferred.promise;
+		elem.addEventListener('load', deferred.resolve);
+
+		let name = (elem as any).href;
+		elem.addEventListener('error', () => deferred.reject(`Resource '${name}' failed to load.`));
+	}
 }
 
 export default {

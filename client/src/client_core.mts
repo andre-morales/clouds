@@ -15,6 +15,7 @@ import WebResourceManager from './web_resource_manager.mjs';
 import Polyfills from './polyfills/polyfills.mjs';
 import * as Public from './public.mjs';
 import './styles/main.scss';
+import ThemeManager from './ui/theme_manager.mjs';
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
@@ -72,8 +73,7 @@ async function initUI() {
 
 	// Schedule loading of main styles
 	let stylesPromise = Promise.all([
-		Browser.addStylesheet('/res/pack/core.chk.css'),
-		Browser.addStylesheet('/res/pack/styles/themes/classic.css'),
+		Browser.addStylesheet('/res/pack/core.chk.css').promise,
 	]);
 
 	await desktopPageProm;
@@ -96,7 +96,7 @@ async function initPlatform() {
 }
 
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.261';
+	static readonly CLIENT_VERSION = '1.0.263';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
@@ -108,6 +108,7 @@ export class ClientClass {
 	audio: AudioSystem;
 	appManager: AppManager;
 	config: ConfigManager;
+	themeManager: ThemeManager;
 	mediaSessionBridge: typeof MediaSessionBridge;
 	runningApps: App[];
 	events: Reactor<{ log: ReactorEvent }>;
@@ -141,28 +142,22 @@ export class ClientClass {
 		this.resources = new WebResourceManager();
 		this.events = new Reactor();
 		this.events.register('log', 'apps-add', 'apps-rem');
-		this.config = new ConfigManager();
-		UIControls.init();
 
 		// Fetch and load configuration
+		this.config = new ConfigManager();
 		promises.push(this.config.init());
+
+		// Start theming system
+		this.themeManager = new ThemeManager();
+		promises.push(this.themeManager.init());
+
+		// Initialize custom UI controls
+		UIControls.init();		
 
 		// Create desktop subsystem
 		this.desktop = new Desktop();
 
 		this.initGraphicalErrors();
-
-		// Save current page on history and rack back button press
-		let bTime = 0;
-		history.pushState(null, null, location.href);
-		window.addEventListener('popstate', () => {
-			let time = new Date().getTime()
-			let dt = time - bTime;
-			bTime = time;
-			if (dt > 10) this.desktop.backButton();
-
-			history.go(1);
-		});
 
 		this.appManager = new AppManager();
 		await this.appManager.init();

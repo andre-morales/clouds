@@ -7,7 +7,7 @@ export function formatRawAsHTML(err: Error): string {
 		if (!err) return 'nil';
 
 		let result = `<b>${err.name}: "${err.message}"</b>\n`;
-		result += '    ' + Strings.escapeHTML(err.stack).replaceAll('\n', '\n    ');
+		result += '    ' + Strings.escapeHTML(err.stack ?? '').replaceAll('\n', '\n    ');
 		return result;
 	}
 

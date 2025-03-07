@@ -72,17 +72,31 @@ export class Desktop {
 			}
 		});	
 		
-		this.#initPrefBindings();
+		this.initPrefBindings();
 
-		// Ready fullscreen system
 		Fullscreen.init();
+		this.initBrowserHistory();
 		this._queryBounds();	
+	}
+
+	private initBrowserHistory() {
+		// Save current page on history and rack back button press
+		let bTime = 0;
+		history.pushState(null, null, location.href);
+		window.addEventListener('popstate', () => {
+			let time = new Date().getTime()
+			let dt = time - bTime;
+			bTime = time;
+			if (dt > 10) this.backButton();
+			
+			history.go(1);
+		});
 	}
 
 	/**
 	 * Watch changes to important preferences keys.
 	 */
-	#initPrefBindings() {
+	private initPrefBindings() {
 		let pref = ClientClass.get().config.preferencesMgr;
 
 		pref.observeProperty("background", () => {

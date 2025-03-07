@@ -1,44 +1,44 @@
 <ui-tabs>
 	<nav class='ui-tabs-header'>
-		<button class='ui-tabs-switch selected' data-tab='general'>General</button>
+		<button class='ui-tabs-switch selected' data-tab='general'>Desktop</button>
+		<button class='ui-tabs-switch' data-tab='features'>Features</button>
 		<button class='ui-tabs-switch' data-tab='debug'>Debug</button>
 	</nav>
 	<div class='ui-tab general-tab visible' data-tab='general'>
+		<label class='row'>
+			<span>Theme: </span>
+			<select class="theme">
+				<option value="default">Classic (Default)</option>
+				<option value="retro">Retro</option>
+			</select>
+		</label>
 		<div class='row input'>
 			<span>Background:</span>
 			<input class='field background-input'/>
 			<button class='button find'>Find...</button>
 		</div>
 		<label class='row'>
-			<input type="checkbox" class='checkbox use-pwa-features'/>
-			<span>Enable PWA features</span>
+			<input type="checkbox" class='checkbox drag-contents-toggle'/>
+			<span>Show window contents when dragging</span>
 		</label>
 		<label class='row'>
 			<input type="checkbox" class='checkbox fullscr-filter-toggle'/>
 			<span>Enable fullscreen filter</span>
 		</label>
 		<label class='row'>
-			<input type="checkbox" class='checkbox drag-contents-toggle'/>
-			<span>Show window contents when dragging</span>
-		</label>
-		<label class='row'>
-			<input type="checkbox" class='checkbox gestures-toggle'/>
-			<span>Enable gestures</span>
-		</label>
-		<label class='row'>
 			<span>Window rendering: </span>
 			<select class="window-rendering-mode">
-				<option value="absolute">Absolute (Slowest)</option>
-				<option value="translate">Translate (Slow) </option>
-				<option value="translate_hinted">Translate Hinted (Fast)</option>
-				<option value="translate_hinted_forced">Translate Hinted (Forced) (Fast)</option>
+				<option value="absolute">Insets (Slowest)</option>
+				<option value="translate">Transform (Slow) </option>
+				<option value="translate_hinted">Transform Hinted (Fast)</option>
+				<option value="translate_hinted_forced">Transform Hinted (Forced) (Fast)</option>
 			</select>
 		</label>
 		<div class='row'>
-			<button class='button logout'>Logout Session</button>
+			<button class='button logout'>Logout session</button>
 		</div>
 	</div>
-	<div class='ui-tab debug-tab' data-tab='debug'>
+	<div class='ui-tab features-tab' data-tab='features'>
 		<label class='row'>
 			<span>PDF viewer: </span>
 			<select class="pdf-viewer">
@@ -47,6 +47,16 @@
 				<option value="pdfjs-2.16.105-legacy">PDF.js 2.16.105 (Legacy)</option>
 			</select>
 		</label>
+		<label class='row'>
+			<input type="checkbox" class='checkbox gestures-toggle'/>
+			<span>Enable gestures</span>
+		</label>
+		<label class='row'>
+			<input type="checkbox" class='checkbox use-pwa-features'/>
+			<span>Enable PWA features</span>
+		</label>
+	</div>
+	<div class='ui-tab debug-tab' data-tab='debug'>
 		<div class='row'>
 			<button class='button' onclick='throw new Fault("Manually triggered fault.")'>Throw Fault</button>
 			<button class='button' onclick='_systemPanic("Manually triggered panic")'>Trigger Panic</button>

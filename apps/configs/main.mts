@@ -3,6 +3,7 @@ import { Paths } from '/@sys/drivers/filesystem.mjs';
 import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
 import App from '/@sys/app.mjs';
+import './style.scss';
 
 var Client: ClientClass;
 
@@ -79,6 +80,9 @@ export default class ConfigsApp extends App {
 
 		let $windowRendering = $win.find('.window-rendering-mode');
 		this.bindFieldToProp($windowRendering, 'window_rendering_mode');
+
+		let $theme = $win.find('.theme');
+		this.bindFieldToProp($theme, 'theme');
 
 		let $usePWAFeatures = $win.find('.use-pwa-features');
 		this.bindCheckboxToProp($usePWAFeatures, 'use_pwa_features');

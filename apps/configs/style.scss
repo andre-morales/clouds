@@ -1,0 +1,50 @@
+.app-configs {
+	display: flex;
+	flex-direction: column;
+
+	ui-tabs {
+		flex-shrink: 1;
+		overflow: auto;
+	}
+
+	.general-tab.visible {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.row {
+		display: block;
+		margin: .5em .5rem;
+
+		span {
+			vertical-align: middle;
+		}
+	}
+
+	.input {
+		display: flex;
+		align-items: center;
+
+		.field {
+			flex: 1;
+			margin-left: .5rem;
+			align-self: stretch;
+		}
+	}
+
+	.spacer {
+		flex-grow: 1;
+	}
+
+	.bottom {
+		margin: 0;
+		padding: .25em;
+		text-align: right;
+		background: rgba(255, 255, 255, 0.05);
+		flex-shrink: 0;
+	}
+
+	table td {
+		padding: .5em 0;
+	}
+}

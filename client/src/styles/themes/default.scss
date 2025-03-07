@@ -1,5 +1,6 @@
 .window {
 	box-shadow: 0px 0px 4px black;
+	backdrop-filter: blur(2px);
 
 	&.decorated:not(.maximized) {
 		border: solid 1px darkgray;
