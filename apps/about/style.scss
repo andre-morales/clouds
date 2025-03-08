@@ -1,36 +1,4 @@
 .app-about {
-	.tabpane {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-	}
-
-	.header {
-		font-size: 0;
-	}
-
-	.header button {
-		margin: 0;
-		border: solid 1px #34F;
-		border-left: none;
-		font-size: 13pt;
-		background-color: transparent;
-	}
-
-	.header button.selected {
-		border-bottom: solid 1px transparent;
-	}
-
-	.tab {
-		display: none;
-		flex-grow: 1;
-		overflow-y: auto;
-	}
-
-	.tab.visible {
-		display: block;
-	}
-
 	.banner {
 		display: flex;
 		height: 7rem;
@@ -40,6 +8,11 @@
 		font-family: 'Trebuchet MS', 'Verdana', 'Helvetica', 'Arial', sans-serif;
 		font-style: italic;
 		background: rgba(0, 0, 0, 0.4);
+
+		.v {
+			font-size: 12pt;
+			font-style: normal;
+		}
 	}
 
 	.properties {
@@ -60,12 +33,12 @@
 
 	td {
 		padding: 2px;
-	}
 
-	td:first-child {
-		border-right: solid 1px #555;
-		padding-right: 1rem;
-		white-space: nowrap;
+		&:first-child {
+			border-right: solid 1px #555;
+			padding-right: 1rem;
+			white-space: nowrap;
+		}
 	}
 
 	tr:not(:last-child) td {

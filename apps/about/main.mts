@@ -51,7 +51,8 @@ export default class AboutApp extends App {
 		// Build modes
 		$app.find('.core-build-mode').text(ClientClass.BUILD_MODE);
 		$app.find('.apps-build-mode').text(__BUILD_MODE__);
-		$app.find('.build-baseline').text(JSON.stringify(__BUILD_BASELINE_BROWSERS__));
+		let browsers = Object.entries(__BUILD_BASELINE_BROWSERS__).map(v => `[${v[0]}: ${v[1]}]`).join('\n');
+		$app.find('.build-baseline').text(browsers);
 
 		this.window.setVisible(true);
 	}
