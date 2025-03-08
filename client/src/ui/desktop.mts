@@ -170,9 +170,9 @@ export class Desktop {
 	}
 
 	getDefaultWindowSize() {
-		let rect = this.getWindowingArea();
-		let w = (rect[0] * 0.9 < 512) ? rect[0] * 0.9 : 512;
-		let h = (rect[1] * 0.9 < 768) ? rect[1] * 0.9 : 768;
+		let [ww, wh] = this.getWindowingArea();
+		let w = Math.min(Math.max(ww * 0.6, 512), ww);
+		let h = Math.min(Math.max(wh * 0.6, 512), wh);
 		return [w, h];
 	}
 

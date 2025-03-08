@@ -8,6 +8,7 @@ import Arrays from '../../../common/arrays.mjs';
 import { RenderingMode, WindowPresentation } from './window_presentation.mjs';
 import Utils from '../utils/utils.mjs';
 import { ConfigManager } from '../config_manager.mjs';
+import { ClientClass } from '../client_core.mjs';
 
 var enableGestures = false;
 
@@ -221,7 +222,8 @@ export default class Window {
 		this.taskButton = Client.desktop.taskbar.addWindow(this);
 
 		// If no width or height has been set, pack by default
-		if (!this.width || !this.height) {
+		let alwaysPack = ClientClass.get().config.preferences.dbg_always_pack_windows;
+		if (!this.width || !this.height || alwaysPack) {
 			await this.pack();
 		}
 

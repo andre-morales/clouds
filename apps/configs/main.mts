@@ -90,6 +90,9 @@ export default class ConfigsApp extends App {
 		let $pdfViewer = $win.find('.pdf-viewer');
 		this.bindFieldToProp($pdfViewer, 'pdf_viewer');
 
+		let $alwaysPack = $win.find('.always-pack-toggle');
+		this.bindCheckboxToProp($alwaysPack, 'dbg_always_pack_windows');
+
 		$win.find('.logout').click(() => {
 			Client.logout();
 		})
