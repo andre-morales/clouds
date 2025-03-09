@@ -3,7 +3,7 @@ import { AudioSystem } from './drivers/audio_system.mjs';
 import { Reactor, ReactorEvent } from './events.mjs';
 import Browser from './utils/browser.mjs';
 import { IllegalStateFault } from './faults.mjs';
-import * as MediaSessionBridge from './drivers/media_session_bridge.mjs';
+import * as MediaSessionDriver from './drivers/media_session.mjs';
 import Desktop from './ui/desktop.mjs';
 import UIControls from './ui/controls/controls.mjs';
 import AppRunner from './app_runner.mjs';
@@ -14,8 +14,8 @@ import { WatsonTools } from './watson/watson_tools.mjs';
 import WebResourceManager from './web_resource_manager.mjs';
 import Polyfills from './polyfills/polyfills.mjs';
 import * as Public from './public.mjs';
-import './styles/main.scss';
 import ThemeManager from './ui/theme_manager.mjs';
+import './styles/main.scss';
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
@@ -109,7 +109,7 @@ export class ClientClass {
 	appManager: AppManager;
 	config: ConfigManager;
 	themeManager: ThemeManager;
-	mediaSessionBridge: typeof MediaSessionBridge;
+	mediaSessionBridge: typeof MediaSessionDriver;
 	runningApps: App[];
 	events: Reactor<{ log: ReactorEvent }>;
 
@@ -128,14 +128,14 @@ export class ClientClass {
 		this.watson = WatsonTools.get();
 
 		// Display API version
-		fetch('/stat/version').then(async (fRes) => {
+		promises.push(fetch('/stat/version').then(async (fRes) => {
 			if (fRes.status != 200) return;
 
 			let version = await fRes.text();
 			(ClientClass as any).API_VERSION = version;
 
 			$('#api-ver').text('API ' + version);
-		});
+		}));
 
 		// Create main structures
 		this.runningApps = [];
@@ -167,12 +167,13 @@ export class ClientClass {
 		this.desktop.setupApps();
 
 		// Media Session bridge
-		this.mediaSessionBridge = MediaSessionBridge;
+		this.mediaSessionBridge = MediaSessionDriver;
 		this.mediaSessionBridge.init();
 
 		// Initialize audio subsystem
 		this.audio = new AudioSystem();
 
+		// Await all initialization tasks to finish before closing the constructor.
 		await Promise.all(promises);		
 	}
 
@@ -189,7 +190,11 @@ export class ClientClass {
 			method: "POST"
 		});
 		
-		if (refresh) window.location.href = "/";
+		if (refresh) Client.restart();
+	}
+
+	restart() {
+		window.location.href = "/"
 	}
 
 	async runApp(name: string, buildArgs = []): Promise<App> {

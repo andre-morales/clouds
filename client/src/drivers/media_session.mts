@@ -19,7 +19,6 @@ export function init() {
 
 	navigator.mediaSession.setActionHandler("play", async () => {
 	    navigator.mediaSession.playbackState = 'playing';
-	    //console.log('m-play');
 
 	    let media = getMediaToPlay();
 	    if (!media) return;

@@ -62,8 +62,11 @@ export class Desktop {
 
 		this.addCtxMenuOn(this.$desktop.find('.back-plane'), () => menu);
 		
+		// When resizing the browser, resize the desktop as well
 		$(window).on('resize', () => {
-			this._queryBounds();
+			this.updateBounds();
+
+			// Resize maximized windows as well
 			for (let w of this.windowManager.getWindows()) {
 				if (w.maximized) {
 					w.getPresentation().setSize(this.windowsWidth, this.windowsHeight);
@@ -76,7 +79,7 @@ export class Desktop {
 
 		Fullscreen.init();
 		this.initBrowserHistory();
-		this._queryBounds();	
+		this.updateBounds();	
 	}
 
 	private initBrowserHistory() {
@@ -100,7 +103,7 @@ export class Desktop {
 		let pref = ClientClass.get().config.preferencesMgr;
 
 		pref.observeProperty("background", () => {
-			this.#reloadBackground();
+			this.reloadBackground();
 		});
 
 		pref.observeProperty("fullscreen_filter", (value) => {
@@ -270,7 +273,7 @@ export class Desktop {
 	}
 
 	// Updates desktop area to match client window area
-	_queryBounds() {
+	private updateBounds() {
 		let screenBounds = this.$desktop[0].getBoundingClientRect();
 		this.screenWidth = screenBounds.width;
 		this.screenHeight = screenBounds.height;
@@ -280,7 +283,7 @@ export class Desktop {
 		this.windowsHeight = dtBounds.height;
 	}
 
-	#reloadBackground() {
+	private reloadBackground() {
 		let url = ClientClass.get().config.preferences.background;
 		this.$desktop.css('background-image', 'url("' + url + '")');
 	}

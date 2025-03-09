@@ -157,9 +157,8 @@ export default class Window {
 			});
 		}
 
-		this.$windowRoot.on("mousedown", () => this.focus());
-		this.$windowRoot.on("touchstart", () => this.focus());
-		this.$windowRoot.on("focusin", () => this.focus());
+		this.$windowRoot.on("mousedown focusin", () => this.focus());
+		this.$windowRoot[0].addEventListener("touchstart", () => this.focus(), { passive: true });
 
 		$win.find('.close-btn').click(() => {
 			let closingEv = new ReactorEvent();

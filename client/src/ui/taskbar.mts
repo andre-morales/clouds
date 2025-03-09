@@ -71,9 +71,8 @@ export class Taskbar {
 			this.$appsMenu.css('display', 'block');
 		});
 
-		this.$appsMenu.find('.logout-btn').click(() => {
-			Client.logout();
-		});
+		this.$appsMenu.find('.logout-btn').click(() => Client.logout());
+		this.$appsMenu.find('.restart-btn').click(() => Client.restart());
 	}
 
 	addWindow(win: Window): TaskbarButton {

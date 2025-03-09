@@ -234,14 +234,14 @@ export class WindowManager {
 		}, true);
 		mc.down[0].addEventListener("touchstart", (ev) => {
 			mc.down[1](ev, ev.changedTouches[0].pageX, ev.changedTouches[0].pageY);
-		}, true);
+		}, { capture: true, passive: true });
 
 		mc.move[0].addEventListener("mousemove", (ev) => {
 			mc.move[1](ev, ev.pageX, ev.pageY);
 		});
 		mc.move[0].addEventListener("touchmove", (ev) => {
 			mc.move[1](ev, ev.changedTouches[0].pageX, ev.changedTouches[0].pageY);
-		});
+		}, { passive: true });
 
 		mc.up[0].addEventListener("mouseup", (ev) => {
 			mc.up[1](ev, ev.pageX, ev.pageY);

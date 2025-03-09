@@ -100,14 +100,14 @@ export class FilePanel {
 		this.initGestures();
 
 		// Zoom on mouse wheel
-		this.$filesContainer.on('wheel', (ev: WheelEvent) => {
+		this.$filesContainer[0].addEventListener('wheel', (ev: WheelEvent) => {
 			if (!ev.ctrlKey) return;
 			
 			let scale = ev.deltaY / 1000.0;
 			this.setZoom(this.zoom - scale);
 
 			ev.preventDefault();
-		});
+		}, { passive: false });
 
 		this.$selectionOptions.find('.clear-selection-btn').click(() => {
 			this.clearSelection();

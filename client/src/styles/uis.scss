@@ -19,6 +19,7 @@
 /* Context menu */
 .context-menu {
 	display: none;
+	z-index: 2; /* Have this element over the taskbar and desktop. */
 	position: absolute;
 	border: solid 1px var(--base-color);
 	padding: 2px 2px;

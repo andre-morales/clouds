@@ -97,7 +97,10 @@ async function initLogin() {
 }
 
 async function authIsKeyValid() {
-	let fRes = await fetch('/auth/test', { credentials: 'same-origin' });
+	let fRes = await fetch('/auth/test', {
+		credentials: 'same-origin',
+		cache: 'no-store'
+	});
 	let res = await fRes.json();
 	return res.ok;
 }

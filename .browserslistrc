@@ -1,8 +1,8 @@
 # Current
-#last 0.1 year
+last 0.1 year
 
 # Medium support
 #last 4 years 
 
 # Maximum support
-fully supports let and fully supports es6-class, not firefox <= 50, not edge <= 13
+#fully supports let and fully supports es6-class, not firefox <= 50, not edge <= 13
