@@ -13,4 +13,10 @@ if (__BASELINE_CHROME__ < 54) {
 	require('@webcomponents/shadydom');
 }
 
+// Chrome < 49
+if (__BASELINE_CHROME__ < 49) {
+	require('core-js/stable/object/from-entries');
+	require('core-js/stable/url-search-params');
+}
+
 import '../styles/base.scss';

@@ -1,3 +1,4 @@
+"use strict"
 import App from '/@sys/app.mjs';
 import { AudioSystem } from './drivers/audio_system.mjs';
 import { Reactor, ReactorEvent } from './events.mjs';

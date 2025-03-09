@@ -5,10 +5,9 @@ export function cloneTemplate(id: string): Node {
 	return el.content.cloneNode(true);
 }
 
-export function getURLParams(): ProxyConstructor {
-	return new Proxy(new URLSearchParams(window.location.search), {
- 		get: (searchParams: any, prop) => searchParams.get(prop),
-	});
+export function getURLParams(): object {
+	let searchParams = new URLSearchParams(window.location.search);
+	return Object.fromEntries(searchParams.entries());
 }
 
 export function setCookie(name: string, value: string, time = 365) {

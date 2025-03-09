@@ -2,6 +2,8 @@ import * as ESBuild from 'esbuild';
 import Babel from 'esbuild-plugin-babel';
 import { sassPlugin as Sass } from 'esbuild-sass-plugin';
 import { context, runBuild, setBaseConfig, getBaselineTargets } from '../build_config/esbuild_system.ts';
+import swcTransformPlugin from '../build_config/swc-transform-plugin.ts';
+import Path from 'path';
 
 const developmentMode = Boolean(process.env.DEV_MODE);
 const watchMode = Boolean(process.env.WATCH_MODE);
@@ -16,8 +18,12 @@ const baseConfig: ESBuild.BuildOptions = {
 	define: {
 		'__BUILD_MODE__': `'${developmentMode ? 'Development' : 'Production'}'`
 	},
-	plugins: [Sass({embedded: true}), Babel()],
-	metafile: emitMetafile
+	metafile: emitMetafile,
+//	plugins: [Sass({embedded: true}), Babel()],
+	/**, swcTransformPlugin */
+	plugins: [Sass({ embedded: false }), swcTransformPlugin({ write: true })],
+	target: ['esnext'],
+	write: false
 }
 
 function main() {

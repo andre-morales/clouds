@@ -10,7 +10,7 @@ const baseConfig: ESBuild.BuildOptions = {
 		'__BASELINE_CHROME__': JSON.stringify(baseline.chrome),
 		'__BUILD_BASELINE_BROWSERS__': JSON.stringify(baseline)
 	},
-	target: getESBuildTargets()
+	target: getESBuildTargets(),
 };
 
 var currentBaseConfig: ESBuild.BuildOptions = baseConfig;
@@ -31,6 +31,9 @@ export async function runBuild(contexts: Promise<[ESBuild.BuildOptions, ESBuild.
 	}
 
 	let results = await rebuildAll(contexts);
+	
+	// Write files when write: false
+	await writeAllResults(results);
 
 	if (metafileName) 
 		await emitMeta(metafileName, results);
@@ -52,6 +55,21 @@ async function rebuildAll(contexts: Promise<[ESBuild.BuildOptions, ESBuild.Build
 	let results = await Promise.all(rebuilds);
 	console.log("Rebuilt all contexts.");
 	return results;
+}
+
+async function writeAllResults(results: ESBuild.BuildResult[]) {
+	let promises: Promise<void>[] = [];
+
+	for (let result of results) {
+		if (!result.outputFiles) continue;
+
+		for (let file of result.outputFiles) {
+			let promise = FS.promises.writeFile(file.path, file.text);
+			promises.push(promise);
+		};
+	};
+
+	await Promise.all(promises);
 }
 
 async function emitMeta(fileName: string, results: ESBuild.BuildResult[]) {
@@ -121,16 +139,25 @@ function joinMeta(...metaFiles: ESBuild.Metafile[]): ESBuild.Metafile {
 }
 
 export function getBaselineTargets(): {[vendor: string]: number} {
+	let stx = getBaselineTargets as any;
+	if (stx.cachedTargets)
+		return stx.cachedTargets;
+
 	let targets = {};
 
 	let browsers = BrowsersList();
 	for (let browser of browsers) {
 		let [vendor, version] = browser.split(' ');
 
+		// Only care about main vendors
+		if (!['chrome', 'firefox', 'edge', 'safari'].includes(vendor))
+			continue;
+
 		if (!targets[vendor] || targets[vendor] > Number(version))
 			targets[vendor] = Number(version);
 	}
 
+	stx.cachedTargets = targets;
 	return targets;
 }
 

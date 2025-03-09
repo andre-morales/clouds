@@ -99,7 +99,8 @@ export class Desktop {
 	/**
 	 * Watch changes to important preferences keys.
 	 */
-	private initPrefBindings() {
+	private async initPrefBindings() {
+		await ClientClass.get().config.init();
 		let pref = ClientClass.get().config.preferencesMgr;
 
 		pref.observeProperty("background", () => {
@@ -113,6 +114,8 @@ export class Desktop {
 				document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-on)');
 			}
 		});
+
+		this.reloadBackground();
 	}
 
 	public createWindow(app: App): Window {

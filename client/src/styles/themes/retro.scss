@@ -1,10 +1,13 @@
 #desktop {
-	--window-focused-bar-pattern: hsl(204, 97%, 40%);
 	color: white;
 }
 
 .window {
 	box-shadow: none;
+
+	&.decorated > .window-head {
+		background: hsl(204, 97%, 40%);
+	}
 
 	&.decorated:not(.maximized) {
 		border: ridge 2px gray;

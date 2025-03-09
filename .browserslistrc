@@ -1,8 +1,11 @@
 # Current
-last 0.1 year
+#last 0.1 year
 
 # Medium support
 #last 4 years 
 
-# Maximum support
-#fully supports let and fully supports es6-class, not firefox <= 50, not edge <= 13
+# Maximum support - ES6 (2015)
+#chrome >= 51, edge >= 15, firefox >= 54
+
+# Experimental ES5 support
+chrome >= 48, edge >= 13, firefox >= 44

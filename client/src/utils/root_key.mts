@@ -161,6 +161,10 @@ type ObjectChangeCallback = (base: string[], value: unknown) => void;
  * All changes made to this object, including deep changes will notify the change callback.
  */
 function asObservable(target: any, callback: ObjectChangeCallback, chain: string[] = []) {
+	// Disable proxies if non available
+	if (!window.Proxy)
+		return {};
+	
 	// Make all object values of this object proxies themselves, so deep changes notify our callback.
 	for (const key in target) {
 		if (typeof target[key] !== 'object') continue;

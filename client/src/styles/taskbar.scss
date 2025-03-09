@@ -1,9 +1,11 @@
 /* Taskbar */ 
+$taskbar_height: 32px;
+
 .desktop .taskbar {
 	display: flex;
 	flex: 0 0 auto;
 	width: 100%;
-	height: var(--taskbar-height);
+	height: $taskbar_height;
 	background: linear-gradient(0deg, #111, 20%, #222, 60%, #444);
 
 	.tasks {
