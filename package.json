@@ -8,13 +8,13 @@
   "scripts": {
     "build-api-dist": "tsc -b api",
     "watch-api-dist": "tsc -b api -w",
-    "build-client-dev": "node --experimental-strip-types --env-file envs/develop.env client/esbuild.config.ts",
-    "build-client-prod": "node --experimental-strip-types --env-file envs/prod.env client/esbuild.config.ts",
+    "build-client-dev": "node --env-file envs/develop.env client/esbuild.config.ts",
+    "build-client-prod": "node --env-file envs/prod.env client/esbuild.config.ts",
     "build-client-types": "tsc -b client",
-    "build-apps-dev": "node --experimental-strip-types --env-file envs/develop.env apps/esbuild.config.ts",
-    "build-apps-prod": "node --experimental-strip-types --env-file envs/prod.env apps/esbuild.config.ts",
+    "build-apps-dev": "node --env-file envs/develop.env apps/esbuild.config.ts",
+    "build-apps-prod": "node --env-file envs/prod.env apps/esbuild.config.ts",
     "check-apps-types": "tsc -b apps",
-    "analyze": "node --experimental-strip-types build_config/analyze.ts"
+    "analyze": "node build_config/analyze.ts"
   },
   "author": "André Morales",
   "license": "ISC",
@@ -30,13 +30,11 @@
     "express": "^5.0.1",
     "express-fileupload": "^1.4.0",
     "express-ws": "^5.0.2",
+    "glob": "^11.0.1",
     "morgan": "^1.10.0",
     "source-map": "^0.7.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.9",
-    "@babel/preset-env": "^7.24.3",
-    "@babel/preset-typescript": "^7.24.6",
     "@swc/cli": "^0.6.0",
     "@swc/core": "^1.11.8",
     "@types/compression": "^1.7.5",
@@ -49,16 +47,16 @@
     "@types/prismjs": "^1.26.4",
     "@types/ws": "^8.5.13",
     "@types/zepto": "^1.0.36",
-    "babel-plugin-module-resolver": "^5.0.2",
     "core-js": "^3.36.1",
     "esbuild": "^0.25.0",
-    "esbuild-plugin-babel": "^0.2.3",
+    "esbuild-plugin-alias-path": "^2.0.2",
     "esbuild-sass-plugin": "^3.3.1",
     "sass": "^1.83.4",
     "sass-embedded": "^1.85.1",
-    "typescript": "^5.6.2"
+    "typescript": "^5.8.2"
   },
   "imports": {
     "#common/*.mjs": "./common/dist/*.mjs"
-  }
+  },
+  "packageManager": "pnpm@10.6.3+sha512.bb45e34d50a9a76e858a95837301bfb6bd6d35aea2c5d52094fa497a467c43f5c440103ce2511e9e0a2f89c3d6071baac3358fc68ac6fb75e2ceb3d2736065e6"
 }
