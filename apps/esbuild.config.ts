@@ -1,7 +1,8 @@
 import * as ESBuild from 'esbuild';
 import Path from 'path';
-import Glob from 'glob';
-import Babel from 'esbuild-plugin-babel';
+import * as Glob from 'glob';
+import swcTransformPlugin from '../build_config/esbuild_plugin_post_swc.ts';
+import writerPlugin from '../build_config/esbuild_plugin_output_writer.ts';
 import { sassPlugin as Sass } from 'esbuild-sass-plugin';
 import { context, runBuild, setBaseConfig } from '../build_config/esbuild_system.ts';
 
@@ -18,11 +19,12 @@ const baseConfig: ESBuild.BuildOptions = {
 	define: {
 		'__BUILD_MODE__': `'${developmentMode ? 'Development' : 'Production'}'`
 	},
-	plugins: [
-		Sass({ embedded: true }),
-		Babel(),
-	],
-	metafile: emitMetafile
+	metafile: emitMetafile,
+	plugins: [ Sass({ embedded: true }), swcTransformPlugin({ iife: true }), writerPlugin()],
+	target: ['esnext'],
+	write: false,
+	// Specify a separate tsconfig.json to prevent bundling client modules
+	tsconfig: './apps/build.tsconfig.json'
 };
 
 function main() {
@@ -38,7 +40,10 @@ function main() {
 		let ctx = context({
 			entryPoints: ['./apps/' + id + '/main.mts'],
 			outfile: './apps/' + id + '/dist/app.pack.js',
-			globalName: 'AppModule_' + id
+			globalName: 'AppModuleExport',
+			footer: {
+				js: `window.AppModule_${id} = AppModuleExport;`
+			}
 		});
 
 		return ctx;

@@ -1,9 +1,8 @@
 import * as ESBuild from 'esbuild';
-import Babel from 'esbuild-plugin-babel';
 import { sassPlugin as Sass } from 'esbuild-sass-plugin';
 import { context, runBuild, setBaseConfig, getBaselineTargets } from '../build_config/esbuild_system.ts';
-import swcTransformPlugin from '../build_config/swc-transform-plugin.ts';
-import Path from 'path';
+import swcTransformPlugin from '../build_config/esbuild_plugin_post_swc.ts';
+import writerPlugin from '../build_config/esbuild_plugin_output_writer.ts';
 
 const developmentMode = Boolean(process.env.DEV_MODE);
 const watchMode = Boolean(process.env.WATCH_MODE);
@@ -19,9 +18,7 @@ const baseConfig: ESBuild.BuildOptions = {
 		'__BUILD_MODE__': `'${developmentMode ? 'Development' : 'Production'}'`
 	},
 	metafile: emitMetafile,
-//	plugins: [Sass({embedded: true}), Babel()],
-	/**, swcTransformPlugin */
-	plugins: [Sass({ embedded: false }), swcTransformPlugin({ write: true })],
+	plugins: [ Sass({ embedded: false }), swcTransformPlugin({ iife: true }), writerPlugin()],
 	target: ['esnext'],
 	write: false
 }
@@ -40,7 +37,10 @@ function main() {
 		context({
 			entryPoints: ['./client/src/client_core.mts'],
 			outfile: './client/public/pack/core.chk.js',
-			globalName: 'CoreModule',
+			globalName: 'CoreModuleExport',
+			footer: {
+				js: 'window.CoreModule = CoreModuleExport'
+			}
 		}),
 		context({
 			entryPoints: [

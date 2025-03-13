@@ -1,3 +1,4 @@
+"use strict"
 if (__BASELINE_CHROME__ < 92) {
 	require('core-js/stable/string/at');
 	require('core-js/stable/string/replace-all');

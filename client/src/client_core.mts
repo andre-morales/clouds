@@ -97,7 +97,7 @@ async function initPlatform() {
 }
 
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.265';
+	static readonly CLIENT_VERSION = '1.0.268';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
@@ -195,7 +195,7 @@ export class ClientClass {
 	}
 
 	restart() {
-		window.location.href = "/"
+		window.location.href = "/";
 	}
 
 	async runApp(name: string, buildArgs = []): Promise<App> {

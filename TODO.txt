@@ -1,4 +1,21 @@
-* Load the configuration manager earlier in order to determine what scripts/styles can be loaded or
-  not based on user preferences.
-  This will be useful for not loading Hammer if gestures are disabled for example. Also loading the
-  correct theme packed css on boot-up.
+# Bugs
+* HIGH: Fix global namespace clutter caused by es5 modules with swc.
+* HIGH: Fix cached auth token causing faulty logins and sessions.
+
+# Compatibility
+* MEDIUM: Improve degradation of lack of AudioContext
+* MEDIUM: Improve degradation when lack of source maps for errors
+* LOW: Phase out css vars for really old browsers.
+* LOW: Re-encode videos for browsers with lack of support for certain formats.
+  Certain browsers support only mp4(h264/aac) in 1920x1080 for example. Maybe streaming api?
+  Maybe offer the option to re-encode the video if it doesn't load?
+
+* Features
+* LOW: Show in About support for platform APIs (Audio, Fullscreen, MediaSession, etc.)
+* LOW: Allow Fullscreen to be used even if the API is not available. Maybe maximize the content in
+  the desktop?
+
+# Improvements
+* LOW: Refactor context menus for traditional Menus. This could allows shared code between context
+  menus and menu bars.
+* LOW: Disable loading of Hammer module if gestures are disabled

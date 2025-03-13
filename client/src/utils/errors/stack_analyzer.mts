@@ -11,7 +11,7 @@ export class ErrorStackList {
 
 	public constructor(root: Error) {
 		this.stacks = [];
-
+		
 		let err = root;
 		while (err) {
 			this.stacks.push(new ErrorStack(err));
