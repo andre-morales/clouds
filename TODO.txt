@@ -1,5 +1,5 @@
 # Bugs
-* HIGH: Fix global namespace clutter caused by es5 modules with swc.
+* HIGH: Fix source map destruction with swc IIFEs.
 * HIGH: Fix cached auth token causing faulty logins and sessions.
 
 # Compatibility

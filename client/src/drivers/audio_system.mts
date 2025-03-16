@@ -30,6 +30,10 @@ export class AudioSystem {
 		if (!this.enabled) return false;
 		if (this.initialized) return true;
 
+		if (!window.AudioContext) {
+			return false;
+		}
+
 		this.initialized = true;
 		this.context = new AudioContext();
 		this.destination = this.context.createGain();
@@ -143,7 +147,10 @@ export class AudioSystem {
 	}
 
 	public createMediaNode(mediaElement: HTMLMediaElement): MediaElementAudioSourceNode {
-		if (!this.initialized) this.init();
+		this.init();
+
+		if (!this.initialized)
+			return null;
 
 		return this.context.createMediaElementSource(mediaElement);
 	}
