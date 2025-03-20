@@ -5,17 +5,24 @@
 .window {
 	box-shadow: none;
 
-	&.decorated > .window-head {
-		background: hsl(204, 97%, 40%);
-	}
+	&.decorated {
 
-	&.decorated:not(.maximized) {
-		border: ridge 2px gray;
-	}
+		> .window-head {
+			background: hsl(220, 55%, 40%);
+		}
+	
+		&:not(.maximized) {
+			border: ridge 2px gray;
+		}
+	
+		&.focused {
+			border-color: #25E;
+			box-shadow: none;
 
-	&.decorated.focused {
-		border-color: #25E;
-		box-shadow: none;
+			> .window-head {	
+				background: linear-gradient(to right, hsl(220, 100%, 38%), hsl(204, 100%, 45%), hsl(320, 90%, 60%));
+			}
+		}
 	}
 
 	.window-title {

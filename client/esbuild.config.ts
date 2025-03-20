@@ -18,7 +18,7 @@ const baseConfig: ESBuild.BuildOptions = {
 		'__BUILD_MODE__': `'${developmentMode ? 'Development' : 'Production'}'`
 	},
 	metafile: emitMetafile,
-	plugins: [ Sass({ embedded: false }), swcTransformPlugin({ iife: true }), writerPlugin()],
+	plugins: [ Sass({ embedded: true }), swcTransformPlugin({ iife: true }), writerPlugin()],
 	target: ['esnext'],
 	write: false
 }

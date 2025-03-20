@@ -25,12 +25,7 @@
 		display: flex;
 		flex-shrink: 0;
 		height: var(--titlebar-height);
-		background: var(--window-unfocused-bar-pattern);
 		white-space: nowrap;
-	}
-
-	&.decorated.focused > .window-head {	
-		background: var(--window-focused-bar-pattern);
 	}
 
 	&.decorated > .window-head button {
