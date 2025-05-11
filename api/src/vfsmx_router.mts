@@ -111,7 +111,7 @@ async function resThumbnail(req: Express.Request, res: Express.Response): Promis
 
 function encodePath(path: string): string {
 	// Remove special characters from path
-	let stripped = path.replaceAll(/[\\/.:']/g, '_');
+	let stripped = path.replaceAll(/[\\/.:'#]/g, '_');
 	
 	// Encode path string into UTF-8 bytes
 	let bytes = new TextEncoder().encode(stripped);

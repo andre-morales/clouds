@@ -31,8 +31,8 @@ export class FileIcon {
 		let $img = null;
 		let hasThumb = FileTypes.isVideo(this.fileName) || FileTypes.isPicture(this.fileName);
 		if (hasThumb) {
-			let thumbURL = Paths.toURL(Paths.toFSV(this.absolutePath));
-			$img = $(`<img src='/fsmx/thumb${this.absolutePath}' draggable='false'>`);
+			let thumbURL = Paths.toURL(this.absolutePath);
+			$img = $(`<img src='/fsmx/thumb${thumbURL}' draggable='false'>`);
 			classes.push('thumbbed');
 		}
 		
