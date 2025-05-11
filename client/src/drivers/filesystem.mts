@@ -261,19 +261,19 @@ export class FileTypes {
 	}
 
 	static isVideo(path: string) {
-		return Strings.endsWithAny(path, ['.mp4', '.mkv', '.webm', '.m4v']);
+		return hasExtensions(path, ['.mp4', '.mkv', '.webm', '.m4v']);
 	}
 
 	static isPicture(path: string) {
-		return Strings.endsWithAny(path, ['.png', '.jpg', '.jpeg', '.webp', '.gif']);
+		return hasExtensions(path, ['.png', '.jpg', '.jpeg', '.webp', '.gif']);
 	}
 
 	static isAudio(path: string) {
-		return Strings.endsWithAny(path, ['.mp3', '.ogg', 'm4a', '.opus', '.weba']);
+		return hasExtensions(path, ['.mp3', '.ogg', 'm4a', '.opus', '.weba']);
 	}
 	
 	static isText(path: string) {
-		return Strings.endsWithAny(path, ['.txt', '.json']);
+		return hasExtensions(path, ['.txt', '.json']);
 	}
 	
 	static isMedia(path: string) {
@@ -286,4 +286,8 @@ export class FileSystemException extends Exception {
 		super(message);
 		this.name = "FileSystemException";
 	}
+}
+
+function hasExtensions(path: string, extensions: string[]): boolean {
+	return Strings.endsWithAny(path.toLowerCase(), extensions);
 }
