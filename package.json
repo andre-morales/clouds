@@ -42,6 +42,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/express-fileupload": "^1.5.1",
+    "@types/express-ws": "^3.0.5",
     "@types/hammerjs": "^2.0.46",
     "@types/morgan": "^1.9.10",
     "@types/prismjs": "^1.26.5",
