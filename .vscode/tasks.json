@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "watch-api-dist",
+			"script": "api:build:watch",
 			"problemMatcher": [
 				"$tsc-watch"
 			],
@@ -13,7 +13,7 @@
 		},
 		{
 			"type": "npm",
-			"script": "build-api-dist",
+			"script": "api:build",
 			"group": "build",
 			"problemMatcher": [],
 			"label": "📍     💠 API: Build",
@@ -32,7 +32,7 @@
 		},
 		{
 			"type": "npm",
-			"script": "build-client-dev",
+			"script": "client:build:devl:watch",
 			"group": "build",
 			"problemMatcher": [],
 			"label": "👀🐛      CLIENT: Watch Build Development",
@@ -40,7 +40,7 @@
 		},
 		{
 			"type": "npm",
-			"script": "build-client-prod",
+			"script": "client:build:prod",
 			"group": "build",
 			"problemMatcher": [],
 			"label": "📍📦      CLIENT: Build Production",
@@ -59,7 +59,7 @@
 		},
 		{
 			"type": "npm",
-			"script": "build-apps-dev",
+			"script": "apps:build:devl:watch",
 			"group": "build",
 			"problemMatcher": [],
 			"label": "👀🐛      APPS: Watch Build Development",
@@ -67,7 +67,7 @@
 		},
 		{
 			"type": "npm",
-			"script": "build-apps-prod",
+			"script": "apps:build:prod",
 			"group": "build",
 			"problemMatcher": [],
 			"label": "📍📦      APPS: Build Production",

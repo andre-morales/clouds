@@ -1,6 +1,8 @@
 import * as ESBuild from 'esbuild';
 import FS from 'fs';
-import BrowsersList from 'browserslist';
+import { getBaselineTargets, getESBuildTargets } from './targets.ts';
+import Chalk from 'chalk';
+import Path from 'node:path';
 
 const baseline = getBaselineTargets();
 
@@ -15,21 +17,42 @@ const baseConfig: ESBuild.BuildOptions = {
 
 var currentBaseConfig: ESBuild.BuildOptions = baseConfig;
 
+/**
+ * Set a base configuration all entry points will use. context() builders can override the
+ * properties defined in the base configuration.
+ * @param base The ESBuild configuration to use as a base.
+ */
 export async function setBaseConfig(base: ESBuild.BuildOptions) {
 	currentBaseConfig = mergeConfigs(baseConfig, base);
 }
 
+/**
+ * Define a new ESBuild build context with the specified options.
+ * @param config The ESBuild configuration for this context.
+ * @returns A promise to a pair [options, context]. The return options object is the true config
+ * passed to ESBuild, after it was merged with the base options. The context object is the ESBuild
+ * context.
+ */
 export async function context(config: ESBuild.BuildOptions): Promise<[ESBuild.BuildOptions, ESBuild.BuildContext]> {
 	let finalConfig = mergeConfigs(currentBaseConfig, config);
 	return [finalConfig, await ESBuild.context(finalConfig)];
 }
 
-export async function runBuild(contexts: Promise<[ESBuild.BuildOptions, ESBuild.BuildContext]>[], watchMode: boolean, metafileName?: string) {
+/**
+ * Builds (or watches) all contexts passed. Optionally emitting a meta file.
+ * @param contexts The contexts to build, in the same format as returned by the context() call.
+ * @param watchMode Whether these contexts should be built or watched
+ * @param metafileName If specified, will emit a meta file that is the merged result of the meta
+ * of all contexts. This option is ignored in watch mode.
+ */
+export async function runBuild(contexts: Promise<[ESBuild.BuildOptions, ESBuild.BuildContext]>[], watchMode: boolean, metafileName?: string): Promise<void> {
 	if (watchMode) {
 		watchAll(contexts);
 		return;
 	}
 
+	const start = performance.now();
+	
 	let results = await rebuildAll(contexts);
 	
 	// Write files when write: false
@@ -39,21 +62,27 @@ export async function runBuild(contexts: Promise<[ESBuild.BuildOptions, ESBuild.
 		await emitMeta(metafileName, results);
 
 	await disposeAll(contexts);
-	console.log("Done.");
+
+	let timeElapsed = (performance.now() - start) / 1000.0;
+	log('s', `Done in ${timeElapsed.toFixed(2)}s.`);
 }
 
+/**
+ * Watch all the specified context for modifications, and rebuild them as necessary.
+ * @param contexts The context objects as passed from the context() call.
+ */
 async function watchAll(contexts: Promise<[ESBuild.BuildOptions, ESBuild.BuildContext]>[]) {
 	contexts.forEach(async (prom) => {
 		let [opt, ctx] = await prom;
 		await ctx.watch();
-		console.log("Watching " + opt.entryPoints);
+		log('i', "Watching " + opt.entryPoints);
 	});
 }
 
 async function rebuildAll(contexts: Promise<[ESBuild.BuildOptions, ESBuild.BuildContext]>[]): Promise<ESBuild.BuildResult[]> {
 	let rebuilds = contexts.map(prom => prom.then(ctx => ctx[1].rebuild()));
 	let results = await Promise.all(rebuilds);
-	console.log("Rebuilt all contexts.");
+	log('i', "Rebuilt all contexts.");
 	return results;
 }
 
@@ -74,13 +103,13 @@ async function writeAllResults(results: ESBuild.BuildResult[]) {
 
 async function emitMeta(fileName: string, results: ESBuild.BuildResult[]) {
 	let outputText = JSON.stringify(joinBuildResults(...results));
-	await FS.promises.writeFile(fileName, outputText);
-	console.log("Emitted meta file.");
+	await writeFileEnsureDir(fileName, outputText);
+	log('i', `Emitted meta file "${Chalk.yellow(fileName)}"`);
 }
 
 async function disposeAll(contexts: Promise<[ESBuild.BuildOptions, ESBuild.BuildContext]>[]) {
 	await Promise.all(contexts.map(ctx => ctx.then((c) => c[1].dispose())));
-	console.log("Finalized all contexts.");
+	log('i', "Finalized all contexts.");
 }
 
 export function mergeConfigs(...configs: ESBuild.BuildOptions[]) {
@@ -107,7 +136,7 @@ export async function joinMetafiles(resultFile: string, ...files: string[]) {
 		result = joinMeta(result, obj);
 	}
 
-	await FS.promises.writeFile(resultFile, JSON.stringify(result));
+	await writeFileEnsureDir(resultFile, JSON.stringify(result));
 	return result;
 }
 
@@ -138,42 +167,37 @@ function joinMeta(...metaFiles: ESBuild.Metafile[]): ESBuild.Metafile {
 	return result;
 }
 
-export function getBaselineTargets(): {[vendor: string]: number} {
-	let stx = getBaselineTargets as any;
-	if (stx.cachedTargets)
-		return stx.cachedTargets;
-
-	let targets = {};
-
-	let browsers = BrowsersList();
-	for (let browser of browsers) {
-		let [vendor, version] = browser.split(' ');
-
-		// Only care about main vendors
-		if (!['chrome', 'firefox', 'edge', 'safari'].includes(vendor))
-			continue;
-
-		if (!targets[vendor] || targets[vendor] > Number(version))
-			targets[vendor] = Number(version);
+export function log(type: 'i' | 'w' | 'e' | 's', ...msg: any) {
+	switch(type) {
+		case 'i': console.log(Chalk.bgBlueBright.bold.white(' Framon '), ...msg); break;
+		case 'w': console.log(Chalk.bgYellowBright.bold.white(' Framon '), ...msg); break;
+		case 'e': console.log(Chalk.bgRedBright.bold.white(' Framon '), ...msg); break;
+		case 's': console.log(Chalk.bgGreenBright.bold.white(' Framon '), ...msg); break;
 	}
-
-	stx.cachedTargets = targets;
-	return targets;
 }
 
-function getESBuildTargets() {
-	let out: string[] = [];
-	const vendors = ['chrome', 'firefox', 'edge', 'safari', 'opera', 'ie'];
-
-	let targets = getBaselineTargets();
-	for (let [vendor, version] of Object.entries(targets)) {
-		if (!vendors.includes(vendor))
-			continue;
-
-		out.push(vendor + version);
+/**
+ * Write a file ensuring the directories along the way exist.
+ * @param path Path to the file.
+ * @param contents Buffer of context.
+ */
+export async function writeFileEnsureDir(path: string, contents: string | Uint8Array) {
+	let dir = Path.dirname(path);
+	let exists = true;
+	try {
+		await FS.promises.access(dir);
+	} catch {
+		exists = false;
 	}
 
-	return out;
+	if (!exists) {
+		await FS.promises.mkdir(dir, { recursive: true });
+	}
+
+	await FS.promises.writeFile(path, contents);
 }
 
-console.log("Current targets:", getESBuildTargets());
+
+export default { log }
+
+log('i', "ESBuild targets:", getESBuildTargets());

@@ -6,15 +6,21 @@
   "main": "api/dist/main.mjs",
   "type": "module",
   "scripts": {
-    "build-api-dist": "tsc -b api",
-    "watch-api-dist": "tsc -b api -w",
-    "build-client-dev": "node --env-file envs/develop.env client/esbuild.config.ts",
-    "build-client-prod": "node --env-file envs/prod.env client/esbuild.config.ts",
-    "build-client-types": "tsc -b client",
-    "build-apps-dev": "node --env-file envs/develop.env apps/esbuild.config.ts",
-    "build-apps-prod": "node --env-file envs/prod.env apps/esbuild.config.ts",
-    "check-apps-types": "tsc -b apps",
-    "analyze": "node build_config/analyze.ts"
+    "api:build": "tsc -b api",
+    "api:build:watch": "tsc -b api -w",
+
+    "client:build:devl": "node --env-file envs/devl.env client/build.ts",
+    "client:build:prod": "node --env-file envs/prod.env client/build.ts",
+    "client:build:devl:watch": "node --env-file envs/devl-w.env client/build.ts",
+    "client:build:prod:watch": "node --env-file envs/prod-w.env client/build.ts",
+    "client:check": "tsc -b client",
+
+    "apps:build:devl": "node --env-file envs/devl.env apps/build.ts",
+    "apps:build:prod": "node --env-file envs/prod.env apps/build.ts",
+    "apps:build:devl:watch": "node --env-file envs/devl-w.env apps/build.ts",
+    "apps:build:prod:watch": "node --env-file envs/prod-w.env apps/build.ts",
+    "apps:check": "tsc -b apps",
+    "analyze": "node framon/analyze.ts"
   },
   "author": "André Morales",
   "license": "ISC",

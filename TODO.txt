@@ -1,5 +1,4 @@
 # Bugs
-* HIGH: Fix source map destruction with swc IIFEs.
 * HIGH: Fix cached auth token causing faulty logins and sessions.
 
 # Compatibility

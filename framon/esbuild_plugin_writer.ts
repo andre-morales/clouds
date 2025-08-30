@@ -1,5 +1,6 @@
 import * as ESBuild from 'esbuild';
-import FS from 'fs';
+import Framon, { writeFileEnsureDir } from './system.ts';
+import Chalk from 'chalk';
 
 class WriterPlugin implements ESBuild.Plugin {
 	name: string;
@@ -9,14 +10,13 @@ class WriterPlugin implements ESBuild.Plugin {
 	}
 
 	setup(builder: ESBuild.PluginBuild) {
-	
 		builder.onEnd(async (result) => {
 			if (!result.outputFiles) return;
 			
-			await Promise.all(result.outputFiles.map((file) => {
+			await Promise.all(result.outputFiles.map(async (file) => {
 				let fileSize = (file.contents.byteLength / 1024).toFixed(1);
-				console.log(`:: Write (${fileSize} KiB): ${file.path}`);
-				return FS.promises.writeFile(file.path, file.contents);
+				await writeFileEnsureDir(file.path, file.contents);
+				Framon.log('i', `${Chalk.white('Wrote')} (${fileSize} KiB): ${file.path}`);
 			}));
 		});
 

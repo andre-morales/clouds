@@ -1,15 +1,16 @@
 import * as ESBuild from 'esbuild';
 import * as SWC from '@swc/core';
 import Path from 'node:path';
-import { getBaselineTargets } from './esbuild_system.ts';
-
+import Chl from 'chalk';
+import { getBaselineTargets } from './targets.ts';
+import { log } from './system.ts';
 const PLUGIN_NAME = 'swc-post-plugin';
 
 interface PluginOptions {
 	/*** If false, will let the files trough untouched. */
 	enable?: boolean
 
-	/*** Wrap the resulting SWC transformed code into a IIFE. This will break source maps (for now.) */
+	/*** Wrap the resulting SWC transformed code into a IIFE. */
 	iife?: boolean
 }
 
@@ -26,12 +27,12 @@ class SWCPostPlugin {
 				return;
 
 			if (!result.outputFiles) {
-				warn('No output files found. No processing will be done. Make sure to set write: false in your ESBuild options.');
+				log('w', Chl.magenta(PLUGIN_NAME) + Chl.yellow(`: No output files found. No processing will be done. Make sure to set ${Chl.green("write: false")} in your ESBuild options.`));
 				return;
 			}
 
 			if ((['both', 'external'] as any).includes(build.initialOptions.sourcemap)) {
-				warn('Source map modes "both" and "external" not yet supported.');
+				log('w', Chl.magenta(PLUGIN_NAME) + Chl.yellow(`: Sourcemap mode "${build.initialOptions.sourcemap}" not supported. No processing will be done.`));
 				return;
 			}
 
@@ -111,8 +112,8 @@ class BuildContext {
 		// Try finding the map file in the output files of ESBuild
 		let mapFile = this.build.outputFiles.find(v => v.path === sourceMapPath);
 		if (!mapFile) {
-			console.warn(`Couldn't find source map of "${this.file.path}" in output files.
-				Tried to look for "${sourceMapPath}" because the file contained a reference to "${sourceMapRef}".`);
+			warn(`Couldn't find source map of "${this.file.path}" in output files.
+	 Tried to look for "${sourceMapPath}" because the file contained a reference to "${sourceMapRef}".`);
 			return { kind: 'empty'};
 		}
 	
@@ -129,35 +130,11 @@ class BuildContext {
 				targets: browserList,
 			},
 			jsc: {
+				// Reasonable difference of around 10% code size.
 				assumptions: {
-					// -- Reasonable difference of 10% code size.
 					setPublicClassFields: true,
 					setClassMethods: true,
 					noDocumentAll: true,
-
-					// -- Little difference
-					/*
-					setSpreadProperties: true,
-					ignoreFunctionName: true,
-					ignoreFunctionLength: true,
-					mutableTemplateObject: true,
-					noClassCalls: true,
-					superIsCallableConstructor: true,
-					arrayLikeIsIterable: true,
-					constantReexports: true,
-					enumerableModuleMeta: true,
-					noIncompleteNsImportDetection: true,
-					noNewArrows: true,
-					setComputedProperties: true,
-					skipForOfIteratorClosing: true,
-					privateFieldsAsProperties: true,
-					constantSuper: true,
-					pureGetters: true,
-					objectRestNoSymbols: true,
-					ignoreToPrimitiveHint: true,*/
-					
-					// -- Makes builds non functional
-					//iterableIsArray: true
 				}
 			},
 			module: {
@@ -178,27 +155,25 @@ class BuildContext {
 
 		// Based on ESBuild's source map generation config, determine SWC's.
 		switch(this.buildOptions.sourcemap) {
-			// For inline map generation, let swc include the sourcemap in the file right away.
-			// Also let it find it in the input code.
+			// For 'inline' or 'both' map generation, let swc find the sourcemap embedded in the file,
+			// and have it generate the source map object as well.
 			case 'inline':
-				options.inputSourceMap = true;	
-				options.sourceMaps = 'inline';
-				break;
-			// For 'both' map generation, let swc find the sourcemap embedded in the file, but have
-			// it generate the source map object as well.
 			case 'both':
-				options.inputSourceMap = true;
 				options.sourceMaps = true;
+				options.inputSourceMap = true;
 				break;
 			// For all other map generations, a separate map file will be generated. We'll feed
 			// swc with the source map file we found earlier.
 			case 'linked':
 			case 'external':
-				if (!this.initialMap.file)
-					throw new Error("Initial source map for " + this.file.path + " was not found.");
+				options.sourceMaps = true;
+
+				if (!this.initialMap.file) {
+					warn("Configure warning! Initial sourcemap of " + this.file.path + " missing.");
+					break;
+				}
 
 				options.inputSourceMap = this.initialMap.file?.text;
-				options.sourceMaps = true;
 				break;
 		}
 
@@ -207,11 +182,31 @@ class BuildContext {
 
 	async invokeSWC(): Promise<SWC.Output> {
 		// Invoke SWC
-		const swcResult = await SWC.transform(this.file.text, this.swcOptions);
+		const result = await SWC.transform(this.file.text, this.swcOptions);
 		
 		// Wrap resulting SWC transform into a IIFE.
 		if (this.pluginOptions.iife) {
-			swcResult.code = `(function(){\n${swcResult.code}\n})();`;
+			result.code = `(function(){\n${result.code}\n})();`;
+
+			// Insert a single ; as the first mapping. This has the effect of shifting all mappings
+			// down by one line, fixing the addition of the "(function() {" line above.
+			if (result.map)
+				result.map = result.map.replace(',"mappings":"', ',"mappings":";');
+		}
+
+		// If the source map configuration is one these, we'll have to modify the source file
+		// to either link the path to the source map, or include it directly
+		if ((['inline', 'linked', 'both'] as any).includes(this.buildOptions.sourcemap)) {
+			// Remove the original sourceMapUrl line from file
+			let i1 = result.code.indexOf("//# sourceMappingURL=");
+			let i2 = result.code.indexOf("\n", i1);
+			if (i1 != -1)
+				result.code = result.code.slice(0, i1) + result.code.slice(i2);
+		}
+
+		// Warn if swc did not generate a sourcemap.
+		if (!result.map) {
+			log('w', `Invoke warning! swc did not generate a source map for "${this.file.path}".`);
 		}
 
 		// Based on the source map configuration specified, we might need to inject a string on
@@ -219,20 +214,18 @@ class BuildContext {
 		switch(this.buildOptions.sourcemap) {
 			// Inject in the compiled code result a link to the source map we will emit separately.
 			case 'linked':
-				swcResult.code += '\n//# sourceMappingURL=' + this.initialMap.url;
+				result.code += '\n//# sourceMappingURL=' + this.initialMap.url;
 				break;
 			// Inject in the compiled code the encoded source map.
+			case 'inline':
 			case 'both':
-				if (!swcResult.map)
-					throw new Error("swc did not generate a source map to encode.");
-
-				let encodedData = Buffer.from(swcResult.map).toString('base64');
-				swcResult.code += "//# sourceMappingURL=data:application/json;base64," + encodedData;
+				let encodedData = Buffer.from(result.map as any).toString('base64');
+				result.code += "//# sourceMappingURL=data:application/json;base64," + encodedData;
 				break;
 		}
 
-		this.swcResult = swcResult;
-		return swcResult;
+		this.swcResult = result;
+		return result;
 	}
 
 	attachSourceMap() {
@@ -242,8 +235,10 @@ class BuildContext {
 			case 'linked':
 			case 'external':
 			case 'both':
-				if (!this.initialMap.file)
-					throw new Error('Initial map for "' + this.file + '" not found.');
+				if (!this.initialMap.file) {
+					warn('Attachment warning! Initial sourcemap of "' + this.file.path + '" missing.')
+					return;
+				}
 
 				this.initialMap.file.contents = new TextEncoder().encode(this.swcResult.map);
 				break;
@@ -263,10 +258,6 @@ class BuildContext {
 	}
 }
 
-function warn(...args: any[]) {
-	console.error(`\x1b[35m${PLUGIN_NAME}:\x1b[33m`, ...args, '\x1b[0m');
-}
-
 export default (options?: PluginOptions) => { 
 	let plugin = new SWCPostPlugin(options);
 	return {
@@ -274,3 +265,7 @@ export default (options?: PluginOptions) => {
 		setup: (pb: ESBuild.PluginBuild) => plugin.setup(pb)
 	}
 };
+
+function warn(...args) {
+	log('w', Chl.yellowBright(PLUGIN_NAME + ":"), ...args);
+}

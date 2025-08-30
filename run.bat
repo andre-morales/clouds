@@ -4,26 +4,27 @@ SETLOCAL EnableDelayedExpansion
 IF NOT EXIST "api\dist\core.mjs" (
 	echo :: Building API
 	echo.
-	call yarn build-api-dist
+	call pnpm api:build
 )
 
 IF NOT EXIST "client\public\pack\core.chk.js" (
 	echo :: Building Core
 	echo.
-	call yarn build-client-prod
+	call pnpm client:build:prod
 )
 
 IF NOT EXIST "apps\about\dist\app.pack.js" (
 	echo :: Building Apps
 	echo.
-	call yarn build-apps-prod
+	call pnpm apps:build:prod
 )
 
 :run
 node --enable-source-maps --watch . %*
 if %errorlevel% EQU 777 goto exit
 if %errorlevel% EQU 778 goto exit
-echo Server TERMINATED. Will restart. - %date% %time%
+echo Server TERMINATED. Will restart soon. - %date% %time%
+timeout /t 2 /nobreak > nul
 goto run
 
 :exit
