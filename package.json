@@ -39,7 +39,7 @@
     "source-map": "^0.7.6"
   },
   "devDependencies": {
-    "@swc/cli": "^0.6.0",
+    "@swc/cli": "^0.7.8",
     "@swc/core": "^1.13.5",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.9",
@@ -55,12 +55,14 @@
     "core-js": "^3.45.1",
     "esbuild": "^0.25.9",
     "esbuild-sass-plugin": "^3.3.1",
-    "sass": "^1.91.0",
-    "sass-embedded": "^1.91.0",
+    "postcss": "^8.5.6",
+    "postcss-preset-env": "^10.3.1",
+    "sass": "^1.92.0",
+    "sass-embedded": "^1.92.0",
     "typescript": "^5.9.2"
   },
   "imports": {
     "#common/*.mjs": "./common/dist/*.mjs"
   },
-  "packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af"
+  "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b"
 }
