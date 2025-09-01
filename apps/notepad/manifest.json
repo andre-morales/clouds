@@ -2,8 +2,7 @@
 	"id": "notepad",
 	"icon": "/app/notepad/icon96.png",
 	"scripts": [
-		"~/dist/app.pack.js",
-		"/res/lib/prism/prism.js"
+		"~/dist/app.pack.js"
 	],
 	"styles": [
 		"/app/notepad/pages/style.css",

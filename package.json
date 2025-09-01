@@ -8,17 +8,15 @@
   "scripts": {
     "api:build": "tsc -b api",
     "api:build:watch": "tsc -b api -w",
-
-    "client:build:devl": "node --env-file envs/devl.env client/build.ts",
-    "client:build:prod": "node --env-file envs/prod.env client/build.ts",
-    "client:build:devl:watch": "node --env-file envs/devl-w.env client/build.ts",
-    "client:build:prod:watch": "node --env-file envs/prod-w.env client/build.ts",
+    "client:build:devl": "node --experimental-strip-types --env-file envs/devl.env client/build.ts",
+    "client:build:prod": "node --experimental-strip-types --env-file envs/prod.env client/build.ts",
+    "client:build:devl:watch": "node --experimental-strip-types --env-file envs/devl-w.env client/build.ts",
+    "client:build:prod:watch": "node --experimental-strip-types --env-file envs/prod-w.env client/build.ts",
     "client:check": "tsc -b client",
-
-    "apps:build:devl": "node --env-file envs/devl.env apps/build.ts",
-    "apps:build:prod": "node --env-file envs/prod.env apps/build.ts",
-    "apps:build:devl:watch": "node --env-file envs/devl-w.env apps/build.ts",
-    "apps:build:prod:watch": "node --env-file envs/prod-w.env apps/build.ts",
+    "apps:build:devl": "node --experimental-strip-types --env-file envs/devl.env apps/build.ts",
+    "apps:build:prod": "node --experimental-strip-types --env-file envs/prod.env apps/build.ts",
+    "apps:build:devl:watch": "node --experimental-strip-types --env-file envs/devl-w.env apps/build.ts",
+    "apps:build:prod:watch": "node --experimental-strip-types --env-file envs/prod-w.env apps/build.ts",
     "apps:check": "tsc -b apps",
     "analyze": "node framon/analyze.ts"
   },

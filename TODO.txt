@@ -14,6 +14,8 @@
 * LOW: Show in About support for platform APIs (Audio, Fullscreen, MediaSession, etc.)
 * LOW: Allow Fullscreen to be used even if the API is not available. Maybe maximize the content in
   the desktop?
+* LOW: Have a Toast ui element that can popup information inside windows. This could be useful to
+  emit warnings.
 
 # Improvements
 * LOW: Refactor context menus for traditional Menus. This could allows shared code between context

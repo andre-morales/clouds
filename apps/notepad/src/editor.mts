@@ -1,6 +1,7 @@
 import * as Languages from "./languages.mjs";
 import NotepadApp from "./notepad.mjs";
 import ranges from "./ranges.mjs";
+import { Dialog } from "/@sys/ui/dialogs.mjs";
 
 declare var Prism: any;
 
@@ -55,6 +56,19 @@ export class Editor {
 		
 		this.setLineWrapping(this.lineWrapping);
 		this.setFontSize(this.fontSize);
+
+		if (!this.isPrismEnabled()) {
+			console.warn("Prism not enabled!");
+
+			let dialog = new Dialog(this.app);
+			dialog.setIcon('warning');
+			dialog.setTitle('Syntax Highlighting')
+			dialog.setMessageHTML("Syntax highlighting will not be available due to Prism not being installed.");
+			dialog.show();
+			dialog.window.bringToFront();
+			return;
+		}
+
 		Languages.registerLanguages();
 	}
 
@@ -107,7 +121,9 @@ export class Editor {
 		}
 
 		this.$code.text(content);
-		Prism.highlightElement(this.$code[0]);
+
+		if (this.isPrismEnabled())
+			Prism.highlightElement(this.$code[0]);
 	}
 
 	#syncScroll() {
@@ -189,5 +205,9 @@ export class Editor {
 		}
 	
 		return numbers;
+	}
+
+	private isPrismEnabled(): boolean {
+		return Boolean(window.Prism);
 	}
 }

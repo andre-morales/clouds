@@ -85,10 +85,15 @@ export default class NotepadApp extends App {
 			fileTextProm = this.loadContent();
 		}
 
+		// Try to fetch Prism.js
+		let prismjsPromise = this.requireScript('/res/lib/prismjs.min.js')
+			.catch(e => console.warn("Prism failed to load.", e));
+
 		// Fetch application body
 		await this.window.setContentToUrl('/app/notepad/pages/main.html');
 		
 		// Instantiate editor
+		await prismjsPromise;
 		this.editor = new Editor(this);
 
 		// Query DOM elements
