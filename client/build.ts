@@ -1,8 +1,9 @@
 import * as ESBuild from 'esbuild';
 import { sassPlugin as Sass } from 'esbuild-sass-plugin';
 import { context, runBuild, setBaseConfig } from '../framon/system.ts';
-import swcTransformPlugin from '../framon/esbuild_plugin_post_swc.ts';
-import writerPlugin from '../framon/esbuild_plugin_writer.ts';
+import swcTransformPlugin from '../framon/plugin_swc.ts';
+import writerPlugin from '../framon/plugin_writer.ts';
+import postCSSPlugin from '../framon/plugin_postcss.ts';
 
 const developmentMode = Boolean(Number(process.env.DEV_MODE));
 const watchMode = Boolean(Number(process.env.WATCH_MODE));
@@ -18,7 +19,11 @@ const baseConfig: ESBuild.BuildOptions = {
 		'__BUILD_MODE__': `'${developmentMode ? 'Development' : 'Production'}'`
 	},
 	metafile: emitMetafile,
-	plugins: [ Sass({ embedded: true }), swcTransformPlugin({ iife: true }), writerPlugin()],
+	plugins: [
+		Sass({ embedded: true }),
+		postCSSPlugin(),
+		swcTransformPlugin({ iife: true }),
+		writerPlugin()],
 	target: ['esnext'],
 	write: false
 }

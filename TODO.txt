@@ -3,7 +3,6 @@
 # Compatibility
 * MEDIUM: Improve degradation of lack of AudioContext
 * MEDIUM: Improve degradation when lack of source maps for errors
-* MEDIUM: Use another toolchain for SCSS minification to support other color formats.
 * LOW: Phase out css vars for really old browsers.
 * LOW: Re-encode videos for browsers with lack of support for certain formats.
   Certain browsers support only mp4(h264/aac) in 1920x1080 for example. Maybe streaming api?
