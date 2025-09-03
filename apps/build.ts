@@ -24,7 +24,7 @@ const baseConfig: ESBuild.BuildOptions = {
 	target: ['esnext'],
 	write: false,
 	// Specify a separate tsconfig.json to prevent bundling client modules
-	tsconfig: './apps/build.tsconfig.json'
+	tsconfig: './apps/build.tsconfig.jsonc'
 };
 
 function main() {

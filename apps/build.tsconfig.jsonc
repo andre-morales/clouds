@@ -1,0 +1,18 @@
+// This tsconfig file is used exclusively by the build system in build.ts.
+//
+// tsconfig.json points to the implementation of client/ and common/ modules.
+// build.tsconfig.jsonc points to public/ stub modules.
+//
+// This separation is necessary to make sure the build system doesn't bundle
+// the actual implementation of these modules. However, autocomplete can still
+// see the true implementation, and provide full suggestions.
+{
+	"$schema": "https://json.schemastore.org/tsconfig.json",
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"paths": {
+			"/@sys/*": ["./../client/public/mcore/*"],
+			"/@comm/*": ["./../client/public/mcomm/*"]
+		}
+	}
+}
