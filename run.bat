@@ -20,7 +20,7 @@ IF NOT EXIST "apps\about\dist\app.pack.js" (
 )
 
 :run
-node --enable-source-maps --watch . %*
+node --enable-source-maps --watch-path api/dist . %*
 if %errorlevel% EQU 777 goto exit
 if %errorlevel% EQU 778 goto exit
 echo Server TERMINATED. Will restart soon. - %date% %time%

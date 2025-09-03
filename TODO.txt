@@ -1,5 +1,4 @@
 # Bugs
-* HIGH: Fix cached auth token causing faulty logins and sessions.
 
 # Compatibility
 * MEDIUM: Improve degradation of lack of AudioContext
