@@ -37,6 +37,12 @@ var httpsServer: HTTPS.Server;
 export async function main(args: string[]) {
 	console.log('--- KAPI Version: ' + KAPI_VERSION);
 
+	let options: Intl.DateTimeFormatOptions = {
+		year: 'numeric', month: 'numeric', day: 'numeric',
+		hour: '2-digit', minute: '2-digit', second: '2-digit'
+	};
+	console.log(`:: ${new Date().toLocaleDateString(undefined, options)}\n`)
+
 	Config.init(args);
 	Auth.init();
 	VFS.init();
