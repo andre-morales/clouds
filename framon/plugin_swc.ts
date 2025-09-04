@@ -1,9 +1,9 @@
 import * as ESBuild from 'esbuild';
 import * as SWC from '@swc/core';
-import Path from 'node:path';
 import Chl from 'chalk';
 import { getBaselineTargets } from './targets.ts';
 import { log } from './system.ts';
+import findESBuildSourceMap, { type InitialSourceMap } from './find_sourcemap.ts';
 const PLUGIN_NAME = 'swc-post-plugin';
 
 interface PluginOptions {
@@ -65,12 +65,6 @@ class SWCPostPlugin {
 	}
 }
 
-interface InitialSourceMap {
-	kind: 'empty' | 'included' | 'file',
-	file?: ESBuild.OutputFile,
-	url?: string
-}
-
 class BuildContext {
 	private readonly pluginOptions: PluginOptions;
 	private readonly file: ESBuild.OutputFile;
@@ -89,36 +83,7 @@ class BuildContext {
 	}
 
 	findInitialSourceMap() {
-		this.initialMap = this.getInitialSourceMap();
-	}
-
-	private getInitialSourceMap(): InitialSourceMap {
-		if (!this.build.outputFiles) 
-			return { kind: 'empty'};
-
-		// Find the reference to a source map in the output file, if there is one
-		let matches = this.file.text.match(/(?<=\/\/#\s*sourceMappingURL=)[^\s]+/);
-		if (!matches)
-			return { kind: 'empty'};
-	
-		// If the source map uses a data: url, it means it's an inline
-		let sourceMapRef = matches[0];
-		if (sourceMapRef.startsWith('data:'))
-			return { kind: 'included' };
-	
-		// Use the sourcemap url found to figure out the path to the map file
-		let sourceMapPath = this.resolveSourceMapURL(sourceMapRef);
-	
-		// Try finding the map file in the output files of ESBuild
-		let mapFile = this.build.outputFiles.find(v => v.path === sourceMapPath);
-		if (!mapFile) {
-			warn(`Couldn't find source map of "${this.file.path}" in output files.
-	 Tried to look for "${sourceMapPath}" because the file contained a reference to "${sourceMapRef}".`);
-			return { kind: 'empty'};
-		}
-	
-		// If the source map file was found in the build, return it
-		return { kind: 'file', file: mapFile, url: sourceMapRef };
+		this.initialMap = findESBuildSourceMap(this.file, this.build.outputFiles);
 	}
 
 	configureSWC() {
@@ -248,13 +213,6 @@ class BuildContext {
 	saveBuildResult() {
 		// Replace the original ESBuild result with SWC's resulting code.
 		this.file.contents = new TextEncoder().encode(this.swcResult.code);
-	}
-
-	/**
-	 * From the sourceMappingURL, resolve the url back to a local computer path.
-	 */
-	private resolveSourceMapURL(sourceMapRef: string) {
-		return Path.join(Path.dirname(this.file.path), sourceMapRef);
 	}
 }
 
