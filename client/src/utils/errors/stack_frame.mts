@@ -89,18 +89,22 @@ export class StackFrame {
 
 var whenSourceMapsAvailable: Promise<boolean>;
 async function enableSourceMaps() {
-	if (!whenSourceMapsAvailable) {
-		whenSourceMapsAvailable = (async () => {
-			await Browser.addScript('/res/lib/source-map/source-map.js');
+	if (whenSourceMapsAvailable) 
+		return whenSourceMapsAvailable;
 
-			if (!window.sourceMap) return false;
+	whenSourceMapsAvailable = (async () => {
+		// This library depends on web assembly.
+		if (!window.WebAssembly) return false;
 
-			window.sourceMap.SourceMapConsumer.initialize({
-				"lib/mappings.wasm": "https://unpkg.com/source-map@0.7.3/lib/mappings.wasm"
-			});
-			return true;
-		})();
-	}
+		await Browser.addScript('/res/lib/source-map/source-map.js');
+
+		if (!window.sourceMap) return false;
+
+		window.sourceMap.SourceMapConsumer.initialize({
+			"lib/mappings.wasm": "https://unpkg.com/source-map@0.7.3/lib/mappings.wasm"
+		});
+		return true;
+	})();
 	
 	return whenSourceMapsAvailable;
 }

@@ -3,15 +3,15 @@ export const KAPI_VERSION = '0.8.09';
 // Local imports
 import { BadAuthException } from './errors.mjs';
 import config, * as Config from './config.mjs';
-import * as Auth from './auth.mjs';
-import * as VFSRouter from './vfs_router.mjs';
-import * as VFSMXRouter from './vfsmx_router.mjs';
-import * as Stats from './stats.mjs';
+import * as Auth from './routers/auth.mjs';
+import * as VFSRouter from './routers/vfs_router.mjs';
+import * as VFSMXRouter from './routers/vfsmx_router.mjs';
+import * as Stats from './routers/stats.mjs';
 import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
 import * as VFS from './vfs.mjs';
 import * as Files from './files.mjs';
-import * as SystemManagement from './system_management.mjs';
+import * as SystemManagement from './routers/system_management.mjs';
 import Express, { Request, Response, NextFunction } from 'express';
 import FileUpload from 'express-fileupload';
 import Compression from 'compression';
@@ -85,7 +85,6 @@ function initRouters() {
 	
 	// Public resources
 	app.use('/res', Express.static('client/public')); 
-	app.use('/@sys', [Auth.guard, Express.static('client/public/js')]);
 
 	// API routes
 	app.use('/auth', Auth.getRouter());           	      		 // Auth system 

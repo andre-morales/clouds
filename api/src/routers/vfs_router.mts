@@ -1,9 +1,9 @@
 /**
  * Network facing virtual file system routes.
  */
-import { FileOperationError } from './files.mjs';
-import config from './config.mjs';
-import * as VFS from './vfs.mjs';
+import { FileOperationError } from '../files.mjs';
+import config from '../config.mjs';
+import * as VFS from '../vfs.mjs';
 import * as Auth from './auth.mjs'
 import { Request, Response, Router } from 'express';
 import Path from 'node:path';

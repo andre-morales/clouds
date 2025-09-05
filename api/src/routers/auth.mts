@@ -1,7 +1,7 @@
 import FS from 'fs';
 import Express from 'express';
-import config from './config.mjs';
-import { BadAuthException } from './errors.mjs';
+import config from '../config.mjs';
+import { BadAuthException } from '../errors.mjs';
 
 var logins: any = null;
 var userDefs: any = null;

@@ -1,7 +1,7 @@
-import * as Core from './core.mjs';
+import * as Core from '../core.mjs';
 import Express from 'express';
 import { Socket } from 'node:net';
-import WebSockets from './websockets.mjs';
+import WebSockets from '../websockets.mjs';
 
 interface ISocketData {
 	written: number;

@@ -1,5 +1,5 @@
 import Express from 'express';
-import * as Core from './core.mjs';
+import * as Core from '../core.mjs';
 
 async function shutdown() {
 	await Core.shutdown();

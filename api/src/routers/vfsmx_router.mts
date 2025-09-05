@@ -1,8 +1,8 @@
 import Express from "express"
 import { getDecoratorRouter } from "./vfs_router.mjs";
-import * as Pathx from './pathx.mjs';
+import * as Pathx from '../pathx.mjs';
 import FS from 'node:fs';
-import * as FFmpeg from './ext/ffmpeg.mjs'
+import * as FFmpeg from '../ext/ffmpeg.mjs'
 
 // Add some properties to the Express request object
 declare global {
