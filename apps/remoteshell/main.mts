@@ -20,14 +20,14 @@ export default class RemoteShellApp extends App {
 	}
 
 	async init() {
-		let fres = await fetch('/shell/0/init');
-		if (fres.status != 200) {
+		let fRes = await fetch('/shell/0/init');
+		if (fRes.status != 200) {
 			Client.showErrorDialog('Error', 'Shell creation failed.');
 			this.exit();
 			return;
 		}
 
-		this.shellId = await fres.json();
+		this.shellId = await fRes.json();
 
 		// Require resources
 		await this.requireStyle('/app/remoteshell/res/style.css');
@@ -61,8 +61,11 @@ export default class RemoteShellApp extends App {
 		});
 
 		let $field = $app.find('input');
-		$field.on('keypress', (ev: KeyboardEvent) => {
-			if (ev.key != 'Enter') return;
+
+		// Whether the code or key properties of keydown will be available depend on the platform.
+		$field.on('keydown', (ev: KeyboardEvent) => {
+			if (![ev.code, ev.key].includes('Enter'))
+				return;
 			
 			let cmd = $field.val();
 			fetch('/shell/' + this.shellId + '/send', {
@@ -126,7 +129,7 @@ export default class RemoteShellApp extends App {
 	}
 
 	private trackOutput() {
-		let ws = new WebSocket('/shell/' + this.shellId + '/socket');
+		let ws = new WebSocket(`ws://${window.location.host}/shell/${this.shellId}/socket`);
 		ws.onmessage = (msg) => {
 			this.updateLog(msg.data);
 		};

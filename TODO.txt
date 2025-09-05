@@ -3,10 +3,14 @@
 # Compatibility
 * MEDIUM: Improve degradation of lack of AudioContext
 * MEDIUM: Improve degradation when lack of source maps for errors
+* MEDIUM: Track promise creation to aid in debugging. Currently, unhandled promise rejections can only show the error that triggered the rejection, but not the stack that lead to the promise creation.
 * LOW: Phase out css vars for really old browsers.
 * LOW: Re-encode videos for browsers with lack of support for certain formats.
   Certain browsers support only mp4(h264/aac) in 1920x1080 for example. Maybe streaming api?
   Maybe offer the option to re-encode the video if it doesn't load?
+* Chrome 55: Notepad caret is invisible.
+* Chrome 49: Sinestesia has weird <video> element scaling.
+* Chrome 48: No CSS vars support. Many styles currently break.
 
 * Features
 * LOW: Show in About support for platform APIs (Audio, Fullscreen, MediaSession, etc.)

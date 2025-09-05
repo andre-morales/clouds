@@ -1,6 +1,8 @@
+$titlebar_height: 28px;
+$titlebar_maximized_height: 22px;
+$titlebar_icon_size: 20px;
+
 .window {
-	--titlebar-height: 28px;
-	--icon-size: 20px;
 	display: none; /* Windows start invisible */
 	contain: strict; /* Windows should affect nothing outside them */
 	pointer-events: auto;
@@ -9,7 +11,6 @@
 	overflow: hidden;
 	
 	&.maximized {
-		--titlebar-height: 22px;
 		box-shadow: none;
 	}
 
@@ -21,35 +22,45 @@
 		display: none;	
 	}
 
-	&.decorated > .window-head {
-		display: flex;
-		flex-shrink: 0;
-		height: var(--titlebar-height);
-		white-space: nowrap;
-	}
+	&.decorated {
+		> .window-head {
+			display: flex;
+			flex-shrink: 0;
+			height: $titlebar_height;
+			white-space: nowrap;
 
-	&.decorated > .window-head button {
-		width: 32px;
-		height: 100%;
-		flex-shrink: 0;
-		background-color: transparent;
-		background-size: var(--icon-size);
-		border: none;
-		color: white;
-	}
+			button {
+				width: 32px;
+				height: 100%;
+				flex-shrink: 0;
+				background-color: transparent;
+				background-size: $titlebar_icon_size;
+				border: none;
+				color: white;
 
-	&.decorated > .window-head button:hover {
-		background-color: rgba(0, 0, 0, 0.2);
-	}
+				&:hover {
+					background-color: rgba(0, 0, 0, 0.2);
+				}
+			}
 
-	&.decorated > .window-head .window-title {
-		flex-grow: 1;
-		flex-shrink: 1;
-		overflow: hidden;
-		line-height: var(--titlebar-height);
-		font-size: 11pt;
-		text-overflow: ellipsis;
-		pointer-events: all;
+			.window-title {
+				flex-grow: 1;
+				flex-shrink: 1;
+				overflow: hidden;
+				line-height: $titlebar_height;
+				font-size: 11pt;
+				text-overflow: ellipsis;
+				pointer-events: all;
+			}
+		}
+
+		&.maximized > .window-head {
+			height: $titlebar_maximized_height;
+
+			.window-title {
+				line-height: $titlebar_maximized_height;
+			}
+		}
 	}
 
 	.window-body {
