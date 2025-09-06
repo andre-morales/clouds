@@ -2,7 +2,6 @@
 
 # Compatibility
 * MEDIUM: Improve degradation of lack of AudioContext
-* MEDIUM: Improve degradation when lack of source maps for errors
 * MEDIUM: Track promise creation to aid in debugging. Currently, unhandled promise rejections can only show the error that triggered the rejection, but not the stack that lead to the promise creation.
 * LOW: Phase out css vars for really old browsers.
 * LOW: Re-encode videos for browsers with lack of support for certain formats.

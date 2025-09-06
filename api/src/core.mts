@@ -11,6 +11,7 @@ import * as FFmpeg from './ext/ffmpeg.mjs';
 import * as RShell from './ext/rshell.mjs';
 import * as VFS from './vfs.mjs';
 import * as Files from './files.mjs';
+import * as ErrorSolver from './routers/error_solver.mjs';
 import * as SystemManagement from './routers/system_management.mjs';
 import Express, { Request, Response, NextFunction } from 'express';
 import FileUpload from 'express-fileupload';
@@ -87,7 +88,9 @@ function initRouters() {
 	app.use('/res', Express.static('client/public')); 
 
 	// API routes
+	
 	app.use('/auth', Auth.getRouter());           	      		 // Auth system 
+	app.use('/err', [Auth.guard, ErrorSolver.getRouter()]); 	 // Error stack solving service
 	app.use('/sys', [Auth.guard, SystemManagement.getRouter()]); // Management tasks
 	app.use('/fsv', [Auth.guard, VFSRouter.getRouter()]); 		 // Extended file system service
 	app.use('/fsmx', [Auth.guard, VFSMXRouter.getRouter()]); 	 // Media extensions for the VFS
@@ -95,7 +98,6 @@ function initRouters() {
 	apiSetupPages();     			    		  	     		 // Entry, Auth and Desktop
 	app.use('/shell', [Auth.guard, RShell.getRouter()]);		 // Remote shell service
 	apiSetupApps();								   	     		 // Apps service
-
 }
 
 function initErrorHandlers() {

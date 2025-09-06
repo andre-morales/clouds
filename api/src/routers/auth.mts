@@ -1,7 +1,11 @@
+import Crypto from 'crypto';
 import FS from 'fs';
 import Express from 'express';
 import config from '../config.mjs';
 import { BadAuthException } from '../errors.mjs';
+
+// Secret 128-bit token to allow loopback calls
+export const SECRET_TOKEN = Crypto.randomBytes(32).toString('hex');
 
 var logins: any = null;
 var userDefs: any = null;
@@ -47,6 +51,11 @@ export function logout(user: string) {
  * @returns String id of the user, or null if no user is associated with it.
  */
 export function getUser(req: Express.Request): string | null {
+	// Allow requests through loopback
+	if (req.headers.authorization === SECRET_TOKEN) {
+		return 'root'
+	}
+
 	if (!req.cookies) return null;
 	let key = req.cookies.auth_key;
 	
