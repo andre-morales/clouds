@@ -1,6 +1,6 @@
 {
 	"id": "webview",
-	"icon": "/app/webview/icon128.png",
+	"icon": "~/icons/icon.svg",
 	"scripts": [
 		"~/dist/app.pack.js"	
 	],

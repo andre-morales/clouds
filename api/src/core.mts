@@ -84,11 +84,17 @@ function initRouters() {
 	// Socket data stats tracker
 	app.use(Stats.getTracker());
 	
+	// Serve compressed svgz files correctly
+	app.get("*_.svgz", (_, res, next) => {
+		res.set("Content-Encoding", "gzip");
+		res.set("Content-Type", "image/svg+xml");
+		next();
+	});
+
 	// Public resources
 	app.use('/res', Express.static('client/public')); 
 
 	// API routes
-	
 	app.use('/auth', Auth.getRouter());           	      		 // Auth system 
 	app.use('/err', [Auth.guard, ErrorSolver.getRouter()]); 	 // Error stack solving service
 	app.use('/sys', [Auth.guard, SystemManagement.getRouter()]); // Management tasks
@@ -197,13 +203,15 @@ function apiSetupPages() {
 
 /** Setup /app route */
 function apiSetupApps() {
-	app.get('/app/:app/*path', Auth.guard, (req, res) => {
+	/*app.get('/app/:app/*path', Auth.guard, (req, res) => {
 		let app = req.params.app;
 		let path = (req.params as any).path.join('/');
 		let fPath = './apps/' + app + '/' + path;
 
 		res.sendFile(Path.resolve(fPath));
-	});
+	});*/
+
+	app.use('/app', Express.static('./apps'));
 }
 
 /**

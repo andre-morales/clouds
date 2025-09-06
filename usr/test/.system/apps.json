@@ -1,52 +1,52 @@
 {
 	"explorer": {
 		"name": "File Explorer",
-		"icon": "/app/explorer/icon64.png",
+		"icon": "/app/explorer/icons/icon.svg",
 		"flags": ["desk"]
 	},
 	"sinestesia": {
 		"name": "Sinestesia",
-		"icon": "/app/sinestesia/icon128.png",
+		"icon": "/app/sinestesia/icons/icon128.webp",
 		"flags": ["desk", "tool"]
 	},
 	"systemmonitor": {
 		"name": "System Monitor",
-		"icon": "/app/systemmonitor/icon128.png",
+		"icon": "/app/systemmonitor/icons/icon.svg",
 		"flags": []
 	},
 	"notepad": {
 		"name": "Notepad",
-		"icon": "/app/notepad/icon96.png",
+		"icon": "/app/notepad/icons/icon128.webp",
 		"flags": ["desk", "tool"]
 	},
 	"webview": {
 		"name": "WebView",
-		"icon": "/app/webview/icon128.png",
+		"icon": "/app/webview/icons/icon.svg",
 		"flags": ["tool"]
 	},
 	"configs": {
 		"name": "Configuration",
-		"icon": "/app/configs/icon128.png",
+		"icon": "/app/configs/icons/icon.svgz",
 		"flags": ["desk"]
 	},
 	"console": {
 		"name": "Console",
-		"icon": "/app/console/icon128.png",
+		"icon": "/app/console/icons/icon.svg",
 		"flags": []
 	},
 	"remoteshell": {
 		"name": "Remote Shell",
-		"icon": "/app/remoteshell/icon128.png",
+		"icon": "/app/remoteshell/icons/icon.svg",
 		"flags": ["desk"]
 	},
 	"about": {
 		"name": "About",
-		"icon": "/app/about/icon64.png",
+		"icon": "/app/about/icons/icon.svg",
 		"flags": []
 	},
 	"sounds": {
 		"name": "Sounds",
-		"icon": "/app/sounds/icon64.png",
+		"icon": "/app/sounds/icons/icon.svg",
 		"flags": []
 	}
 }

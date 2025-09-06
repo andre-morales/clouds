@@ -1,7 +1,7 @@
 {
 	"id": "explorer",
 	"displayName": "Files",
-	"icon": "~/icon64.png",
+	"icon": "~/icons/icon.svg",
 	"scripts": [
 		"~/dist/app.pack.js"
 	],

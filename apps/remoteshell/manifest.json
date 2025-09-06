@@ -1,7 +1,7 @@
 {
 	"id": "remoteshell",
+	"icon": "~/icons/icon.svg",
 	"scripts": [
 		"~/dist/app.pack.js"	
-	],
-	"icon": "/app/remoteshell/icon128.png"
+	]
 }

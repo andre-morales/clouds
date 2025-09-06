@@ -1,6 +1,6 @@
 {
 	"id": "systemmonitor",
-	"icon": "/app/systemmonitor/icon128.png",
+	"icon": "~/icons/icon.svg",
 	"scripts": [
 		"~/dist/app.pack.js"	
 	],

@@ -1,6 +1,6 @@
 {
 	"id": "configs",
-	"icon": "/app/configs/icon128.png",
+	"icon": "~/icons/icon.svgz",
 	"modules": [
 		"~/dist/app.pack.js"	
 	],

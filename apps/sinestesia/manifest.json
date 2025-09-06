@@ -1,7 +1,7 @@
 {
 	"id": "sinestesia",
 	"displayName": "Sinestesia",
-	"icon": "/app/sinestesia/icon128.png",
+	"icon": "~/icons/icon128.webp",
 	"scripts": [
 		"~/dist/app.pack.js"	
 	],

@@ -1,6 +1,6 @@
 {
 	"id": "console",
-	"icon": "/app/console/icon128.png",
+	"icon": "~/icons/icon.svg",
 	"modules": [
 		"~/dist/app.pack.js"	
 	],

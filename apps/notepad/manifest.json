@@ -1,6 +1,6 @@
 {
 	"id": "notepad",
-	"icon": "/app/notepad/icon96.png",
+	"icon": "~/icons/icon128.webp",
 	"scripts": [
 		"~/dist/app.pack.js"
 	],
