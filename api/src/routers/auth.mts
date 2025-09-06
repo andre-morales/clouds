@@ -5,7 +5,7 @@ import config from '../config.mjs';
 import { BadAuthException } from '../errors.mjs';
 
 // Secret 128-bit token to allow loopback calls
-export const SECRET_TOKEN = Crypto.randomBytes(32).toString('hex');
+export const SECRET_TOKEN = Crypto.randomBytes(16).toString('hex');
 
 var logins: any = null;
 var userDefs: any = null;
@@ -23,16 +23,17 @@ export function init() {
  * @param pass String representation of the user's password.
  * @returns The user's new key, or 0 if the authentication failed.
  */
-export function login(id: string, pass: string): number {
+export function login(id: string, pass: string): string {
 	if ((id in userDefs) && (userDefs[id].pass === pass)) {
-		let key = getRandomInt(1, 32768);
+		let key = Crypto.randomBytes(16).toString('hex');
 		logins[id] = key;
 
 		console.log("Logged in: ", logins);
 
 		return key;
 	}
-	return 0;
+
+	return '';
 }
 
 /**
@@ -53,7 +54,7 @@ export function logout(user: string) {
 export function getUser(req: Express.Request): string | null {
 	// Allow requests through loopback
 	if (req.headers.authorization === SECRET_TOKEN) {
-		return 'root'
+		return 'root';
 	}
 
 	if (!req.cookies) return null;
@@ -113,7 +114,7 @@ export function getRouter(): Express.Router {
 		let pass = req.body.pass;
 		let newKey = login(id, pass);
 
-		res.json({ ok: (newKey != 0), key: newKey })
+		res.json({ ok: Boolean(newKey), key: newKey })
 	});
 
 	router.post('/logout', (req, res) => {
@@ -128,10 +129,4 @@ export function getRouter(): Express.Router {
 		res.json({ 'ok': result });
 	});
 	return router;
-}
-
-function getRandomInt(min: number, max: number): number {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
