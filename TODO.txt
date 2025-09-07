@@ -1,5 +1,4 @@
 # Bugs
-M2: Fix buggy feature toggling on new profiles.
 
 # Compatibility
 * MEDIUM: Improve degradation of lack of AudioContext
@@ -26,11 +25,13 @@ M2: Fix buggy feature toggling on new profiles.
 
 -- M2 --
 :: Features
+* Improve user profile creation
 * Greatly improved browser support. Currently supporting Chrome 49.
 * Greatly improved error handling with source map resolution.
 * System monitor improved with fetch() monitoring and network monitoring.
 * Improved configuration, allowing multiple themes and toggling other features
 * Improved Sinestesia UI
+* Added run dialog
 
 :: Building
 * Overhauled build system trough Framon. System powered with ESBuild, SWC and PostCSS.

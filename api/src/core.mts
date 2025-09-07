@@ -1,4 +1,4 @@
-export const KAPI_VERSION = '0.9.00';
+export const KAPI_VERSION = '0.9.02';
 
 // Local imports
 import { BadAuthException } from './errors.mjs';
