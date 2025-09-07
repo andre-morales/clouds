@@ -46,15 +46,15 @@ export class Desktop {
 
 		this.ctxMenuController = new ContextMenuDesktopController(this);
 		let menu = ContextMenu.fromDefinition([
-			["-System Settings", () => {
-				Client.runApp('configs');
+			["-About", () => {
+				Client.runApp('about');
 			}],
 			["-Console", () => {
 				Client.runApp('console');
 			}],
-			["-About", () => {
-				Client.runApp('about');
-			}],
+			["-Run...", () => {
+				User.showRunDialog()
+			}],		
 			['|'],
 			["-Logout", () => {
 				User.logout();

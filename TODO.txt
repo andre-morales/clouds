@@ -9,7 +9,7 @@
   Maybe offer the option to re-encode the video if it doesn't load?
 * Chrome 55: Notepad caret is invisible.
 * Chrome 49: Sinestesia has weird <video> element scaling.
-* Chrome 48: No CSS vars support. Many styles currently break.
+* Chrome 48: No CSS vars support. Many styles currently break. Apps menu broken.
 
 # Features
 * LOW: Show in About support for platform APIs (Audio, Fullscreen, MediaSession, etc.)
