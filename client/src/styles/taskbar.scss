@@ -80,6 +80,13 @@ $taskbar_height: 32px;
 		background: #202020;
 		box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
 
+		.username {
+			font-size: 12pt;
+			font-style: italic;
+			font-weight: bold;
+			text-align: center;
+		}
+
 		li {
 			display: block;
 			padding: 4px 1.5em 4px 1em;

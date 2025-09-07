@@ -23,23 +23,26 @@ interface AppDeclaration {
 }
 
 export class AppManager {
-	#definitions: Map<string, AppDefinition>;
-	#appDeclarations: any;
+	private definitions: Map<string, AppDefinition>;
+	private appDeclarations: any;
 
-	constructor() {
-		this.#definitions = new Map();
+	public constructor() {
+		this.definitions = new Map();
+		this.appDeclarations = {};
 	}
 
-	async init() {
-		// Fetch app definitions from the user profile
-		this.#appDeclarations = await FileSystem.readJson('/usr/.system/apps.json');
+	public async init() {
+		// Fetch app definitions from the user profile, if available
+		try {
+			this.appDeclarations = await FileSystem.readJson('/usr/.system/apps.json');
+		} catch {}
 
 		// Remove disabled apps
-		for (let app of Object.keys(this.#appDeclarations)) {
-			if (app.startsWith('-')) delete this.#appDeclarations[app];
+		for (let app of Object.keys(this.appDeclarations)) {
+			if (app.startsWith('-')) delete this.appDeclarations[app];
 		}
 
-		for (let [appId, decl_] of Object.entries(this.#appDeclarations)) {
+		for (let [appId, decl_] of Object.entries(this.appDeclarations)) {
 			let decl = decl_ as AppDeclaration;
 
 			// Construct definition from config declaration
@@ -82,15 +85,15 @@ export class AppManager {
 			};
 
 			// Add to definitions map
-			this.#definitions.set(appId, definition);
+			this.definitions.set(appId, definition);
 		}
 	}
 
-	getAppEntries() {
-		return this.#definitions.entries();
+	public getAppEntries() {
+		return this.definitions.entries();
 	}
 
-	getDefaultAppIcon(): Icon {
+	public getDefaultAppIcon(): Icon {
 		return { url: '/res/img/app64.png', type: 'image/png', size: 64 };
 	}
 }

@@ -2,6 +2,7 @@ import Dialogs from '/@sys/ui/dialogs.mjs';
 import { Paths } from '/@sys/drivers/filesystem.mjs';
 import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
+import User from '/@sys/user.mjs';
 import App from '/@sys/app.mjs';
 import './style.scss';
 
@@ -94,8 +95,14 @@ export default class ConfigsApp extends App {
 		this.bindCheckboxToProp($alwaysPack, 'dbg_always_pack_windows');
 
 		$win.find('.logout').click(() => {
-			Client.logout();
-		})
+			User.logout(false);
+		});
+
+		$win.find('.throw-fault').click(() => {
+			throw new Error("Manually triggered fault.", {
+				cause: new Error("The user asked to do so.")
+			});
+		});
 
 		$win.find('.reload').click(() => {
 			Client.config.preferencesMgr.load();

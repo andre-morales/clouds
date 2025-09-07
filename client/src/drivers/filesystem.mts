@@ -136,6 +136,12 @@ export class FileSystem {
 		return result;
 	}
 
+	static async exists(path: string): Promise<boolean> {
+		let url = Paths.toURL(Paths.toFSV(path));
+		let res = await fetch(url, { method: 'HEAD' });
+		return res.status == 200;
+	}
+
 	static async makeDirectory(path: string): Promise<void> {
 		// Convert the path
 		let cmd = Paths.toURL(Paths.toFSV(path)) + '?make';

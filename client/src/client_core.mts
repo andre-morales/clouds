@@ -18,6 +18,8 @@ import Polyfills from './polyfills/polyfills.mjs';
 import * as Public from './public.mjs';
 import ThemeManager from './ui/theme_manager.mjs';
 import './styles/main.scss';
+import { FileSystem } from './drivers/filesystem.mjs';
+import User from './user.mjs';
 
 var clientInstance: ClientClass;
 var loadingText: HTMLElement;
@@ -145,6 +147,9 @@ export class ClientClass {
 		this.events = new Reactor();
 		this.events.register('log', 'apps-add', 'apps-rem');
 
+		// Check if this is a new user
+		let isNewUserPromise = FileSystem.exists('/usr/.system/').then(e => !e);
+
 		// Fetch and load configuration
 		this.config = new ConfigManager();
 		promises.push(this.config.init());
@@ -158,8 +163,15 @@ export class ClientClass {
 
 		// Create desktop subsystem
 		this.desktop = new Desktop();
-
 		this.initGraphicalErrors();
+		
+		// If this seems to be a new user, prompt them to create a profile.
+		// If they accept, exit early and let the system restart.
+		if (await isNewUserPromise) {
+			if(await User.promptCreateProfile()) {
+				return;
+			}
+		}
 
 		this.appManager = new AppManager();
 		await this.appManager.init();
@@ -184,19 +196,6 @@ export class ClientClass {
 			let app: any = await this.runApp('explorer');
 			app.go(args.loc);
 		}
-	}
-
-	logout(refresh = true) {
-		Browser.setCookie('auth_key', '');
-		fetch("/auth/logout", {
-			method: "POST"
-		});
-		
-		if (refresh) Client.restart();
-	}
-
-	restart() {
-		window.location.href = "/";
 	}
 
 	async runApp(name: string, buildArgs = []): Promise<App> {

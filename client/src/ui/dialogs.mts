@@ -96,8 +96,8 @@ export class Dialog {
 		}
 	}
 
-	show() {
-		this.window.setVisible(true);
+	async show(): Promise<void> {
+		await this.window.setVisible(true);
 	}
 }
 

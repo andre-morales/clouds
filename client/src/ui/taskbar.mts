@@ -2,6 +2,7 @@ import { ContextMenu } from './controls/context_menu/ctx_menu.mjs';
 import Window from './window.mjs';
 import App from '../app.mjs';
 import Arrays from '../../../common/arrays.mjs';
+import User from '../user.mjs';
 
 export class Taskbar {
 	DEFAULT_TASKBAR_ICON: string;
@@ -47,7 +48,13 @@ export class Taskbar {
 
 	setupAppsMenu() {
 		let $appsList = this.$appsMenu.find('ul');
-		for (let [appId, appDef] of Client.appManager.getAppEntries()) {
+
+		// Set username header in apps menu
+		User.getUsername().then(name => {
+			this.$appsMenu.find('.username').text(name);
+		});
+
+		for (let [_, appDef] of Client.appManager.getAppEntries()) {
 			// Create the icon element. If the image fails to load, set the default icon
 			let icon = appDef.icons[0].url;
 			let $icon = $(`<img src='${icon}'/>`);
@@ -67,12 +74,16 @@ export class Taskbar {
 			$appsList.append($appItem);
 		}
 
-		this.$bar.find('.apps-btn').click((ev) => {
+		this.$bar.find('.apps-btn').click(() => {
 			this.$appsMenu.css('display', 'block');
 		});
 
-		this.$appsMenu.find('.logout-btn').click(() => Client.logout());
-		this.$appsMenu.find('.restart-btn').click(() => Client.restart());
+		this.$appsMenu.find('.run-btn').click(() => {
+			User.showRunDialog()
+			this.closeAppsMenu();
+		});
+		this.$appsMenu.find('.logout-btn').click(() => User.logout());
+		this.$appsMenu.find('.restart-btn').click(() => User.restart());
 	}
 
 	addWindow(win: Window): TaskbarButton {

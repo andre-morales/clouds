@@ -128,5 +128,27 @@ export function getRouter(): Express.Router {
 		let result = getUser(req) != null;
 		res.json({ 'ok': result });
 	});
+
+	// Obtain current username
+	router.get('/username', guard, (req, res) => {
+		let user = getUser(req);
+		res.status(200).send(user);
+	});
+
+	// Create user. Any authenticated user has the right to reset recreate its own user profile.
+	router.post('/create_user', guard, async (req, res) => {
+		let user = getUser(req);
+
+		// Copy default user, if possible.
+		try {
+			await FS.promises.cp('./usr/#default/', `./usr/${user}/`, { recursive: true });
+		} catch (err) {
+			console.error("Error creating user: ", err);
+			res.status(500).end();
+			return;
+		}
+
+		res.status(200).end();
+	});
 	return router;
 }

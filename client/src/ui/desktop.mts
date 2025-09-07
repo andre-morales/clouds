@@ -8,6 +8,7 @@ import { ClientClass } from '../client_core.mjs';
 import Arrays from '../../../common/arrays.mjs';
 import { WindowManager } from './window_manager.mjs';
 import ContextMenuDesktopController from './controls/context_menu/desktop_controller.mjs';
+import User from '../user.mjs';
 
 export class Desktop {
 	dwm: App;
@@ -56,7 +57,7 @@ export class Desktop {
 			}],
 			['|'],
 			["-Logout", () => {
-				Client.logout();
+				User.logout();
 			}],			
 		]);
 
@@ -288,6 +289,8 @@ export class Desktop {
 
 	private reloadBackground() {
 		let url = ClientClass.get().config.preferences.background;
+		if (!url) return;
+
 		this.$desktop.css('background-image', 'url("' + url + '")');
 	}
 }

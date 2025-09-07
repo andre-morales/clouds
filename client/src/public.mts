@@ -1,8 +1,12 @@
 // Publicly available core modules accessible from these variables.
 // Webpack will make these modules available in a super module called PublicModules.
-export * as ClientCoreM from './client_core.mjs';
+
 export * as AppM from './app.mjs';
+export * as ClientCoreM from './client_core.mjs';
 export * as EventsM from './events.mjs';
+import * as UserM from './user.mjs';
+export { UserM as '::/@sys/user.mjs' };
+
 export * as BrowserM from './utils/browser.mjs';
 export * as UtilsM from './utils/utils.mjs';
 export * as WindowM from './ui/window.mjs';
