@@ -36,5 +36,4 @@ apps/**/dist/
 docs/sample.png
 
 # Private user folder files
-usr/test/.system/favorites.json
-usr/test/.system/preferences.json
+usr/test/

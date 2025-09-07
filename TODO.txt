@@ -1,4 +1,5 @@
 # Bugs
+M2: Fix buggy feature toggling on new profiles.
 
 # Compatibility
 * MEDIUM: Improve degradation of lack of AudioContext
@@ -11,7 +12,7 @@
 * Chrome 49: Sinestesia has weird <video> element scaling.
 * Chrome 48: No CSS vars support. Many styles currently break.
 
-* Features
+# Features
 * LOW: Show in About support for platform APIs (Audio, Fullscreen, MediaSession, etc.)
 * LOW: Allow Fullscreen to be used even if the API is not available. Maybe maximize the content in
   the desktop?
@@ -22,3 +23,15 @@
 * LOW: Refactor context menus for traditional Menus. This could allows shared code between context
   menus and menu bars.
 * LOW: Disable loading of Hammer module if gestures are disabled
+
+-- M2 --
+:: Features
+* Greatly improved browser support. Currently supporting Chrome 49.
+* Greatly improved error handling with source map resolution.
+* System monitor improved with fetch() monitoring and network monitoring.
+* Improved configuration, allowing multiple themes and toggling other features
+* Improved Sinestesia UI
+
+:: Building
+* Overhauled build system trough Framon. System powered with ESBuild, SWC and PostCSS.
+  All aiming at maximum speed, good sourcemaps, and good retro compatibility.
