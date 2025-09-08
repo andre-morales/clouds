@@ -23,6 +23,9 @@
   menus and menu bars.
 * LOW: Disable loading of Hammer module if gestures are disabled
 
+# Refactors
+* Remove scripts from root, possibly moving these scripts to a package script.
+
 -- M2 --
 :: Features
 * Improve user profile creation
