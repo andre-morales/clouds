@@ -10,4 +10,4 @@ if [ ! -f "./apps/about/dist/app.pack.js" ]; then
     pnpm apps:build:prod
 fi
 
-node --enable-source-maps --watch-path api/dist . $@
+node --env-file envs/prod.env --enable-source-maps --watch-path api/dist . $@
