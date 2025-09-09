@@ -26,6 +26,8 @@ import HTTP from 'node:http';
 import HTTPS from 'node:https';
 import WebSockets from './websockets.mjs';
 import Deferred from '#common/deferred.mjs';
+import Cache from './cache.mjs';
+import ms from 'ms';
 
 var app: Express.Application;
 var httpServer: HTTP.Server;
@@ -92,7 +94,7 @@ function initRouters() {
 	});
 
 	// Public resources
-	app.use('/res', Express.static('client/public')); 
+	app.use('/res', Express.static('client/public', { maxAge: Cache.statics })); 
 
 	// API routes
 	app.use('/auth', Auth.getRouter());           	      		 // Auth system 
@@ -174,9 +176,16 @@ async function stopServers() {
  * Configure main pages on the app router.
  */
 function apiSetupPages() {
+	// Cache all pages
+	const cache: Express.RequestHandler = (_, res, next) => {
+		res.header('Cache-Control', `public, max-age=${ms(Cache.pages) / 1000}`);
+		next();
+	};
+
 	// - Entry point page
-	app.get('/', async (req, res) => {
+	app.get('/', cache, async (req, res) => {
 		let user = Auth.getUser(req);
+
 		let pwa = false;
 		if (user) {
 			try {
@@ -190,28 +199,27 @@ function apiSetupPages() {
 	});
 
 	// - Login page
-	app.get('/page/login', (req, res) => {
+	app.get('/page/login', cache, (req, res) => {
 		res.render('login');
 	});
 
 	// - Desktop page
-	app.get('/page/desktop', Auth.guard, (req, res) => {
-		Auth.getUserGuard(req);
+	app.get('/page/desktop', Auth.guard, cache, (req, res) => {
 		res.render('desktop');
 	});
 }
 
 /** Setup /app route */
 function apiSetupApps() {
-	/*app.get('/app/:app/*path', Auth.guard, (req, res) => {
+	app.get('/app/:app/*path', Auth.guard, async (req, res) => {
 		let app = req.params.app;
 		let path = (req.params as any).path.join('/');
 		let fPath = './apps/' + app + '/' + path;
 
-		res.sendFile(Path.resolve(fPath));
-	});*/
-
-	app.use('/app', Express.static('./apps'));
+		res.sendFile(Path.resolve(fPath), {
+			maxAge: Cache.apps,
+		});
+	});
 }
 
 /**
