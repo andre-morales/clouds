@@ -47,6 +47,9 @@ importers:
       morgan:
         specifier: ^1.10.1
         version: 1.10.1
+      ms:
+        specifier: ^2.1.3
+        version: 2.1.3
       source-map:
         specifier: ^0.7.6
         version: 0.7.6
@@ -81,6 +84,9 @@ importers:
       '@types/morgan':
         specifier: ^1.9.10
         version: 1.9.10
+      '@types/ms':
+        specifier: ^2.1.0
+        version: 2.1.0
       '@types/prismjs':
         specifier: ^1.26.5
         version: 1.26.5
@@ -896,6 +902,9 @@ packages:
 
   '@types/morgan@1.9.10':
     resolution: {integrity: sha512-sS4A1zheMvsADRVfT0lYbJ4S9lmsey8Zo2F7cnbYjWHP67Q0AwMYuuzLlkIM2N8gAbb9cubhIVFwcIN2XyYCkA==}
+
+  '@types/ms@2.1.0':
+    resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
   '@types/node@24.3.1':
     resolution: {integrity: sha512-3vXmQDXy+woz+gnrTvuvNrPzekOi+Ds0ReMxw0LzBiK3a+1k0kQn9f2NWk+lgD4rJehFUmYy2gMhJ2ZI+7YP9g==}
@@ -2895,6 +2904,8 @@ snapshots:
   '@types/morgan@1.9.10':
     dependencies:
       '@types/node': 24.3.1
+
+  '@types/ms@2.1.0': {}
 
   '@types/node@24.3.1':
     dependencies:
