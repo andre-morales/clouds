@@ -114,25 +114,28 @@ export function getRouter(): Express.Router {
 		let pass = req.body.pass;
 		let newKey = login(id, pass);
 
+		res.header('Cache-Control', 'no-store');
 		res.json({ ok: Boolean(newKey), key: newKey })
 	});
 
 	router.post('/logout', (req, res) => {
 		let user = getUser(req);
 		if (user) logout(user);
-		res.status(200).end();
+		res.end();
 	});
 
 	// Authentication test
 	router.get('/test', (req, res) => {
 		let result = getUser(req) != null;
+
+		res.header('Cache-Control', 'no-store');
 		res.json({ 'ok': result });
 	});
 
 	// Obtain current username
 	router.get('/username', guard, (req, res) => {
 		let user = getUser(req);
-		res.status(200).send(user);
+		res.send(user);
 	});
 
 	// Create user. Any authenticated user has the right to reset recreate its own user profile.
@@ -148,7 +151,7 @@ export function getRouter(): Express.Router {
 			return;
 		}
 
-		res.status(200).end();
+		res.end();
 	});
 	return router;
 }
