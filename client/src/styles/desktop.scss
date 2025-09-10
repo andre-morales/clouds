@@ -91,6 +91,10 @@ body {
 		padding: .4rem .1rem;
 		text-align: center;
 
+		&.outdated {
+			color: yellow;
+		}
+
 		&:hover {
 			border: solid 1px #68F;
 			background-color: rgba(40, 40, 255, 0.1);

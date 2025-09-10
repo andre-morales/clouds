@@ -6,7 +6,6 @@ import Objects from "./utils/objects.mjs";
 
 interface AppResources {
 	scripts: Promise<Resource[]>;
-	modules: Promise<Resource[]>;
 	styles: Promise<Resource[]>;
 }
 
@@ -44,8 +43,7 @@ export async function run(manifest: IAppManifest, buildArgs = []): Promise<App> 
 
 		let resources = fetchAppResources(man, tmpResourceUserId);
 
-		// Wait for all scripts and modules to load in order to instantiate the application.
-		await resources.modules;
+		// Wait for all scripts to load in order to instantiate the application.
 		await resources.scripts;
 
 		// Obtain constructor function
@@ -95,14 +93,10 @@ async function getManifest(url: string): Promise<IAppManifest> {
  * be instantiated with the userId passed as the resources owner.
  */
 function fetchAppResources(manifest: AppManifest, userId: string): AppResources {
-	let modules = manifest.manifest.modules ?? [];
 	let scripts = manifest.manifest.scripts ?? [];
 	let styles = manifest.manifest.styles ?? [];
 
-	scripts.push(...modules);
-
 	let resources: any = {};
-
 	resources.modules = [];
 
 	resources.scripts = Promise.all(scripts.map((url) => {
@@ -148,11 +142,10 @@ async function getAppConstructor(manifest: IAppManifest, modules: any): Promise<
  * instance itself as an user id.
  */
 async function tieResources(resources: AppResources, app: App, tmpId: string) {
-	let modules = await resources.modules;
 	let scripts = await resources.scripts;
 	let styles = await resources.styles;
 
-	for (let res of [modules, scripts, styles].flat()) {
+	for (let res of [scripts, styles].flat()) {
 		// Replace the temporary user and set the app as a user of its own resources
 		res.replaceUser(tmpId, app);
 		app.resources.add(res);

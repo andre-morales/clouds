@@ -3,7 +3,7 @@ import Window from './window.mjs';
 import App from '../app.mjs';
 import Arrays from '../../../common/arrays.mjs';
 import User from '../user.mjs';
-import AppManifest, { IAppManifest } from '../app_manifest.mjs';
+import AppRunner from '../app_runner.mjs';
 
 export class Taskbar {
 	DEFAULT_TASKBAR_ICON: string;
@@ -71,8 +71,13 @@ export class Taskbar {
 			$appItem.prepend($icon);
 
 			$appItem.click(() => {
-				Client.runApp(def.id);
+				AppRunner.run(manifest.manifest);
 				this.closeAppsMenu();
+			});
+
+			// If the app manifest had updates, mark the icon as outdated.
+			manifest.hasUpdates().then(has => {
+				$appItem.toggleClass('outdated', has);
 			});
 
 			$appsList.append($appItem);

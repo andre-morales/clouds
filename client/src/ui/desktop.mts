@@ -9,7 +9,7 @@ import Arrays from '../../../common/arrays.mjs';
 import { WindowManager } from './window_manager.mjs';
 import ContextMenuDesktopController from './controls/context_menu/desktop_controller.mjs';
 import User from '../user.mjs';
-import AppManifest, { IAppManifest } from '../app_manifest.mjs';
+import AppRunner from '../app_runner.mjs';
 
 export class Desktop {
 	dwm: App;
@@ -237,12 +237,18 @@ export class Desktop {
 			let name = def.displayName;
 			let $icon = $(`<div class='app-icon'> <img src='${img}'/> <label>${name}</label> </div>`);
 			$icon.click(async () => {
-				let app = await Client.runApp(id);
+				let app = await AppRunner.run(manifest.manifest);
 				if (app && app.mainWindow) {
 					app.mainWindow.focus();
 					app.mainWindow.bringToFront();
 				}
 			});
+
+			// If the app manifest had updates, mark the icon as outdated.
+			manifest.hasUpdates().then(has => {
+				$icon.toggleClass('outdated', has);
+			});
+
 			$apps.append($icon);
 		});
 	}

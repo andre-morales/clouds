@@ -91,6 +91,10 @@ $taskbar_height: 32px;
 			display: block;
 			padding: 4px 1.5em 4px 1em;
 
+			&.outdated {
+				color: yellow;
+			}
+
 			&:hover {
 				background-color: var(--base-color-dark);
 			}

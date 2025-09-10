@@ -17,6 +17,8 @@ export interface IAppManifest {
 
 export default class AppManifest {
 	manifest: IAppManifest;
+	newManifest: IAppManifest;
+	updatePromise: Promise<any>;
 	hash: string;
 
 	constructor(manifest: IAppManifest) {
@@ -46,5 +48,16 @@ export default class AppManifest {
 				map(Pointer.of(arr, [i]));
 			}
 		}
+	}
+
+	public async hasUpdates(): Promise<boolean> {
+		if (!this.updatePromise)
+			return false;
+
+		let res = await this.updatePromise;
+		if (!res)
+			return false;
+
+		return true;
 	}
 }
