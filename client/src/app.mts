@@ -2,6 +2,7 @@ import { Reactor, ReactorEvent } from './events.mjs';
 import { InternalFault } from './faults.mjs';
 import Window from './ui/window.mjs'
 import ResourceManager from './resource_manager.mjs';
+import { IAppManifest } from './app_manifest.mjs';
 
 export enum AppState {
 	INIT, ALIVE, DYING, DEAD
@@ -13,18 +14,6 @@ export enum ExitMode {
 
 type EventsTypeMap = {
 	exit: AppExitEvent
-}
-
-export interface AppManifest {
-	id: string;
-	base?: string;
-	icon?: string;
-	displayName?: string;
-	builder?: string;
-	modules?: string[];
-	scripts?: string[];
-	styles?: string[];
-	noWindowGrouping?: boolean;
 }
 
 export default class App {	
@@ -40,7 +29,7 @@ export default class App {
 	mainWindow: Window;
 	exitMode: ExitMode;
 
-	constructor(manifest: AppManifest, args?: unknown[]) {
+	constructor(manifest: IAppManifest, args?: unknown[]) {
 		if (!manifest) throw new InternalFault("Apps need a manifest");
 		this.state = AppState.INIT;
 		this.resources = new ResourceManager();

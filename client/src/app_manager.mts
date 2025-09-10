@@ -1,4 +1,5 @@
-import { FileSystem } from "./drivers/filesystem.mjs";
+import AppManifest, { IAppManifest } from "./app_manifest.mjs";
+import { FileSystem, Paths } from "./drivers/filesystem.mjs";
 
 export interface AppDefinition {
 	id: string;
@@ -23,10 +24,12 @@ interface AppDeclaration {
 }
 
 export class AppManager {
+	private manifests: Map<string, AppManifest>;
 	private definitions: Map<string, AppDefinition>;
-	private appDeclarations: any;
+	private appDeclarations: { [id: string]: AppDeclaration };
 
 	public constructor() {
+		this.manifests = new Map();
 		this.definitions = new Map();
 		this.appDeclarations = {};
 	}
@@ -42,8 +45,8 @@ export class AppManager {
 			if (app.startsWith('-')) delete this.appDeclarations[app];
 		}
 
-		for (let [appId, decl_] of Object.entries(this.appDeclarations)) {
-			let decl = decl_ as AppDeclaration;
+		let promises = Object.keys(this.appDeclarations).map(async appId => {
+			const decl = this.appDeclarations[appId];
 
 			// Construct definition from config declaration
 			let definition = {} as AppDefinition;
@@ -51,46 +54,32 @@ export class AppManager {
 			definition.displayName = decl.name ?? appId;
 			definition.manifestUrl = decl.manifestUrl ?? ('/app/' + appId + '/manifest.json');
 			definition.flags = decl.flags ?? [];
-			if (decl.icon) {
-				definition.icons = [{ url: decl.icon, type: 'image/', size: 0 }];
-			} else {
-				definition.icons = [this.getDefaultAppIcon()];
-			}
-
-			definition.getIcon = (size) => {
-				let bestMatch = definition.icons[0];
-
-				for (let i = 1; i < definition.icons.length; i++) {
-					let icon = definition.icons[i];
-
-					// If we found an exact size match
-					if (bestMatch.size == size) break;
-
-					// If our best match is smaller than we need, grow it if the icon is bigger
-					else if (bestMatch.size < size) {
-						if (icon.size > bestMatch.size) {
-							bestMatch = icon;
-						}
-
-					// If our best match is bigger than we need, reduce it only if the icon first
-					// our purposes.
-					} else if (bestMatch.size > size){
-						if (icon.size < bestMatch.size && icon.size >= size) {
-							bestMatch = icon;
-						}
-					}
-				}
-
-				return bestMatch;
-			};
 
 			// Add to definitions map
 			this.definitions.set(appId, definition);
-		}
+
+			// Fetch manifest
+			let manifestDefProm = await fetch(definition.manifestUrl, { cache: 'no-cache' });
+			let manifestDef = await manifestDefProm.json() as IAppManifest;
+			manifestDef.base = Paths.parent(definition.manifestUrl);
+
+			// Create manifest object
+			let manifest = new AppManifest(manifestDef);
+			manifest.transformManifestPaths();
+
+			// Store manifest
+			this.manifests.set(appId, manifest);
+		});
+
+		await Promise.all(promises);
 	}
 
 	public getAppEntries() {
 		return this.definitions.entries();
+	}
+
+	public getAppManifest(id: string) {
+		return this.manifests.get(id);
 	}
 
 	public getDefaultAppIcon(): Icon {

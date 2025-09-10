@@ -3,6 +3,7 @@ import Window from './window.mjs';
 import App from '../app.mjs';
 import Arrays from '../../../common/arrays.mjs';
 import User from '../user.mjs';
+import AppManifest, { IAppManifest } from '../app_manifest.mjs';
 
 export class Taskbar {
 	DEFAULT_TASKBAR_ICON: string;
@@ -54,25 +55,28 @@ export class Taskbar {
 			this.$appsMenu.find('.username').text(name);
 		});
 
-		for (let [_, appDef] of Client.appManager.getAppEntries()) {
+		let appEntries = Array.from(Client.appManager.getAppEntries());
+		appEntries.forEach(([id, def]) => {
+			let manifest = Client.appManager.getAppManifest(id);
+
 			// Create the icon element. If the image fails to load, set the default icon
-			let icon = appDef.icons[0].url;
+			let icon = manifest.manifest.icon;
 			let $icon = $(`<img src='${icon}'/>`);
 			$icon.on('error', () => {
 				$icon.attr('src', Client.appManager.getDefaultAppIcon().url);
 			})
 
 			// Create the app element
-			let $appItem = $(`<li><span>${appDef.displayName}</span></li>`);
+			let $appItem = $(`<li><span>${def.displayName}</span></li>`);
 			$appItem.prepend($icon);
 
 			$appItem.click(() => {
-				Client.runApp(appDef.id);
+				Client.runApp(def.id);
 				this.closeAppsMenu();
 			});
 
 			$appsList.append($appItem);
-		}
+		});
 
 		this.$bar.find('.apps-btn').click(() => {
 			this.$appsMenu.css('display', 'block');

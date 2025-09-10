@@ -9,6 +9,7 @@ import Arrays from '../../../common/arrays.mjs';
 import { WindowManager } from './window_manager.mjs';
 import ContextMenuDesktopController from './controls/context_menu/desktop_controller.mjs';
 import User from '../user.mjs';
+import AppManifest, { IAppManifest } from '../app_manifest.mjs';
 
 export class Desktop {
 	dwm: App;
@@ -224,11 +225,15 @@ export class Desktop {
 	// also configures their input behavior.
 	setupApps() {
 		let $apps = $('.back-plane');
-		for (let [id, def] of Client.appManager.getAppEntries()) {
-			if (def.flags.includes('disabled')) continue;
-			if (!def.flags.includes('desk')) continue;
 
-			let img = def.icons[0].url;
+		let appEntries = Array.from(Client.appManager.getAppEntries());
+		appEntries.forEach(([id, def]) => {
+			if (def.flags.includes('disabled')) return;
+			if (!def.flags.includes('desk')) return;
+
+			let manifest = Client.appManager.getAppManifest(id);
+		
+			let img = manifest.manifest.icon;
 			let name = def.displayName;
 			let $icon = $(`<div class='app-icon'> <img src='${img}'/> <label>${name}</label> </div>`);
 			$icon.click(async () => {
@@ -239,7 +244,7 @@ export class Desktop {
 				}
 			});
 			$apps.append($icon);
-		}
+		});
 	}
 
 	setDragRectangle(x?: number, y?: number, width?: number, height?: number) {

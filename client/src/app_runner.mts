@@ -1,8 +1,8 @@
-import App, { AppManifest, AppState } from "./app.mjs";
+import App, { AppState } from "./app.mjs";
+import AppManifest, { IAppManifest } from "./app_manifest.mjs";
 import { Paths } from "./drivers/filesystem.mjs";
-import { InternalFault } from "./faults.mjs";
 import Resource from "./resource.mjs";
-import Objects, { Pointer } from "./utils/objects.mjs";
+import Objects from "./utils/objects.mjs";
 
 interface AppResources {
 	scripts: Promise<Resource[]>;
@@ -28,11 +28,12 @@ export async function runUrl(manifestURL: string, buildArgs = []): Promise<App> 
 	}
 }
 
-export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
+export async function run(manifest: IAppManifest, buildArgs = []): Promise<App> {
 	const statics = run as any;
 	
 	try {
-		transformManifestPaths(manifest);
+		let man = new AppManifest(manifest);
+		man.transformManifestPaths();
 
 		// Start fetching of scripts, styles and modules required by this app under a temporary
 		// resource user id.
@@ -41,7 +42,7 @@ export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
 		
 		const tmpResourceUserId = 'APP-CREATOR-' + (statics.idCounter++);
 
-		let resources = fetchAppResources(manifest, tmpResourceUserId);
+		let resources = fetchAppResources(man, tmpResourceUserId);
 
 		// Wait for all scripts and modules to load in order to instantiate the application.
 		await resources.modules;
@@ -74,9 +75,9 @@ export async function run(manifest: AppManifest, buildArgs = []): Promise<App> {
 /**
  * Fetches the manifest located at the url passed and converts it do AppManifest format.
  */
-async function getManifest(url: string): Promise<AppManifest> {
+async function getManifest(url: string): Promise<IAppManifest> {
 	// Fetch manifest
-	let fRes = await fetch(url);
+	let fRes = await fetch(url, { cache: 'no-cache' });
 	if (fRes.status == 404) {
 		throw new Error('Manifest not found.');
 	}
@@ -86,31 +87,7 @@ async function getManifest(url: string): Promise<AppManifest> {
 
 	// Await for manifest
 	let manifestObj = await fRes.json();
-	return manifestObj as AppManifest;
-}
-
-function transformManifestPaths(manifest: AppManifest) {
-	const base = manifest.base;
-
-	// With a pointer to a property, check is the path is relative and transform it.
-	const map = (p: Pointer<string>) => {
-		let path = p.v;
-		if (path.startsWith('~/')) {
-			if (!base) throw new InternalFault("App has no base path specified, and it can't be inferred either.");
-
-			p.v = Paths.join(base, path.substring(2));
-		}
-	}
-	
-	// Transform all the properties with relative paths ~/
-	map(Pointer.of(manifest, ['icon']));
-	for (let arr of [manifest.modules, manifest.scripts, manifest.styles]) {
-		if (!arr) continue;
-
-		for (let i = 0; i < arr.length; i++) {
-			map(Pointer.of(arr, [i]));
-		}
-	}
+	return manifestObj as IAppManifest;
 }
 
 /**
@@ -118,9 +95,9 @@ function transformManifestPaths(manifest: AppManifest) {
  * be instantiated with the userId passed as the resources owner.
  */
 function fetchAppResources(manifest: AppManifest, userId: string): AppResources {
-	let modules = manifest.modules ?? [];
-	let scripts = manifest.scripts ?? [];
-	let styles = manifest.styles ?? [];
+	let modules = manifest.manifest.modules ?? [];
+	let scripts = manifest.manifest.scripts ?? [];
+	let styles = manifest.manifest.styles ?? [];
 
 	scripts.push(...modules);
 
@@ -129,11 +106,11 @@ function fetchAppResources(manifest: AppManifest, userId: string): AppResources 
 	resources.modules = [];
 
 	resources.scripts = Promise.all(scripts.map((url) => {
-		return Client.resources.fetchScript(url, userId);
+		return Client.resources.fetchScript(url + '?h=' + manifest.hash, userId);
 	}));
 
 	resources.styles = Promise.all(styles.map((url) => {
-		return Client.resources.fetchStyle(url, userId);
+		return Client.resources.fetchStyle(url + '?h=' + manifest.hash, userId);
 	}));
 
 	return resources;
@@ -143,7 +120,7 @@ function fetchAppResources(manifest: AppManifest, userId: string): AppResources 
  * Locate the App constructor either on the explicit 'builder' function on the manifest, or as the
  * default export of the first module.
  */
-async function getAppConstructor(manifest: AppManifest, modules: any): Promise<any> {
+async function getAppConstructor(manifest: IAppManifest, modules: any): Promise<any> {
 	let AppClass: any;
 
 	// Obtain the app class declared in the manifest from the global namespace
