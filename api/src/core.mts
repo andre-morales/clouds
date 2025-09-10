@@ -75,7 +75,7 @@ function initMiddleware() {
 	app.use(CookieParser());
 
 	app.set('view engine', 'ejs');
-	app.set('views', 'api/pages');
+	app.set('views', 'client/pages');
 	app.disable('x-powered-by');
 }
 
