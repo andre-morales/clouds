@@ -64,14 +64,14 @@ async function initDesktop() {
 
 	// Load jquery compatible lib
 	loadingText.innerHTML = "Loading base...";
-	await addScript('/res/lib/zepto.min.js');
+	await addScript('/res/lib/zepto.min.js?v=' + EntrySpace.assetMap.all);
 
 	// Enable system panics after zepto is ready
 	enablePanics();
 
 	// Add system script and let it do the setup
 	loadingText.innerHTML = "Loading core...";
-	await addScript('/res/pack/core.chk.js');
+	await addScript('/res/pack/core.chk.js?v=' + EntrySpace.assetMap.all);
 	
 	EntrySpace.log('Invoking core module entry point...');
 	(window as any).CoreModule.main();
@@ -79,7 +79,7 @@ async function initDesktop() {
 
 async function initLogin() {
 	// Fetch login page
-	let pagePromise = fetch('/page/login')
+	let pagePromise = fetch('/page/login?v=' + EntrySpace.assetMap.all)
 		.then(res => res.text())
 		.then(text => {
 			let win = document.createElement('div');
@@ -89,7 +89,7 @@ async function initLogin() {
 			document.body.appendChild(win);
 		});
 
-	let scriptPromise = addScript('/res/pack/login.js');
+	let scriptPromise = addScript('/res/pack/login.js?v=' + EntrySpace.assetMap.all);
 
 	await pagePromise;
 	await scriptPromise;

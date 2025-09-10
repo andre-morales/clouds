@@ -65,7 +65,7 @@ export async function main() {
 
 async function initUI() {
 	// Fetch desktop page and display the system version on the page
-	let desktopPageProm = fetch('/page/desktop').then(fRes => {
+	let desktopPageProm = fetch('/page/desktop?v=' + EntrySpace.assetMap.all).then(fRes => {
 		if (fRes.status != 200) {
 			throw new IllegalStateFault('Desktop page could not be accessed.');
 		}
@@ -77,7 +77,7 @@ async function initUI() {
 
 	// Schedule loading of main styles
 	let stylesPromise = Promise.all([
-		Browser.addStylesheet('/res/pack/core.chk.css').promise,
+		Browser.addStylesheet('/res/pack/core.chk.css?v=' + EntrySpace.assetMap.all).promise,
 	]);
 
 	await desktopPageProm;
@@ -92,7 +92,7 @@ async function initUI() {
 async function initPlatform() {
 	// Schedule loading of main system scripts
 	let scriptsPromises = Promise.all([
-		Browser.addScript('/res/lib/hammer.min.js')
+		Browser.addScript('/res/lib/hammer.min.js?v=' + EntrySpace.assetMap.all)
 	]);
 
 	await scriptsPromises;

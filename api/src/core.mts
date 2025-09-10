@@ -182,10 +182,14 @@ function apiSetupPages() {
 		next();
 	};
 
-	// - Entry point page
-	app.get('/', cache, async (req, res) => {
-		let user = Auth.getUser(req);
+	const getAssetMap = async () => {
+		return await Files.readJSON("client/public/asset_map.json")
+	};
 
+	// - Entry point page
+	app.get('/', async (req, res) => {
+		let user = Auth.getUser(req);
+		
 		let pwa = false;
 		if (user) {
 			try {
@@ -195,12 +199,14 @@ function apiSetupPages() {
 			} catch(err) {}
 		}
 
-		res.render('entry', { use_pwa_features: pwa });
+		// Don't allow cache. Always load fresh.
+		res.header('Cache-Control', `no-store`);
+		res.render('entry', { use_pwa_features: pwa, assetMap: await getAssetMap() });
 	});
 
 	// - Login page
-	app.get('/page/login', cache, (req, res) => {
-		res.render('login');
+	app.get('/page/login', cache, async (req, res) => {
+		res.render('login', { assetMap: await getAssetMap() });
 	});
 
 	// - Desktop page

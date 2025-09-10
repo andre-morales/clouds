@@ -44,7 +44,7 @@ export default class ThemeManager {
 
 	private async setTheme(theme: string) {
 		// Add stylesheet for the specified theme.
-		let resource = Browser.addStylesheet(`${THEMES_PATH}${theme}.css`);
+		let resource = Browser.addStylesheet(`${THEMES_PATH}${theme}.css?v=${EntrySpace.assetMap.all}`);
 
 		try {
 			await resource.promise;

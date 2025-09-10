@@ -56,7 +56,7 @@ $taskbar_height: 32px;
 	.fullscreen-btn {
 		width: 36px;
 		background-color: transparent;
-		background-image: url('/res/img/icons/fullscreen.png');
+		background-image: url('/res/img/icons/fullscreen.png?h=0&e');
 		background-size: 26px;
 		flex-shrink: 0;
 	}
@@ -64,7 +64,7 @@ $taskbar_height: 32px;
 	.apps-btn {
 		width: 36px;
 		background-color: transparent;
-		background-image: url('/res/img/icons/apps.png');
+		background-image: url('/res/img/icons/apps.png?h=0&e');
 		background-size: 26px;
 		flex-shrink: 0;
 	}

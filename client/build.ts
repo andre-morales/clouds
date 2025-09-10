@@ -11,7 +11,9 @@ const emitMetafile = true;
 
 const baseConfig: ESBuild.BuildOptions = {
 	bundle: true,
-	external: ['*.png'],
+	// Make sure the bundler doesn't try to resolve url(*.png) files in css.
+	// Paths marked with query string &e will be skipped too.
+	external: ['*.png', '*&e'],
 	format: 'iife',
 	minify: !developmentMode,
 	sourcemap: developmentMode ? 'inline' : 'linked',
@@ -20,7 +22,7 @@ const baseConfig: ESBuild.BuildOptions = {
 	},
 	metafile: emitMetafile,
 	plugins: [
-		Sass({ embedded: true }),
+		Sass({ embedded: true,  }),
 		postCSSPlugin(),
 		swcTransformPlugin({ iife: true }),
 		writerPlugin()],

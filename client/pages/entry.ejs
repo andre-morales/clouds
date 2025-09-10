@@ -6,6 +6,7 @@
 	<title>Clouds</title>
 	<script>
 		var EntrySpace = {};
+		EntrySpace.assetMap = <%- JSON.stringify(assetMap) %>;
 
 		(function () {
 			var ES = EntrySpace;
@@ -51,7 +52,7 @@
 				document.head.appendChild(elem);
 			}
 			ES.onLoad = function() {
-				ES.addScript('/res/pack/entry.js');
+				ES.addScript('/res/pack/entry.js?v=' + ES.assetMap.all);
 			}
 
 			ES.enableHandlers();
@@ -73,10 +74,10 @@
 			white-space: pre;
 		}
 	</style>
-	<link rel="stylesheet" type="text/css" href="/res/pack/entry.css">
-	<link rel="icon" type="image/x-icon" href="/res/favicon.png">
+	<link rel="stylesheet" type="text/css" href="/res/pack/entry.css?v=<%= assetMap.all %>">
+	<link rel="icon" type="image/x-icon" href="/res/favicon.png?v=<%= assetMap.all %>">
 	<% if (use_pwa_features) { %>
-		<link rel="manifest" href="/res/manifest.json">
+		<link rel="manifest" href="/res/manifest.json?v=<%= assetMap.all %>">
 	<% } %>
 	<style id="fullscreen-style"></style>
 </head>
