@@ -5,59 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<title>Clouds</title>
 	<script>
-		var EntrySpace = {};
-		EntrySpace.assetMap = <%- JSON.stringify(assetMap) %>;
-
-		(function () {
-			var ES = EntrySpace;
-
-			ES.log = function (msg) {
-				var bootLog = document.getElementById('boot-log');
-				var p = document.createElement('p');
-				p.innerHTML = msg;
-				bootLog.appendChild(p);
-				return p;
-			};
-			ES.scriptFailed = function (elem) {
-				EntrySpace.log("[!] Core boot script <b>" + elem.src + "</b> failed.")
-			};
-			ES.enableHandlers = function () {
-				window.onunhandledrejection = function (ev) {
-					var detail;
-					if (ev.reason) {
-						var trace = (ev.reason.stack) ? ev.reason.stack : 'unavailable';
-						detail = ev.reason + '\n trace: ' + trace;
-					}
-					EntrySpace.log('[!] Unhandled rejection\n ' + detail);
-				};
-				window.onerror = function (ev) {
-					EntrySpace.log('[!] Unhandled error\n ' + ev + '');
-				};
-			};
-			ES.disableHandlers = function () {
-				EntrySpace.log('Handlers disabled.');
-				window.onerror = undefined;
-				window.onunhandledrejection = undefined;
-			};
-			ES.addScript = function (src) {
-				var log = ES.log('Loading <b>' + src + '</b>... ');
-				var elem = document.createElement('script');
-				elem.onerror = function (err) {
-					ES.scriptFailed(elem);
-				}
-				elem.onload = function () {
-					log.innerHTML += "Done.";
-				}
-				elem.setAttribute('src', src);
-				document.head.appendChild(elem);
-			}
-			ES.onLoad = function() {
-				ES.addScript('/res/pack/entry.js?v=' + ES.assetMap.all);
-			}
-
-			ES.enableHandlers();
-			ES.startTime = Date.now();
-		})();
+		<%- include('./entry.js') %>
 	</script>
 	<style>
 		#boot-log {
@@ -73,12 +21,10 @@
 			background-color: black;
 			white-space: pre;
 		}
+		#boot-log p {
+			margin: 0
+		}
 	</style>
-	<link rel="stylesheet" type="text/css" href="/res/pack/entry.css?v=<%= assetMap.all %>">
-	<link rel="icon" type="image/x-icon" href="/res/favicon.png?v=<%= assetMap.all %>">
-	<% if (use_pwa_features) { %>
-		<link rel="manifest" href="/res/manifest.json?v=<%= assetMap.all %>">
-	<% } %>
 	<style id="fullscreen-style"></style>
 </head>
 <body onload="EntrySpace.onLoad();">

@@ -187,7 +187,7 @@ function apiSetupPages() {
 	};
 
 	// - Entry point page
-	app.get('/', async (req, res) => {
+	app.get('/', cache, async (req, res) => {
 		let user = Auth.getUser(req);
 		
 		let pwa = false;
@@ -199,8 +199,6 @@ function apiSetupPages() {
 			} catch(err) {}
 		}
 
-		// Don't allow cache. Always load fresh.
-		res.header('Cache-Control', `no-store`);
 		res.render('entry', { use_pwa_features: pwa, assetMap: await getAssetMap() });
 	});
 

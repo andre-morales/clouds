@@ -59,8 +59,11 @@ export async function main() {
 	// If a program startup has been passed in the url, run it
 	clientInstance.start(Browser.getURLParams());
 
+	// Mark boot time
 	let bootTime = Date.now() - EntrySpace.startTime;
-	EntrySpace.log(`Finished core initialization in ${bootTime}ms.`);
+	let bootTimeMsg = `Finished core initialization in ${bootTime}ms.`;
+	console.log(bootTimeMsg);
+	EntrySpace.log(bootTimeMsg);
 }
 
 async function initUI() {
@@ -152,7 +155,18 @@ export class ClientClass {
 
 		// Fetch and load configuration
 		this.config = new ConfigManager();
-		promises.push(this.config.init());
+		let configPromise = this.config.init();
+
+		// Once config is enabled, check if pwa features are enabled
+		configPromise.then(() => {
+			if (this.config.preferences.use_pwa_features) {
+				let url = `/res/manifest.json?v=${EntrySpace.assetMap.all}`;
+				let $elem = $(`<link rel='manifest' href='${url}'/>`);
+				$elem.appendTo(document.head);
+			}
+		});
+		
+		promises.push(configPromise);
 
 		// Start theming system
 		this.themeManager = new ThemeManager();
