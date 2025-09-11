@@ -1,7 +1,7 @@
 {
 	"id": "about",
 	"icon": "~/icons/icon.svg",
-	"modules": [
+	"scripts": [
 		"~/dist/app.pack.js"	
 	],
 	"styles": [

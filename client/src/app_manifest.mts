@@ -60,4 +60,8 @@ export default class AppManifest {
 
 		return true;
 	}
+
+	public getIconURL(): string {
+		return this.manifest.icon + '?h=' + this.hash;
+	}
 }

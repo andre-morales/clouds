@@ -60,7 +60,7 @@ export class Taskbar {
 			let manifest = Client.appManager.getAppManifest(id);
 
 			// Create the icon element. If the image fails to load, set the default icon
-			let icon = manifest.manifest.icon;
+			let icon = manifest.getIconURL();
 			let $icon = $(`<img src='${icon}'/>`);
 			$icon.on('error', () => {
 				$icon.attr('src', Client.appManager.getDefaultAppIcon().url);

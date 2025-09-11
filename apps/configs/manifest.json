@@ -1,7 +1,7 @@
 {
 	"id": "configs",
 	"icon": "~/icons/icon.svgz",
-	"modules": [
+	"scripts": [
 		"~/dist/app.pack.js"	
 	],
 	"styles": [

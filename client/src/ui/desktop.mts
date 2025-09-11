@@ -233,7 +233,7 @@ export class Desktop {
 
 			let manifest = Client.appManager.getAppManifest(id);
 		
-			let img = manifest.manifest.icon;
+			let img = manifest.getIconURL();
 			let name = def.displayName;
 			let $icon = $(`<div class='app-icon'> <img src='${img}'/> <label>${name}</label> </div>`);
 			$icon.click(async () => {
