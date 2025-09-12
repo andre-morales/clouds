@@ -52,10 +52,13 @@ function rawToHistogram(raw: string) {
 	return volumes;
 }
 
-export async function createThumbOf(path: string, dest: string) {
+export async function createThumbOf(path: string, fmt: string, quality: number, dest: string) {
 	// Get path of ffmpeg executable
 	let ffmpegExec = config.ffmpeg_exec;
 	let args: string[];
+
+	const width = 144;
+	let fmtParams = getThumbFormatParameters(fmt, quality);
 
 	// If the path points to a video
 	if (Files.isFileExtVideo(path)) {
@@ -66,10 +69,10 @@ export async function createThumbOf(path: string, dest: string) {
 		} catch {}
 
 		let seekPoint = (videoLength / 2).toString();
-		args = ['-ss', seekPoint, '-i', path, '-q:v', '4', '-vf', "scale='iw*144/max(iw,ih):-1'", '-vframes', '1', '-f', 'mjpeg', dest];
+		args = ['-ss', seekPoint, '-i', path, '-q:v', '4', '-vf', `scale='iw*${width}/max(iw,ih):-1'`, '-vframes', '1', ...fmtParams, dest];
 	// Treat the file as an image otherwise
 	} else {
-		args = ['-i', path, '-vf', "scale='iw*144/max(iw,ih):-1'", '-f', 'mjpeg', dest];
+		args = ['-i', path, '-vf', `scale='iw*${width}/max(iw,ih):-1'`, ...fmtParams, dest];
 	}
 	
 	// Execute ffmpeg with the arguments. If there's an error, fail silently
@@ -81,6 +84,20 @@ export async function createThumbOf(path: string, dest: string) {
 	}
 
 	return false;
+}
+
+/**
+ * @param format webp, avif or jpeg
+ * @param quality A number between 0.0 and 1.0
+ * @returns 
+ */
+function getThumbFormatParameters(format: string, quality: number) {
+	switch (format) {
+		case 'webp': return ['-f', 'webp', '-q', (quality * 100).toFixed(0)];
+		case 'avif': return ['-f', 'avif', '-crf', ((1 - quality) * 63).toFixed(0)];
+		case 'jpeg': return ['-f', 'mjpeg', '-q', ((1 - quality) * 31).toFixed(0)];
+	}
+	return [];
 }
 
 async function getFileInfo(path: string) {

@@ -16,6 +16,8 @@ export class FileIcon {
 	private readonly app: ExplorerApp;
 
 	constructor(app: ExplorerApp, entry: FileEntry) {
+		const preferences = ClientClass.get().config.preferences;
+
 		this.app = app;
 		this.path = entry.path;
 		this.absolutePath = Paths.join(this.app.cwd, entry.path);
@@ -32,7 +34,10 @@ export class FileIcon {
 		let hasThumb = FileTypes.isVideo(this.fileName) || FileTypes.isPicture(this.fileName);
 		if (hasThumb) {
 			let thumbURL = Paths.toURL(this.absolutePath);
-			$img = $(`<img src='/fsmx/thumb${thumbURL}' draggable='false'>`);
+
+			let fmt = preferences.thumbnailFormat ?? '';
+			let quality = preferences.thumbnailQuality ?? '';
+			$img = $(`<img src='/fsmx/thumb${thumbURL}?f=${fmt}&q=${quality}' draggable='false'>`);
 			classes.push('thumbbed');
 		}
 		

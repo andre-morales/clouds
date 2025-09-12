@@ -1,7 +1,8 @@
 <ui-tabs>
 	<nav class='ui-tabs-header'>
-		<button class='ui-tabs-switch selected' data-tab='general'>Desktop</button>
-		<button class='ui-tabs-switch' data-tab='features'>Features</button>
+		<button class='ui-tabs-switch selected' data-tab='features'>Features</button>
+		<button class='ui-tabs-switch' data-tab='general'>Desktop</button>
+		<button class='ui-tabs-switch' data-tab='explorer'>Explorer</button>
 		<button class='ui-tabs-switch' data-tab='debug'>Debug</button>
 	</nav>
 	<div class='ui-tab general-tab visible' data-tab='general'>
@@ -55,6 +56,30 @@
 			<input type="checkbox" class='checkbox use-pwa-features'/>
 			<span>Enable PWA features</span>
 		</label>
+	</div>
+	<div class='ui-tab explorer-tab' data-tab='explorer'>
+		<label class='row'>
+			<span>Thumbnail format: </span>
+			<select class="thumb-format">
+				<option value="0">JPEG</option>
+				<option value="1">WEBP</option>
+				<option value="2">AVIF</option>
+			</select>
+		</label>
+		<label class='row'>
+			<span>Thumbnail quality: </span>
+			<select class="thumb-quality">
+				<option value="0">0% (Worst)</option>
+				<option value="1">20%</option>
+				<option value="2">40%</option>
+				<option value="3">60%</option>
+				<option value="4">80%</option>
+				<option value="5">100% (Best)</option>
+			</select>
+		</label>
+		<div class='row'>
+			<button class='button thumb-clear-all'>Clear all thumbnails</button>
+		</div>
 	</div>
 	<div class='ui-tab debug-tab' data-tab='debug'>
 		<label class='row'>

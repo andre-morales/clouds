@@ -1,4 +1,4 @@
-import Dialogs from '/@sys/ui/dialogs.mjs';
+import Dialogs, { Dialog } from '/@sys/ui/dialogs.mjs';
 import { Paths } from '/@sys/drivers/filesystem.mjs';
 import Window, { CloseBehavior } from '/@sys/ui/window.mjs';
 import { ClientClass } from '/@sys/client_core.mjs';
@@ -54,7 +54,7 @@ export default class ConfigsApp extends App {
 		$app.addClass('app-configs');
 
 		// Fetch body
-		await this.window.setContentToUrl('/app/configs/main.html');
+		await this.window.setContentToUrl('/app/configs/main.html?h=1');
 
 		// Background
 		let $input = $win.find('.background-input');
@@ -91,6 +91,14 @@ export default class ConfigsApp extends App {
 		let $pdfViewer = $win.find('.pdf-viewer');
 		this.bindFieldToProp($pdfViewer, 'pdf_viewer');
 
+		let $thumbFormat = $win.find('.thumb-format');
+		this.bindFieldToProp($thumbFormat, 'thumbnailFormat');
+
+		let $thumbQuality = $win.find('.thumb-quality');
+		this.bindFieldToProp($thumbQuality, 'thumbnailQuality');
+
+		$win.find('.thumb-clear-all').click(() => this.clearThumbnails());
+
 		let $alwaysPack = $win.find('.always-pack-toggle');
 		this.bindCheckboxToProp($alwaysPack, 'dbg_always_pack_windows');
 
@@ -116,6 +124,20 @@ export default class ConfigsApp extends App {
 		});
 
 		this.window.setVisible(true);
+	}
+
+	async clearThumbnails() {
+		let req = await fetch('/fsmx/clear-thumbs', { method: 'POST' });
+
+		let diag = new Dialog(this);
+		diag.setTitle("Thumbnail cache");
+		if (req.status == 200) {
+			diag.setMessageHTML("Thumbnail cache cleared successfully.");
+		} else {
+			diag.setIcon('error');
+			diag.setMessageHTML(`Thumbnail clearing operation failed. Status ${req.status}.`);
+		}
+		await diag.show();
 	}
 
 	/**

@@ -54,6 +54,11 @@ export function getRouter() {
 		await resHistogram(req, res, intervals);
 	}));
 
+	router.post('/clear-thumbs', async (_, res) => {
+		await FS.promises.rm('.thumbnails/', { recursive: true });
+		res.end();
+	});
+
 	return router;
 }
 
@@ -97,7 +102,15 @@ async function resThumbnail(req: Express.Request, res: Express.Response): Promis
 	// Create thumbnail directory
 	if(!FS.existsSync(thumbsDirectory)) FS.mkdirSync(thumbsDirectory);
 
-	let result = await FFmpeg.createThumbOf(absFilePath, thumbnail);
+	let format = 'jpeg';
+	if (req.query.f) 
+		format = ['jpeg', 'webp', 'avif'][Number(req.query.f)];
+	
+	let quality = 0.8;
+	if (req.query.q)
+		quality = Number(req.query.q) / 5.0;
+
+	let result = await FFmpeg.createThumbOf(absFilePath, format, quality, thumbnail);
 
 	// If the thumbnail creation fails, create an empty file in the directory to skip it
 	// the next time
