@@ -103,7 +103,7 @@ async function initPlatform() {
 }
 
 export class ClientClass {
-	static readonly CLIENT_VERSION = '1.0.278';
+	static readonly CLIENT_VERSION = '1.0.285';
 	static readonly BUILD_STRING = `${this.CLIENT_VERSION} Milestone 1`;
 	static readonly BUILD_MODE = __BUILD_MODE__;
 	static readonly BUILD_TEXT = `Clouds ${this.BUILD_STRING} (${this.BUILD_MODE})`;
