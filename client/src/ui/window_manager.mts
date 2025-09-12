@@ -14,6 +14,7 @@ export class WindowManager {
 	private windows: Window[];
 	private $desktop: $Element;
 	private resizingWindow: Window;
+	private draggingWindow: Window;
 
 	constructor(desktop: Desktop) {
 		this.desktop = desktop;
@@ -60,12 +61,11 @@ export class WindowManager {
 	}
 
 	private hookDragHandlers(win: Window) {
-		let dragging = false;
 		let startX:  number, startY:  number;
 		let startMX: number, startMY: number;
 
 		const dragStart = (mx: number, my: number) => {
-			dragging = true;
+			this.draggingWindow = win;
 
 			startMX = mx,       startMY = my;
 			[startX, startY] = win.getPosition();
@@ -73,13 +73,14 @@ export class WindowManager {
 		};
 
 		const dragMove = (mx: number, my: number) => {
-			if (!dragging) return;
+			if (this.draggingWindow != win) return;
 
 			const [, , winWidth, winHeight] = win.getBounds();
 
 			let dx = mx - startMX;
 			let dy = my - startMY;
 
+			// If the window is maximized, pop it out of max and restore it
 			if (win.maximized) {
 				if (dy > 8) {
 					let wb = win.getRestoredBounds();
@@ -102,9 +103,9 @@ export class WindowManager {
 		};
 
 		const dragEnd = (mx: number, my: number) => {
-			if (!dragging) return;
+			if (this.draggingWindow != win) return;
 
-			dragging = false;
+			this.draggingWindow = null;
 			win.setPosition(startX + mx - startMX, startY + my - startMY);
 			Client.desktop.setPointerEvents(true);
 			Client.desktop.setDragRectangle(null);
@@ -140,6 +141,9 @@ export class WindowManager {
 		}
 
 		let dragMove = (mx: number, my: number) => {
+			if (this.draggingWindow)
+				return;
+
 			if (this.resizingWindow) {
 				doResize(mx, my);
 				return;

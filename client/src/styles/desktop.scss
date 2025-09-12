@@ -59,6 +59,15 @@ body {
 		&.fscr-parent {
 			z-index: 1;
 		}
+
+		/* When a window is being dragged, ignore all mouse events */
+		&.no-pointer-events {
+			pointer-events: none;
+
+			.window {
+				pointer-events: none;
+			}
+		}
 	}
 
 	.back-plane {

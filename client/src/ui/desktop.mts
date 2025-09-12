@@ -283,8 +283,8 @@ export class Desktop {
 		});		
 	}
 
-	setPointerEvents(evs) {
-		this.$desktop.find('.dt-area').css('pointer-events', (evs) ? '' : 'none');
+	setPointerEvents(evs: boolean) {
+		this.$desktop.find('.dt-area').toggleClass('no-pointer-events', !evs);
 	}
 
 	// Updates desktop area to match client window area
