@@ -98,13 +98,16 @@
 	}
 
 	function cacheFetch(url, done, update) {
+		var log = ES.log("Fetching <b>" + url + '</b> from cache... ');
 		var offReq, offReqTag;
 		var onReq, onReqTag;
 
 		// Offline fetch
 		offReq = fetchx(url, {}, function() {
 			offReqTag = offReq.getResponseHeader('etag');
+			
 			done(offReq);
+			log.innerHTML += ' Done.';
 
 			if (!onReqTag) return;
 			if (offReqTag != onReqTag)

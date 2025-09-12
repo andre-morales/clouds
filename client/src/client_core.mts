@@ -150,8 +150,15 @@ export class ClientClass {
 		this.events = new Reactor();
 		this.events.register('log', 'apps-add', 'apps-rem');
 
-		// Check if this is a new user
-		let isNewUserPromise = FileSystem.exists('/usr/.system/').then(e => !e);
+		// Check if this is a new user, if they seem to be, prompt them to create a profile.
+		let isNewUserPromise = (async () => {
+			if (!await FileSystem.exists('/usr/.system/')) {
+				return await User.promptCreateProfile();
+			}
+
+			return false;
+		})();
+
 
 		// Fetch and load configuration
 		this.config = new ConfigManager();
@@ -178,14 +185,6 @@ export class ClientClass {
 		// Create desktop subsystem
 		this.desktop = new Desktop();
 		this.initGraphicalErrors();
-		
-		// If this seems to be a new user, prompt them to create a profile.
-		// If they accept, exit early and let the system restart.
-		if (await isNewUserPromise) {
-			if(await User.promptCreateProfile()) {
-				return;
-			}
-		}
 
 		this.appManager = new AppManager();
 		await this.appManager.init();
@@ -200,6 +199,11 @@ export class ClientClass {
 
 		// Initialize audio subsystem
 		this.audio = new AudioSystem();
+
+		// If the user agreed to create a new user, exit early and let the system restart.
+		if (await isNewUserPromise) {
+			return;
+		}
 
 		// Await all initialization tasks to finish before closing the constructor.
 		await Promise.all(promises);		

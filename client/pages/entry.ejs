@@ -4,27 +4,8 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<title>Clouds</title>
-	<script>
-		<%- include('./entry.js') %>
-	</script>
-	<style>
-		#boot-log {
-			position: absolute;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			top: 0;
-			font: 12pt monospace;
-			pointer-events: none;
-			z-index: -1;
-			color: white;
-			background-color: black;
-			white-space: pre;
-		}
-		#boot-log p {
-			margin: 0
-		}
-	</style>
+	<script><%- include('./entry.js') %></script>
+	<style><%- include('./entry.css') %></style>
 	<style id="fullscreen-style"></style>
 </head>
 <body onload="EntrySpace.onLoad();">
