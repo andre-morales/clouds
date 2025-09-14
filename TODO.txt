@@ -20,6 +20,7 @@
 
 # Improvements
 * MEDIUM: Improve caching even more, possibly something FSV level
+* LOW: Allow user to independently configure use of blur, shadows and transparency in the theme
 * LOW: Refactor context menus for traditional Menus. This could allows shared code between context
   menus and menu bars.
 * LOW: Disable loading of Hammer module if gestures are disabled

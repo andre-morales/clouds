@@ -5,9 +5,8 @@ import { InternalFault, IllegalStateFault } from '../faults.mjs';
 import { App } from '../app.mjs';
 import Browser from '../utils/browser.mjs';
 import Arrays from '../../../common/arrays.mjs';
-import { RenderingMode, WindowPresentation } from './window_presentation.mjs';
+import { WindowPresentation } from './window_presentation.mjs';
 import Utils from '../utils/utils.mjs';
-import { ConfigManager } from '../config_manager.mjs';
 import { ClientClass } from '../client_core.mjs';
 
 var enableGestures = false;
@@ -593,6 +592,38 @@ export default class Window {
 	public async setContentToUrl(url: string) {
 		let fRes = await fetch(url);
 		this.$windowRoot.find('.window-body').html(await fRes.text());
+	}
+
+	public doDancing() {
+		const stx = this.doDancing as any as {
+			dancers: number
+		};
+
+		if (!++stx.dancers)
+			stx.dancers = 1;
+
+		const dancerId = stx.dancers;
+		
+		let dance = () => {
+			if (!this.visible)
+				return;
+
+			const timeScale = 0.01;
+			const motionScale = 150;
+			const offset = 2 * 3.14159 * dancerId / stx.dancers;
+
+			let [w, h] = ClientClass.get().desktop.getDesktopSize();
+			let cx = (w - this.width) / 2;
+			let cy = (h - this.height) / 2;
+
+			let time = Date.now() * timeScale + offset;
+			let x = cx + Math.cos(time) * motionScale;
+			let y = cy + Math.sin(time) * motionScale;
+			this.setPosition(x, y);
+
+			window.requestAnimationFrame(dance);	
+		};
+		window.requestAnimationFrame(dance);
 	}
 
 	public on(evClass: string, callback: EventCallback) {

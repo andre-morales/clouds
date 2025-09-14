@@ -85,6 +85,7 @@ export class Desktop {
 
 		Fullscreen.init();
 		this.initBrowserHistory();
+		this.initDebugFeatures();
 		this.updateBounds();	
 	}
 
@@ -288,6 +289,35 @@ export class Desktop {
 		let dtBounds = this.$windows[0].getBoundingClientRect();
 		this.windowsWidth = dtBounds.width;
 		this.windowsHeight = dtBounds.height;
+	}
+
+	private initDebugFeatures() {
+		const debugs = ClientClass.get().debugs;
+		if (!debugs) 
+			return;
+
+		debugs.doDancingWindows = () => {
+			for (let win of this.windowManager.getWindows()) {
+				win.doDancing();
+			}
+		};
+
+		debugs.showFPS = () => {
+			let frames = 0;
+			let lastFPS = Date.now();
+
+			let fn = () => {
+				frames++;
+				if (Date.now() - lastFPS >= 1000) {
+					console.log(`FPS: ${frames}`);
+					lastFPS = Date.now();
+					frames = 0;
+				}
+				window.requestAnimationFrame(fn);
+			};
+
+			window.requestAnimationFrame(fn);
+		};
 	}
 }
 

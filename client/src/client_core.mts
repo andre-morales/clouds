@@ -119,8 +119,11 @@ export class ClientClass {
 	mediaSessionBridge: typeof MediaSessionDriver;
 	runningApps: App[];
 	events: Reactor<{ log: ReactorEvent }>;
+	debugs?: any;
 
-	constructor() {}
+	constructor() {
+		this.debugs = {};
+	}
 
 	async init() {
 		let promises: Promise<any>[] = [];
