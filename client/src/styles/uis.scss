@@ -129,7 +129,10 @@
 	max-width: calc(100vw - 0.1px) !important;
 	max-height: calc(100vh - 0.1px) !important;
 	flex-shrink: 0;
-	backdrop-filter: var(--fullscreen-filter);
+}
+
+.fullscreen-filter-on .fullscreened {
+	backdrop-filter: blur(2px);
 }
 
 .fscr-parent {

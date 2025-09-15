@@ -11,6 +11,12 @@ export class ConfigManager {
 		this.preferences = this.preferencesMgr.getRoot();
 	}
 
+	/**
+	 * Initialize the configuration system.
+	 * 
+	 * @returns A promise resolved when the config system is ready. If an init()
+	 * call was already perform before, the returned promise is the same one.
+	 */
 	async init(): Promise<void> {
 		const stx = this.init as { initPromise?: any };
 

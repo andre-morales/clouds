@@ -10,6 +10,7 @@ import { WindowManager } from './window_manager.mjs';
 import ContextMenuDesktopController from './controls/context_menu/desktop_controller.mjs';
 import User from '../user.mjs';
 import AppRunner from '../app_runner.mjs';
+import DesktopPresentation from './desktop_presentation.mjs';
 
 export class Desktop {
 	dwm: App;
@@ -23,6 +24,7 @@ export class Desktop {
 	private windowsHeight: number;
 	private screenWidth: number;
 	private screenHeight: number;
+	private presentation: DesktopPresentation;
 	$desktop: $Element;
 	$windows: $Element;
 
@@ -37,6 +39,8 @@ export class Desktop {
 
 		this.events = new Reactor();
 		this.events.register("window-created", "window-destroyed");
+
+		this.presentation = new DesktopPresentation(this);
 		this.$desktop = $('#desktop');
 		this.$windows = $('.windows');
 		this.windowManager = new WindowManager(this);
@@ -102,22 +106,14 @@ export class Desktop {
 	 * Watch changes to important preferences keys.
 	 */
 	private async initPrefBindings() {
-		await ClientClass.get().config.init();
-		let pref = ClientClass.get().config.preferencesMgr;
+		const config = ClientClass.get().config;
+		const pref = config.preferencesMgr;
+		await config.init();
 
-		pref.observeProperty("background", () => {
-			this.reloadBackground();
-		});
-
-		pref.observeProperty("fullscreen_filter", (value) => {
-			if (value === false) {
-				document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-off)');
-			} else {
-				document.documentElement.style.setProperty('--fullscreen-filter', 'var(--fullscreen-filter-on)');
-			}
-		});
-
-		this.reloadBackground();
+		const reload = () => this.presentation.reloadPreferences();
+		pref.observeProperty("background", reload);
+		pref.observeProperty("fullscreen_filter", reload);
+		reload();
 	}
 
 	public createWindow(app: App): Window {
@@ -217,10 +213,6 @@ export class Desktop {
 		this.ctxMenuController.addCtxMenuOn(element, menuFn);
 	}
 
-	setCursor(cursor: string) {
-		document.body.style.cursor = cursor;
-	}
-
 	// Creates an app icon for each registered app and lays it out desktop back-plane,
 	// also configures their input behavior.
 	setupApps() {
@@ -283,8 +275,8 @@ export class Desktop {
 		});		
 	}
 
-	setPointerEvents(evs: boolean) {
-		this.$desktop.find('.dt-area').toggleClass('no-pointer-events', !evs);
+	public getPresentation() {
+		return this.presentation;
 	}
 
 	// Updates desktop area to match client window area
@@ -296,13 +288,6 @@ export class Desktop {
 		let dtBounds = this.$windows[0].getBoundingClientRect();
 		this.windowsWidth = dtBounds.width;
 		this.windowsHeight = dtBounds.height;
-	}
-
-	private reloadBackground() {
-		let url = ClientClass.get().config.preferences.background;
-		if (!url) return;
-
-		this.$desktop.css('background-image', 'url("' + url + '")');
 	}
 }
 

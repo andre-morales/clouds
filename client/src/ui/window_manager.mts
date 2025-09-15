@@ -2,6 +2,7 @@ import { IllegalStateFault } from "../faults.mjs";
 import Arrays from "../../../common/arrays.mjs";
 import Desktop from "./desktop.mjs";
 import Window, { DisplayState } from "./window.mjs";
+import { ClientClass } from "../client_core.mjs";
 
 interface MotionConfiguration {
 	down: [HTMLElement, (ev: MouseEvent | TouchEvent, x: number, y: number) => void];
@@ -61,6 +62,9 @@ export class WindowManager {
 	}
 
 	private hookDragHandlers(win: Window) {
+		const client = ClientClass.get();
+		const desktop = client.desktop;
+
 		let startX:  number, startY:  number;
 		let startMX: number, startMY: number;
 
@@ -69,7 +73,7 @@ export class WindowManager {
 
 			startMX = mx,       startMY = my;
 			[startX, startY] = win.getPosition();
-			Client.desktop.setPointerEvents(false);
+			desktop.getPresentation().setPointerEvents(false);
 		};
 
 		const dragMove = (mx: number, my: number) => {
@@ -95,10 +99,10 @@ export class WindowManager {
 				return;
 			}
 
-			if (Client.config.preferences.show_dragged_window_contents) {
+			if (client.config.preferences.show_dragged_window_contents) {
 				win.setPosition(startX + dx, startY + dy);
 			} else {
-				Client.desktop.setDragRectangle(startX + dx, startY + dy, winWidth, winHeight);
+				desktop.setDragRectangle(startX + dx, startY + dy, winWidth, winHeight);
 			}
 		};
 
@@ -107,8 +111,8 @@ export class WindowManager {
 
 			this.draggingWindow = null;
 			win.setPosition(startX + mx - startMX, startY + my - startMY);
-			Client.desktop.setPointerEvents(true);
-			Client.desktop.setDragRectangle(null);
+			desktop.getPresentation().setPointerEvents(true);
+			desktop.setDragRectangle(null);
 		};
 
 		// :: Hook down-move-up events for both mouse and touch
@@ -136,7 +140,7 @@ export class WindowManager {
 			initialMX = mx, initialMY = my;
 			initialBounds = win.getBounds();
 			dragDirection = dir;
-			Client.desktop.setPointerEvents(false);
+			this.desktop.getPresentation().setPointerEvents(false);
 			ev.stopPropagation();
 		}
 
@@ -151,7 +155,8 @@ export class WindowManager {
 
 			// Show drag cursor
 			let [, dir] = this.findWindowToResize(mx, my);
-			this.desktop.setCursor((dir) ? this.getDirectionCursor(dir) : null);
+			let cursor = (dir) ? this.getDirectionCursor(dir) : null;
+			this.desktop.getPresentation().setCursor(cursor);
 		};
 
 		let doResize = (mx: number, my: number) => {
@@ -195,7 +200,7 @@ export class WindowManager {
 			this.resizingWindow.setBounds(bounds);
 			this.resizingWindow = null;
 			this.desktop.setDragRectangle(null);
-			Client.desktop.setPointerEvents(true);
+			this.desktop.getPresentation().setPointerEvents(true);
 		};
 
 		// :: Hook down-move-up events for both mouse and touch

@@ -1,11 +1,5 @@
 @use './taskbar.scss';
 
-:root {
-	--fullscreen-filter-on: blur(2px);
-	--fullscreen-filter-off: none;
-	--fullscreen-filter: var(--fullscreen-filter-on);
-}
-
 html {
 	width: 100%;
 	height: 100%;
