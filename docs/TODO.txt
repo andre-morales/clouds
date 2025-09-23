@@ -27,18 +27,3 @@
 
 # Refactors
 * Remove scripts from root, possibly moving these scripts to a package script.
-
--- M2 --
-:: Features
-* Improve user profile creation
-* Implement far more aggressive caching, leading to significantly improved performance in high-latency connections.
-* Greatly improved browser support. Currently supporting Chrome 49.
-* Greatly improved error handling with source map resolution.
-* System monitor improved with fetch() monitoring and network monitoring.
-* Improved configuration, allowing multiple themes and toggling other features
-* Improved Sinestesia UI
-* Added run dialog
-
-:: Building
-* Overhauled build system trough Framon. System powered with ESBuild, SWC and PostCSS.
-  All aiming at maximum speed, good sourcemaps, and good retro compatibility.
