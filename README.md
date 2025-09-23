@@ -10,9 +10,7 @@
 
 ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 <br>
-![Esbuild](https://img.shields.io/badge/esbuild-%23FFCF00.svg?style=for-the-badge&logo=esbuild&logoColor=black)![SWC](https://img.shields.io/badge/SWC-282828?style=for-the-badge&logo=swc)
-<br>
-![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)![SASS](https://img.shields.io/badge/SASS-hotpink.svg?style=for-the-badge&logo=SASS&logoColor=white)
+![Esbuild](https://img.shields.io/badge/esbuild-%23FFCF00.svg?style=for-the-badge&logo=esbuild&logoColor=black)![SWC](https://img.shields.io/badge/SWC-282828?style=for-the-badge&logo=swc)![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)![SASS](https://img.shields.io/badge/SASS-hotpink.svg?style=for-the-badge&logo=SASS&logoColor=white)
 
 </div>
 
@@ -32,7 +30,59 @@ Here's a list of some things you can do with **Clouds**:
 
 **Clouds** uses the concept of **apps** to perform many functionalities on its environment. **Apps** are separate from the core system, and can be developed independently from the rest of the project, allowing **flexibility** and most importantly **extensibility**.
 
-## :file_folder: Structure
+## :package: Building
+You must install all NPM dependencies. Some dependencies are meant to be used at runtime and others are build tools.
+Here's the main dependencies of the project, the ones listed in _italics_ are _dev dependencies_:
+
+Dependency|API|Client
+:-|:-|:-
+Express|Yes|No
+EJS|Yes|No
+_TypeScript_|Yes|Yes
+_SWC_|No|Yes
+_ESBuild_|No|Yes
+_Sass_|No|Yes
+
+All of these dependencies can be installed with: ```> pnpm install``` on the root of a fresh clone of the repository.
+
+## :arrow_forward: Running
+Once all dependencies are installed successfully, you can execute the matching script ```> run.bat``` or ```> ./run.sh```. The script will automatically execute the proper pnpm scripts to build the submodules (api, client, apps).
+
+Then, it will fire up a new server on the current machine that will start listening for new connections. The terminal will stay open and log some of the user activities. Which activities are logged can be configured in the profiles stored in the configuration profiles.
+
+## :gear: Configuration
+You are done! The server already comes pre-configured on port ```8000```. A built-in user named ```test``` will already be configured to use.
+
+You can configure the behavior of the server through the profiles stored in ```config/profiles/```. The default profile is already well configured, but you might want to change a few settings.
+
+## :construction: Developing
+
+There are many package scripts you can use to build and develop the project. These follow the following pattern:
+```<module>:<operation>:<mode>:<watch>```
+
+Where:
+
+Part|Purpose
+:-|:-
+module|Which submodule of the project are you referring to. May be one of ```api```, ```client``` or ```apps```.
+operation|What action to perform on the module. May be one of ```build``` or ```check```.
+mode|What environment mode you wish to use when executing build tasks. Might be ```prod``` or ```devl```.
+watch|Optional for build tasks. If provided, will build the submodule and watch for further changes.
+
+
+Here's a list of the most important package scripts defined. These can be run using: ```> pnpm <script>```. Checkout ```package.json``` for all the scripts available.
+Script|Purpose
+:-|:-
+api:build|Compiles all the TypeScript API files in /api/src/ to /api/dist/
+client:build:prod|Compiles and bundles the Core client modules in /client/src/ to /client/public/pack/ in production mode.
+client:build:devl:watch|Compiles and bundles the Core client modules in /client/src/ to /client/res/js/ in development mode, then keeps watching for further changes.
+client:check|Runs TypeScript compiler type checking on Client code and emits declaration files on /client/types/ folder.
+apps:build:prod:watch|Compiles apps on /apps/ in production mode, then stay watching for changes in any of the apps code.
+apps:build:devl|Compiles apps on /apps/ in development mode.
+analyze|Compiles ```client``` and ```apps``` submodules to analyze bundle size.
+
+
+### :file_folder: Structure
 
 This project consists of three separate entities: The **API**, the **Client** core and the included **Apps**. 
 - **API**: Encompasses all the functionalities pertaining to the services provided in the server. Targets the _server_ device. It uses **Node.js** with **Express** to provide a simple but powerful routing system consumed by the web client.
@@ -53,69 +103,16 @@ config/|Configuration used by the server.
 docs/|Files associated with the repo documentation.
 usr/|Contains a folder for each user in the web system. Provides a dedicated space that can be used by the client user.
 
-## :package: Building
-### 1) Preparation
-You must install all NPM dependencies. Some dependencies are meant to be used at runtime and others are build tools.
-Here's the main dependencies of the project, the ones listed in _italics_ are _dev dependencies_:
-
-Dependency|API|Client
-:-|:-|:-
-Express|Yes|No
-EJS|Yes|No
-_TypeScript_|Yes|Yes
-_SWC_|No|Yes
-_ESBuild_|No|Yes
-_Sass_|No|Yes
-
-All of these dependencies can be installed with: ```> pnpm install``` on the root of a fresh clone of the repository.
-
-### 2) Running
-Once all dependencies are installed successfully, you can execute the matching script ```> run.bat``` or ```> ./run.sh```. The script will execute the proper pnpm scripts to build the submodules (api, client, apps), and fire up the server.
-
-### 3) Configuration
-You are done! The server already comes pre-configured on port ```8000```. A built-in user named ```test``` will already be configured to use.
-
-You can configure the behavior of the server through the profiles stored in ```config/profiles/```. The default profile is already well configured, but you might want to change a few settings.
-
-There are many package scripts you can use to build and develop the project. These follow the following pattern:
-```<module>:<operation>:<mode>:<watch>```
-
-Where:
-
-Part|Purpose
-:-|:-
-module|Which submodule of the project are you referring to. May be one of ```api```, ```client``` or ```apps```.
-operation|What action to perform on the module. May be one of ```build``` or ```check```.
-mode|What environment mode you wish to use when executing build tasks. Might be ```prod``` or ```devl```.
-watch|Optional for build tasks. If provided, will build the submodule and watch for further changes.
-
-
-Here's a list of the most important package scripts defined. These can be run using: ```> pnpm <script>```
-Script|Purpose
-:-|:-
-api:build|Compiles all the TypeScript API files in /api/src/ to /api/dist/
-client:build:prod|Compiles and bundles the Core client modules in /client/src/ to /client/public/pack/ in production mode.
-client:build:devl:watch|Compiles and bundles the Core client modules in /client/src/ to /client/res/js/ in development mode, then keeps watching for further changes.
-client:check|Runs TypeScript compiler type checking on Client code and emits declaration files on /client/types/ folder.
-apps:build:prod:watch|Compiles apps on /apps/ in production mode, then stay watching for changes in any of the apps code.
-apps:build:devl|Compiles apps on /apps/ in development mode.
-analyze|Compiles ```client``` and ```apps``` submodules to analyze bundle size.
-
-## :arrow_forward: Running
-After building the project, running it is as easy as double-clicking the ```run``` script that matches your OS on the root of the project. You can also invoke _node_ directly with the same effect as the script. On a fresh terminal in the root, run the command ```> node .```.
-
-This will instantiate a new server on the current machine and automatically start listening for new client connections. The terminal will stay open and log some of the user activities. Which activities are logged can be configured in the forementioned profiles stored in the ```config/profiles``` directory.
-
-## :scroll: API Routes
+### :scroll: API Routes
 
 Route|Maps to|Purpose
 :-|:-|:-
-/|/api/pages/entry|Initial page.
+/|/client/pages/entry.ejs|Initial page.
 /auth/|-|Authentication services: login, logout, test
-/page/|/api/pages/|Fetching of core HTML pages, mainly login and desktop page.
+/page/|/client/pages/|Fetching of core HTML pages, mainly login and desktop page.
 /res/|/client/public/|Static resource access. All logged in users can access any content in this directory.
-/@sys/|/client/res/js/|Static core JS modules. Compiled through Webpack from /client/src/
 /app/**&lt;name&gt;**|/client/apps/**&lt;name&gt;**|Fetch static app resources.
 /fsv/|_(User filesystem)_|Read/write file system access at the current path.
+/fsmx/|_(User filesystem)_|Media extensions for the user filesystem
 /shell/|-|Manage user remote shells.
 /stat|-|Obtains system-wide status information.
